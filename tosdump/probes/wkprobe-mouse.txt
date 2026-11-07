@@ -1,0 +1,11 @@
+# wkprobe-mouse.txt -- the six IKBD mouse packets of tosdump/probes/wkprobe.c (TASK/V18 part 3),
+# for tools/inject-arm.py <tree> launch:WKPROBE=<this file> (NewTOS only; on EmuTOS the probe feeds
+# the same packets itself).  `<ticks> <byte> ...`, ticks at 200 Hz after the injector armed; the bytes
+# reach the decoder at the first trap-side input pump after that, which is the probe's Bconstat(2)
+# wait loop.  2 s apart, so no two packets fall into one wait.
+2000 0xF8 0x14 0x08    # M1 +20 +8
+2400 0xF8 0x1E 0x00    # M2 +30 0
+2800 0xF8 0x0A 0x0A    # M3 +10 +10
+3200 0xFA 0x00 0x00    # W1 left button down
+3600 0xF8 0x00 0x00    # W1 left button up
+4000 0xF8 0x28 0x14    # C1 +40 +20

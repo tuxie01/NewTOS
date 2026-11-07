@@ -1,0 +1,13 @@
+# vdi-v18-t3.tsv -- TASK/V18 part 3: the TOOL32 candidate K23 (the video-mode request in v_opnwk's
+# work_in[0], references/emutos/vdi/vdi_control.c:503-526) as DUMPVDI cases (format:
+# tosdump/cases/vdi-r3.tsv header and docs/TOS-REFERENCE-DUMPER.md section 6).
+# Only one v_opnwk fits a table run: EmuTOS' v_opnwk while the physical workstation is open re-hooks
+# etv_timer onto itself and hangs (tosdump/probes/wkprobe.c case W9), so it follows a v_clswk, and
+# v_clswk closes the dumper's own virtual workstation on both sides -- every later case of a run is a
+# VDI no-op.  The other modes are in the probe (wkprobe.c cases Z1-Z8).  Profile: falcontc.
+# Appending only: a new case goes at the end.
+#
+# opcode	sub	intin	ptsin	comment
+
+2	0	-	-	K22 v_clswk (no outputs; closes the dumper's workstation)
+1	0	2,1,1,1,1,1,1,1,1,1,2	-	K23 v_opnwk work_in[0]=2 (ST low) after v_clswk

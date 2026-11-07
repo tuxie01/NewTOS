@@ -1,0 +1,32 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdimouse_exit --up`
+deps vdimouse_exit --up (kinds asm,direct,layer,table,vector): 9 functions besides vdimouse_exit
+depth	function	layer	reached over	newtos	class
+0	vdimouse_exit	vdi	-	-	unmapped
+1	vdi_v_clswk	vdi	vdi_v_clswk -> vdimouse_exit [direct]	tos-api/src/vdi/vwk.rs@close_all_virtual tos-api/src/vdi/workstation.rs@v_clswk	mapped
+2	gsx_wsclose	aes	gsx_wsclose -> vdi_v_clswk [layer trap #2 0x2 jmptb1[0x2] via gsx_0code]	tos-api/src/aes/gsxif.rs@gsx_wsclose	mapped
+2	screen	vdi	screen -> vdi_v_clswk [table jmptb1[0x2]]	tos-api/src/vdi/mod.rs@screen	mapped
+3	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+3	run_accs_and_desktop	aes	run_accs_and_desktop -> gsx_wsclose [direct]	kernel/src/accs.rs@wait_for_accs_mesag kernel/src/lib.rs@kernel_main_rust	mapped
+4	accdesk_start	aes	accdesk_start -> run_accs_and_desktop [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_accdesk	mapped
+4	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+4	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+5	ui_start	aes	ui_start -> accdesk_start [asm fallthrough]	tos-api/src/bdos/process/standin.rs@enter_aes	mapped
+
+table edges inside the set (1):
+jmptb1[0x2]	screen -> vdi_v_clswk	vdi/vdi_main.c:34
+
+layer edges inside the set (1):
+trap #2 0x2 jmptb1[0x2] via gsx_0code	gsx_wsclose -> vdi_v_clswk	aes/gemgsxif.c:193
+
+vector edges inside the set (0):
+
+coverage of the set (10 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          4      4 100.0%      0   0.0%      0   0.0%
+vdi          6      5  83.3%      0   0.0%      1  16.7%
+total       10      9  90.0%      0   0.0%      1  10.0%
+touched layers: vdi (the layers of vdimouse_exit; --layers to choose)
+unmapped in the touched layers (1):
+vdi	vdimouse_exit	vdi/vdi_mouse.c
+complete: no (1 unmapped in the touched layers; the ticket lists them)

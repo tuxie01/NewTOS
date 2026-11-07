@@ -1,0 +1,28 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vb_draw --down`
+deps vb_draw --down (kinds asm,direct,layer,table,vector): 8 functions besides vb_draw
+depth	function	layer	reached over	newtos	class
+0	vb_draw	vdi	-	tos-api/src/vdi/mouse.rs@set_state	mapped
+1	cur_display	vdi	vb_draw -> cur_display [direct]	tos-api/src/vdi/mouse.rs@draw	mapped
+1	cur_replace	vdi	vb_draw -> cur_replace [direct]	tos-api/src/vdi/mouse.rs@erase	mapped
+2	cur_display16	vdi	cur_display -> cur_display16 [direct]	tos-api/src/vdi/mouse.rs@draw	mapped
+2	cur_display_clip	vdi	cur_display -> cur_display_clip [direct]	-	design
+2	cur_replace16	vdi	cur_replace -> cur_replace16 [direct]	tos-api/src/vdi/mouse.rs@erase	mapped
+2	get_start_addr	vdi	cur_display -> get_start_addr [direct]	-	design
+3	get_start_addr16	vdi	cur_display16 -> get_start_addr16 [direct]	kernel/src/vdi_backend.rs@get_device_pixel kernel/src/vdi_backend.rs@get_device_pixel_wrapped kernel/src/vdi_backend.rs@put_device_pixel tos-api/src/vdi/backend.rs@get_device_pixel_wrapped tos-api/src/vdi/line.rs@index	mapped
+3	muls	include	get_start_addr -> muls [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (9 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi          8      6  75.0%      2  25.0%      0   0.0%
+total        9      6  66.7%      2  22.2%      1  11.1%
+touched layers: vdi (the layers of vb_draw; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

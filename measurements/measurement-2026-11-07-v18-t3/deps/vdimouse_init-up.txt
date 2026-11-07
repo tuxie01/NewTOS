@@ -1,0 +1,33 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdimouse_init --up`
+deps vdimouse_init --up (kinds asm,direct,layer,table,vector): 11 functions besides vdimouse_init
+depth	function	layer	reached over	newtos	class
+0	vdimouse_init	vdi	-	tos-api/src/vdi/mouse.rs@ensure_init	mapped
+1	vdi_v_opnwk	vdi	vdi_v_opnwk -> vdimouse_init [direct]	tos-api/src/vdi/vwk.rs@open_physical tos-api/src/vdi/workstation.rs@v_opnwk	mapped
+2	screen	vdi	screen -> vdi_v_opnwk [table jmptb1[0x1]]	tos-api/src/vdi/mod.rs@screen	mapped
+2	v_opnwk	aes	v_opnwk -> vdi_v_opnwk [layer trap #2 0x1 jmptb1[0x1] via gsx_ncode]	tos-api/src/vdi/workstation.rs@v_opnwk	mapped
+3	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+3	gsx_wsopen	aes	gsx_wsopen -> v_opnwk [direct]	tos-api/src/aes/gsxif.rs@gsx_init	mapped
+4	gsx_init	aes	gsx_init -> gsx_wsopen [direct]	tos-api/src/aes/gsxif.rs@gsx_init	mapped
+4	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+4	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+5	run_accs_and_desktop	aes	run_accs_and_desktop -> gsx_init [direct]	kernel/src/accs.rs@wait_for_accs_mesag kernel/src/lib.rs@kernel_main_rust	mapped
+6	accdesk_start	aes	accdesk_start -> run_accs_and_desktop [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_accdesk	mapped
+7	ui_start	aes	ui_start -> accdesk_start [asm fallthrough]	tos-api/src/bdos/process/standin.rs@enter_aes	mapped
+
+table edges inside the set (1):
+jmptb1[0x1]	screen -> vdi_v_opnwk	vdi/vdi_main.c:33
+
+layer edges inside the set (1):
+trap #2 0x1 jmptb1[0x1] via gsx_ncode	v_opnwk -> vdi_v_opnwk	aes/gemgsxif.c:560
+
+vector edges inside the set (0):
+
+coverage of the set (12 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          6      6 100.0%      0   0.0%      0   0.0%
+vdi          6      6 100.0%      0   0.0%      0   0.0%
+total       12     12 100.0%      0   0.0%      0   0.0%
+touched layers: vdi (the layers of vdimouse_init; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

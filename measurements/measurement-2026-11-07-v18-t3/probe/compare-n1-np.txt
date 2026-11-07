@@ -1,0 +1,57 @@
+pens EmuTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+pens NewTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+01 CAL   EQUAL  (136x8 at 0,0)
+02 P0    EQUAL  (32x32 at 52,52)
+03 P1    EQUAL  (32x32 at 96,96)
+04 P2    EQUAL  (64x64 at 176,126)
+05 P3    EQUAL  (32x32 at 292,142)
+06 P4    EQUAL  (40x40 at 600,440)
+07 P5    EQUAL  (40x40 at 0,0)
+08 P6a   EQUAL  (64x64 at 380,130)
+09 P6b   EQUAL  (64x64 at 380,130)
+10 P7a   EQUAL  (32x32 at 492,142)
+11 P7b   EQUAL  (32x32 at 492,142)
+12 P7c   EQUAL  (32x32 at 492,142)
+13 F1a   EQUAL  (64x64 at 90,240)
+14 F1b   EQUAL  (64x64 at 90,240)
+15 F1c   EQUAL  (64x64 at 90,240)
+16 F1d   EQUAL  (64x64 at 90,240)
+17 F2b   EQUAL  (64x64 at 280,240)
+18 F2c   EQUAL  (64x64 at 280,240)
+19 D1a   EQUAL  (56x56 at 432,244)
+20 D1b   EQUAL  (56x56 at 432,244)
+21 D1c   EQUAL  (56x56 at 432,244)
+22 M1a   DIFF   194 px raw, 108 px by pen (64x40 at 192,344): (200,350) E=ffff N=ffdf, (201,350) E=ffff N=ffdf, (200,351) E=ffff N=ffdf, (201,351) E=ffff N=0000, (202,351) E=ffff N=ffdf, (200,352) E=ffff N=ffdf
+23 M1b   DIFF   194 px raw, 108 px by pen (64x40 at 192,344): (200,350) E=ffff N=ffdf, (201,350) E=ffff N=ffdf, (200,351) E=ffff N=ffdf, (201,351) E=ffff N=0000, (202,351) E=ffff N=ffdf, (200,352) E=ffff N=ffdf
+24 M2a   DIFF   353 px raw, 352 px by pen (96x56 at 336,336): (350,350) E=ffff N=f800, (351,350) E=ffff N=f800, (352,350) E=ffff N=f800, (353,350) E=ffff N=f800, (354,350) E=ffff N=f800, (355,350) E=ffff N=f800
+25 M2b   DIFF   353 px raw, 352 px by pen (96x56 at 336,336): (350,350) E=ffff N=f800, (351,350) E=ffff N=f800, (352,350) E=ffff N=f800, (353,350) E=ffff N=f800, (354,350) E=ffff N=f800, (355,350) E=ffff N=f800
+26 M3a   EQUAL  (40x40 at 492,344)
+27 M3b   DIFF   194 px raw, 108 px by pen (40x40 at 492,344): (500,350) E=ffff N=ffdf, (501,350) E=ffff N=ffdf, (500,351) E=ffff N=ffdf, (501,351) E=ffff N=0000, (502,351) E=ffff N=ffdf, (500,352) E=ffff N=ffdf
+28 W1a   EQUAL  (256x176 at 80,80)
+29 W1b   EQUAL  (256x176 at 80,80)
+30 W1c   EQUAL  (256x176 at 80,80)
+31 W2a   EQUAL  (256x176 at 80,80)
+32 W2b   EQUAL  (256x176 at 80,80)
+33 W2c   EQUAL  (256x176 at 80,80)
+34 C1a   EQUAL  (128x128 at 120,120)
+35 C1b   DIFF   310 px raw, 310 px by pen (128x128 at 120,120): (150,150) E=f800 N=ffdf, (151,150) E=f800 N=ffdf, (152,150) E=ffc0 N=ffdf, (153,150) E=ffc0 N=ffdf, (154,150) E=001f N=ffdf, (155,150) E=001f N=ffdf
+36 C1c   DIFF   310 px raw, 310 px by pen (128x128 at 120,120): (150,150) E=f800 N=ffdf, (151,150) E=f800 N=ffdf, (152,150) E=ffc0 N=ffdf, (153,150) E=ffc0 N=ffdf, (154,150) E=001f N=ffdf, (155,150) E=001f N=ffdf
+37 C1d   EQUAL  (128x128 at 120,120)
+cases 37, differing 7
+LOG E:   packet f8 20 8: vq_mouse 0 200 350 -> 0 220 358 (changed)
+LOG N:   packet f8 20 8: vq_mouse 0 200 350 -> 0 200 350 (unchanged)
+LOG E:   packet f8 30 0: vq_mouse 0 350 350 -> 0 380 350 (changed)
+LOG N:   packet f8 30 0: vq_mouse 0 350 350 -> 0 350 350 (unchanged)
+LOG E:   packet f8 10 10: vq_mouse 0 500 350 -> 0 510 360 (changed)
+LOG N:   packet f8 10 10: vq_mouse 0 500 350 -> 0 500 350 (unchanged)
+LOG E:   packet fa 0 0: vq_mouse 0 100 100 -> 1 100 100 (changed)
+LOG N:   packet fa 0 0: vq_mouse 0 100 100 -> 0 100 100 (unchanged)
+LOG E:   W1 before: vq_mouse 1 100 100
+LOG N:   W1 before: vq_mouse 0 100 100
+LOG E:   W1 after: vq_mouse 1 100 100
+LOG N:   W1 after: vq_mouse 0 100 100
+LOG E:   packet f8 0 0: vq_mouse 1 100 100 -> 0 100 100 (changed)
+LOG N:   packet f8 0 0: vq_mouse 0 100 100 -> 0 100 100 (unchanged)
+LOG E:   packet f8 40 20: vq_mouse 0 150 150 -> 0 190 170 (changed)
+LOG N:   packet f8 40 20: vq_mouse 0 150 150 -> 0 150 150 (unchanged)
+log lines 115/115, differing 8

@@ -1,0 +1,255 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdi_v_opnwk --down`
+deps vdi_v_opnwk --down (kinds asm,direct,layer,table,vector): 173 functions besides vdi_v_opnwk
+depth	function	layer	reached over	newtos	class
+0	vdi_v_opnwk	vdi	-	tos-api/src/vdi/vwk.rs@open_physical tos-api/src/vdi/workstation.rs@v_opnwk	mapped
+1	esc_init	vdi	vdi_v_opnwk -> esc_init [direct]	tos-api/src/vdi/escape.rs@esc_init	mapped
+1	getrez	bios	vdi_v_opnwk -> getrez [layer trap #14 0x4 xbios_vecs[0x4] via xbios_w_v]	tos-api/src/xbios/screen.rs@getrez	mapped
+1	init_colors	vdi	vdi_v_opnwk -> init_colors [direct]	kernel/src/vdi_backend.rs@ensure_palette_init tos-api/src/vdi/raster.rs@map_col tos-api/src/vdi/workstation.rs@init_wk	mapped
+1	init_wk	vdi	vdi_v_opnwk -> init_wk [direct]	tos-api/src/vdi/workstation.rs@init_wk	mapped
+1	setscreen	bios	vdi_v_opnwk -> setscreen [layer trap #14 0x5 xbios_vecs[0x5] via xbios_v_llww]	tos-api/src/xbios/screen.rs@setscreen	mapped
+1	text_init	vdi	vdi_v_opnwk -> text_init [direct]	tos-api/src/vdi/font.rs@text_init_def_font tos-api/src/vdi/workstation.rs@font_ring_fold	mapped
+1	timer_init	vdi	vdi_v_opnwk -> timer_init [direct]	-	design
+1	update_rez_dependent	vdi	vdi_v_opnwk -> update_rez_dependent [direct]	tos-api/src/vdi/workstation.rs@init_wk tos-api/src/vdi/workstation.rs@vq_extnd	mapped
+1	vdimouse_init	vdi	vdi_v_opnwk -> vdimouse_init [direct]	tos-api/src/vdi/mouse.rs@ensure_init	mapped
+1	vsetmode	bios	vdi_v_opnwk -> vsetmode [layer trap #14 0x58 xbios_vecs[0x58] via xbios_w_w]	-	design
+1	xbios_v_llww	include	vdi_v_opnwk -> xbios_v_llww [direct]		unmapped
+1	xbios_w_v	include	vdi_v_opnwk -> xbios_w_v [direct]		unmapped
+1	xbios_w_w	include	vdi_v_opnwk -> xbios_w_w [direct]		unmapped
+2	Initmous	bios	vdimouse_init -> Initmous [layer trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll]	tos-api/src/xbios/mod.rs@note_installer	mapped
+2	atari_getrez	bios	getrez -> atari_getrez [direct]	-	design
+2	atari_setrez	bios	setscreen -> atari_setrez [direct]	-	design
+2	bios_l_wl	include	timer_init -> bios_l_wl [direct]		unmapped
+2	default_mform	aes	vdimouse_init -> default_mform [direct]	tos-api/src/vdi/mouse.rs@set_preset	mapped
+2	escfn2	vdi	esc_init -> escfn2 [direct]	tos-api/src/vdi/escape.rs@v_escape	mapped
+2	get_monitor_type	bios	update_rez_dependent -> get_monitor_type [direct]	-	design
+2	get_palette	bios	update_rez_dependent -> get_palette [direct]	tos-api/src/vdi/workstation.rs@palette_precision	mapped
+2	get_pixel_size	bios	update_rez_dependent -> get_pixel_size [direct]	-	unmapped
+2	kbdvbase	bios	vdimouse_init -> kbdvbase [layer trap #14 0x22 xbios_vecs[0x22] via xbios_l_v]	tos-api/src/xbios/kbdvecs.rs@kbdvbase	mapped
+2	linea_init	bios	setscreen -> linea_init [direct]	-	design
+2	memcpy	ext	init_colors -> memcpy [direct cflow-only]		unmapped
+2	set_color	vdi	init_colors -> set_color [direct]	kernel/src/vdi_backend.rs@set_color	mapped
+2	set_color16	vdi	init_wk -> set_color16 [direct]	tos-api/src/vdi/vwk.rs@set_color16	mapped
+2	set_mouse_form	vdi	vdimouse_init -> set_mouse_form [direct]	tos-api/src/vdi/mouse.rs@vsc_form	mapped
+2	set_videl_vga	bios	vsetmode -> set_videl_vga [direct]	-	design
+2	setexc	bios	timer_init -> setexc [layer trap #13 0x5 bios_vecs[0x5] via bios_l_wl]	tos-api/src/bios/vectors.rs@adopt_page0_write tos-api/src/bios/vectors.rs@note_shared_write tos-api/src/bios/vectors.rs@note_write tos-api/src/bios/vectors.rs@setexc tos-api/src/bios/vectors.rs@store_shared	mapped
+2	setphys	bios	setscreen -> setphys [direct]	tos-api/src/host.rs@set_screen_physical	mapped
+2	srealloc	bdos	setscreen -> srealloc [layer trap #1 0x15 funcs[0x15] via trap1]	-	unmapped
+2	st_fl_ptr	vdi	init_wk -> st_fl_ptr [direct]	tos-api/src/vdi/fill_patterns.rs@select	mapped
+2	text_init2	vdi	init_wk -> text_init2 [direct]	tos-api/src/vdi/vwk.rs@alloc_handle tos-api/src/vdi/workstation.rs@init_wk	mapped
+2	trap1	ext	setscreen -> trap1 [direct]		unmapped
+2	trnsfont	vdi	text_init -> trnsfont [direct]	tos-api/src/vdi/font.rs@trnsfont	mapped
+2	validate_color_index	vdi	init_wk -> validate_color_index [direct]	tos-api/src/vdi/vwk.rs@validate_color_index	mapped
+2	vfixmode	bios	setscreen -> vfixmode [direct]	-	design
+2	vgetsize	bios	setscreen -> vgetsize [direct]	-	design
+2	vsync	bios	setscreen -> vsync [direct]	tos-api/src/xbios/system.rs@vsync	mapped
+2	vt52_init	bios	setscreen -> vt52_init [direct]	kernel/src/fbcon.rs@init tos-api/src/vdi/escape.rs@init	mapped
+2	xbios_l_v	include	vdimouse_init -> xbios_l_v [direct]		unmapped
+2	xbios_v_wll	include	vdimouse_init -> xbios_v_wll [direct]		unmapped
+3	adjust_mono_values	vdi	set_color -> adjust_mono_values [direct]	-	design
+3	atari_setphys	bios	setphys -> atari_setphys [direct]	-	design
+3	bios_conws	desk,vdi	escfn2 -> bios_conws [direct]	tos-api/src/vdi/escape.rs@puts	unmapped
+3	bzero_nobuiltin	ext	srealloc -> bzero_nobuiltin [direct]		unmapped
+3	clear_and_home	bios	vt52_init -> clear_and_home [direct]	tos-api/src/vdi/escape.rs@clear_and_home	mapped
+3	cursconf	bios	vt52_init -> cursconf [direct]	tos-api/src/vdi/escape.rs@cursconf tos-api/src/xbios/screen.rs@cursconf	mapped
+3	determine_regc0	bios	set_videl_vga -> determine_regc0 [direct]	-	design
+3	determine_vctl	bios	vgetsize -> determine_vctl [direct]	-	design
+3	determine_width	bios	vgetsize -> determine_width [direct]	-	design
+3	font_set_default	bios	vt52_init -> font_set_default [direct]	tos-api/src/vdi/escape.rs@con tos-api/src/vdi/font.rs@font_set_default	mapped
+3	get_std_pixel_size	bios	get_pixel_size -> get_std_pixel_size [direct]	tos-api/src/vdi/workstation.rs@get_std_pixel_size	mapped
+3	has_natfeats	bios	set_videl_vga -> has_natfeats [direct]	-	design
+3	ikbd_writeb	bios	Initmous -> ikbd_writeb [direct]	-	design
+3	ikbd_writew	bios	Initmous -> ikbd_writew [direct]	-	design
+3	initialise_falcon_palette	bios	atari_setrez -> initialise_falcon_palette [direct]	-	design
+3	kprintf	bios	atari_getrez -> kprintf [direct]	-	unmapped
+3	lookup_videl_mode	bios	vgetsize -> lookup_videl_mode [direct]	-	design
+3	screen_get_current_mode_info	bios	linea_init -> screen_get_current_mode_info [direct]	-	unmapped
+3	set_screen_shift	bios	linea_init -> set_screen_shift [direct]	-	unmapped
+3	set_tt_color	vdi	set_color -> set_tt_color [direct]	-	design
+3	setcolor	bios	set_color -> setcolor [layer trap #14 0x7 xbios_vecs[0x7] via xbios_w_ww]	tos-api/src/xbios/screen.rs@setcolor	mapped
+3	shifter_get_monitor_type	bios	get_monitor_type -> shifter_get_monitor_type [direct]	-	design
+3	stop_until_interrupt	ext	vsync -> stop_until_interrupt [direct]		unmapped
+3	vdi2fivebits	vdi	set_color16 -> vdi2fivebits [direct]	tos-api/src/vdi/vwk.rs@vdi2fivebits	mapped
+3	vdi2st	vdi	set_color -> vdi2st [direct]	-	design
+3	vdi2ste	vdi	set_color -> vdi2ste [direct]	-	design
+3	vdi2videl	vdi	set_color -> vdi2videl [direct]	-	design
+3	videl_setrez	bios	atari_setrez -> videl_setrez [direct]	-	design
+3	vmontype	bios	vfixmode -> vmontype [direct]	-	design
+3	vsetrgb	bios	set_color -> vsetrgb [layer trap #14 0x5d xbios_vecs[0x5d] via xbios_v_wwl]	-	design
+3	xbios_v_wwl	include	set_color -> xbios_v_wwl [direct]		unmapped
+3	xbios_w_ww	include	set_color -> xbios_w_ww [direct]		unmapped
+4	atari_get_current_mode_info	bios	screen_get_current_mode_info -> atari_get_current_mode_info [direct]	-	design
+4	atari_setcolor	bios	setcolor -> atari_setcolor [direct]	-	design
+4	bconout	bios	bios_conws -> bconout [layer trap #13 0x3 bios_vecs[0x3] via bios_l_ww]	tos-api/src/bios/chardev.rs@bconout tos-api/src/bios/chardev.rs@device tos-api/src/xbios/bconmap.rs@entry_device	mapped
+4	bcostat4	bios	ikbd_writeb -> bcostat4 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+4	bios_l_ww	include	bios_conws -> bios_l_ww [direct]		unmapped
+4	blank_out	bios	clear_and_home -> blank_out [direct]	tos-api/src/vdi/escape.rs@blank_out	mapped
+4	convert2ste	bios	initialise_falcon_palette -> convert2ste [direct]	-	design
+4	cursor_off	bios	clear_and_home -> cursor_off [direct]	tos-api/src/vdi/escape.rs@cursor_off	mapped
+4	cursor_on	bios	cursconf -> cursor_on [direct]	tos-api/src/vdi/escape.rs@cursor_on	mapped
+4	cursor_on_cnt	bios	clear_and_home -> cursor_on_cnt [direct]	tos-api/src/vdi/escape.rs@cursor_on_cnt	mapped
+4	divu	include	vdi2videl -> divu [direct]		unmapped
+4	egetshift	bios	set_tt_color -> egetshift [layer trap #14 0x51 xbios_vecs[0x51] via xbios_w_v]	-	design
+4	esetcolor	bios	set_tt_color -> esetcolor [layer trap #14 0x53 xbios_vecs[0x53] via xbios_w_ww]	-	design
+4	get_videl_bpp	bios	vsetrgb -> get_videl_bpp [direct]	-	design
+4	move_cursor	bios	clear_and_home -> move_cursor [direct]	tos-api/src/vdi/escape.rs@move_cursor	mapped
+4	mul_div	include	set_tt_color -> mul_div [direct]		unmapped
+4	use_ste_palette	bios	vsetrgb -> use_ste_palette [direct]	-	design
+4	vdi2tt	vdi	set_tt_color -> vdi2tt [direct]	-	design
+4	vkprintf	bios	kprintf -> vkprintf [direct]	-	unmapped
+5	bconout0	bios	bconout -> bconout0 [vector via bconout_vec[]]	-	design
+5	bconout1	bios	bconout -> bconout1 [vector via bconout_vec[]]	kernel/src/console.rs@bconout tos-api/src/bios/chardev.rs@bconout	mapped
+5	bconout2	bios	bconout -> bconout2 [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout tos-api/src/vdi/escape.rs@conout	mapped
+5	bconout3	bios	bconout -> bconout3 [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout tos-api/src/xbios/system.rs@midiws	mapped
+5	bconout4	bios	bconout -> bconout4 [vector via bconout_vec[]]	tos-api/src/bdos/process/hooks.rs@note_ikbd_ignored tos-api/src/bios/chardev.rs@bconout	mapped
+5	bconout5	bios	bconout -> bconout5 [vector via bconout_vec[]]	tos-api/src/vdi/escape.rs@rawout	mapped
+5	blank_out16	bios	blank_out -> blank_out16 [direct]	tos-api/src/vdi/escape.rs@blank_out	mapped
+5	cell_addr	bios	blank_out -> cell_addr [direct]	-	unmapped
+5	charout_dummy	bios	bconout -> charout_dummy [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout	mapped
+5	do_cnt_esce	bios	cursor_on_cnt -> do_cnt_esce [direct]	tos-api/src/vdi/escape.rs@do_cnt_esce	mapped
+5	doprintf	ext	vkprintf -> doprintf [direct]		unmapped
+5	invert_cell	bios	cursor_off -> invert_cell [direct]	-	unmapped
+5	is_nfStdErr	bios	vkprintf -> is_nfStdErr [direct]	-	design
+5	neg_cell	bios	move_cursor -> neg_cell [direct]	tos-api/src/vdi/escape.rs@neg_cell	mapped
+5	protect_ww	ext	bconout -> protect_ww [direct]		unmapped
+5	shifter_get_current_mode_info	bios	atari_get_current_mode_info -> shifter_get_current_mode_info [direct]	-	design
+5	videl_get_current_mode_info	bios	atari_get_current_mode_info -> videl_get_current_mode_info [direct]	-	design
+6	ascii_out	bios	bconout5 -> ascii_out [direct]	tos-api/src/vdi/escape.rs@ascii_out	mapped
+6	bconin2	bios	bconout0 -> bconin2 [direct]	tos-api/src/bios/chardev.rs@bconin tos-api/src/bios/chardev.rs@pack_console_key tos-api/src/xbios/iorec.rs@pop_key	mapped
+6	bconstat2	bios	bconout0 -> bconstat2 [direct]	tos-api/src/bios/chardev.rs@bconstat tos-api/src/xbios/iorec.rs@key_pending	mapped
+6	bcostat0	bios	bconout0 -> bcostat0 [direct]	-	design
+6	bcostat1	bios	bconout1 -> bcostat1 [direct]	kernel/src/console.rs@bcostat tos-api/src/bios/chardev.rs@bcostat	mapped
+6	bcostat3	bios	bconout3 -> bcostat3 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+6	cputc	bios	bconout2 -> cputc [direct]	tos-api/src/vdi/escape.rs@cputc	mapped
+6	get_videl_height	bios	videl_get_current_mode_info -> get_videl_height [direct]	-	design
+6	get_videl_width	bios	videl_get_current_mode_info -> get_videl_width [direct]	-	design
+6	prnout	bios	bconout0 -> prnout [direct]	-	design
+6	put_iorecbuf	bios	bconout1 -> put_iorecbuf [direct]	-	unmapped
+7	cell_xfer	bios	ascii_out -> cell_xfer [direct]	tos-api/src/vdi/escape.rs@cell_xfer	mapped
+7	char_addr	bios	ascii_out -> char_addr [direct]	-	unmapped
+7	esc_ch1	bios	cputc -> esc_ch1 [vector via con_state]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+7	get_bg_col	bios	cputc -> get_bg_col [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	get_column	bios	cputc -> get_column [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	get_fg_col	bios	cputc -> get_fg_col [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	get_row	bios	cputc -> get_row [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	giaccess	bios	prnout -> giaccess [direct]	tos-api/src/xbios/system.rs@giaccess	mapped
+7	incr_tail	bios	bcostat1 -> incr_tail [direct]	tos-api/src/xbios/iorec.rs@push_byte	mapped
+7	next_cell	bios	ascii_out -> next_cell [direct]	-	unmapped
+7	normal_ascii	bios	cputc -> normal_ascii [vector via con_state]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+7	offgibit	bios	prnout -> offgibit [direct]	tos-api/src/xbios/system.rs@offgibit	mapped
+7	ongibit	bios	prnout -> ongibit [direct]	tos-api/src/xbios/system.rs@ongibit	mapped
+7	scroll_up	bios	ascii_out -> scroll_up [direct]	tos-api/src/vdi/escape.rs@scroll_up	mapped
+8	ascii_cr	bios	normal_ascii -> ascii_cr [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	ascii_lf	bios	normal_ascii -> ascii_lf [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@ascii_lf	mapped
+8	cell_xfer16	bios	cell_xfer -> cell_xfer16 [direct]	tos-api/src/vdi/escape.rs@cell_xfer	mapped
+8	cursor_down	bios	esc_ch1 -> cursor_down [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	cursor_home	bios	esc_ch1 -> cursor_home [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	cursor_left	bios	esc_ch1 -> cursor_left [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@cursor_left	mapped
+8	cursor_right	bios	esc_ch1 -> cursor_right [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	cursor_up	bios	esc_ch1 -> cursor_up [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	delete_line	bios	esc_ch1 -> delete_line [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@delete_line	mapped
+8	do_backspace	bios	normal_ascii -> do_backspace [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	do_bell	bios	normal_ascii -> do_bell [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@bell tos-api/src/vdi/escape.rs@do_bell	mapped
+8	do_tab	bios	normal_ascii -> do_tab [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	erase_from_bol	bios	esc_ch1 -> erase_from_bol [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_from_bol	mapped
+8	erase_from_home	bios	esc_ch1 -> erase_from_home [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_from_home	mapped
+8	erase_line	bios	esc_ch1 -> erase_line [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	erase_to_eol	bios	esc_ch1 -> erase_to_eol [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_to_eol	mapped
+8	erase_to_eos	bios	esc_ch1 -> erase_to_eos [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_to_eos	mapped
+8	insert_line	bios	esc_ch1 -> insert_line [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@insert_line	mapped
+8	line_wrap_off	bios	esc_ch1 -> line_wrap_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	line_wrap_on	bios	esc_ch1 -> line_wrap_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	memmove	ext	scroll_up -> memmove [direct]		unmapped
+8	nop	bios	esc_ch1 -> nop [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	restore_cursor_pos	bios	esc_ch1 -> restore_cursor_pos [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	reverse_linefeed	bios	esc_ch1 -> reverse_linefeed [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@reverse_linefeed	mapped
+8	reverse_video_off	bios	esc_ch1 -> reverse_video_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	reverse_video_on	bios	esc_ch1 -> reverse_video_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	save_cursor_pos	bios	esc_ch1 -> save_cursor_pos [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	set_bg	bios	esc_ch1 -> set_bg [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	set_fg	bios	esc_ch1 -> set_fg [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	bell	bios	do_bell -> bell [direct]	tos-api/src/vdi/escape.rs@bell	mapped
+9	cursor_down_impl	bios	cursor_down -> cursor_down_impl [direct]	-	unmapped
+9	cursor_left_impl	bios	cursor_left -> cursor_left_impl [direct]	tos-api/src/vdi/escape.rs@cursor_left	mapped
+9	dosound	bios	do_bell -> dosound [direct]	tos-api/src/xbios/system.rs@dosound	mapped
+9	erase_from_bol_impl	bios	erase_from_bol -> erase_from_bol_impl [direct]	tos-api/src/vdi/escape.rs@erase_from_bol	mapped
+9	erase_to_eol_impl	bios	erase_to_eol -> erase_to_eol_impl [direct]	tos-api/src/vdi/escape.rs@erase_to_eol	mapped
+9	scroll_down	bios	insert_line -> scroll_down [direct]	tos-api/src/vdi/escape.rs@scroll_down	mapped
+10	protect_v	ext	bell -> protect_v [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (12):
+trap #1 0x15 funcs[0x15] via trap1	setscreen -> srealloc	bios/screen.c:1135
+trap #13 0x3 bios_vecs[0x3] via bios_l_ww	bios_conws -> bconout	desk/desksupp.c:686
+trap #13 0x5 bios_vecs[0x5] via bios_l_wl	timer_init -> setexc	vdi/vdi_misc.c:132
+trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll	vdimouse_init -> Initmous	vdi/vdi_mouse.c:605
+trap #14 0x22 xbios_vecs[0x22] via xbios_l_v	vdimouse_init -> kbdvbase	vdi/vdi_mouse.c:609
+trap #14 0x4 xbios_vecs[0x4] via xbios_w_v	vdi_v_opnwk -> getrez	vdi/vdi_control.c:513
+trap #14 0x5 xbios_vecs[0x5] via xbios_v_llww	vdi_v_opnwk -> setscreen	vdi/vdi_control.c:514
+trap #14 0x51 xbios_vecs[0x51] via xbios_w_v	set_tt_color -> egetshift	vdi/vdi_col.c:315
+trap #14 0x53 xbios_vecs[0x53] via xbios_w_ww	set_tt_color -> esetcolor	vdi/vdi_col.c:332
+trap #14 0x58 xbios_vecs[0x58] via xbios_w_w	vdi_v_opnwk -> vsetmode	vdi/vdi_control.c:521
+trap #14 0x5d xbios_vecs[0x5d] via xbios_v_wwl	set_color -> vsetrgb	vdi/vdi_col.c:544
+trap #14 0x7 xbios_vecs[0x7] via xbios_w_ww	set_color -> setcolor	vdi/vdi_col.c:582
+
+vector edges inside the set (45):
+via am_tab@bios/vt52.c[]	esc_ch1 -> clear_and_home	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_down	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_home	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_left	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_right	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_up	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> delete_line	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> erase_to_eol	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> erase_to_eos	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> insert_line	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> nop	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> reverse_linefeed	bios/vt52.c:247
+via bconout_vec[]	bconout -> bconout0	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout1	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout2	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout3	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout4	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout5	bios/bios.c:1009
+via bconout_vec[]	bconout -> charout_dummy	bios/bios.c:1009
+via bell_hook	bell -> do_bell	bios/sound.c:253
+via bw_tab@bios/vt52.c[]	esc_ch1 -> cursor_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> cursor_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_from_bol	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_from_home	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_line	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> line_wrap_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> line_wrap_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> nop	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> restore_cursor_pos	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> reverse_video_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> reverse_video_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> save_cursor_pos	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> set_bg	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> set_fg	bios/vt52.c:250
+via cntl_tab@bios/vt52.c[]	normal_ascii -> ascii_cr	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> ascii_lf	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_backspace	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_bell	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_tab	bios/vt52.c:198
+via con_state	cputc -> esc_ch1	bios/vt52.c:159
+via con_state	cputc -> get_bg_col	bios/vt52.c:159
+via con_state	cputc -> get_column	bios/vt52.c:159
+via con_state	cputc -> get_fg_col	bios/vt52.c:159
+via con_state	cputc -> get_row	bios/vt52.c:159
+via con_state	cputc -> normal_ascii	bios/vt52.c:159
+
+coverage of the set (174 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          1      1 100.0%      0   0.0%      0   0.0%
+bdos         1      0   0.0%      0   0.0%      1 100.0%
+bios       130     83  63.8%     36  27.7%     11   8.5%
+desk         1      0   0.0%      0   0.0%      1 100.0%
+ext          8      0   0.0%      0   0.0%      8 100.0%
+include     11      0   0.0%      0   0.0%     11 100.0%
+vdi         24     17  70.8%      7  29.2%      0   0.0%
+total      176    101  57.4%     43  24.4%     32  18.2%
+touched layers: vdi (the layers of vdi_v_opnwk; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

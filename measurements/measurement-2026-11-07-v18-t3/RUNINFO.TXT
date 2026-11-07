@@ -1,0 +1,82 @@
+V18 part 3 -- TASK/V18.md "Teil 3" (TOOL32 K9/K24, K21, K22, K23, K26): the VDI workstation calls and the mouse
+pointer, measured against the pinned EmuTOS oracle by the Auditor. Date 2026-11-07.
+Report: docs/audits/2026-11-07-v18-t3-vdi-workstation.md. No product code touched; no card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   5a8e01b506903b6865d1ab320e80ca25c18a5d85 (clean at start; git archive into the session scratchpad,
+           references/ linked; method/build-kernel.sh). rpi4 release kernel8.img sha256
+           d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 (method/build-kernel.out; the same kernel
+           cargo xtask tosdump built, runs/*/tosdump-run.txt).
+           Probe kernel: the same tree copied into scratch and armed with tools/inject-arm.py launch:WKPROBE=
+           tosdump/probes/wkprobe-mouse.txt (scratch only), built release: kernel8.img sha256
+           1f235766f18219669f1445b5e54ecd294c945e564a87853ca5ca879c572e812a (method/probe-runs.sh kernel).
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img sha256
+           323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari   2.6.1, binary sha256 953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6,
+           tools/oracle/hatari.cfg sha256 c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46
+  Boards   QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (removed by the scripts); oracle profile falcontc
+           (640x480 16-bit truecolor = the NewTOS device model, ADR-024), the table also tt. Only QEMU/Hatari processes
+           started here were stopped (by PID, SIGKILL).
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests: runs/newtos-vdi-all, runs/newtos-vdi-v18t3, probe/n1, probe/n2, probe/np, probe/np-try1, probe/np-try2,
+           each card.img.manifest; optional_missing, verbatim, in all of them:
+           optional_missing none
+
+PRE-FLIGHT
+  canary (docs/analysis/ORACLE.md section 6, measurements/measurement-2026-10-28-oracle-canary/method/canary.sh,
+  scratch dir in the session scratchpad):
+      canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+      canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)
+  runs/newtos-vdi-all   vdi-all.tsv vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 differ
+
+INSTRUMENTS (new, permanent)
+  tosdump/probes/wkprobe.c          sha256 73b6982ffa8daf2e2c3eb26795cf3f0c3ba00df2ea5ee3b26fbaf8f129e88d80
+  tosdump/probes/wkprobe-mouse.txt  sha256 1a08bf54230f8d5b8f12ef59354ddb341717996ee7024d1c186da8dc05167f63
+  tosdump/probes/run-wkprobe.sh, tosdump/probes/wkprobe-compare.py (copy of vdprobe-compare.py + LOG compare)
+      WKPROBE.NAP aeb01a6dc0afe1535c716c6ad2e37421eb0bbc3b94c0a42e933e9e0fc7be4ad7 (all runs); WKPROBE.PRG differs from
+      build to build (sha256 in probe/*/run.txt), its output does not (e1 == e2 byte for byte).
+      The oracle side starts Hatari with tools/hatari-oracle.sh's command line itself (that script knows only its
+      listed probes): pinned ROM + sha256 check, tools/oracle/hatari.cfg, hermetic HOME, SDL dummy video, the falcontc
+      EMUDESK.INF byte for byte, --fast-forward on, --auto C:\WKPROBE.PRG.
+  tosdump/cases/vdi-v18-t3.tsv      DUMPVDI, 2 cases, CRC AE9CB4E7, sha256 a937960293e82fc98699f5c5d770b58206bb453c0f5b7975517e748edbaf69e7
+  tosdump/reference/EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN/.LOG  (= oracle/or-t3-1)
+
+ORACLE TABLE (method/oracle-tables.sh; DUMPVDI m68k from tosdump/ at 5a8e01b5, build id 5a8e)
+  or-t3-1 == or-t3-2 (BIN 4b174e36..., LOG 0f8b3168...); or-t3-tt BIN identical too (after the switch to ST low both
+  profiles report the same tables), LOG differs only in the profile header.
+
+NEWTOS TABLE (method/newtos-tables.sh, one cargo xtask tosdump call each, from the main tree)
+  runs/newtos-vdi-v18t3   1 of 2 differ: case 13 (v_opnwk work_in[0]=2 after v_clswk): intout[0,1,3,4,13,39]
+                          EmuTOS 319,199,556,556,16,4096 / NewTOS 639,479,278,278,256,0. Case 12 (v_clswk) equal.
+  Input check: tosdiff reports differences only in intout; contrl/intin/ptsin equal on both sides.
+
+PROBE (method/probe-runs.sh, tosdump/probes/run-wkprobe.sh, WKPROBE_SCRATCH = session scratchpad)
+  probe/e1, e2   EmuTOS falcontc: BIN+LOG byte-identical (BIN 51b6e19f..., LOG 3da6fec2...); run.txt "hatari w9-no-end":
+                 the LOG ends at "W9 before" (v_opnwk with the physical workstation open does not return), Hatari stopped
+                 20 s later.
+  probe/n1, n2   NewTOS raspi4b, armed kernel: BIN byte-identical (1feaa299...), LOG identical apart from the "N " wait
+                 lines and the "T0" hz_200 lines. Every packet arrived alone (deltas in the LOG equal on both sides).
+  probe/compare-e1-n1.txt (wkprobe-compare.py e1 n1 --maps probe/maps): 37 records, 11 differ (P0, F1b, F2b, M1a, M2a,
+                 W1b, W1c, W2b, W2c, C1b, C1c), 28 LOG lines differ (W1/W2/C1 vq_mouse and vex lines, Z geometry, Getrez,
+                 W9). Maps of the differing records in probe/maps/.
+  probe/np       NewTOS raspi4b, the plain release kernel (no injector): see CONTROL below.
+  e1/n1/np BIN kept gzipped (gzip -n) next to WKPROBE.BIN.sha256 (the sha256 of the unpacked file), e2/n2 only as
+  .sha256.
+
+CONTROL RUN (plain product kernel)
+  Twice aborted from outside: "qemu-system-aarch64: terminating on signal 15 from pid 9268" -- pid 9268 was
+  "bash method/accept.sh boots tables probe", the V51 developer's acceptance script in its own worktree (it stops QEMU
+  processes). probe/np-try1, np-try2 (+ .stdout) are those partial runs, not evidence. probe/np ran after that script
+  had ended (run.txt "qemu done"). Every packet wait timed out (6 x "unchanged", the poll cap).
+  probe/compare-n1-np.txt: 37 records, 7 differ -- exactly the records read after a packet (M1a, M1b, M2a, M2b, M3b, C1b,
+  C1c); the other 30, among them every K21 record (W1a-c, W2a-c) and both K24 vsc_form records (F1b, F2b), are byte-identical
+  on the plain and the armed kernel. LOG: only the packet/vq_mouse lines differ. So the injector changes nothing but the
+  arrival of the packets, and the findings 001 and 003 hold on the product kernel as built.
+  The empty WKPROBE.BIN of np-try1/np-try2 were removed.
+
+DEPENDENCIES  deps/<fn>-up.txt, deps/<fn>-down.txt (method/deps.sh; cargo xtask deps on the main tree at 5a8e01b5).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing run. K26 has no API path (Line-A, ADR-030). The cause of the EmuTOS hang in W9 is read from the
+  source (vdi_misc.c timer_init chaining tick_int to itself), not shown in a debugger. No NewTOS argument tracer exists
+  for the VDI (see input check above).

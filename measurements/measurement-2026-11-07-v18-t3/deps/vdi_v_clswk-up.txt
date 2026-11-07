@@ -1,0 +1,30 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdi_v_clswk --up`
+deps vdi_v_clswk --up (kinds asm,direct,layer,table,vector): 8 functions besides vdi_v_clswk
+depth	function	layer	reached over	newtos	class
+0	vdi_v_clswk	vdi	-	tos-api/src/vdi/vwk.rs@close_all_virtual tos-api/src/vdi/workstation.rs@v_clswk	mapped
+1	gsx_wsclose	aes	gsx_wsclose -> vdi_v_clswk [layer trap #2 0x2 jmptb1[0x2] via gsx_0code]	tos-api/src/aes/gsxif.rs@gsx_wsclose	mapped
+1	screen	vdi	screen -> vdi_v_clswk [table jmptb1[0x2]]	tos-api/src/vdi/mod.rs@screen	mapped
+2	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+2	run_accs_and_desktop	aes	run_accs_and_desktop -> gsx_wsclose [direct]	kernel/src/accs.rs@wait_for_accs_mesag kernel/src/lib.rs@kernel_main_rust	mapped
+3	accdesk_start	aes	accdesk_start -> run_accs_and_desktop [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_accdesk	mapped
+3	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+3	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+4	ui_start	aes	ui_start -> accdesk_start [asm fallthrough]	tos-api/src/bdos/process/standin.rs@enter_aes	mapped
+
+table edges inside the set (1):
+jmptb1[0x2]	screen -> vdi_v_clswk	vdi/vdi_main.c:34
+
+layer edges inside the set (1):
+trap #2 0x2 jmptb1[0x2] via gsx_0code	gsx_wsclose -> vdi_v_clswk	aes/gemgsxif.c:193
+
+vector edges inside the set (0):
+
+coverage of the set (9 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          4      4 100.0%      0   0.0%      0   0.0%
+vdi          5      5 100.0%      0   0.0%      0   0.0%
+total        9      9 100.0%      0   0.0%      0   0.0%
+touched layers: vdi (the layers of vdi_v_clswk; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

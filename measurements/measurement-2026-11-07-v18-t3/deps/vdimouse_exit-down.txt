@@ -1,0 +1,31 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdimouse_exit --down`
+deps vdimouse_exit --down (kinds asm,direct,layer,table,vector): 7 functions besides vdimouse_exit
+depth	function	layer	reached over	newtos	class
+0	vdimouse_exit	vdi	-	-	unmapped
+1	Initmous	bios	vdimouse_exit -> Initmous [layer trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll]	tos-api/src/xbios/mod.rs@note_installer	mapped
+1	kbdvbase	bios	vdimouse_exit -> kbdvbase [layer trap #14 0x22 xbios_vecs[0x22] via xbios_l_v]	tos-api/src/xbios/kbdvecs.rs@kbdvbase	mapped
+1	xbios_l_v	include	vdimouse_exit -> xbios_l_v [direct]		unmapped
+1	xbios_v_wll	include	vdimouse_exit -> xbios_v_wll [direct]		unmapped
+2	ikbd_writeb	bios	Initmous -> ikbd_writeb [direct]	-	design
+2	ikbd_writew	bios	Initmous -> ikbd_writew [direct]	-	design
+3	bcostat4	bios	ikbd_writeb -> bcostat4 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (2):
+trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll	vdimouse_exit -> Initmous	vdi/vdi_mouse.c:634
+trap #14 0x22 xbios_vecs[0x22] via xbios_l_v	vdimouse_exit -> kbdvbase	vdi/vdi_mouse.c:638
+
+vector edges inside the set (0):
+
+coverage of the set (8 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         5      3  60.0%      2  40.0%      0   0.0%
+include      2      0   0.0%      0   0.0%      2 100.0%
+vdi          1      0   0.0%      0   0.0%      1 100.0%
+total        8      3  37.5%      2  25.0%      3  37.5%
+touched layers: vdi (the layers of vdimouse_exit; --layers to choose)
+unmapped in the touched layers (1):
+vdi	vdimouse_exit	vdi/vdi_mouse.c
+complete: no (1 unmapped in the touched layers; the ticket lists them)

@@ -1,0 +1,25 @@
+    Blocking waiting for file lock on package cache
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps timer_init --down`
+deps timer_init --down (kinds asm,direct,layer,table,vector): 2 functions besides timer_init
+depth	function	layer	reached over	newtos	class
+0	timer_init	vdi	-	-	design
+1	bios_l_wl	include	timer_init -> bios_l_wl [direct]		unmapped
+1	setexc	bios	timer_init -> setexc [layer trap #13 0x5 bios_vecs[0x5] via bios_l_wl]	tos-api/src/bios/vectors.rs@adopt_page0_write tos-api/src/bios/vectors.rs@note_shared_write tos-api/src/bios/vectors.rs@note_write tos-api/src/bios/vectors.rs@setexc tos-api/src/bios/vectors.rs@store_shared	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (1):
+trap #13 0x5 bios_vecs[0x5] via bios_l_wl	timer_init -> setexc	vdi/vdi_misc.c:132
+
+vector edges inside the set (0):
+
+coverage of the set (3 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         1      1 100.0%      0   0.0%      0   0.0%
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi          1      0   0.0%      1 100.0%      0   0.0%
+total        3      1  33.3%      1  33.3%      1  33.3%
+touched layers: vdi (the layers of timer_init; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

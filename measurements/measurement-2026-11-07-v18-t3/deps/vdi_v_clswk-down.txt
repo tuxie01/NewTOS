@@ -1,0 +1,178 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps vdi_v_clswk --down`
+deps vdi_v_clswk --down (kinds asm,direct,layer,table,vector): 103 functions besides vdi_v_clswk
+depth	function	layer	reached over	newtos	class
+0	vdi_v_clswk	vdi	-	tos-api/src/vdi/vwk.rs@close_all_virtual tos-api/src/vdi/workstation.rs@v_clswk	mapped
+1	esc_exit	vdi	vdi_v_clswk -> esc_exit [direct]	tos-api/src/vdi/escape.rs@esc_exit	mapped
+1	timer_exit	vdi	vdi_v_clswk -> timer_exit [direct]	-	design
+1	trap1	ext	vdi_v_clswk -> trap1 [direct]		unmapped
+1	vdimouse_exit	vdi	vdi_v_clswk -> vdimouse_exit [direct]	-	unmapped
+1	xmfree	bdos	vdi_v_clswk -> xmfree [layer trap #1 0x49 funcs[0x49] via trap1]	tos-api/src/bdos/mem/traps.rs@mfree tos-api/src/gemdos/memory.rs@mfree	mapped
+2	Initmous	bios	vdimouse_exit -> Initmous [layer trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll]	tos-api/src/xbios/mod.rs@note_installer	mapped
+2	bios_l_wl	include	timer_exit -> bios_l_wl [direct]		unmapped
+2	escfn3	vdi	esc_exit -> escfn3 [direct]	tos-api/src/vdi/escape.rs@v_escape	mapped
+2	find_mpb	bdos	xmfree -> find_mpb [direct]	tos-api/src/bdos/mem/traps.rs@find_mpb	mapped
+2	freeit	bdos	xmfree -> freeit [direct]	tos-api/src/bdos/mem/pool.rs@freeit	mapped
+2	kbdvbase	bios	vdimouse_exit -> kbdvbase [layer trap #14 0x22 xbios_vecs[0x22] via xbios_l_v]	tos-api/src/xbios/kbdvecs.rs@kbdvbase	mapped
+2	setexc	bios	timer_exit -> setexc [layer trap #13 0x5 bios_vecs[0x5] via bios_l_wl]	tos-api/src/bios/vectors.rs@adopt_page0_write tos-api/src/bios/vectors.rs@note_shared_write tos-api/src/bios/vectors.rs@note_write tos-api/src/bios/vectors.rs@setexc tos-api/src/bios/vectors.rs@store_shared	mapped
+2	xbios_l_v	include	vdimouse_exit -> xbios_l_v [direct]		unmapped
+2	xbios_v_wll	include	vdimouse_exit -> xbios_v_wll [direct]		unmapped
+3	bios_conws	desk,vdi	escfn3 -> bios_conws [direct]	tos-api/src/vdi/escape.rs@puts	unmapped
+3	ikbd_writeb	bios	Initmous -> ikbd_writeb [direct]	-	design
+3	ikbd_writew	bios	Initmous -> ikbd_writew [direct]	-	design
+3	xmfremd	bdos	freeit -> xmfremd [direct]	tos-api/src/bdos/mem/mdpool.rs@xmfremd_global	mapped
+4	bconout	bios	bios_conws -> bconout [layer trap #13 0x3 bios_vecs[0x3] via bios_l_ww]	tos-api/src/bios/chardev.rs@bconout tos-api/src/bios/chardev.rs@device tos-api/src/xbios/bconmap.rs@entry_device	mapped
+4	bcostat4	bios	ikbd_writeb -> bcostat4 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+4	bios_l_ww	include	bios_conws -> bios_l_ww [direct]		unmapped
+4	unlink_mdblock	bdos	xmfremd -> unlink_mdblock [direct]	tos-api/src/bdos/mem/mdpool.rs@unlink_mdblock	mapped
+4	xmfreblk	bdos	xmfremd -> xmfreblk [direct]	-	unmapped
+5	bconout0	bios	bconout -> bconout0 [vector via bconout_vec[]]	-	design
+5	bconout1	bios	bconout -> bconout1 [vector via bconout_vec[]]	kernel/src/console.rs@bconout tos-api/src/bios/chardev.rs@bconout	mapped
+5	bconout2	bios	bconout -> bconout2 [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout tos-api/src/vdi/escape.rs@conout	mapped
+5	bconout3	bios	bconout -> bconout3 [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout tos-api/src/xbios/system.rs@midiws	mapped
+5	bconout4	bios	bconout -> bconout4 [vector via bconout_vec[]]	tos-api/src/bdos/process/hooks.rs@note_ikbd_ignored tos-api/src/bios/chardev.rs@bconout	mapped
+5	bconout5	bios	bconout -> bconout5 [vector via bconout_vec[]]	tos-api/src/vdi/escape.rs@rawout	mapped
+5	charout_dummy	bios	bconout -> charout_dummy [vector via bconout_vec[]]	tos-api/src/bios/chardev.rs@bconout	mapped
+5	protect_ww	ext	bconout -> protect_ww [direct]		unmapped
+6	ascii_out	bios	bconout5 -> ascii_out [direct]	tos-api/src/vdi/escape.rs@ascii_out	mapped
+6	bconin2	bios	bconout0 -> bconin2 [direct]	tos-api/src/bios/chardev.rs@bconin tos-api/src/bios/chardev.rs@pack_console_key tos-api/src/xbios/iorec.rs@pop_key	mapped
+6	bconstat2	bios	bconout0 -> bconstat2 [direct]	tos-api/src/bios/chardev.rs@bconstat tos-api/src/xbios/iorec.rs@key_pending	mapped
+6	bcostat0	bios	bconout0 -> bcostat0 [direct]	-	design
+6	bcostat1	bios	bconout1 -> bcostat1 [direct]	kernel/src/console.rs@bcostat tos-api/src/bios/chardev.rs@bcostat	mapped
+6	bcostat3	bios	bconout3 -> bcostat3 [direct]	tos-api/src/bios/chardev.rs@bcostat	mapped
+6	cputc	bios	bconout2 -> cputc [direct]	tos-api/src/vdi/escape.rs@cputc	mapped
+6	prnout	bios	bconout0 -> prnout [direct]	-	design
+6	put_iorecbuf	bios	bconout1 -> put_iorecbuf [direct]	-	unmapped
+7	cell_xfer	bios	ascii_out -> cell_xfer [direct]	tos-api/src/vdi/escape.rs@cell_xfer	mapped
+7	char_addr	bios	ascii_out -> char_addr [direct]	-	unmapped
+7	esc_ch1	bios	cputc -> esc_ch1 [vector via con_state]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+7	get_bg_col	bios	cputc -> get_bg_col [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	get_column	bios	cputc -> get_column [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	get_fg_col	bios	cputc -> get_fg_col [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	get_row	bios	cputc -> get_row [vector via con_state]	tos-api/src/vdi/escape.rs@cputc	mapped
+7	giaccess	bios	prnout -> giaccess [direct]	tos-api/src/xbios/system.rs@giaccess	mapped
+7	incr_tail	bios	bcostat1 -> incr_tail [direct]	tos-api/src/xbios/iorec.rs@push_byte	mapped
+7	neg_cell	bios	ascii_out -> neg_cell [direct]	tos-api/src/vdi/escape.rs@neg_cell	mapped
+7	next_cell	bios	ascii_out -> next_cell [direct]	-	unmapped
+7	normal_ascii	bios	cputc -> normal_ascii [vector via con_state]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+7	offgibit	bios	prnout -> offgibit [direct]	tos-api/src/xbios/system.rs@offgibit	mapped
+7	ongibit	bios	prnout -> ongibit [direct]	tos-api/src/xbios/system.rs@ongibit	mapped
+7	scroll_up	bios	ascii_out -> scroll_up [direct]	tos-api/src/vdi/escape.rs@scroll_up	mapped
+7	stop_until_interrupt	ext	bconin2 -> stop_until_interrupt [direct]		unmapped
+8	ascii_cr	bios	normal_ascii -> ascii_cr [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	ascii_lf	bios	normal_ascii -> ascii_lf [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@ascii_lf	mapped
+8	blank_out	bios	scroll_up -> blank_out [direct]	tos-api/src/vdi/escape.rs@blank_out	mapped
+8	cell_xfer16	bios	cell_xfer -> cell_xfer16 [direct]	tos-api/src/vdi/escape.rs@cell_xfer	mapped
+8	clear_and_home	bios	esc_ch1 -> clear_and_home [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@clear_and_home	mapped
+8	cursor_down	bios	esc_ch1 -> cursor_down [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	cursor_home	bios	esc_ch1 -> cursor_home [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	cursor_left	bios	esc_ch1 -> cursor_left [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@cursor_left	mapped
+8	cursor_off	bios	esc_ch1 -> cursor_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@cursor_off	mapped
+8	cursor_on	bios	esc_ch1 -> cursor_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@cursor_on	mapped
+8	cursor_right	bios	esc_ch1 -> cursor_right [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	cursor_up	bios	esc_ch1 -> cursor_up [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	delete_line	bios	esc_ch1 -> delete_line [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@delete_line	mapped
+8	do_backspace	bios	normal_ascii -> do_backspace [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	do_bell	bios	normal_ascii -> do_bell [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@bell tos-api/src/vdi/escape.rs@do_bell	mapped
+8	do_tab	bios	normal_ascii -> do_tab [vector via cntl_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@normal_ascii	mapped
+8	erase_from_bol	bios	esc_ch1 -> erase_from_bol [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_from_bol	mapped
+8	erase_from_home	bios	esc_ch1 -> erase_from_home [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_from_home	mapped
+8	erase_line	bios	esc_ch1 -> erase_line [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	erase_to_eol	bios	esc_ch1 -> erase_to_eol [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_to_eol	mapped
+8	erase_to_eos	bios	esc_ch1 -> erase_to_eos [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@erase_to_eos	mapped
+8	insert_line	bios	esc_ch1 -> insert_line [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@insert_line	mapped
+8	line_wrap_off	bios	esc_ch1 -> line_wrap_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	line_wrap_on	bios	esc_ch1 -> line_wrap_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	memmove	ext	scroll_up -> memmove [direct]		unmapped
+8	move_cursor	bios	get_column -> move_cursor [direct]	tos-api/src/vdi/escape.rs@move_cursor	mapped
+8	nop	bios	esc_ch1 -> nop [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	restore_cursor_pos	bios	esc_ch1 -> restore_cursor_pos [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	reverse_linefeed	bios	esc_ch1 -> reverse_linefeed [vector via am_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@reverse_linefeed	mapped
+8	reverse_video_off	bios	esc_ch1 -> reverse_video_off [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	reverse_video_on	bios	esc_ch1 -> reverse_video_on [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	save_cursor_pos	bios	esc_ch1 -> save_cursor_pos [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	set_bg	bios	esc_ch1 -> set_bg [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+8	set_fg	bios	esc_ch1 -> set_fg [vector via bw_tab@bios/vt52.c[]]	tos-api/src/vdi/escape.rs@esc_ch1	mapped
+9	bell	bios	do_bell -> bell [direct]	tos-api/src/vdi/escape.rs@bell	mapped
+9	blank_out16	bios	blank_out -> blank_out16 [direct]	tos-api/src/vdi/escape.rs@blank_out	mapped
+9	cell_addr	bios	move_cursor -> cell_addr [direct]	-	unmapped
+9	cursor_down_impl	bios	cursor_down -> cursor_down_impl [direct]	-	unmapped
+9	cursor_left_impl	bios	cursor_left -> cursor_left_impl [direct]	tos-api/src/vdi/escape.rs@cursor_left	mapped
+9	cursor_on_cnt	bios	clear_and_home -> cursor_on_cnt [direct]	tos-api/src/vdi/escape.rs@cursor_on_cnt	mapped
+9	do_cnt_esce	bios	cursor_on -> do_cnt_esce [direct]	tos-api/src/vdi/escape.rs@do_cnt_esce	mapped
+9	dosound	bios	do_bell -> dosound [direct]	tos-api/src/xbios/system.rs@dosound	mapped
+9	erase_from_bol_impl	bios	erase_from_bol -> erase_from_bol_impl [direct]	tos-api/src/vdi/escape.rs@erase_from_bol	mapped
+9	erase_to_eol_impl	bios	erase_to_eol -> erase_to_eol_impl [direct]	tos-api/src/vdi/escape.rs@erase_to_eol	mapped
+9	invert_cell	bios	cursor_off -> invert_cell [direct]	-	unmapped
+9	scroll_down	bios	insert_line -> scroll_down [direct]	tos-api/src/vdi/escape.rs@scroll_down	mapped
+10	protect_v	ext	bell -> protect_v [direct]		unmapped
+
+table edges inside the set (0):
+
+layer edges inside the set (5):
+trap #1 0x49 funcs[0x49] via trap1	vdi_v_clswk -> xmfree	vdi/vdi_control.c:581
+trap #13 0x3 bios_vecs[0x3] via bios_l_ww	bios_conws -> bconout	desk/desksupp.c:686
+trap #13 0x5 bios_vecs[0x5] via bios_l_wl	timer_exit -> setexc	vdi/vdi_misc.c:149
+trap #14 0x0 xbios_vecs[0x0] via xbios_v_wll	vdimouse_exit -> Initmous	vdi/vdi_mouse.c:634
+trap #14 0x22 xbios_vecs[0x22] via xbios_l_v	vdimouse_exit -> kbdvbase	vdi/vdi_mouse.c:638
+
+vector edges inside the set (45):
+via am_tab@bios/vt52.c[]	esc_ch1 -> clear_and_home	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_down	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_home	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_left	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_right	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> cursor_up	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> delete_line	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> erase_to_eol	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> erase_to_eos	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> insert_line	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> nop	bios/vt52.c:247
+via am_tab@bios/vt52.c[]	esc_ch1 -> reverse_linefeed	bios/vt52.c:247
+via bconout_vec[]	bconout -> bconout0	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout1	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout2	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout3	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout4	bios/bios.c:1009
+via bconout_vec[]	bconout -> bconout5	bios/bios.c:1009
+via bconout_vec[]	bconout -> charout_dummy	bios/bios.c:1009
+via bell_hook	bell -> do_bell	bios/sound.c:253
+via bw_tab@bios/vt52.c[]	esc_ch1 -> cursor_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> cursor_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_from_bol	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_from_home	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> erase_line	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> line_wrap_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> line_wrap_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> nop	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> restore_cursor_pos	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> reverse_video_off	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> reverse_video_on	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> save_cursor_pos	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> set_bg	bios/vt52.c:250
+via bw_tab@bios/vt52.c[]	esc_ch1 -> set_fg	bios/vt52.c:250
+via cntl_tab@bios/vt52.c[]	normal_ascii -> ascii_cr	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> ascii_lf	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_backspace	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_bell	bios/vt52.c:198
+via cntl_tab@bios/vt52.c[]	normal_ascii -> do_tab	bios/vt52.c:198
+via con_state	cputc -> esc_ch1	bios/vt52.c:159
+via con_state	cputc -> get_bg_col	bios/vt52.c:159
+via con_state	cputc -> get_column	bios/vt52.c:159
+via con_state	cputc -> get_fg_col	bios/vt52.c:159
+via con_state	cputc -> get_row	bios/vt52.c:159
+via con_state	cputc -> normal_ascii	bios/vt52.c:159
+
+coverage of the set (104 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bdos         6      5  83.3%      0   0.0%      1  16.7%
+bios        84     73  86.9%      5   6.0%      6   7.1%
+desk         1      0   0.0%      0   0.0%      1 100.0%
+ext          5      0   0.0%      0   0.0%      5 100.0%
+include      4      0   0.0%      0   0.0%      4 100.0%
+vdi          6      4  66.7%      1  16.7%      1  16.7%
+total      106     82  77.4%      6   5.7%     18  17.0%
+touched layers: vdi (the layers of vdi_v_clswk; --layers to choose)
+unmapped in the touched layers (1):
+vdi	vdimouse_exit	vdi/vdi_mouse.c
+complete: no (1 unmapped in the touched layers; the ticket lists them)

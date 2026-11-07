@@ -1,0 +1,47 @@
+H00 graf_handle 1 handle 2 xres 639 yres 479 colours 256
+T01 start hz_200 3031
+01 CAL    pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched
+  rec 01 CAL (0,0 136x8)
+02 P0     the form left installed by the AES, v_show_c(0) at (60,60)
+  rec 02 P0 (52,52 32x32)
+03 P1     AES arrow via vsc_form at (100,100) on the cleared screen, read right after v_show_c(0)
+  rec 03 P1 (96,96 32x32)
+  v_get_pixel (100,100) ffdf (mask)  (101,101) 0000 (data)  (99,99) ffff (outside)
+04 P2     block form, hotspot 0x17,0x17, mask pen 2, data pen 3, at (200,150) on a pattern
+  rec 04 P2 (176,126 64x64)
+05 P3     block form, mask pen 300, data pen -2 (both out of range), hotspot 0,0 at (300,150)
+  rec 05 P3 (292,142 32x32)
+06 P4     arrow at (632,472): clipped right and bottom
+  rec 06 P4 (600,440 40x40)
+07 P5     cross, hotspot 15,15, at (3,3): clipped left and top
+  rec 07 P5 (0,0 40x40)
+08 P6     save-under: pattern, block form shown at (400,150), hidden again
+  rec 08 P6a (380,130 64x64)
+  rec 09 P6b (380,130 64x64)
+09 P7     hide count 3 (two v_hide_c more), then v_show_c(1) three times at (500,150)
+  rec 10 P7a (492,142 32x32)
+  rec 11 P7b (492,142 32x32)
+  rec 12 P7c (492,142 32x32)
+10 F1     K24: vsc_form while the pointer is shown (arrow -> block) at (110,260) on a pattern
+  rec 13 F1a (90,240 64x64)
+  rec 14 F1b (90,240 64x64)
+  rec 15 F1c (90,240 64x64)
+  rec 16 F1d (90,240 64x64)
+11 F2     K24: only the hotspot changes while shown (arrow 0,0 -> 8,8) at (300,260) on a pattern
+  rec 17 F2b (280,240 64x64)
+  rec 18 F2c (280,240 64x64)
+12 D1     v_bar pen 2 over the shown arrow at (450,260), then v_hide_c, then v_show_c(0)
+  rec 19 D1a (432,244 56x56)
+  rec 20 D1b (432,244 56x56)
+  rec 21 D1c (432,244 56x56)
+T02 before the packets hz_200 3058
+13 M1     K9/K24: arrow shown at (200,350), packet +20,+8 (immediate, settled)
+N   waited 2874 ticks, 2000000 polls
+  packet f8 20 8: vq_mouse 0 200 350 -> 0 200 350 (unchanged)
+  rec 22 M1a (192,344 64x40)
+  rec 23 M1b (192,344 64x40)
+14 M2     K9/K24: arrow shown at (350,350), v_bar pen 2 over it, packet +30,0
+N   waited 2897 ticks, 2000000 polls
+  packet f8 30 0: vq_mouse 0 350 350 -> 0 350 350 (unchanged)
+  rec 24 M2a (336,336 96x56)
+  rec 25 M2b (336,336 96x56)
