@@ -1,0 +1,10 @@
+cfprobe CASE=0 handle 2 xres 639 yres 479
+before
+ ffff ffff ffff ffff ffff
+ ffff ffff ffff 0000 ffff
+ ffff 0000 ffff ffff ffff
+running 1 cases
+runner hatari-oracle, profile falcontc (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+table names the unit token u:0: no; a program path x:<path>: no
+no row: no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+exit 0

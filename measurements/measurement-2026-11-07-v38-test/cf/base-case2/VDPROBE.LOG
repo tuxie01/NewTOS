@@ -1,0 +1,6 @@
+cfprobe CASE=2: contourfill returned
+after
+ f800 f800 f800 f800 f800
+ f800 f800 f800 f800 f800
+ f800 f800 f800 f800 f800
+END

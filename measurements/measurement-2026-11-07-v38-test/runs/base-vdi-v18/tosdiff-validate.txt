@@ -1,0 +1,4 @@
+VDI.BIN: area VDI, 19 records of 1592 bytes, build a0e3, case CRC 6E0EBA51
+VDI.BIN: format 3, pointer 8 bytes, least significant word first
+VDI.BIN: matches vdi-v18.tsv (19 cases)
+VDI.BIN: accepted

@@ -1,0 +1,4 @@
+state desktop-up
+exception/panic lines: 0
+serial lines:       55
+kernel 7045e9be5bd06305730d68cc0c072bda48cc2bac394b6f6872055bf244f69b91

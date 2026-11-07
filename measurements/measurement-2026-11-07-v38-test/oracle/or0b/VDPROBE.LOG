@@ -1,0 +1,6 @@
+cfprobe CASE=0 handle 2 xres 639 yres 479
+before
+ ffff ffff ffff ffff ffff
+ ffff ffff ffff 0000 ffff
+ ffff 0000 ffff ffff ffff
+running 1 cases

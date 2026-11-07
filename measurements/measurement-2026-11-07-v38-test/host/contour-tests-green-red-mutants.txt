@@ -1,0 +1,61 @@
+== green (fix as committed)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... ok
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... ok
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... ok
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+== base code + tests module
+harness guard: the fill has not ended after 24000 span draws
+harness guard: the fill has not ended after 4915200 span draws
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... FAILED
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... FAILED
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... FAILED
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+base restored
+== M0 (4 changed lines)
+harness guard: the fill has not ended after 24000 span draws
+harness guard: the fill has not ended after 4915200 span draws
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... FAILED
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... FAILED
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... FAILED
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+== M1 (2 changed lines)
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.00s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... FAILED
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... FAILED
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... FAILED
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... FAILED
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... FAILED
+== M2 (8 changed lines)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... ok
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... ok
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... ok
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+== M3 (8 changed lines)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... ok
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... ok
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... ok
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+== M5 (2 changed lines)
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... FAILED
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... ok
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... ok
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+== M6 (2 changed lines)
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.11s
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... FAILED
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... FAILED
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... FAILED
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok

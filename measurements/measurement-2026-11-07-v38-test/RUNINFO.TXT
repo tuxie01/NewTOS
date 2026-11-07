@@ -1,0 +1,96 @@
+V38 acceptance test (Tester), 2026-11-07/08. TASK/V38.md, fix commit e6ffdedc (base 4cc7005c). No card, no Pi, no push,
+no product code touched. Main checkout read-only except this run dir.
+
+WHAT RAN
+  Trees      base = git archive of 4cc7005c, fix = git archive of e6ffdedc, each in the session scratchpad (v38t/),
+             references/ symlinked; each got a throwaway `git init` + commit so cargo xtask test's doc_check works
+             (the build id in the record headers is therefore the scratch repo's hash, not the real one).
+             method/build.sh, method/run-tables.sh, method/run-cf.sh, method/boot.sh, method/mutants.sh,
+             method/cfprobe.c + method/build-cfprobe-newtos.sh.
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every manifest below)
+  Manifests  17 card.img.manifest (probe/n-{base,fix}, runs/{base,fix}-vdi-{all,v18,v18t2}, cf/*, boot/rpi4-*);
+             optional_missing, verbatim, in all 17: `optional_missing none`
+  Kernels    rpi4 release kernel8.img base 7045e9be5bd06305730d68cc0c072bda48cc2bac394b6f6872055bf244f69b91,
+             fix 410d4fe70d84418f43135eeb9b2a17553a2bc233e31939434f6fa4b627b162ef;
+             qemu-virt debug ELF base 7da5163c21e66adf4abd43034792f8778a91e0bcbe2e36958b5e91737f0a68da,
+             fix 7029189b3e5febf5e90176931b5e3008227b5953cad188d3b3ba90338c8266f6.
+  Oracle     EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc (640x480 16-bit), Hatari 2.6.1, pinned ROM.
+  Boards     QEMU raspi4b (-append serial=on, APFS clone per boot, removed) and QEMU virt (headless). One QEMU/Hatari of
+             this run at a time, each stopped by its own PID. A QEMU of the parallel V53 test ran at times: wall times
+             in QEMU are indicative only.
+
+1. WHERE THE BRAKE SITS (read, tos-api/src/vdi/contour.rs, Flood::run)
+  Order in the loop: search/seed pass; `if self.qtop == 0 { return Ok(()) }` (:398); budget check
+  `if self.budget == 0 { return Err(Stop::Brake) } self.budget -= 1` (:404-407); then the take (:410). A fill that
+  empties its queue within the budget never reaches the check with budget 0 differently from before. Bound:
+  BRAKE_SPANS_PER_PIXEL (16) x backend.width() x backend.height() (Flood::new), u64, no overflow; the screen not the
+  clip. Stop::Brake is ignored by v_contourfill (`let _ = ...fill_from`), the same as Stop::Overflow: it returns like a
+  finished fill, drawn pixels stay. Numbers re-measured (host/contour-tests-*.txt, cargo test --nocapture): whole
+  1920x1080 1080 spans, serpentine maze 1,035,841, comb 640x480 153,281, V21 lattice 6,480 (all as in the ticket).
+
+2. HOST TESTS
+  cargo test -p tos-api --lib vdi::contour::tests, fix tree: 5 passed (host/contour-tests-green-red-mutants.txt).
+  Base product code (4cc7005c contour.rs + the fix's tests module appended, flood() building the base Flood literal):
+  3 FAILED by the harness guard ("the fill has not ended after 24000 / 24000 / 4915200 span draws"), 2 ok, 0.11 s:
+  the suite aborts, it does not hang.
+  Mutants on the fix (scratch copy, restored and cmp-checked each time):
+    M0 budget block removed                   3 red (same three)
+    M1 bound 0                                5 red
+    M5 budget from the clip, not the screen   1 red (brake_counts_the_screen_not_the_clip)
+    M6 bound 1                                3 red
+    M2 check between pop and draw_span        5 green  (behaviourally equal: the popped span is lost either way; not a real mutant)
+    M3 check BEFORE the empty-queue exit      5 green  <- GAP: no test pins "a fill that ends exactly at the budget is
+                                                         unchanged"; the ticket's wording rests on reading, not on a test.
+  cargo xtask test: main checkout at e6ffdedc 2302 passed / 0 failed / 6 ignored (host/xtask-test-main-e6ffdedc.log;
+  the developer's 2302/0/6). Scratch trees (no references/ inputs for 2 xtask rsc tests): base 2295/2/5, fix 2300/2/5,
+  the same 2 failing tests in both (rsc_cicon_tests::teradesk_cicons_rsc_converts_and_fits_rsc_cap,
+  rsc_recolour_tests::hypview_rsc_8plane_icons_take_the_nearest_tos_colour). Delta fix - base: +5 passed, 0 new failures.
+
+3. THE 5x3 CASE (method/cfprobe.c: clip (10,20)-(14,22), black dots (13,21) and (11,22), seed (10,22), v_contourfill
+   boundary colour 1, solid red; CASE=0 fill, 1 no fill, 2 control without the dots)
+  Host, base code: harness guard abort after 24000 draws (above).  Host, fix: returns, 13 red pixels, 2 black dots.
+  ORACLE (Hatari, EmuTOS 1a7484ab, falcontc): oracle/or0b/ (CASE 0, final binary VDPROBE.PRG sha256 8f46f503...):
+  VDPROBE.LOG still ends in "running 1 cases", no "after" block, the fill did not return; Hatari ran its whole
+  --run-vbls 30000 (600 s emulated) and stopped itself: "SPEED: 154.8 VBL/s (30000/193.8s)", script wall 263 s.
+  oracle/or0-first/ is an earlier run of the same CASE 0 path (slightly older cfprobe.c without CASE 2): same result
+  (30000/190.1s). Control oracle/or2/ (CASE 2, same clip and seed, no dots): returns, all 15 pixels f800, 8.7 s total.
+  => EmuTOS does NOT return on the 5x3 input; it returns on the same fill without the dots. (The oracle cannot show
+  a true infinite loop; "no return in 30000 VBLs" with a control that returns in seconds is the evidence.)
+  NewTOS in QEMU raspi4b, release kernels, cf/:
+    base CASE 0   no return in the 90 s limit, serial ends at "[launch] EL0: slot 0 entry", LOG last line "running 1 cases"
+    base CASE 2   returns, 0.22 s
+    fix  CASE 1   0.11 s (setup baseline: start marker -> exit marker)
+    fix  CASE 2   0.21 s, all red
+    fix  CASE 0   returns, 3.77 s, 3.54 s, 2.87 s (3 runs); image after: 13 x f800, dots 0000 intact
+  Braked fill at 640x480 (4,915,200 spans) ~ 2.8-3.7 s in QEMU TCG (about 1.3-1.7 M spans/s); real Pi: not measured.
+
+4. BYTE EQUALITY BASE vs FIX
+  vdprobe 954 cases: probe/compare-n-base-n-fix.txt "cases 954, differing 0"; VDPROBE.BIN sha256 c7b004e6ade7...
+  identical for base and fix (same as the developer's), VDPROBE.LOG identical. vs oracle (V37 run e1): 333 differ on
+  base and on fix alike (other tickets); K8A-K8J and K14A-K14C EQUAL on both.
+  Tables vs the pinned oracle refs (tosdump/reference/EMUTOS-1a7484ab-VDI-*-falcontc.BIN): vdi-all 0 of 182, vdi-v18
+  0 of 19, vdi-v18-t2 0 of 32, for base and fix. VDI.BIN base vs fix: same size, 4 differing bytes, all at offsets
+  13-16 = the build id of the record header (scratch repo hashes a0e3 vs f711); case CRCs identical.
+  Callers outside the VDI dispatcher: none (grep over kernel/src, tos-api/src, programs/, sdk/apps: a comment in
+  kernel/src/vdi_backend.rs:580, pixelread used by inquiry.rs, HighWire's unused cancontourfill field).
+
+5. BUILDS AND BOOTS (both boards, base and fix, fresh after cargo clean -p tos-api -p kernel; builds/)
+  rustc    tos-api 64 / kernel 93, rpi4 and qemu-virt, base = fix.   clippy -p kernel: tos-api 73 / kernel 121, both boards,
+  base = fix. No warning mentions contour.rs. Delta 0.
+  Boot (boot/): rpi4 base and fix reach "[desk] desktop up (1 drives)", qemu-virt base and fix "[desk] desktop up (0 drives)";
+  0 exception/panic/abort lines in all four serial logs. (qemu-virt: no SD, no probe run there.)
+
+6. DOCS
+  COMPATIBILITY entry (docs/COMPATIBILITY.md "v_contourfill stops after 16 spans per screen pixel"): matches the code
+  (counts takes, screen not clip, returns as finished, no error). Cites checked by reading and cargo xtask doc-check
+  (0 failures): contour.rs:118@BRAKE_SPANS_PER_PIXEL, :404@budget, vdi_fill.c:1034-1036 (qtop == qbottom exit),
+  :929-932 (queue overflow), :1076-1090 (no_abort), exception_vectors.s:23@EXC_BODY. DEVIATIONS row present, says the same.
+  Note: the entry says the case "is not measured on the oracle"; this run measured it (see 3). The ticket/DEVIATIONS
+  evidence class "gelesen" can become "gemessen" (oracle does not return).
+
+NOT RUN / OPEN
+  Real Pi4: braked fill at 1920x1080 (33,177,600 spans); HW checklist. QEMU extrapolation 33.2 M / ~1.5 M/s ~ 20-25 s, not evidence.
+  No AES/desktop scene exercised the brake (nothing calls v_contourfill outside the VDI trap). No screendump taken (no rendering change).
+  Interrupts-masked claim: read only (ticket's ARM ARM/exception-vector cites), not measured; the base QEMU run shows the stall, not the mask.
+  qemu-virt: boots only; no fill probe there.
+  DUMPVDI.NAP not kept (sha256 base 16429a1573c3eeaf..., fix d3fad5e1fb9e324c... first 16 hex).

@@ -1,0 +1,6 @@
+cfprobe CASE=1: contourfill returned
+after
+ ffff ffff ffff ffff ffff
+ ffff ffff ffff 0000 ffff
+ ffff 0000 ffff ffff ffff
+END
