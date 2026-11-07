@@ -1,6 +1,6 @@
 # DESK70 — Textprogramm vom Desktop gestartet: Ausgabe verschwindet sofort (GitHub #12)
 
-Status: **ERLEDIGT — Tester, Pi und Antwort auf #12 offen** · Prioritaet: **P3** · Typ: Frage, erst EmuTOS-Verhalten pruefen — wosch163 (#12, 2026-10-22)
+Status: **ERLEDIGT** 2026-11-07 (Tester PASS, Pi ok, #12 beantwortet und geschlossen) · Prioritaet: **P3** · Typ: Frage, erst EmuTOS-Verhalten pruefen — wosch163 (#12, 2026-10-22)
 
 ## Befund
 
@@ -51,3 +51,7 @@ Umgesetzt (Developer, Quittung ergaenzt):
 Offen: Tester-Abnahme; echte Pi (Testszenario); die Antwort auf #12 (Anwender).
 
 [Gemeinsame Regeln](README.md) gelten.
+
+## Pi-Abnahme und Abschluss (2026-11-07)
+
+Pi des Anwenders mit dem 0.7.1-ZIP bestanden: `measurements/measurement-2026-11-07-rel071-pi/RUNINFO.TXT`. Veroeffentlicht in NewTOS 0.7.1 (Tag `v0.7.1`, `6baafc92`).
