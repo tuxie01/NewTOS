@@ -1,0 +1,28 @@
+00-global.png differing regions before/after: 11
+   x334..349 y133..275   732 px
+   x334..334 y134..146    13 px
+   x334..334 y150..162    13 px
+   x334..334 y198..210    13 px
+   x334..334 y214..226    13 px
+   x334..334 y230..242    13 px
+   x334..334 y246..258    13 px
+   x 68.. 70 y309..339    82 px
+   x 76.. 77 y309..339    56 px
+   x 62.. 62 y310..322    13 px
+   x 62.. 62 y326..338    13 px
+01-alert.png differing regions before/after: 1
+   x198..229 y230..260   492 px
+02-neu.png differing regions before/after: 0
+03-info.png differing regions before/after: 3
+   x184..199 y282..295   168 px
+   x292..307 y282..295   160 px
+   x384..399 y282..295   160 px
+check off: Parameter / Auto-save   at 334,133 oracle 334,133 size 16x16: after differs    0 px, before differs   82 px
+check on: GEM-Klemmbrett           at 334,165 oracle 334,165 size 16x16: after differs    0 px, before differs  106 px
+check on: Syntax                   at 334,261 oracle 334,261 size 16x16: after differs    0 px, before differs  106 px
+check off: Ext. Druckdialog        at 334,213 oracle 334,213 size 16x16: after differs    0 px, before differs   82 px
+radio on: Atari                    at 184,281 oracle 184,281 size 16x16: after differs    0 px, before differs  168 px
+radio off: Unix                    at 292,281 oracle 292,281 size 16x16: after differs    0 px, before differs  160 px
+radio off: Apple                   at 384,281 oracle 384,281 size 16x16: after differs    0 px, before differs  160 px
+alert icon found on the oracle at (202, 229) with 0 px different
+alert "!"                          at 198,229 oracle 202,229 size 32x32: after differs    0 px, before differs  492 px

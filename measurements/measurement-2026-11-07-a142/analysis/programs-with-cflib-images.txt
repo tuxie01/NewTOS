@@ -1,0 +1,21 @@
+# TASK/A142: built program -> does it hold cflib's image tables (llvm-nm: inline_IMAGE0)?
+sdk/apps/qed/build/QED.NAP  inline_IMAGE0=1
+sdk/apps/hypview/build/HYP_VIEW.NAP  inline_IMAGE0=0
+sdk/apps/teradesk/build/dist/DESKTOP.NAP  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/ZVIEW.NAP  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/BMP.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/DEGAS.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/EUREKA.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/GIF.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/GODPAINT.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/IMG.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/JPG.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/NEO.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/PNG.NLD  inline_IMAGE0=0
+sdk/zview/build/dist/ZVIEW/CODECS/TGA.NLD  inline_IMAGE0=0
+sdk/apps/doom/build/DOOM.NAP  inline_IMAGE0=0
+sdk/apps/apitest/APITEST.NCP  inline_IMAGE0=0
+sdk/apps/gemtest/TESTGEM.NAP  inline_IMAGE0=0
+sdk/apps/chaintest/CHAINTST.NAP  inline_IMAGE0=0
+sdk/apps/present/build/PRESENT.NAP  inline_IMAGE0=0
+sdk/cflib/build/cftest.NCP  inline_IMAGE0=1

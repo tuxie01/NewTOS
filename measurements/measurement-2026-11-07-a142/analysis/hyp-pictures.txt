@@ -1,0 +1,3 @@
+sd-card-backup-2026-11-06/BOOT/Apps/ZVIEW/ZVIEW.HYP: entries 149, pictures 40, first node [(0, '')], first picture indices [108, 109, 110, 111, 112]
+sd-card-backup-2026-11-06/BOOT/Apps/QED/QED.HYP: entries 91, pictures 1, first node [(0, '')], first picture indices [89]
+sd-card-backup-2026-11-06/BOOT/Apps/TERADESK/TERADESK.HYP: entries 87, pictures 1, first node [(0, '')], first picture indices [85]

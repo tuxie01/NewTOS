@@ -1,0 +1,40 @@
+apps/highwire/src/img_ico.c	1	magic_number
+apps/qed/src/set.c	1	bits
+apps/qed/src/sort.c	1	sort_tab
+apps/teradesk/dir.c	1	dsk
+apps/teradesk/filetype.c	1	ois
+apps/teradesk/library/xdialog/xdemodes.c	1	xd_emode_specs
+apps/teradesk/library/xdialog/xdevent.c	2	num numk
+apps/teradesk/showinfo.c	1	md
+apps/teradesk/video.c	1	npc
+cflib/cflib-21/inline.rsh	44	inline_IMAGE0 inline_IMAGE1 inline_IMAGE2 inline_IMAGE3 inline_RS0_MMASK inline_RS0_MDATA
+cflib/overlay/inline.rsh	44	inline_IMAGE0 inline_IMAGE1 inline_IMAGE2 inline_IMAGE3 inline_RS0_MMASK inline_RS0_MDATA
+compiler-rt/compiler-rt-21.1.8.src/test/asan/TestCases/Posix/halt_on_error-signals.c	1	bad
+compiler-rt/compiler-rt-21.1.8.src/test/builtins/Unit/atomic_test.c	1	data
+compiler-rt/compiler-rt-21.1.8.src/test/builtins/Unit/enable_execute_stack_test.c	2	func1 func2
+compiler-rt/compiler-rt-21.1.8.src/test/sanitizer_common/TestCases/Linux/iconv_test.c	1	in
+examples/a107parent.c	1	tail
+examples/kbdvec.c	1	want
+examples/libtest/libtest-data.h	14	d_ZPY d_P1 d_P2 d_P3 d_P4 d_P5
+giflib/giflib-6.1.3/gifbuild.c	1	params
+libc/mintlib/crypt/crypt_util.c	1	bytemask
+libc/mintlib/crypt/des_impl.c	1	shifts2
+libc/mintlib/crypt/md5.c	1	fillbuf
+libc/mintlib/gmp/mp_clz_tab.c	1	__clz_tab
+libc/mintlib/string/ffsl.c	1	lookup
+libc/mintlib/string/ffss.c	1	lookup
+libc/mintlib/sunrpc/des_soft.c	1	partab
+libc/mintlib/sunrpc/xdr.c	1	xdr_zero
+libexif/libexif-0.6.26/contrib/examples/write-exif.c	2	image_jpg exif_header
+libpng/libpng-1.6.59/contrib/arm-neon/linux.c	2	ch_feature ch_neon
+libpng/libpng-1.6.59/contrib/libtests/fakepng.c	2	signature IHDR
+libpng/libpng-1.6.59/contrib/libtests/makepng.c	2	what what
+libpng/libpng-1.6.59/png.c	1	number_buf
+overlays/hypview/tests/ref-host.c	2	line_0123 line_0201
+overlays/qed/set.c	1	bits
+overlays/teradesk/video.c	1	npc
+zlib/zlib-1.3.2/contrib/blast/blast.c	3	litlen lenlen distlen
+zlib/zlib-1.3.2/examples/gzlog.c	3	log_gzhead log_gzext log_gzbody
+zlib/zlib-1.3.2/examples/zran.c	1	dyn
+zlib/zlib-1.3.2/test/infcover.c	1	dat
+zview/tests/custom-font-host.c	3	z_rows a_rows one

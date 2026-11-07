@@ -116,6 +116,8 @@ Tick each line; every line points at the section that explains it.
 - [ ] Binary file formats read with `Fread` into structs decoded byte by
       byte (big-endian, 4-byte `long`, 2-byte alignment), file magics
       included (`Fread(h, 4, &long_magic)`) → [05 B19](05-abi-pitfalls.md#b19-m68k-binary-file-formats-read-straight-into-structs)
+- [ ] Bitmaps reach VDI and AES as native words: no byte tables cast to
+      `short *`, file bitmaps converted once → [05 B21](05-abi-pitfalls.md#b21-images-held-as-bytes-or-read-from-a-file-and-handed-to-the-vdi)
 
 ## On the image and in the machine
 

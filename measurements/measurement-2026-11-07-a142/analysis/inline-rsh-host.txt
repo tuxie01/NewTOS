@@ -1,0 +1,93 @@
+--- overlay at 2f6ea7eb
+inline.rsh under test: /Volumes/Daten/Development/PiRusTOS/sdk/cflib/overlay/inline.rsh
+137 checks, 0 failed
+--- upstream's inline.rsh (guard neutralized, INLINE_RSH_SRC)
+inline.rsh under test: <scratch>/inline.rsh.upstream
+FAIL  table 0 (bitblk): the native word is upstream's big-endian word
+FAIL  table 1 (bitblk): the native word is upstream's big-endian word
+FAIL  table 2 (bitblk): the native word is upstream's big-endian word
+FAIL  table 3 (bitblk): the native word is upstream's big-endian word
+FAIL  table 4 (mono mask): the native word is upstream's big-endian word
+FAIL  table 5 (mono data): the native word is upstream's big-endian word
+FAIL  table 6 (col_data): the native word is upstream's big-endian word
+FAIL  table 7 (col_mask): the native word is upstream's big-endian word
+FAIL  table 8 (sel_data): the native word is upstream's big-endian word
+FAIL  table 9 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 10 (col_data): the native word is upstream's big-endian word
+FAIL  table 11 (col_mask): the native word is upstream's big-endian word
+FAIL  table 12 (sel_data): the native word is upstream's big-endian word
+FAIL  table 13 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 14 (mono mask): the native word is upstream's big-endian word
+FAIL  table 15 (mono data): the native word is upstream's big-endian word
+FAIL  table 16 (col_data): the native word is upstream's big-endian word
+FAIL  table 17 (col_mask): the native word is upstream's big-endian word
+FAIL  table 18 (sel_data): the native word is upstream's big-endian word
+FAIL  table 19 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 20 (col_data): the native word is upstream's big-endian word
+FAIL  table 21 (col_mask): the native word is upstream's big-endian word
+FAIL  table 22 (sel_data): the native word is upstream's big-endian word
+FAIL  table 23 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 24 (mono mask): the native word is upstream's big-endian word
+FAIL  table 25 (mono data): the native word is upstream's big-endian word
+FAIL  table 26 (col_data): the native word is upstream's big-endian word
+FAIL  table 27 (col_mask): the native word is upstream's big-endian word
+FAIL  table 28 (sel_data): the native word is upstream's big-endian word
+FAIL  table 29 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 30 (col_data): the native word is upstream's big-endian word
+FAIL  table 31 (col_mask): the native word is upstream's big-endian word
+FAIL  table 32 (sel_data): the native word is upstream's big-endian word
+FAIL  table 33 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 35 (mono data): the native word is upstream's big-endian word
+FAIL  table 36 (col_data): the native word is upstream's big-endian word
+FAIL  table 38 (sel_data): the native word is upstream's big-endian word
+FAIL  table 40 (col_data): the native word is upstream's big-endian word
+FAIL  table 42 (sel_data): the native word is upstream's big-endian word
+FAIL  table 1 (bitblk): "!" icon row 1, left word
+FAIL  table 1 (bitblk): "!" icon row 1, right word
+FAIL  table 4 (mono mask): radio mask row 1
+137 checks, 42 failed
+--- overlay before the fix (INLINE_RSH_SRC)
+inline.rsh under test: <scratch>/inline.rsh.before
+FAIL  table 0 (bitblk): the native word is upstream's big-endian word
+FAIL  table 1 (bitblk): the native word is upstream's big-endian word
+FAIL  table 2 (bitblk): the native word is upstream's big-endian word
+FAIL  table 3 (bitblk): the native word is upstream's big-endian word
+FAIL  table 4 (mono mask): the native word is upstream's big-endian word
+FAIL  table 5 (mono data): the native word is upstream's big-endian word
+FAIL  table 6 (col_data): the native word is upstream's big-endian word
+FAIL  table 7 (col_mask): the native word is upstream's big-endian word
+FAIL  table 8 (sel_data): the native word is upstream's big-endian word
+FAIL  table 9 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 10 (col_data): the native word is upstream's big-endian word
+FAIL  table 11 (col_mask): the native word is upstream's big-endian word
+FAIL  table 12 (sel_data): the native word is upstream's big-endian word
+FAIL  table 13 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 14 (mono mask): the native word is upstream's big-endian word
+FAIL  table 15 (mono data): the native word is upstream's big-endian word
+FAIL  table 16 (col_data): the native word is upstream's big-endian word
+FAIL  table 17 (col_mask): the native word is upstream's big-endian word
+FAIL  table 18 (sel_data): the native word is upstream's big-endian word
+FAIL  table 19 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 20 (col_data): the native word is upstream's big-endian word
+FAIL  table 21 (col_mask): the native word is upstream's big-endian word
+FAIL  table 22 (sel_data): the native word is upstream's big-endian word
+FAIL  table 23 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 24 (mono mask): the native word is upstream's big-endian word
+FAIL  table 25 (mono data): the native word is upstream's big-endian word
+FAIL  table 26 (col_data): the native word is upstream's big-endian word
+FAIL  table 27 (col_mask): the native word is upstream's big-endian word
+FAIL  table 28 (sel_data): the native word is upstream's big-endian word
+FAIL  table 29 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 30 (col_data): the native word is upstream's big-endian word
+FAIL  table 31 (col_mask): the native word is upstream's big-endian word
+FAIL  table 32 (sel_data): the native word is upstream's big-endian word
+FAIL  table 33 (sel_mask): the native word is upstream's big-endian word
+FAIL  table 35 (mono data): the native word is upstream's big-endian word
+FAIL  table 36 (col_data): the native word is upstream's big-endian word
+FAIL  table 38 (sel_data): the native word is upstream's big-endian word
+FAIL  table 40 (col_data): the native word is upstream's big-endian word
+FAIL  table 42 (sel_data): the native word is upstream's big-endian word
+FAIL  table 1 (bitblk): "!" icon row 1, left word
+FAIL  table 1 (bitblk): "!" icon row 1, right word
+FAIL  table 4 (mono mask): radio mask row 1
+137 checks, 42 failed

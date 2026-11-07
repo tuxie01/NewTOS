@@ -746,3 +746,19 @@ pointer after freeing the window, which only shows when it runs as an accessory 
 Check with `memprot=off` on the kernel command line: if the crash goes away, look for a pointer that outlives its
 `Mfree`, and fix it with a patch in `sdk/overlays/<prog>/`.
 
+### B21. Images held as bytes, or read from a file, and handed to the VDI
+
+VDI and AES read an MFDB or a `BITBLK` as native 16-bit words with bit 15 the leftmost pixel, standard form
+(`fd_stand = 1`) as well. Word-typed bitmaps are right as written. Two things are not, and both show the same
+picture: the two 8-pixel halves of every 16-pixel word traded places, so an icon looks cut through in columns.
+
+**Bytes in m68k order, cast to a word pointer.** Resource editors can emit `static unsigned char data[] = { 0x3F, 0xFF, ... }`
+and cast it to `short *`; cflib's `inline.rsh` does (ORCS 2.16; TASK/A142). Hold the table as words with the same numbers:
+`static unsigned short data[] = { 0x3FFF, ... }`. That is right in either byte order and word-aligned. Byte tables may also lie
+on an odd address on AArch64. WinDom's `.rsh` files are written as `WORD` tables and need nothing.
+
+**Words from a file.** A bitmap from a file is big-endian words ([B19](#b19-m68k-binary-file-formats-read-straight-into-structs)).
+Convert it once, before the first VDI call that reads it, also before `vr_trnfm`:
+`sdk/overlays/hypview/hyp/prepare.c` (`be_planes_to_native`), and take care that a path that decodes the bytes itself stays on
+the bytes (`mono_bitmap` there). `.rsc` files need nothing: `tools/mkrsc.py` swaps their rasters.
+

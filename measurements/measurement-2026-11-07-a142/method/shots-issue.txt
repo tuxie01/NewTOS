@@ -1,0 +1,4 @@
+700 global
+1700 alert
+2700 neu
+3400 info

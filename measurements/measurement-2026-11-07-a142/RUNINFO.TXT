@@ -1,0 +1,100 @@
+measurement-2026-11-07-a142 -- TASK/A142, GitHub #21 (ragnar76, NewTOS 0.7, Pi 4): QED draws check boxes, radio buttons and icons wrong, always.
+Is it our QED, what is the cause, what else has the same pattern. Reproduced, fixed in the SDK; one more program found and fixed.
+=====================================================================================================================
+Developer, 2026-11-07. Main tree at 9881de95, fixes 2f6ea7eb (cflib) and 56fd81a1 (HypView). Kernel, tos-api and programs unchanged. QEMU and Hatari only; no Pi, no card.
+
+RESULT
+  REPRODUCED with QED from our build, the picture of the report. Not the guess in the issue (an unconverted RSC): qed.rsc is not involved, the images are cflib's own.
+  CAUSE cflib's inline.rsh holds its 44 image tables as bytes in m68k order. VDI and AES read them as native 16-bit words, bit 15 leftmost: the two 8-pixel halves of every word trade places.
+  FIX sdk/cflib/overlay/inline.rsh: the tables are words with the same numbers. Upstream's tarball unchanged. No double swap: nothing in cflib, QED or the kernel converts them.
+  AFTER glyphs 0 pixels different from the real m68k QED on the oracle, by class (analysis/glyphs-compare.txt, analysis/glyphs-before-after-oracle.png).
+  ALSO HypView's .HYP mono pictures had the same picture, file words instead of a table (the QED.HYP logo). Fixed in sdk/overlays/hypview/hyp/prepare.c. After: 0 pixels different.
+
+INPUTS
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang of every card manifest)
+  manifests  runs/*/card.img.manifest; optional_missing, verbatim, in all:
+               optional_missing none
+  kernels    git archive 9881de95 + tools/inject-arm.py up:QED=<script> (method/rebuild.sh), rpi4 --release:
+               bbc00b604b03f4efe610310c1687048edbf8d7d51d0144c4a61d6b290779780d  method/mouse-issue.sh  runs/before, runs/after, runs/hypview-*
+               4a2de7a5ea28525cb1c03073818ca889a9417d0e6c8f87ce5ae2b8d88bc29a49  method/mouse-toggle.sh runs/toggle
+               dbbc9be1488a9b14390380d3bc8ce315f09ba91be714ee9d74d034f067674d58  mouse-issue + method/probe-patch.py (scratch only): runs/probe-*
+  programs   before: QED.NAP 206cc3ea82163251a337d2e65a783bb715dd11afd6dad58b17917ca5c7af69ca  HYP_VIEW.NAP e6cc2d84da9b1581abf62345162d0487a894ebceb80d6b53d5c2eec74cd3725f
+             after:  QED.NAP ed05b558094f364e8876541982a595d90dbcadc6b007c4409948a1a1d0e58a1e  HYP_VIEW.NAP e65d873cec7d1fc86d125b7bbec09e83a9e1476519d94879915dcab0da1207ef
+             both:   qed.rsc 30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79  hyp_view.rsc 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa
+             sdk/apps/build-qed.sh rebuilds cflib.a by itself when the overlay changed ("cflib.a out of date [cflib/overlay/inline.rsh]"); rebuilt twice, QED.NAP byte-identical.
+  oracle     tools/hatari-qed.sh's QED, local ~/.nt-hatari/hd/QED: QED.APP 7f4f5792b2a039d0713093d8007071ccc0ef74d962fec6c4ed8e8803e8ba1c6e, QED.RSC 1c4a16fd78f41721847fbf4a71d9edfd52b90ea0e294e6f2ca78cd052920b406
+             (not our build, English resource, m68k cflib); pinned ROM 323c87bb..., Hatari 2.6.1, tools/oracle/hatari.cfg; TT-Medium, 4 planes.
+             HypView: the a141 run's method, measurements/measurement-2026-11-07-a141/method/{newtos-hypview.sh,hatari-hypview.sh}, oracle falcontc,
+             m68k Applications/z-tools/zview/_dist/doc/hypview/hyp_view.app (a141's RUNINFO has its hashes).
+  .HYP       local sd-card-backup-2026-11-06/BOOT/Apps/: QED.HYP dab1d3cbcb34379ff600bde885c68dfd53fc61e3db6005eddb5eb56c517e0d82, TERADESK.HYP 5fbd9faef249466af04d08ec5c763d1a34560d7a949adb848f938c33c855ab62,
+             ZVIEW.HYP 90a11ec9d36f2fe2b88a2477a65bd61f13210a768fee0110dd402cc35385f14a
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone (cp -c) of each card, deleted after (method/run.sh)
+  input      method/gen-mouse.py (a140's), IKBD packets from the bottom-left corner, arm up:QED. Clicks: Optionen > Globales, Abbruch; Optionen > Schrift, Return; Datei > Neuer Text; Datei > Info.
+
+RUNS (runs/<name>/)
+  before, after                the same input, 4 screens each (Globale Einstellungen, alert, Neuer Text, Textinfo)
+  toggle                       after, with a check box and a radio button clicked, so they go through objc_change. Looked at, not compared: Hatari's --cmd-fifo moves no mouse.
+  probe-before, probe-after    with scratch-only probes at vrt_cpyfm, vro_cpyfm, vr_trnfm and objc_draw's G_IMAGE, serial lines in analysis/probe-*.txt
+  oracle-qed-tt-global, -alert, -info   the m68k QED, one dialog per session, keyboard only (method/hatari-qed.sh)
+  oracle-qed-falcontc-global-panic      see NOT DRIVEN
+  hypview-{QED,TERADESK,ZVIEW}-{before,after}, oracle-hypview-{QED,TERADESK,ZVIEW}
+  serial-no-inj.txt            BOOT-SERIAL without the injector's own lines; panic lines 0 in every NewTOS run (run.txt)
+
+DEFECT, SHOWN (looked at each screen)
+  runs/before/shots/00-global.png  empty check box: two strips with a gap. Set: two strips with a triangle each. As a141's photos/issue21-check.png (measurements/measurement-2026-11-07-a141).
+  runs/before/shots/01-alert.png   blue block with a bar through the middle, as a141's photos/issue21-alert.png.
+  runs/before/shots/03-info.png    radio buttons: two half moons back to back, as a141's photos/issue21-radio.png. Same three dialogs, same picture, at the screen size of QEMU.
+
+CAUSE, WITH THE CALL PATH (analysis/probe-before.txt; QED.NAP loaded at 0x1a07000, [launch] EL0 entry 0x1a08000 minus ELF entry 0x1000; symbols analysis/qed-nap-before-inline-symbols.txt)
+  The ticket's earlier reading was hand decoding and half right: both ways exist, the alert icon does not reach vrt_cpyfm.
+  Check box, radio button, a user-defined object:
+    fix_dial -> make_userdef -> draw_ciconblk -> draw_bitblk (sdk/cflib/cflib-21/userdef.c) -> vrt_cpyfm, source MFDB fd_addr:
+      mask 0x1a71798 = inline_RS0_1CMASK, 0x1a717d8 = inline_RS0_1SMASK (the table itself), words 0000 c003 f00f f81f, real row 03C0
+      data 0x1a95f20 etc. = heap, fix_cicon's memcpy of inline_RS0_1CDATA etc. (cicon.c), planes=1 (use_3D false here: fix_cicon(..., 1, ...)); same bytes
+  Alert icon, a G_IMAGE:
+    do_walert -> make_alert (alerts.c) -> simple_mdial -> objc_draw in the kernel, object.rs blit_image, bi_pdata 0x1a712a8 = inline_IMAGE1, words ff3f fcff, real row 3FFF FFFC.
+  After the fix (analysis/probe-after.txt) the same addresses, words 0000 03c0 0ff0 1ff8 and 3fff fffc.
+  So it is not vrt_cpyfm and not the AES: both read native words, like every word-typed bitmap (TeraDesk's rb*_8x8, WinDom's .rsh) and every .rsc through tools/mkrsc.py.
+
+AFTER (analysis/glyphs-compare.txt; method/compare.py)
+  Pixels classed black/white/blue/red/other (other colours: oracle on TT palette), same coordinates, 4 check boxes, 3 radio buttons; alert icon found by search, 0 at (202,229):
+    after differs 0 px in all 8; before differs 82, 106, 106, 82, 168, 160, 160, 492.
+  Before vs after, whole screen: differing regions lie only on the glyphs of the two dialogs and the alert's icon, 0 regions on the Neuer-Text screen.
+  analysis/glyphs-before-after-oracle.png: left before, middle after, right the oracle.
+
+INVENTORY: WHO HAS THE PATTERN (method/scan-tables.py, analysis/scan-tables.txt, analysis/programs-with-cflib-images.txt; every table read by hand)
+  Pattern 1, bytes in m68k order handed over as words
+    FIXED  sdk/cflib/overlay/inline.rsh  44 tables: 4 BITBLK, 40 of 4 CICONBLK (radio + check, 16 and 8 rows, 1 and 4 planes, data, mask, selected)
+    linked by, on the release card (tools/release/package-release.sh): QED.NAP only (llvm-nm inline_IMAGE0).
+    not on the card: cftest.NCP (cflib's own test), HighWire (sdk/apps/highwire/, source only, no build script); both inherit the fix by linking cflib.a.
+    any SDK program with -lcflib (sdk/mk/newtos.mk) inherits it the same way.
+  No: gemlib: no raster tables. WinDom wsystem.rsh, mouse.rsh: `WORD` tables, right as written. zView zview.rsh: no images. TeraDesk xddraw.c rb*: `short` tables.
+      QED's own qed.rsc, HypView, TeraDesk, zView resources: tools/mkrsc.py (swap16_raster). ldg tools' .rsh and cflib's intrface/exthelp.rsh: not linked into a program of ours.
+      Other byte tables in the SDK sources (scan-tables.txt): no raster data (key tables, magic numbers, test data).
+  No double swap: upstream cflib, QED and the kernel do not convert these tables; no swap in cflib's sources nor in tos-api/src/aes/resource.rs (grep), and rsrc_obfix works on OBJECTs.
+  Pattern 2, big-endian file words handed over as words
+    FIXED  sdk/overlays/hypview/hyp/prepare.c  LoadPicture: planes copied from the .HYP to vr_trnfm as they lay in the file. Hits mono pictures on our 16-plane screen (QED.HYP logo);
+           4-plane pictures take TrueColors -> mono_bitmap, which decodes the bytes and was right already: a second swap would have broken it, the host test pins that.
+    No: zView's codecs and custom_font.c convert their file words in patch files (docs/sdk/13-zview.md); read, not driven in this run.
+
+HYPVIEW, PIXELS (analysis/hyp-compare.txt; method/hyp-compare.py; 5 bits per channel, window content y 70..460, whole width)
+  QED.HYP      before 1693 px differ in x257..347 y107..150, the logo; after 0.   analysis/qed-hyp-logo-before-after-oracle.png
+  ZVIEW.HYP    before 0, after 0 (the title page's picture is the colour path: no change, no double swap)
+  TERADESK.HYP before 0, after 0 (its one picture is not on the first page)
+
+TESTS
+  sdk/run-host-tests.sh 38 passed, 0 failed, 0 skipped, new inline-rsh-host and hypview-prepare-host (analysis/sdk-host-tests.txt); before 36 / 0 / 0.
+  inline-rsh-host (sdk/cflib/tests/) 137 checks: walks the tables through rs_bitblk and rs_ciconblk, native word = upstream's big-endian word from the tarball, word-aligned.
+    red: 42 of 137 fail, on upstream's file and on the overlay before the fix; analysis/inline-rsh-host.txt. Written and run red before the fix.
+  hypview-prepare-host (sdk/overlays/hypview/tests/) 27 checks; red: 7 of 27 on the patch before; analysis/prepare-host.txt. Written and run red before the fix.
+  cargo xtask test: not run, tos-api, tos-types, xtask untouched. cargo build on the two boards: not run, no crate touched; the rpi4 kernel of the runs built from the unchanged sources.
+
+GENERATOR
+  inline.rsh has none in this repository: upstream's checked-in ORCS 2.16 output, our overlay a hand-edited copy of it since 3a048314. Converted once, method/convert-inline-rsh.py;
+  the host test holds it to the tarball.
+
+NOT DRIVEN
+  The real Pi. Other alert icons (Info, Question, Stop), low-resolution glyphs (BT_RLOW, BT_CLOW) and the 4-plane path of fix_cicon (use_3D): tables tested on the host, not seen on a screen.
+  HypView's palette path (not reachable on a 16-plane VDI): host test only. ZVIEW.HYP's other 39 pictures, TERADESK.HYP's one. release package not built (step qed + hypview are the same scripts).
+  QED on the oracle in Falcon truecolor: its Global Settings dialog ends in "Panic: Bus Error" inside the ROM (pc 00e2e31a, addr 00405eaa), screen in runs/oracle-qed-falcontc-global-panic/.
+    That m68k QED under that profile, not chased, no NewTOS code involved: the reference above is TT, 4 planes. The glyph shapes do not depend on the plane count here.

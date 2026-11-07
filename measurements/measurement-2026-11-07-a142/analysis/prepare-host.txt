@@ -1,0 +1,13 @@
+--- patch at 56fd81a1
+prepare.c under test: /Volumes/Daten/Development/PiRusTOS/sdk/overlays/hypview/hyp/prepare.c
+27 checks, 0 failed
+--- patch before A142 (PREPARE_SRC)
+prepare.c under test: <scratch>/prepare.c.before
+FAIL  1 plane on 16: vr_trnfm reads the file's big-endian words as native words
+FAIL  1 plane on 16: the MFDB display.c blits holds native words
+FAIL  1 plane on 4: vr_trnfm reads the file's big-endian words as native words
+FAIL  1 plane on 4: the MFDB display.c blits holds native words
+FAIL  4 planes on 4: vr_trnfm reads every file plane as native words
+FAIL  2 planes on 4: vr_trnfm reads every file plane as native words
+FAIL  4 planes on 1: vr_trnfm reads reduce()'s result as native words
+27 checks, 7 failed

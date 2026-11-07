@@ -1,0 +1,6 @@
+hv-QED vs oracle: y 70 .. 460 pixels 249600 differ 1693 box x257..347 y107..150
+hva-QED vs oracle: y 70 .. 460 pixels 249600 differ 0 
+hv-TERADESK vs oracle: y 70 .. 460 pixels 249600 differ 0 
+hva-TERADESK vs oracle: y 70 .. 460 pixels 249600 differ 0 
+hv-ZVIEW vs oracle: y 70 .. 460 pixels 249600 differ 0 
+hva-ZVIEW vs oracle: y 70 .. 460 pixels 249600 differ 0 
