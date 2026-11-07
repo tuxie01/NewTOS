@@ -1,0 +1,9 @@
+shprobe: 12 shots base, 12 fix, 0 differ:  | exc/panic base 0 fix 0
+shprobe-desk: 2 shots base, 2 fix, 0 differ:  | exc/panic base 0 fix 0
+slprobe: 155 shots base, 155 fix, 5 differ: 121-12 148-14 44-044 71-071 98-098  | exc/panic base 0 fix 0
+slprobe2: 155 shots base, 155 fix, 4 differ: 121-12 152-15 67-067 98-098  | exc/panic base 0 fix 0
+slprobe3: 155 shots base, 155 fix, 2 differ: 148-14 94-094  | exc/panic base 0 fix 0
+desk480: 11 shots base, 11 fix, 0 differ:  | exc/panic base 0 fix 0
+desk1080: 11 shots base, 11 fix, 0 differ:  | exc/panic base 0 fix 0
+bc480: 6 shots base, 6 fix, 0 differ:  | exc/panic base 0 fix 0
+bc1080: 6 shots base, 6 fix, 0 differ:  | exc/panic base 0 fix 0

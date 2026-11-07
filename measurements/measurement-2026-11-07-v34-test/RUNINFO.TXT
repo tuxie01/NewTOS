@@ -1,0 +1,71 @@
+V34 acceptance -- TASK/V34.md (fix 5f299bf8: Scrdmp sets dumpflg, v_escape arm 17 calls Scrdmp; docs 89b77527) by the tester. Date 2026-11-07.
+No product code touched, no card, no Pi, no push. Main tree HEAD 89b77527 clean at the start (untracked foreign TASK/KEYS05.md, TASK/TOOL35.md not touched).
+Everything built/measured in git-archive trees of the session scratchpad (references/ linked): base = 6595238b (before the fix, product code and probe unchanged), fix = 89b77527.
+Numbers measured by me; the developer's run (measurements/measurement-2026-11-07-v34/) used only for method/run.sh as the pattern. Method scripts of this run: method/.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 32 card.img.manifest files in this run)
+optional_missing, verbatim, in ALL 32 manifests: optional_missing none
+QEMU 11.0.2 raspi4b (rpi4, -append serial=on, APFS clone per boot, one QEMU at a time) and virt (xtask run --headless, own ELF). Oracle EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc.
+
+KERNELS (rpi4 release kernel8.img from the scratch trees)
+  base f65ed8a1dbe3481b872d97ad5e315d63c43efae15b44c20d6adfe581b1f8e7e4 (1521896 B) = the developer's base-tree kernel hash exactly
+  fix  739609f6ca623e99c16d073b60448e26c81382dd32782662946b3ec529c46612 (1521896 B) (differs from the developer's fix hash only by the tree path in panic Locations; size equal, = base size)
+  fix + bios-arg-trace d396beee9e255b26899a62a3464a69879576dd8995ef877713ba39afcfdf1d24 (1525992 B)
+  qemu-virt ELF (release, fresh target per tree): fix a242fc57d3606c5343a4afda446d627dd950d327394ca1f635ea723b091f286d, base 3343748cc000d02547f1f111c39dfea18538215a53563ef3ce40b634276bbc5a
+  Desktop-run file set (40 files LONGNM01..40.TXT on C:): scratchpad dir files/, sha256-of-sha256s f3b9094da4f28ddf.
+
+RESULTS
+ 1 PASS  cargo xtask test on the fix, main tree (89b77527): rc 0, 2261 passed / 0 failed / 1 ignored (197 "test result" lines; analysis/cargo-xtask-test-fix.txt) = developer's number.
+         Base: cargo xtask test in the git-archive tree of 6595238b aborts in the xtask crate with 7 failures that are archive artefacts (no .git, no ignored files: doc_check::tests x5,
+         rsc_recolour_tests::hypview..., rsc_cicon_tests::teradesk...; analysis/cargo-xtask-test-base.txt); the same 7 fail identically in the archive tree of the FIX (analysis/cargo-test-nofailfast-fix-archive.txt).
+         With cargo test --no-fail-fast --package tos-api --package tos-types --package xtask: base archive 2251 passed / 7 failed / 1 ignored (= 2258 with the 7 artefacts, which pass in the main tree),
+         fix archive 2254 / 7 / 1 (= 2261). Delta +3 = the 3 new tests, 0 failed, ignored unchanged (1). Base 2258/0/1 thus MEASURED as 2258 (archive artefacts counted as the main tree's passes), not by a clean main-tree run of the base.
+         New tos-api/tests/xbios_scrdmp_dumpflg.rs on the BASE product code (file copied into the base tree, removed again): 2 failed / 1 passed (analysis/red-test-on-base.txt):
+           scrdmp_sets_dumpflg_to_minus_one FAILED  "dumpflg = -1 (bios/xbios.c:493)" left 5 right 65535 (the dumpflg value)
+           v_hardcopy_runs_scrdmp           FAILED  "escfn17 -> Scrdmp (vdi/vdi_esc.c:262)" left 5 right 65535
+           scrdmp_without_a_process_returns_void ok (control, green on base as intended).
+         On the fix: 3 of 3 green (analysis/green-test-on-fix.txt). I read the test body: it pokes $4EE=5 (and neighbours $4EC/$4F0 = 0x1234/0x5678, asserts they stay), calls Scrdmp via xbios::dispatch(0x14),
+         asserts the WORD 0xFFFF; the second also re-arms from 0; v_hardcopy test calls v_escape(17) through the VDI harness. Not vacuous.
+ 2 PASS  both boards, fresh builds (target/aarch64-unknown-none-softfloat removed before every build), rc 0 (analysis/builds-rc.txt, build-*.log, clippy-*.txt):
+         rustc warnings (cargo xtask build, debug): tos-api 64 / kernel 93 on base and fix, both boards (delta 0).
+         clippy (cargo clippy -p kernel --features board-rpi4 / board-qemu-virt): tos-api 73 / kernel 121 on base and fix, both boards (delta 0); 0 hits for system.rs / escape.rs in the fix clippy output.
+         rpi4 (serial=on): every run booted to the desktop, 0 exception/panic lines (BOOT-SERIAL of the tab-*, desk*, shprobe-desk runs: "desktop up"; the probe/ runs reach their desktop via #Z autorun; slprobe/shprobe/bc runs by design without desktop line).
+         qemu-virt headless, own ELF, 100 s bound, base and fix: "[desk] desktop up (0 drives)", 0 exception/panic lines (runs/boot-virt-fix/, runs/boot-virt-base/summary.txt).
+ 3 PASS  oracle. Probe tosdump/probes/vdprobe.c (unchanged by V34), tosdump/probes/run-vdprobe.sh, e1 = EmuTOS falcontc, n-base, n-fix1, n-fix2, n-fix-trace (probe/):
+         T18A (case 372) log lines 361-362: e1 "after v_hardcopy=-1" / "after Scrdmp=-1"; n-base 5 / 5; n-fix1 -1 / -1 = oracle. (probe/*/VDPROBE.LOG)
+         n-base vs n-fix1 LOG diff (probe/log-n-base-n-fix1.diff): exactly the two T18A lines (361,362). VDPROBE.BIN base == fix byte-identical (sha256 c2825bd27f3548c0...); vdprobe-compare base vs fix: 909 grab cases, 0 differ.
+         e1 vs n-fix1: 338 differ = e1 vs n-base 338 (known open findings, unchanged by V34); LOG diff e1 vs fix 5 lines (lines 343, 345, 583-585: TPC/TPD = V35, TXZ intentional V33), none at T18A.
+         Reproducible: n-fix1 == n-fix2 (BIN and LOG), n-fix-trace BIN/LOG == n-fix1; hashes equal the developer's (e1 BIN 8af7228c..., n-fix BIN c2825bd2..., n-fix LOG fbddfb72...).
+         Tables via cargo xtask tosdump --tree <archive tree> with the pinned references (runs/tab-*):
+           vdi-v18-t2: base 2 of 32 differ (cases 50, 54 = V35: vsl_width/vsm_height with CONTRL[1]=0 stale values), fix 2 of 32 (50, 54 only; case 111 v_hardcopy equal on both).
+           vdi-all: 0 of 182 on base and fix.
+           Records base == fix: VDI.BIN byte-identical (v18t2 d61803b2fd94beb3, all e91b865b92b5dbf2); tosdiff base vs fix 0 of 32 / 0 of 182.
+         Input trace (probe/n-fix-trace/BOOT-SERIAL.txt, kernel with bios-arg-trace): exactly 8 records, all U0, program order: 14:0x26 Supexec x5 (get, set5, get, get, set5), 14:0x14 Scrdmp "-" -> 0x0 (record 000005),
+           14:0x26 Supexec x2 (get, restore). The v_hardcopy call yields no XBIOS record (runs scrdmp inside the VDI call), as claimed.
+ 4 PASS  AES tables aes-r2-wind / aes-r3-wind-state / aes-r4-subfunctions base vs fix: tosdiff 0 of 78, 0 of 39, 0 of 181 cases differ (analysis/tosdiff-base-vs-fix-r*.txt); AES.BIN byte-identical base == fix in all three
+         (analysis/cmp-bins.txt; kernel size equal, so even the address cells equal). vs the oracle r2 78/78 and r3 39/39 differ on both sides (address words, as in the sibling runs; not a V34 difference); r4 has no reference.
+         shprobe 12/12 and shprobe-desk 2/2 PNG byte-identical base vs fix; desktop + IKBD injector (menu, dialog, rubberband, window/icon/slider drags: 11 shots) 11/11 identical at 640x480 and 11/11 at 1920x1080;
+         boot screen + AUTO console (APITEST.NCP) 6/6 and 6/6 identical (analysis/shots-compare.txt). 0 exception/panic lines in every run.
+         Viewed myself: desk480-fix 02-02-dialog.png (About dialog "NewTOS 0.7.1", all text complete and legible, OK button, desktop with icons and the file window behind) and desk1080-fix 10-10-end.png
+         (desktop 1920x1080, menu bar Desk/File/View/Options, Hard disk + Trash icons, C:\ window "397 bytes used in 41 items." with LONGNMxx.TXT icon labels intact).
+         slprobe 155 shots x 6 runs (3 base, 3 fix): NOT byte-stable between runs. base vs base differs in 4, 5, 1 shots; fix vs fix 5, 7, 5; base vs fix 2..8 (analysis/slprobe-pairs.txt).
+         The union of all differing shots is 044 067 071 094 098 121 148 152 = 8 "held1" frames of the page-scroll gestures (names ...-pagelo-held1 / pagehi-held1), a subset of the known noise set of the
+         V30/V31/V33/V44 test runs (union 9 there incl. 125). Base runs vary among themselves too, so not attributable to the fix. Honest caveat: I did not view the pixels of these shots.
+ 5 PASS (cites correct; two notes)  Spec corrections vs references/emutos, line by line (grep -n + sed):
+           xbios.c:490-494 scrdmp = protect_v((PFLONG)dump_vec); dumpflg = -1 (492, 493)           ok
+           vdi_esc.c:260-263 escfn17 = Scrdmp() (260 header, 262 call)                              ok
+           bios.c:357 dumpflg = -1 (boot)                                                           ok
+           ikbd.c:595-597 / :596 dumpflg++ on KEY_HELP ("tell VBL to call scrdmp() function")      ok
+           vectors.S:466-472: tst.w _dumpflg (467), jne, move.l _dump_vec,a0 / jsr (469), moveq #-1 / move.w d0,_dumpflg (472) -> VBL calls dump_vec only at dumpflg == 0, then -1   ok, the text says exactly that
+           chardev.c:84 dump_vec = just_rts                                                        ok
+           tosvars.ld:87 _dumpflg = 0x4ee                                                           ok
+         NewTOS cites: tos-api/src/xbios/system.rs:61@scrdmp = "pub fn scrdmp() -> i64" (line 61 verified) ok; loader.rs DUMPFLG_ADDR use ok.
+         14-scrdmp.md, _escape.md arm 17, _discrepancies.md D-VDI-4, bios/_state.md say what EmuTOS does (Scrdmp = dump_vec + dumpflg -1; v_hardcopy = Scrdmp; the NewTOS deviation "dump_vec not called, ADR-031"
+         is stated openly as NewTOS state, not claimed as EmuTOS behaviour). No mismatch found.
+         Notes (not mismatches): (a) _escape.md and D-VDI-4 cite measurements/measurement-2026-11-07-v34/RUNINFO.TXT for the T18A -1/-1 measurement: matches my probe numbers. (b) "dumpflg per process page 0 vs one global EmuTOS cell"
+         is a ticket remark, only partly in the specs (14-scrdmp.md says "calling process's page 0"); behaviour not measured by me either.
+
+NOT DRIVEN / OPEN
+  Real Pi4 / HDMI (not needed for a page-0 word store; developer's remark; not verified); qemu-virt interactive input; SDK apps (none calls Scrdmp/v_hardcopy per the developer's grep; not re-grepped by me beyond reading it);
+  no tosdiff case for dumpflg (DUMPBIOS cannot read $4EE around a call; follow-up ticket per CLAUDE.md "Testing" is the lead's, still to be created);
+  per-process vs global dumpflg (child sees -1) not measured; Alt+Help dumpflg++ not measured; clean main-tree run of the base cargo xtask test not done (archive tree, see 1);
+  slprobe held1 pixels not viewed; clippy of other crates; probe BINs and table BINs are gitignored (hashes above).

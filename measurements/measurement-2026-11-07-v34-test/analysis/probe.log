@@ -1,0 +1,18 @@
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v34-test/probe/n-base /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/base-rpi4-release.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v34-test/probe/n-fix1 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/fix-rpi4-release.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v34-test/probe/n-fix2 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/fix-rpi4-release.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v34-test/probe/n-fix-trace /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/fix-rpi4-trace.img
++ for p in '"e1 n-base"' '"e1 n-fix1"' '"n-base n-fix1"'
++ set -- e1 n-base
++ python3 tosdump/probes/vdprobe-compare.py measurements/measurement-2026-11-07-v34-test/probe/e1 measurements/measurement-2026-11-07-v34-test/probe/n-base
++ diff measurements/measurement-2026-11-07-v34-test/probe/e1/VDPROBE.LOG measurements/measurement-2026-11-07-v34-test/probe/n-base/VDPROBE.LOG
++ for p in '"e1 n-base"' '"e1 n-fix1"' '"n-base n-fix1"'
++ set -- e1 n-fix1
++ python3 tosdump/probes/vdprobe-compare.py measurements/measurement-2026-11-07-v34-test/probe/e1 measurements/measurement-2026-11-07-v34-test/probe/n-fix1
++ diff measurements/measurement-2026-11-07-v34-test/probe/e1/VDPROBE.LOG measurements/measurement-2026-11-07-v34-test/probe/n-fix1/VDPROBE.LOG
++ for p in '"e1 n-base"' '"e1 n-fix1"' '"n-base n-fix1"'
++ set -- n-base n-fix1
++ python3 tosdump/probes/vdprobe-compare.py measurements/measurement-2026-11-07-v34-test/probe/n-base measurements/measurement-2026-11-07-v34-test/probe/n-fix1
++ diff measurements/measurement-2026-11-07-v34-test/probe/n-base/VDPROBE.LOG measurements/measurement-2026-11-07-v34-test/probe/n-fix1/VDPROBE.LOG
++ echo finished
+finished
