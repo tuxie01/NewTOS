@@ -1,0 +1,862 @@
+RB2
+NewTOS booting on rpi4
+[serial] output on: boot arguments contain `serial=on`
+Phase 02 reached.
+[mm] DTB at 0x0000000000000100
+[mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+[mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+[mm] device tree: no usable /memory node (blob invalid or absent)
+[clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) — source: firmware
+[mm]   kernel: 0x0000000000080000..0x00000000003a6000 (3301376 bytes)
+[mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+[mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+[mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+[mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+[mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+[mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+[mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+[mm] alloc ST-RAM frame -> 0x0000000000400000
+[mm] alloc TT-RAM frame -> 0x0000000001000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] VideoCore display geometry detected: 640x480
+[fb] alpha mode = 2
+[fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+[fb] VideoCore fb up: 640x480 stride 640px
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x01000000+2415 tables
+[mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+[mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[clock] no RTC: clock starts at the build date 2026-11-07 00:00:00 (Gettime 0x5d670000, os_dosdate 0x5d67)
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+[emmc] SD card on controller @ 0xffff0000fe300000
+[emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+[emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+[emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+[emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+[pcie] RC not present (no response at RC_BASE); USB disabled
+[proc] stand-in PDs: initial_basepage 0x001f5000, AES PD 0x001f5100, accdesk 0x001f5300, EmuCON 0x001f5400 (read-only to all)
+[acc] loaded C:\ACC\HYPVIEW.NAC into slot 0 (entry 0x1971000)
+[acc] 1 file(s) found, 1 process(es) started
+[aes] gsx_malloc: screen buffer pa=0x019ad000 len=614400 (kernel-owned, WF_SCREEN)
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000001 U0  gemdos 0x48 t=15147400 dur=282 ret=27541504 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=305/10031 bios=0/0 aes=0/0 gemdos=0/0 out=16/51936 ovh=0
+[fsio] 000002 U0  gemdos 0x154 t=15148718 dur=122 ret=-1 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=866
+[fsio] 000003 U0  gemdos 0x138 t=15149256 dur=20 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[fsio] 000004 U0  gemdos 0x10f t=15149654 dur=1 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000005 U0  gemdos 0x139 t=15150030 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000006 U0  gemdos 0x114 t=15150400 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=365
+[fsio] 000007 U0  gemdos 0x104 t=15150928 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=359
+[fsio] 000008 U0  gemdos 0x42 t=15151488 dur=48 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[fsio] 000009 U0  gemdos 0x42 t=15151900 dur=1 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000010 U0  gemdos 0x46 t=15152272 dur=35 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000011 U0  gemdos 0x104 t=15152790 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[fsio] 000012 U0  gemdos 0x42 t=15153158 dur=1 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000013 U0  gemdos 0x42 t=15153518 dur=0 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000014 U0  gemdos 0x104 t=15153990 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000015 U0  gemdos 0x42 t=15154354 dur=0 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000016 U0  gemdos 0x42 t=15154712 dur=1 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000017 U0  aes 10 t=15155278 dur=678 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000018 U0  aes 110 t=15156968 dur=8970 ret=0 | dev r=4/55/6278 w=0/0/0 | bc hit=1 miss=55 | bdos hit=17 miss=2 fat=0 data=2 | fatlk=13 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=370
+[fsio]   R lba=936 n=1 us=307
+[fsio]   R lba=937 n=51 us=5616
+[fsio]   R lba=988 n=2 us=235
+[fsio]   R lba=990 n=1 us=120
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000019 U0  gemdos 0x15e t=15166870 dur=1 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=668
+[fsio] 000020 U0  gemdos 0x48 t=15167300 dur=18 ret=27660288 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000021 U0  aes 112 t=15167764 dur=158 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=382
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000022 U0  aes 112 t=15168462 dur=14 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000023 U0  aes 112 t=15168998 dur=12 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=353
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000024 U0  aes 112 t=15169534 dur=12 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000025 U0  aes 112 t=15170080 dur=12 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=353
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000026 U0  aes 112 t=15170606 dur=11 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000027 U0  aes 112 t=15171448 dur=20 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=591
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000028 U0  aes 112 t=15172010 dur=30 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000029 U0  aes 13 t=15172600 dur=137 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000030 U0  aes 77 t=15173326 dur=390 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=355
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000031 U0  gemdos 0x119 t=15175168 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=7/674 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000032 U0  aes 125 t=15175928 dur=158 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=1/288 aes=0/0 gemdos=0/0 out=0/0 ovh=377
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000033 U0  gemdos 0x3d t=15176682 dur=227 ret=-33 path="HYP_VIEW.CFG" | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=378
+[fsio] 000034 U0  aes 35 t=15179670 dur=162 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=132/908 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=444
+[sched] switch -> kernel client
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000035 U0  aes 25 t=15180432 dur=1062 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[sched] switch -> kernel client
+[acc] all accessories have issued their message wait
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 1 entry 0x1a65000
+[fsio] 000036 U1  gemdos 0x4a t=15213440 dur=8053 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=408
+[fsio] 000037 U1  aes 10 t=15222076 dur=76 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=386
+[fsio] 000038 U1  aes 77 t=15222530 dur=10 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=361
+[fsio] 000039 U1  aes 104 t=15223410 dur=116 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=5/286 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000040 U1  gemdos 0x48 t=15224304 dur=32 ret=27967488 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000041 U1  gemdos 0x48 t=15224874 dur=12 ret=27975680 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=369
+[fsio] 000042 U1  gemdos 0x48 t=15225270 dur=12 ret=28065792 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=369
+[fsio] 000043 U1  aes 40 t=15226010 dur=165 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=427
+[fsio] 000044 U1  aes 40 t=15226546 dur=10 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000045 U1  aes 40 t=15226908 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000046 U1  aes 40 t=15227260 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=345
+[fsio] 000047 U1  aes 40 t=15227610 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=342
+[fsio] 000048 U1  aes 40 t=15227958 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=343
+[fsio] 000049 U1  aes 40 t=15228308 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=345
+[fsio] 000050 U1  aes 40 t=15228674 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000051 U1  gemdos 0x154 t=15229134 dur=10 ret=4398 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000052 U1  aes 108 t=15229550 dur=308 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000053 U1  aes 122 t=15230344 dur=50 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000054 U1  gemdos 0x3d t=15230814 dur=201 ret=6 path="C:\NEWDESK.INF" | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=2 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000055 U1  gemdos 0x3f t=15231432 dur=110 ret=84 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=401
+[fsio] 000056 U1  gemdos 0x3e t=15231956 dur=158 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000057 U1  aes 40 t=15233650 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000058 U1  aes 40 t=15234152 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=388
+[fsio] 000059 U1  aes 105 t=15234542 dur=344 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000060 U1  aes 30 t=15235830 dur=1499 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=353
+[fsio] 000061 U1  aes 107 t=15237702 dur=102 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000062 U1  aes 26 t=15238312 dur=10 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000063 U1  aes 107 t=15238818 dur=14 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000064 U1  aes 32 t=15239464 dur=222 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=434
+[fsio] 000065 U1  aes 32 t=15240050 dur=14 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000066 U1  aes 32 t=15240432 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000067 U1  aes 32 t=15240788 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000068 U1  aes 32 t=15241170 dur=8 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000069 U1  aes 32 t=15241528 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000070 U1  aes 32 t=15241882 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000071 U1  aes 32 t=15242242 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000072 U1  aes 32 t=15242600 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000073 U1  aes 32 t=15242950 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000074 U1  aes 32 t=15243304 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000075 U1  aes 32 t=15243652 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=342
+[fsio] 000076 U1  aes 32 t=15244002 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=342
+[fsio] 000077 U1  aes 32 t=15244352 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=345
+[fsio] 000078 U1  aes 32 t=15244702 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000079 U1  aes 32 t=15245054 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000080 U1  aes 32 t=15245410 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000081 U1  aes 32 t=15245760 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000082 U1  aes 32 t=15246138 dur=38 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=351
+[fsio] 000083 U1  aes 32 t=15246546 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=367
+[fsio] 000084 U1  aes 32 t=15246896 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000085 U1  aes 32 t=15247254 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000086 U1  aes 32 t=15247604 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000087 U1  aes 32 t=15247956 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000088 U1  aes 32 t=15248312 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000089 U1  aes 32 t=15248664 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=342
+[fsio] 000090 U1  aes 32 t=15249012 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000091 U1  aes 32 t=15249362 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000092 U1  aes 32 t=15249712 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=342
+[fsio] 000093 U1  aes 32 t=15250062 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000094 U1  aes 32 t=15250414 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000095 U1  aes 31 t=15250810 dur=36 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=343
+[fsio] 000096 U1  aes 31 t=15251230 dur=6 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000097 U1  aes 31 t=15251636 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000098 U1  aes 31 t=15252008 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000099 U1  aes 31 t=15252372 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000100 U1  aes 31 t=15252740 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000101 U1  aes 31 t=15253112 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000102 U1  aes 31 t=15253476 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000103 U1  aes 78 t=15253850 dur=99 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000104 U1  aes 51 t=15254328 dur=4141 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000105 U1  aes 30 t=15258896 dur=125 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000106 U1  aes 78 t=15259408 dur=34 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000107 U1  aes 78 t=15259810 dur=61 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[desk] desktop up (1 drives)
+[inj] desktop armed at hz_200 3047 (slot Some(1) name NEWDESK)
+[fsio] 000108 U1  aes 25 t=15260400 dur=492 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=357
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3147 (+100)
+[inj] desktop feed 0x81 at hz_200 3147 (+100)
+[inj] desktop feed 0x7f at hz_200 3147 (+100)
+[fsio] 000109 U0  aes 25 t=15261498 dur=495628 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=414
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3150 (+103)
+[inj] desktop feed 0x81 at hz_200 3150 (+103)
+[inj] desktop feed 0x7f at hz_200 3150 (+103)
+[fsio] 000110 U1  aes 25 t=15757890 dur=13979 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=421
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3153 (+106)
+[inj] desktop feed 0x81 at hz_200 3153 (+106)
+[inj] desktop feed 0x7f at hz_200 3153 (+106)
+[fsio] 000111 U0  aes 25 t=15772386 dur=13422 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=401
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3156 (+109)
+[inj] desktop feed 0x81 at hz_200 3156 (+109)
+[inj] desktop feed 0x7f at hz_200 3156 (+109)
+[inj] desktop feed 0xf8 at hz_200 3159 (+112)
+[inj] desktop feed 0x81 at hz_200 3159 (+112)
+[inj] desktop feed 0x7f at hz_200 3159 (+112)
+[inj] desktop feed 0xf8 at hz_200 3162 (+115)
+[inj] desktop feed 0x81 at hz_200 3162 (+115)
+[inj] desktop feed 0x7f at hz_200 3162 (+115)
+[inj] desktop feed 0xf8 at hz_200 3647 (+600)
+[inj] desktop feed 0x1e at hz_200 3647 (+600)
+[inj] desktop feed 0x00 at hz_200 3647 (+600)
+[fsio] 000112 U1  aes 25 t=15786302 dur=2470224 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=388
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3650 (+603)
+[inj] desktop feed 0x00 at hz_200 3650 (+603)
+[inj] desktop feed 0xe2 at hz_200 3650 (+603)
+[fsio] 000113 U0  aes 25 t=18257114 dur=14667 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=433
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3653 (+606)
+[inj] desktop feed 0x00 at hz_200 3653 (+606)
+[inj] desktop feed 0xe2 at hz_200 3653 (+606)
+[fsio] 000114 U1  aes 25 t=18272278 dur=14759 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=379
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3656 (+609)
+[inj] desktop feed 0x00 at hz_200 3656 (+609)
+[inj] desktop feed 0xe2 at hz_200 3656 (+609)
+[fsio] 000115 U0  aes 25 t=18287526 dur=13585 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=390
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3659 (+612)
+[inj] desktop feed 0x00 at hz_200 3659 (+612)
+[inj] desktop feed 0xe2 at hz_200 3659 (+612)
+[fsio] 000116 U1  aes 25 t=18301600 dur=15004 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=391
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3662 (+615)
+[inj] desktop feed 0x00 at hz_200 3662 (+615)
+[inj] desktop feed 0xe2 at hz_200 3662 (+615)
+[fsio] 000117 U0  aes 25 t=18317104 dur=14792 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3665 (+618)
+[inj] desktop feed 0x00 at hz_200 3665 (+618)
+[inj] desktop feed 0xe3 at hz_200 3665 (+618)
+[fsio] 000118 U1  aes 25 t=18332396 dur=14827 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=398
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3668 (+621)
+[inj] desktop feed 0x00 at hz_200 3668 (+621)
+[inj] desktop feed 0xe2 at hz_200 3668 (+621)
+[fsio] 000119 U0  aes 25 t=18347700 dur=13603 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=380
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3671 (+624)
+[inj] desktop feed 0x00 at hz_200 3671 (+624)
+[inj] desktop feed 0xe2 at hz_200 3671 (+624)
+[fsio] 000120 U1  aes 25 t=18361794 dur=14830 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=389
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3674 (+627)
+[inj] desktop feed 0x00 at hz_200 3674 (+627)
+[inj] desktop feed 0xe2 at hz_200 3674 (+627)
+[fsio] 000121 U0  aes 25 t=18377118 dur=15460 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3677 (+630)
+[inj] desktop feed 0x00 at hz_200 3677 (+630)
+[inj] desktop feed 0xe2 at hz_200 3677 (+630)
+[fsio] 000122 U1  aes 25 t=18393478 dur=13772 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=792
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3680 (+633)
+[inj] desktop feed 0x00 at hz_200 3680 (+633)
+[inj] desktop feed 0xe2 at hz_200 3680 (+633)
+[fsio] 000123 U0  aes 25 t=18407762 dur=13566 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=406
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3683 (+636)
+[inj] desktop feed 0x00 at hz_200 3683 (+636)
+[inj] desktop feed 0xe2 at hz_200 3683 (+636)
+[fsio] 000124 U1  aes 25 t=18421846 dur=14804 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=414
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3686 (+639)
+[inj] desktop feed 0x00 at hz_200 3686 (+639)
+[inj] desktop feed 0xe2 at hz_200 3686 (+639)
+[fsio] 000125 U0  aes 25 t=18437180 dur=14763 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=428
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3689 (+642)
+[inj] desktop feed 0x00 at hz_200 3689 (+642)
+[inj] desktop feed 0xe2 at hz_200 3689 (+642)
+[fsio] 000126 U1  aes 25 t=18452454 dur=14743 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=412
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3692 (+645)
+[inj] desktop feed 0x00 at hz_200 3692 (+645)
+[inj] desktop feed 0xe2 at hz_200 3692 (+645)
+[fsio] 000127 U0  aes 25 t=18467684 dur=13556 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=389
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 3695 (+648)
+[inj] desktop feed 0x00 at hz_200 3695 (+648)
+[inj] desktop feed 0xec at hz_200 3695 (+648)
+[inj] desktop feed 0xf8 at hz_200 3798 (+751)
+[inj] desktop feed 0x00 at hz_200 3798 (+751)
+[inj] desktop feed 0x1e at hz_200 3798 (+751)
+[inj] desktop feed 0xf8 at hz_200 3801 (+754)
+[inj] desktop feed 0x00 at hz_200 3801 (+754)
+[inj] desktop feed 0x13 at hz_200 3801 (+754)
+[inj] desktop feed 0xfa at hz_200 3904 (+857)
+[inj] desktop feed 0x00 at hz_200 3904 (+857)
+[inj] desktop feed 0x00 at hz_200 3904 (+857)
+[inj] desktop feed 0xf8 at hz_200 3922 (+875)
+[inj] desktop feed 0x00 at hz_200 3922 (+875)
+[inj] desktop feed 0x00 at hz_200 3922 (+875)
+[fsio] 000128 U1  aes 25 t=18481730 dur=1279428 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000129 U0  aes 25 t=19761846 dur=384 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=511
+[fsio] 000130 U0  gemdos 0x44 t=19762820 dur=75 ret=28360704 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=384
+[inj] desktop feed 0xf8 at hz_200 4347 (+1300)
+[inj] desktop feed 0x1e at hz_200 4347 (+1300)
+[inj] desktop feed 0x00 at hz_200 4347 (+1300)
+[inj] desktop feed 0xf8 at hz_200 4350 (+1303)
+[inj] desktop feed 0x1e at hz_200 4350 (+1303)
+[inj] desktop feed 0x00 at hz_200 4350 (+1303)
+[inj] desktop feed 0xf8 at hz_200 4353 (+1306)
+[inj] desktop feed 0x1e at hz_200 4353 (+1306)
+[inj] desktop feed 0x00 at hz_200 4353 (+1306)
+[inj] desktop feed 0xf8 at hz_200 4356 (+1309)
+[inj] desktop feed 0x1e at hz_200 4356 (+1309)
+[inj] desktop feed 0x00 at hz_200 4356 (+1309)
+[inj] desktop feed 0xf8 at hz_200 4359 (+1312)
+[inj] desktop feed 0x1e at hz_200 4359 (+1312)
+[inj] desktop feed 0x00 at hz_200 4359 (+1312)
+[inj] desktop feed 0xf8 at hz_200 4362 (+1315)
+[inj] desktop feed 0x1e at hz_200 4362 (+1315)
+[inj] desktop feed 0x00 at hz_200 4362 (+1315)
+[inj] desktop feed 0xf8 at hz_200 4365 (+1318)
+[inj] desktop feed 0x1e at hz_200 4365 (+1318)
+[inj] desktop feed 0x00 at hz_200 4365 (+1318)
+[inj] desktop feed 0xf8 at hz_200 4368 (+1321)
+[inj] desktop feed 0x14 at hz_200 4368 (+1321)
+[inj] desktop feed 0x00 at hz_200 4368 (+1321)
+[inj] desktop feed 0xf8 at hz_200 4371 (+1324)
+[inj] desktop feed 0x00 at hz_200 4371 (+1324)
+[inj] desktop feed 0x1e at hz_200 4371 (+1324)
+[inj] desktop feed 0xf8 at hz_200 4374 (+1327)
+[inj] desktop feed 0x00 at hz_200 4374 (+1327)
+[inj] desktop feed 0x1e at hz_200 4374 (+1327)
+[inj] desktop feed 0xf8 at hz_200 4377 (+1330)
+[inj] desktop feed 0x00 at hz_200 4377 (+1330)
+[inj] desktop feed 0x1e at hz_200 4377 (+1330)
+[inj] desktop feed 0xf8 at hz_200 4380 (+1333)
+[inj] desktop feed 0x00 at hz_200 4380 (+1333)
+[inj] desktop feed 0x1e at hz_200 4380 (+1333)
+[inj] desktop feed 0xf8 at hz_200 4383 (+1336)
+[inj] desktop feed 0x00 at hz_200 4383 (+1336)
+[inj] desktop feed 0x1e at hz_200 4383 (+1336)
+[inj] desktop feed 0xf8 at hz_200 4386 (+1339)
+[inj] desktop feed 0x00 at hz_200 4386 (+1339)
+[inj] desktop feed 0x0d at hz_200 4386 (+1339)
+[inj] desktop feed 0xfa at hz_200 4429 (+1382)
+[inj] desktop feed 0x00 at hz_200 4429 (+1382)
+[inj] desktop feed 0x00 at hz_200 4429 (+1382)
+[inj] desktop feed 0xf8 at hz_200 4447 (+1400)
+[inj] desktop feed 0x00 at hz_200 4447 (+1400)
+[inj] desktop feed 0x00 at hz_200 4447 (+1400)
+[inj] desktop feed 0xf8 at hz_200 4547 (+1500)
+[inj] desktop feed 0xe2 at hz_200 4547 (+1500)
+[inj] desktop feed 0x00 at hz_200 4547 (+1500)
+[inj] desktop feed 0xf8 at hz_200 4550 (+1503)
+[inj] desktop feed 0xf6 at hz_200 4550 (+1503)
+[inj] desktop feed 0x00 at hz_200 4550 (+1503)
+[inj] desktop feed 0xf8 at hz_200 4553 (+1506)
+[inj] desktop feed 0x00 at hz_200 4553 (+1506)
+[inj] desktop feed 0x1e at hz_200 4553 (+1506)
+[inj] desktop feed 0xf8 at hz_200 4556 (+1509)
+[inj] desktop feed 0x00 at hz_200 4556 (+1509)
+[inj] desktop feed 0x1e at hz_200 4556 (+1509)
+[inj] desktop feed 0xf8 at hz_200 4559 (+1512)
+[inj] desktop feed 0x00 at hz_200 4559 (+1512)
+[inj] desktop feed 0x1e at hz_200 4559 (+1512)
+[inj] desktop feed 0xf8 at hz_200 4562 (+1515)
+[inj] desktop feed 0x00 at hz_200 4562 (+1515)
+[inj] desktop feed 0x1e at hz_200 4562 (+1515)
+[inj] desktop feed 0xf8 at hz_200 4565 (+1518)
+[inj] desktop feed 0x00 at hz_200 4565 (+1518)
+[inj] desktop feed 0x1e at hz_200 4565 (+1518)
+[inj] desktop feed 0xf8 at hz_200 4568 (+1521)
+[inj] desktop feed 0x00 at hz_200 4568 (+1521)
+[inj] desktop feed 0x1c at hz_200 4568 (+1521)
+[inj] desktop feed 0xfa at hz_200 4611 (+1564)
+[inj] desktop feed 0x00 at hz_200 4611 (+1564)
+[inj] desktop feed 0x00 at hz_200 4611 (+1564)
+[fsio] 000131 U0  aes 91 t=19763372 dur=3314668 ret=0 | dev r=2/2/1040 w=0/0/0 | bc hit=0 miss=2 | bdos hit=4 miss=2 fat=0 data=2 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[fsio]   R lba=992 n=1 us=906
+[fsio]   R lba=996 n=1 us=134
+[fsio] 000132 U0  aes 78 t=23078774 dur=68 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=550
+[fsio] 000133 U0  gemdos 0x3d t=23079262 dur=154 ret=6 path="C:\GEMSYS\GUIDES\TEST.HYP" | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=4 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000134 U0  gemdos 0x3e t=23079886 dur=11 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=448
+[fsio] 000135 U0  gemdos 0x3d t=23080298 dur=6 ret=6 path="C:\GEMSYS\GUIDES\TEST.HYP" | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=4 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=374
+[fsio] 000136 U0  gemdos 0x48 t=23080754 dur=101 ret=28364800 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=438
+[fsio] 000137 U0  gemdos 0x42 t=23081374 dur=48 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=396
+[fsio] 000138 U0  gemdos 0x3f t=23081926 dur=244 ret=12 | dev r=1/1/198 w=0/0/0 | bc hit=0 miss=1 | bdos hit=0 miss=1 fat=0 data=1 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=396
+[fsio]   R lba=1000 n=1 us=198
+[fsio] 000139 U0  gemdos 0x48 t=23082656 dur=20 ret=28368896 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=446
+[fsio] 000140 U0  gemdos 0x3f t=23083062 dur=161 ret=842 | dev r=1/1/154 w=0/0/0 | bc hit=0 miss=1 | bdos hit=1 miss=1 fat=0 data=1 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=378
+[fsio]   R lba=1001 n=1 us=154
+[fsio] 000141 U0  gemdos 0x42 t=23083740 dur=36 ret=854 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=450
+[fsio] 000142 U0  gemdos 0x3f t=23084150 dur=2 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[fsio] 000143 U0  gemdos 0x42 t=23084532 dur=9 ret=866 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000144 U0  gemdos 0x3f t=23084922 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[fsio] 000145 U0  gemdos 0x42 t=23085300 dur=0 ret=878 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=363
+[fsio] 000146 U0  gemdos 0x3f t=23085672 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=369
+[fsio] 000147 U0  gemdos 0x42 t=23086718 dur=5 ret=892 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=942
+[fsio] 000148 U0  gemdos 0x3f t=23087664 dur=8 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=921
+[fsio] 000149 U0  gemdos 0x42 t=23088300 dur=2 ret=914 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=619
+[fsio] 000150 U0  gemdos 0x3f t=23088682 dur=2 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=376
+[fsio] 000151 U0  gemdos 0x42 t=23089062 dur=0 ret=932 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=374
+[fsio] 000152 U0  gemdos 0x3f t=23089450 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=384
+[fsio] 000153 U0  gemdos 0x42 t=23089834 dur=0 ret=952 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=381
+[fsio] 000154 U0  gemdos 0x3f t=23090208 dur=1 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000155 U0  gemdos 0x42 t=23090620 dur=0 ret=966 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[fsio] 000156 U0  gemdos 0x3f t=23090998 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=375
+[fsio] 000157 U0  gemdos 0x42 t=23091366 dur=0 ret=972 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=365
+[fsio] 000158 U0  gemdos 0x3f t=23091734 dur=1 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000159 U0  gemdos 0x42 t=23092100 dur=0 ret=978 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000160 U0  gemdos 0x3f t=23092468 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=365
+[fsio] 000161 U0  gemdos 0x42 t=23092834 dur=0 ret=986 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000162 U0  gemdos 0x3f t=23093214 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=376
+[fsio] 000163 U0  gemdos 0x48 t=23093590 dur=22 ret=28372992 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000164 U0  gemdos 0x42 t=23094040 dur=1 ret=854 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=382
+[fsio] 000165 U0  gemdos 0x49 t=23094506 dur=624 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=370
+[fsio] 000166 U0  gemdos 0x3f t=23095650 dur=6 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=405
+[fsio] 000167 U0  gemdos 0x3f t=23096064 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=377
+[fsio] 000168 U0  gemdos 0x3f t=23096442 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=374
+[fsio] 000169 U0  gemdos 0x3f t=23096820 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=375
+[fsio] 000170 U0  gemdos 0x3f t=23097244 dur=0 ret=8 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=401
+[fsio] 000171 U0  gemdos 0x3f t=23097626 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=373
+[fsio] 000172 U0  gemdos 0x42 t=23098004 dur=1 ret=892 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000173 U0  gemdos 0x3f t=23098392 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=373
+[fsio] 000174 U0  gemdos 0x3f t=23098772 dur=0 ret=18 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000175 U0  gemdos 0x3f t=23099142 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000176 U0  gemdos 0x3f t=23099510 dur=0 ret=14 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000177 U0  gemdos 0x3f t=23099876 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000178 U0  gemdos 0x42 t=23100242 dur=0 ret=952 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000179 U0  gemdos 0x3f t=23100612 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=367
+[fsio] 000180 U0  gemdos 0x42 t=23100976 dur=0 ret=966 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=361
+[fsio] 000181 U0  gemdos 0x3f t=23101380 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[fsio] 000182 U0  gemdos 0x3f t=23101754 dur=0 ret=2 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000183 U0  gemdos 0x3f t=23102130 dur=1 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=370
+[fsio] 000184 U0  gemdos 0x3f t=23102508 dur=0 ret=2 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[fsio] 000185 U0  gemdos 0x3f t=23102872 dur=1 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=359
+[fsio] 000186 U0  gemdos 0x3f t=23103234 dur=1 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000187 U0  gemdos 0x3f t=23103598 dur=0 ret=4 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=1 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000188 U0  gemdos 0x12c t=23104002 dur=0 ret=-32 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=359
+[fsio] 000189 U0  gemdos 0x3e t=23104380 dur=5 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=365
+[fsio] 000190 U0  gemdos 0x48 t=23104864 dur=40 ret=28368896 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000191 U0  gemdos 0x3d t=23105302 dur=16 ret=6 path="C:\GEMSYS\GUIDES\TEST.HYP" | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=4 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=379
+[fsio] 000192 U0  gemdos 0x42 t=23105752 dur=0 ret=990 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=425
+[fsio] 000193 U0  gemdos 0x48 t=23106126 dur=25 ret=28377088 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000194 U0  gemdos 0x3f t=23106588 dur=110 ret=169 | dev r=1/1/97 w=0/0/0 | bc hit=0 miss=1 | bdos hit=1 miss=1 fat=0 data=1 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=402
+[fsio]   R lba=1002 n=1 us=97
+[fsio] 000195 U0  gemdos 0x3e t=23107148 dur=1 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=438
+[fsio] 000196 U0  gemdos 0x49 t=23108502 dur=94 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000197 U0  gemdos 0x48 t=23109180 dur=26 ret=28377088 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=382
+[fsio] 000198 U0  gemdos 0x44 t=23110484 dur=18 ret=28381184 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=131/224 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=384
+[fsio] 000199 U0  aes 104 t=23110932 dur=17 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[fsio] 000200 U0  aes 100 t=23111328 dur=77 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=357
+[fsio] 000201 U0  gemdos 0x154 t=23111920 dur=4 ret=-1 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[fsio] 000202 U0  aes 108 t=23112342 dur=17 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=367
+[fsio] 000203 U0  aes 108 t=23112744 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000204 U0  aes 104 t=23113134 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=357
+[fsio] 000205 U0  aes 108 t=23113522 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=353
+[fsio] 000206 U0  aes 108 t=23113898 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=351
+[inj] desktop feed 0xf8 at hz_200 4648 (+1601)
+[inj] desktop feed 0x00 at hz_200 4648 (+1601)
+[inj] desktop feed 0x00 at hz_200 4648 (+1601)
+[fsio] 000207 U0  aes 73 t=23114292 dur=150193 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000208 U0  aes 101 t=23264880 dur=4078 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=369
+[fsio] 000209 U0  aes 105 t=23269414 dur=844 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=412
+[fsio] 000210 U0  aes 78 t=23270750 dur=41 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=454
+[fsio] 000211 U0  aes 125 t=23271186 dur=22 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000212 U0  aes 12 t=23271626 dur=306 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000213 U0  aes 104 t=23272310 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000214 U1  aes 25 t=23272778 dur=69 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=351
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000215 U0  aes 105 t=23273356 dur=262 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=361
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000216 U1  aes 107 t=23274110 dur=14 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000217 U0  aes 105 t=23274590 dur=68 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=359
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000218 U1  aes 32 t=23275254 dur=18 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=378
+[fsio] 000219 U1  aes 32 t=23275644 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000220 U1  aes 32 t=23276176 dur=18 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=514
+[fsio] 000221 U1  aes 32 t=23276562 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=363
+[fsio] 000222 U1  aes 32 t=23276924 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=357
+[fsio] 000223 U1  aes 32 t=23277298 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000224 U1  aes 32 t=23277660 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000225 U1  aes 32 t=23278022 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=357
+[fsio] 000226 U1  aes 32 t=23278384 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000227 U1  aes 32 t=23278750 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000228 U1  aes 32 t=23279124 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=369
+[fsio] 000229 U1  aes 32 t=23279492 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000230 U1  aes 32 t=23279844 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000231 U1  aes 32 t=23280196 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000232 U1  aes 32 t=23280548 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=347
+[fsio] 000233 U1  aes 32 t=23280900 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000234 U1  aes 32 t=23281310 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=382
+[fsio] 000235 U1  aes 32 t=23281666 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000236 U1  aes 32 t=23282026 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000237 U1  aes 32 t=23282384 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=353
+[fsio] 000238 U1  aes 32 t=23282736 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=347
+[fsio] 000239 U1  aes 32 t=23283096 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=355
+[fsio] 000240 U1  aes 32 t=23283450 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000241 U1  aes 32 t=23283814 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=359
+[fsio] 000242 U1  aes 32 t=23284180 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000243 U1  aes 32 t=23284542 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000244 U1  aes 32 t=23284904 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000245 U1  aes 32 t=23285282 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=370
+[fsio] 000246 U1  aes 32 t=23285652 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000247 U1  aes 32 t=23286018 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000248 U1  aes 32 t=23286440 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=410
+[fsio] 000249 U1  aes 31 t=23286808 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000250 U1  aes 31 t=23287172 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000251 U1  aes 31 t=23287538 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000252 U1  aes 31 t=23287902 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=359
+[fsio] 000253 U1  aes 31 t=23288256 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000254 U1  aes 31 t=23288610 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000255 U1  aes 31 t=23288964 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000256 U1  aes 31 t=23289318 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000257 U1  aes 25 t=23289686 dur=54 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=347
+[fsio] 000258 U1  aes 107 t=23290112 dur=73 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000259 U1  aes 25 t=23290560 dur=6 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=361
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000260 U0  aes 105 t=23291028 dur=274 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[fsio] 000261 U0  aes 105 t=23291722 dur=283 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[fsio] 000262 U0  aes 105 t=23292386 dur=210 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000263 U0  gemdos 0x49 t=23292998 dur=57 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=379
+[fsio] 000264 U0  aes 104 t=23293528 dur=19 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=383
+[fsio] 000265 U0  aes 106 t=23293948 dur=82 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=367
+[fsio] 000266 U0  aes 25 t=23294516 dur=16 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=374
+[fsio] 000267 U0  aes 104 t=23294902 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=363
+[fsio] 000268 U0  aes 106 t=23295276 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=366
+[fsio] 000269 U0  aes 107 t=23295724 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=403
+[fsio] 000270 U0  aes 104 t=23296100 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000271 U0  aes 104 t=23296588 dur=91 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000272 U0  aes 78 t=23297040 dur=17 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000273 U0  aes 42 t=23297474 dur=888 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000274 U0  aes 104 t=23301192 dur=5 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=5/2334 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=363
+[fsio] 000275 U0  aes 104 t=23303924 dur=16 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=257/1513 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=376
+[fsio] 000276 U0  aes 78 t=23304334 dur=20 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=386
+[fsio] 000277 U0  aes 107 t=23304722 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=362
+[fsio] 000278 U0  aes 25 t=23305094 dur=35 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=363
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5347 (+2300)
+[inj] desktop feed 0xe2 at hz_200 5347 (+2300)
+[inj] desktop feed 0x00 at hz_200 5347 (+2300)
+[fsio] 000279 U1  aes 25 t=23305610 dur=3451794 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=380
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5350 (+2303)
+[inj] desktop feed 0xe2 at hz_200 5350 (+2303)
+[inj] desktop feed 0x00 at hz_200 5350 (+2303)
+[fsio] 000280 U0  aes 25 t=26758004 dur=13402 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=432
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5353 (+2306)
+[inj] desktop feed 0xe2 at hz_200 5353 (+2306)
+[inj] desktop feed 0x00 at hz_200 5353 (+2306)
+[fsio] 000281 U1  aes 25 t=26771910 dur=14849 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=396
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5356 (+2309)
+[inj] desktop feed 0xe2 at hz_200 5356 (+2309)
+[inj] desktop feed 0x00 at hz_200 5356 (+2309)
+[fsio] 000282 U0  aes 25 t=26787238 dur=13572 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=378
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5359 (+2312)
+[inj] desktop feed 0xe2 at hz_200 5359 (+2312)
+[inj] desktop feed 0x00 at hz_200 5359 (+2312)
+[fsio] 000283 U1  aes 25 t=26801298 dur=14844 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=390
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5362 (+2315)
+[inj] desktop feed 0xe2 at hz_200 5362 (+2315)
+[inj] desktop feed 0x00 at hz_200 5362 (+2315)
+[fsio] 000284 U0  aes 25 t=26816630 dur=14848 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=388
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5365 (+2318)
+[inj] desktop feed 0xe2 at hz_200 5365 (+2318)
+[inj] desktop feed 0x00 at hz_200 5365 (+2318)
+[fsio] 000285 U1  aes 25 t=26831968 dur=14843 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=390
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5368 (+2321)
+[inj] desktop feed 0x00 at hz_200 5368 (+2321)
+[inj] desktop feed 0xe2 at hz_200 5368 (+2321)
+[fsio] 000286 U0  aes 25 t=26847308 dur=13610 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=394
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5371 (+2324)
+[inj] desktop feed 0x00 at hz_200 5371 (+2324)
+[inj] desktop feed 0xe2 at hz_200 5371 (+2324)
+[fsio] 000287 U1  aes 25 t=26861420 dur=14816 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5374 (+2327)
+[inj] desktop feed 0x00 at hz_200 5374 (+2327)
+[inj] desktop feed 0xe2 at hz_200 5374 (+2327)
+[fsio] 000288 U0  aes 25 t=26876726 dur=14828 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=390
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5377 (+2330)
+[inj] desktop feed 0x00 at hz_200 5377 (+2330)
+[inj] desktop feed 0xe2 at hz_200 5377 (+2330)
+[fsio] 000289 U1  aes 25 t=26892044 dur=14767 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=390
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5380 (+2333)
+[inj] desktop feed 0x00 at hz_200 5380 (+2333)
+[inj] desktop feed 0xe2 at hz_200 5380 (+2333)
+[fsio] 000290 U0  aes 25 t=26907288 dur=13606 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=380
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5383 (+2336)
+[inj] desktop feed 0x00 at hz_200 5383 (+2336)
+[inj] desktop feed 0xe2 at hz_200 5383 (+2336)
+[fsio] 000291 U1  aes 25 t=26921386 dur=14928 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5386 (+2339)
+[inj] desktop feed 0x00 at hz_200 5386 (+2339)
+[inj] desktop feed 0xe2 at hz_200 5386 (+2339)
+[fsio] 000292 U0  aes 25 t=26936794 dur=14866 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=380
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5389 (+2342)
+[inj] desktop feed 0x00 at hz_200 5389 (+2342)
+[inj] desktop feed 0xe2 at hz_200 5389 (+2342)
+[fsio] 000293 U1  aes 25 t=26952162 dur=14830 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=396
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5392 (+2345)
+[inj] desktop feed 0x00 at hz_200 5392 (+2345)
+[inj] desktop feed 0xe2 at hz_200 5392 (+2345)
+[fsio] 000294 U0  aes 25 t=26967494 dur=13578 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=398
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5395 (+2348)
+[inj] desktop feed 0x00 at hz_200 5395 (+2348)
+[inj] desktop feed 0xe2 at hz_200 5395 (+2348)
+[fsio] 000295 U1  aes 25 t=26981570 dur=14812 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=396
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5398 (+2351)
+[inj] desktop feed 0x00 at hz_200 5398 (+2351)
+[inj] desktop feed 0xe2 at hz_200 5398 (+2351)
+[fsio] 000296 U0  aes 25 t=26996872 dur=14804 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=391
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5401 (+2354)
+[inj] desktop feed 0x00 at hz_200 5401 (+2354)
+[inj] desktop feed 0xe2 at hz_200 5401 (+2354)
+[fsio] 000297 U1  aes 25 t=27012168 dur=14826 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5404 (+2357)
+[inj] desktop feed 0x00 at hz_200 5404 (+2357)
+[inj] desktop feed 0xf5 at hz_200 5404 (+2357)
+[fsio] 000298 U0  aes 25 t=27027478 dur=13560 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=388
+[sched] switch -> slot 1
+[sched] running
+[inj] desktop feed 0xfa at hz_200 5447 (+2400)
+[inj] desktop feed 0x00 at hz_200 5447 (+2400)
+[inj] desktop feed 0x00 at hz_200 5447 (+2400)
+[fsio] 000299 U1  aes 25 t=27041530 dur=215016 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=393
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5465 (+2418)
+[inj] desktop feed 0x00 at hz_200 5465 (+2418)
+[inj] desktop feed 0x00 at hz_200 5465 (+2418)
+[fsio] 000300 U0  aes 25 t=27257098 dur=89660 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=415
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000301 U1  aes 25 t=27347266 dur=113426 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=396
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000302 U0  aes 25 t=27461204 dur=43 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=404
+[fsio] 000303 U0  aes 104 t=27461768 dur=6 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=364
+[fsio] 000304 U0  aes 106 t=27462128 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000305 U0  aes 104 t=27462498 dur=6 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=344
+[fsio] 000306 U0  aes 12 t=27462878 dur=10 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000307 U0  aes 102 t=27463260 dur=3313 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000308 U1  aes 25 t=27467096 dur=32 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=382
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000309 U0  aes 74 t=27467622 dur=149406 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=371
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000310 U1  aes 107 t=27617542 dur=16 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=407
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000311 U0  gemdos 0x49 t=27618042 dur=127 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000312 U0  gemdos 0x49 t=27618572 dur=78 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=376
+[fsio] 000313 U0  gemdos 0x49 t=27619080 dur=73 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=398
+[fsio] 000314 U0  aes 103 t=27619596 dur=112 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=400
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000315 U1  aes 32 t=27620176 dur=21 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[sched] switch -> slot 0
+[sched] running
+[fsio] 000316 U0  gemdos 0x49 t=27620676 dur=62 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=353
+[fsio] 000317 U0  aes 25 t=27621178 dur=20 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=392
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000318 U1  aes 32 t=27621668 dur=14 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=372
+[fsio] 000319 U1  aes 32 t=27622048 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000320 U1  aes 32 t=27622414 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000321 U1  aes 32 t=27622780 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[fsio] 000322 U1  aes 32 t=27623138 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000323 U1  aes 32 t=27623494 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000324 U1  aes 32 t=27623850 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=351
+[fsio] 000325 U1  aes 32 t=27624206 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000326 U1  aes 32 t=27624562 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000327 U1  aes 32 t=27624916 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000328 U1  aes 32 t=27625272 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=351
+[fsio] 000329 U1  aes 32 t=27625626 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000330 U1  aes 32 t=27625980 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000331 U1  aes 32 t=27626370 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=376
+[fsio] 000332 U1  aes 32 t=27626746 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=368
+[fsio] 000333 U1  aes 32 t=27627100 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000334 U1  aes 32 t=27627462 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000335 U1  aes 32 t=27627816 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000336 U1  aes 32 t=27628174 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000337 U1  aes 32 t=27628534 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000338 U1  aes 32 t=27628890 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000339 U1  aes 32 t=27629242 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000340 U1  aes 32 t=27629600 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000341 U1  aes 32 t=27629954 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=349
+[fsio] 000342 U1  aes 32 t=27630310 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=350
+[fsio] 000343 U1  aes 32 t=27630668 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000344 U1  aes 32 t=27631026 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000345 U1  aes 32 t=27631382 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000346 U1  aes 32 t=27631806 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=413
+[fsio] 000347 U1  aes 32 t=27632194 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=382
+[fsio] 000348 U1  aes 31 t=27632550 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=348
+[fsio] 000349 U1  aes 31 t=27632906 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=347
+[fsio] 000350 U1  aes 31 t=27633260 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=346
+[fsio] 000351 U1  aes 31 t=27633618 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=352
+[fsio] 000352 U1  aes 31 t=27633974 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=351
+[fsio] 000353 U1  aes 31 t=27634342 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=360
+[fsio] 000354 U1  aes 31 t=27634702 dur=2 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=354
+[fsio] 000355 U1  aes 31 t=27635066 dur=3 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000356 U1  aes 25 t=27635432 dur=8 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=356
+[fsio] 000357 U1  aes 107 t=27635804 dur=4 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=358
+[inj] desktop feed 0xf8 at hz_200 5847 (+2800)
+[inj] desktop feed 0x14 at hz_200 5847 (+2800)
+[inj] desktop feed 0x00 at hz_200 5847 (+2800)
+[fsio] 000358 U1  aes 25 t=27636172 dur=1620606 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=361
+[sched] switch -> slot 0
+[sched] running
+[inj] desktop feed 0xf8 at hz_200 5850 (+2803)
+[inj] desktop feed 0x00 at hz_200 5850 (+2803)
+[inj] desktop feed 0xed at hz_200 5850 (+2803)
+[inj] desktop feed 0xf8 at hz_200 5953 (+2906)
+[inj] desktop feed 0x00 at hz_200 5953 (+2906)
+[inj] desktop feed 0x1e at hz_200 5953 (+2906)
+[inj] desktop feed 0xf8 at hz_200 5956 (+2909)
+[inj] desktop feed 0x00 at hz_200 5956 (+2909)
+[inj] desktop feed 0x13 at hz_200 5956 (+2909)
+[inj] desktop feed 0xfa at hz_200 6059 (+3012)
+[inj] desktop feed 0x00 at hz_200 6059 (+3012)
+[inj] desktop feed 0x00 at hz_200 6059 (+3012)
+[inj] desktop feed 0xf8 at hz_200 6077 (+3030)
+[inj] desktop feed 0x00 at hz_200 6077 (+3030)
+[inj] desktop feed 0x00 at hz_200 6077 (+3030)
+[fsio] 000359 U0  aes 25 t=29257350 dur=1262928 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=408
+[fsio] 000360 U0  aes 78 t=30520816 dur=58 ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=444
+[sched] switch -> slot 1
+[sched] running
+[fsio] 000361 U1  aes 25 t=30521376 dur=43 how=yield ret=0 | dev r=0/0/0 w=0/0/0 | bc hit=0 miss=0 | bdos hit=0 miss=0 fat=0 data=0 | fatlk=0 | gap vdi=0/0 bios=0/0 aes=0/0 gemdos=0/0 out=0/0 ovh=381
+[sched] switch -> slot 0
+[sched] running
+[crash] slot 0 Bus Error esr=0x92000007 pc=0x1977eac far=Some(28381320)
+fv
+
+Panic: Bus Error
+esr=92000007
+addr=0000000001b11088 sr=20000000 pc=0000000001977eac
+Memory violation: free memory, read (translation fault, level 3)
+
+X0-3:   00000000019a6840 0000000001a53db0 0000000000000002 0000000000000000
+X4-7:   0000000000000000 0000000000000000 0000000000000000 0000000001a53f10
+X8-11:  0000000001b11000 000000000000002a 0000000000000003 0000000001b0f688
+X12-15: 0000000000000038 0000000000000000 000000000000002a 00000000000001c9
+X16-19: 0000000000000184 0000000000000018 0000000000000260 0000000001a53db0
+X20-23: 00000000019a6840 0000000000000000 0000000000000000 000000000199df15
+X24-27: 0000000000000010 00000000019ab43c 0000000000000001 0000000000000000
+X28-30: 0000000000000000 0000000001a53fa0 0000000001977de0
+ USP:   0000000001a53d80
+
+basepage=01970000
+text=01971000 data=019a4b90 bss=019a65b0
+Crash at text+00006eac
+
+*** Press any key to continue ***

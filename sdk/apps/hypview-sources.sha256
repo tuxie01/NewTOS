@@ -12,6 +12,6 @@
 #     mkdir -p sdk/apps/hypview
 #     tar xzf hypview-6f3eeeb.tar.gz -C sdk/apps/hypview --strip-components 1
 #
-# The tree is used unchanged; the three per-program patches are in
+# The tree is used unchanged; the per-program patches are in
 # sdk/overlays/hypview/, the build is sdk/apps/build-hypview.sh.
 9beb7b3aabc42956ed25d15e6d9228e9d814bcbb19764938f9907dff32dda38a  hypview-6f3eeeb.tar.gz

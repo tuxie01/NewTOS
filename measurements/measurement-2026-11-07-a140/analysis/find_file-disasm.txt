@@ -1,0 +1,42 @@
+# TASK/A140: where the report's and the run's PC falls. HYP_VIEW.NAP before the fix, sha256 99e097e0dfae18c36b67ba8d2843c0fbc740c939521c6db884b561ad011737cc
+# image offset = pc - basepage; report: 0x1882eac - 0x187b000 = 0x7eac; LR x30 0x1882de0 - 0x187b000 = 0x7de0
+# x0 = 0x18b1840 - 0x187b000 = 0x36840 = last_path; x8 = value of Win; +0x88 = offsetof(WINDOW_DATA, data) on LP64 (last line)
+
+0000000000005a00 T DoUserEvents
+000000000000bf74 T HelpWindow
+0000000000007d7c T OpenFileNW
+0000000000005e20 T OpenWindow
+000000000000671c T RemoveWindow
+0000000000036e78 B Win
+0000000000007e88 t find_file
+0000000000036940 B last_node
+0000000000036840 B last_path
+
+GOT slot read by find_file:
+    0x34CB8 R_AARCH64_RELATIVE - 0x36E78
+
+the call in OpenFileNW (return address 0x7de0):
+    7dd0: 910003e1     	mov	x1, sp
+    7dd4: 9a9f02d6     	csel	x22, x22, xzr, eq
+    7dd8: 8b160260     	add	x0, x19, x22
+    7ddc: 9400002b     	bl	0x7e88 <find_file>
+    7de0: 12003c08     	and	w8, w0, #0xffff
+    7de4: 360002a8     	tbz	w8, #0x0, 0x7e38 <OpenFileNW+0xbc>
+
+find_file:
+0000000000007e88 <find_file>:
+    7e88: f81d0ffe     	str	x30, [sp, #-0x30]!
+    7e8c: a90157f6     	stp	x22, x21, [sp, #0x10]
+    7e90: b0000168     	adrp	x8, 0x34000 <tzparse.new_york+0x31d0>
+    7e94: a9024ff4     	stp	x20, x19, [sp, #0x20]
+    7e98: aa0103f3     	mov	x19, x1
+    7e9c: aa0003f4     	mov	x20, x0
+    7ea0: f9465d08     	ldr	x8, [x8, #0xcb8]
+    7ea4: f9400108     	ldr	x8, [x8]
+    7ea8: b4000368     	cbz	x8, 0x7f14 <find_file+0x8c>
+    7eac: f9404515     	ldr	x21, [x8, #0x88]
+    7eb0: aa1303e0     	mov	x0, x19
+    7eb4: f9400aa1     	ldr	x1, [x21, #0x10]
+    7eb8: 94007599     	bl	0x2551c <strcpy>
+
+offsetof, host cc -O1 over the same headers (LP64, same layout as the target): offsetof(WINDOW_DATA,data)=0x88 sizeof=0x90

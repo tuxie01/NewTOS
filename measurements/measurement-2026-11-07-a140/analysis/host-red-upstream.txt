@@ -1,0 +1,29 @@
+dl_win.c under test: sdk/apps/hypview/dl_win.c
+ok    open: Win is the new window
+FAIL  last window removed: Win is NULL
+ok    last window removed: no block left
+ok    last window removed: list empty
+ok    open: Win is the new window
+FAIL  last window removed: Win is NULL
+ok    last window removed: no block left
+ok    last window removed: list empty
+ok    open: Win is the new window
+FAIL  last window removed: Win is NULL
+ok    last window removed: no block left
+ok    last window removed: list empty
+ok    second open: Win is the second window
+FAIL  first of two removed: Win is not the freed window
+ok    first of two removed: other window alive
+FAIL  second of two removed: Win is NULL
+ok    quiet window + document: Win is the document
+ok    other window removed: Win unchanged
+FAIL  last removed: Win is NULL
+ok    popup open: Win is the popup
+FAIL  popup removed: Win is not the freed popup
+ok    popup removed: document window alive
+FAIL  window with popup removed: Win is NULL
+ok    window with popup removed: no block left
+ok    wind_open refused: OpenWindow returns NULL
+FAIL  wind_open refused: Win is NULL
+ok    wind_open refused: no block left
+win-host: 27 checks, 9 failed

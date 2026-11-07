@@ -1,0 +1,12 @@
+vector edges inside the set (0):
+
+coverage of the set (24 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          9      9 100.0%      0   0.0%      0   0.0%
+bdos         4      4 100.0%      0   0.0%      0   0.0%
+bios         5      1  20.0%      2  40.0%      2  40.0%
+vdi          6      6 100.0%      0   0.0%      0   0.0%
+total       24     20  83.3%      2   8.3%      2   8.3%
+touched layers: bdos (the layers of xmfree; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

@@ -1,0 +1,14 @@
+2200 00-first-open
+2750 01-link-followed
+3250 02-closed
+4050 03-reopen-1
+4550 04-closed
+5350 05-reopen-2
+5850 06-closed
+6650 07-reopen-3
+7450 08-fsel-with-window-open
+8450 09-other-doc-same-window
+8950 10-closed
+9750 11-reopen-4
+10250 12-ctrl-q-closed
+11100 13-reopen-5

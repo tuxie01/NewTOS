@@ -1,0 +1,16 @@
+GitHub #22 (ragnar76, NewTOS 0.7, Pi 4 4GB), "[Bug] HypView crashing". Two photos of the crash report on screen, read 2026-11-07.
+https://github.com/user-attachments/assets/7ab6157b-8039-4b3d-91e2-6332b6b702a9
+https://github.com/user-attachments/assets/13341ff0-1784-4b05-a11e-ac080a448f07
+Steps: copy hypview.nap to c:\acc\hypview.nac incl. its .rsc; open from the acc menu; open any hyp file; close hypview; open from the acc menu again.
+
+Both photos, same values except the block address:
+  Panic: Bus Error, esr=92000007, pc=0000000001882eac, sr=20000000
+  addr=...1dff088 (photo 1), ...1e0d088 (photo 2)
+  Memory violation: free memory, read (translation fault, level 3)
+  X0=00000000018b1840 X1=0000000001d2ddb0 X2=2  X8=0000000001dff000 (photo 2: 0000000001e0d000)
+  X29=0000000001d2dfa0 X30=0000000001882de0 USP=0000000001d2dd80
+  basepage=0187b000 text=0187c000 data=018afb90 bss=018b15b0, Crash at text+00006eac
+  crash-walk: far INVALID at L3, model=invalid table=invalid at=fault table==model yes, ladder ... => none;
+              pc model=valid table=valid at=ok; "model: pool yes, no block"
+Reading: the page table and the kernel's model agree that the page is free; no stale TLB, no table fault.
+data-basepage = 0x34b90, bss-basepage = 0x365b0: the section layout of the HYP_VIEW.NAP built with v0.7.

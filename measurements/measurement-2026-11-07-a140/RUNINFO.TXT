@@ -1,0 +1,100 @@
+measurement-2026-11-07-a140 -- TASK/A140, GitHub #22 ("HypView crashing", ragnar76, NewTOS 0.7, Pi 4): HypView as an
+accessory, reopened after its window was closed, ends with a bus error. Reproduced, cause established, fixed in a patch file.
+=====================================================================================================================
+Developer, 2026-11-07. Main tree at 08dc5c34. QEMU only; no Pi, no card, no /Volumes/ access.
+
+RESULT
+  REPRODUCED on HEAD 08dc5c34 with the HYP_VIEW.NAP of the v0.7 build: Crash at text+00006eac, the report's offset.
+  CAUSE in the program (upstream HypView), not in the kernel and not in our port patches.
+  FIX sdk/overlays/hypview/dl_win.c; kernel unchanged. Six opens in a row, no crash, memprot on and strict.
+
+INPUTS
+  QEMU       11.0.2, -M raspi4b, -append serial=on, APFS clone (cp -c) of each card, deleted after (method/run.sh)
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang of every card manifest)
+  manifests  runs/*/card.img.manifest; optional_missing, verbatim, in all six:
+               optional_missing none
+  kernels    git archive 08dc5c34 + tools/inject-arm.py desktop=<script> (method/rebuild.sh), rpi4 --release:
+               8cb76640d3c1e31b45eae88126cda0a0bc39baa164c6ba97447b2b252c6d7c89  script method/mouse-issue.sh
+               d95caaa09bc74d5c773d6f8aa43a473a9eb3c321259b16077325d9e2cc362eb2  the same, --features fs-io-trace
+               d2a2b8e03fa543af4d56bb7b161c0f3007174d8be0922be3277fe75c324451be  script method/mouse-cycles.sh
+             gemdos-trace and aes-trace were tried first: the kernel does not link with them ("kernel image + stack
+             overruns STRAM_OS_RESERVE"), so fs-io-trace (a line per AES/GEMDOS call on serial) gave the call sequence.
+  programs   before the fix: HYP_VIEW.NAP 99e097e0dfae18c36b67ba8d2843c0fbc740c939521c6db884b561ad011737cc (built
+             2026-11-04 17:03, after the v0.7 tag d7711c42; data/bss offsets equal the report's, analysis/issue22-report.txt)
+             with the fix: HYP_VIEW.NAP e6cc2d84da9b1581abf62345162d0487a894ebceb80d6b53d5c2eec74cd3725f (sdk/apps/build-hypview.sh)
+             hyp_view.rsc 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa (both)
+  card       C:\ACC\HYPVIEW.NAC, C:\ACC\HYP_VIEW.RSC (the issue's step 1), C:\GEMSYS\GUIDES\TEST.HYP = cflib.hyp from the
+             local Applications/ tree, 36cdcff3f2794db44e790744755a02388bc415f09a482cb8ab59e9e289220aa0, in HypView's default
+             search path so that the file selector shows it. method/NEWDESK.INF. No HYP_VIEW.CFG, as on the reporter's card.
+  input      method/gen-mouse.py: IKBD packets from the bottom-left corner, moves enter the menu bar only in the Desk
+             column. Clicks on Desk > HypView, the file list, OK and the window's closer; coordinates read off screendumps.
+
+RUNS (runs/<name>/: run.txt, BOOT-SERIAL.txt, shots/, shots.txt, card.img.manifest)
+  red-issue            old NAP, issue's sequence. Panic: Bus Error, esr 92000007, addr 1b11088, pc 1977eac, x30 1977de0,
+                       x0 19a6840, x8 1b11000, "Memory violation: free memory, read (translation fault, level 3)",
+                       Crash at text+00006eac. Screen: shots/04-04-after-second-open.png
+  red-fsio             the same with fs-io-trace: same crash; call sequence below
+  control-memprot-off  old NAP, same sequence, -append "serial=on memprot=off": no panic, window comes back
+  green-issue          new NAP, memprot on: no panic. Its last screendump is byte-identical to the control's (cmp)
+  green-cycles         new NAP, memprot on, method/mouse-cycles.sh: first open, link followed, closer; reopen x3 (comes back
+                       on the followed page: last_path/last_node work); accessory click with the window open (file selector,
+                       loads into the same window, OpenFile_FSLX -> OpenFileSW); closer; reopen; Ctrl+Q (RemoveItems, no
+                       WM_CLOSED); reopen. 6 opens, 14 screendumps, viewed, 0 panic lines
+  green-cycles-strict  the same, -append "serial=on memprot=strict". 0 panic lines; screendumps equal, see CHECKS
+
+CAUSE, with evidence (analysis/find_file-disasm.txt)
+  pc - basepage = 0x7eac, in find_file (static, sdk/apps/hypview/file.c): `ldr x21, [x8, #0x88]`, x8 loaded from the GOT slot
+    0x34cb8 -> Win. 0x88 = offsetof(WINDOW_DATA, data). This is `DOCUMENT *doc = win->data;` under `if (win)`.
+  x30 - basepage = 0x7de0, the return address of `bl find_file` in OpenFileNW.
+  x0 = basepage + 0x36840 = last_path. Only DoUserEvents (sdk/apps/hypview/dl_user.c, AC_OPEN branch) calls
+    OpenFileNW(last_path, ...), under count_window() == 0 && last_path[0] != 0: the accessory's reopen. The WM_CLOSED branch
+    of the same function fills last_path when the last window closes. The report's two photos carry the same x0, x30, pc.
+  Who frees: red-fsio serial, slot 0 (the accessory):
+    000198 gemdos 0x44 ret=28381184      Mxalloc -> 0x1b11000, x8 of the crash: OpenWindow's WINDOW_DATA (dl_win.c)
+    000302 aes 25                        evnt_multi returns WM_CLOSED
+    000306 aes 12, 000307 aes 102, 000309 aes 74, 000311-313 gemdos 0x49 x3   appl_write, wind_close, shrinkbox, CloseFile
+    000314 aes 103, 000316 gemdos 0x49   wind_delete, then Mfree: RemoveWindow's order (dl_win.c), this frees 0x1b11000
+    000359 aes 25                        evnt_multi returns AC_OPEN
+    000360 aes 78                        graf_mouse(BUSYBEE), first line of OpenFileNW after the empty-path test
+    then the fault in find_file, before any further trap.
+    fs-io-trace does not print Mfree's argument; that 000316 frees this block follows from the source order and from the
+    crash report's "pool yes, no block".
+  Why `Win` still points there: HelpWindow (sdk/apps/hypview/window.c) starts with `Win = win = p;` on every call, also for
+    WIND_EXIT, whose branch ends with `win = NULL` on the local variable. Nothing clears the global. PopupWindow (hyp/popup.c)
+    does the same. As a program HypView leaves its loop with the last window (hyp_view.c: `while(!_app || ...)`), so upstream
+    never reads Win again; as an accessory it loops on.
+  HypView IS meant to run as an accessory: hyp_view.c registers with menu_register when !_app, dl_user.c handles AC_OPEN and
+    AC_CLOSE and keeps last_path/last_node for the reopen. Between openings it frees every window and document (RemoveWindow,
+    CloseFile) and keeps its resource, VDI handle and configuration.
+  EmuTOS: xmfree (references/emutos/bdos/umem.c:135-155) -> freeit (references/emutos/bdos/iumem.c:144-221) move the MD from the
+    allocated to the free list and do not touch the block, so the read returns stale but intact data and the program runs on
+    by luck, unless the block has been reused. Not measured on the oracle: HypView here is an LP64 build. The memprot=off
+    control shows the same sequence with the block readable.
+  NewTOS: freed pages lose their mapping (docs/COMPATIBILITY.md, section on memory protection, observable difference (1),
+    ADR-027); FreeMiNT does the same (references/freemint/sys/memory.c:930-932, mark_region PROT_I). The kernel is right; it
+    stays unchanged. Its report was accurate: model=invalid table=invalid table==model.
+
+FIX sdk/overlays/hypview/dl_win.c, three lines against upstream, header says why
+  `if(Win == ptr) Win = NULL;` before the two Mfree(ptr) that follow a proc call (RemoveWindow, OpenWindow's failure path).
+  NULL is Win's state before the first window, and find_file, OpenFileSW and block.c handle it. Win is compared before the
+  free. Other windows' Win is left alone. A popup's removal leaves Win NULL until the next event of the main window sets it.
+  Why not in window.c: popup.c stores Win as well, and a nested popup removal would need a third site.
+
+CHECKS
+  sdk/overlays/hypview/tests/win-host.sh (new, ASan/UBSan, #includes dl_win.c unchanged, fakes AES and Mxalloc/Mfree):
+    upstream dl_win.c  27 checks, 9 failed  analysis/host-red-upstream.txt    (written and run before the patch existed)
+    overlay  dl_win.c  27 checks, 0 failed  analysis/host-green-overlay.txt
+  sdk/run-host-tests.sh: host tests: 36 passed, 0 failed, 0 skipped (hypview-win-host is the new one)
+  green-cycles vs green-cycles-strict: all 14 screendumps byte-identical (cmp)
+  cargo xtask deps xmfree --up: analysis/deps-xmfree-up.txt. No kernel function touched, so no mapping.tsv row; the --up set is
+    no retest set here. Kernel build rpi4 and qemu-virt: nothing changed there, both finish.
+
+METHOD
+  method/gen-mouse.py, method/mouse-issue.sh, method/mouse-cycles.sh, method/shots-issue.txt, method/shots-cycles.txt,
+  method/rebuild.sh, method/run.sh, method/NEWDESK.INF.
+  Rebuild: rebuild.sh <tree> <pristine> <script> <kernel>, run.sh <out> <kernel> <nap> <rsc> <shots>.
+  Exploratory runs that found the coordinates (Desk item, list row, OK, closer) were not kept.
+
+OPEN
+  Real Pi: not run (no hardware here). The sequence of the issue, repeated, with the new HYP_VIEW.NAP as C:\ACC\HYPVIEW.NAC.
+  A popup (`PopupWindow`) and two real windows at once are checked only in the host harness, not in QEMU.

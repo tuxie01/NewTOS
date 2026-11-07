@@ -326,6 +326,16 @@ report td-nohard-host $rc "$(tail -1 "$WORK/td-nohard-host.log")"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/hypview-ref-host.log"
 report hypview-ref-host $rc "$(tail -1 "$WORK/hypview-ref-host.log")"
 
+# hypview-win-host (A140, GitHub #22): HypView's window list as the SDK builds
+# it (the overlay dl_win.c): the global `Win` is NULL or a live window after
+# every path that frees a window -- the last window closed, the first of two, a
+# popup alone, a window with its popup, wind_open refused, and open/close
+# repeated. With the vendored dl_win.c 9 of 27 checks fail (`Win` stays on the
+# freed block, find_file reads it on the accessory's next AC_OPEN). ASan/UBSan.
+"$SDK/overlays/hypview/tests/win-host.sh" > "$WORK/hypview-win-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/hypview-win-host.log"
+report hypview-win-host $rc "$(tail -1 "$WORK/hypview-win-host.log")"
+
 # sysacc-cmdline-host (SYSINFO02): the System Info accessory's boot-argument
 # logic (sdk/examples/sysacc-cmdline.h, the header sysacc.c includes) -- the
 # parse reads C:\CMDLINE.TXT as kernel/src/bootargs.rs reads the boot
