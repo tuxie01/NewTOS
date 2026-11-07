@@ -3236,6 +3236,43 @@ uses these functions; only their effects are visible.
   measured before it is accepted (e.g. TASK/FS24, `Dsetpath` after a media
   change).
 
+## ADR-034: The TOS 4 sources (`tos4x`) as a read-only comparison, EmuTOS stays the specification
+
+**Date:** 2026-11-07
+**Status:** **Accepted** (2026-11-07, user decision after the clean-room consequence was put to the user).
+**Phase:** cross-cutting (source analysis; first uses DMA sound, VDI).
+
+### Context
+
+`references/tos4x` (https://github.com/mikrosk/tos4x, pin in `references/README.md`) holds the TOS 4 and
+MultiTOS sources, tag `build/tos404` being TOS 4.04, the Falcon TOS of our target profile. `master` is
+TOS 4.05 and 5.00 and is not that profile. The tree carries no licence file. Its README describes sources
+found in archives with partial reconstruction; the user describes them as reengineered. Neither was checked.
+
+NewTOS calls itself a clean-room reimplementation with EmuTOS as its specification (`CLAUDE.md`). The user
+wants to see how TOS 4.04 builds DMA sound and VDI functions and to compare them with EmuTOS.
+
+### Decision
+
+1. EmuTOS stays the specification and the pinned oracle stays the measured reference. CLAUDE.md rule 1 is unchanged.
+2. `tos4x` is read at tag `build/tos404` unless a ticket says otherwise, and only where a ticket names it. No
+   worker reads it otherwise.
+3. Reading produces a comparison: what differs from EmuTOS, cited as `references/tos4x/<path>:<line>`, in our
+   own words. No code, table or comment from it is copied, quoted or translated into this repository, which is
+   public. NewTOS code is written from `docs/api/` as before.
+4. A difference is a finding, not a fix: reading gives a hypothesis, measurement decides. The default stays
+   EmuTOS. Following TOS 4.04 where it differs from EmuTOS is a user decision per case.
+
+### Consequences
+
+- NewTOS can no longer claim that nobody working on it saw Atari's sources. Tickets record where `tos4x` was read,
+  so the claim can be stated precisely. This lowers no legal risk; it was not assessed legally.
+- A case read in `tos4x` and then implemented needs a spec entry with an EmuTOS or hardware source, or a user decision
+  under point 4.
+- Later option, not decided: building the ROM of that tag and measuring it in Hatari as a second oracle.
+
+---
+
 ## Template for new ADRs
 
 ```markdown

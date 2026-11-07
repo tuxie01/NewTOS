@@ -40,6 +40,9 @@ oracle's own build tree `references/emutos-oracle/1a7484ab` (user 2026-10-30,
 **FreeMiNT** (`references/freemint/`) is the sanctioned source for
 FreeMiNT-compatible extensions and for kernel memory management (ADR-027).
 
+**TOS 4 sources** (`references/tos4x`): a read-only comparison where a ticket
+names it, never a specification; nothing is copied or quoted from it (ADR-034).
+
 **Secondary references** (used to cross-check the EmuTOS extraction):
 Atari Compendium, Atari Profibuch, TOS Release Notes, Atari ST Internals.
 None of them is in `references/` (see `references/README.md`).
