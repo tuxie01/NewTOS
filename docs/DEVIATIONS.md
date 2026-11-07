@@ -31,6 +31,12 @@ Rules:
 | More than 4096 characters in one call, unscaled 8x16 font | pen wraps | width check overflows `WORD`, direct blit runs on | gemessen | [V42](../TASK/V42.md) offen (P4) |
 | `vst_height` with clipping, also without effect | was: wholly clipped glyphs moved the DDA | skips `scale` for them | gemessen | [V45](../TASK/V45.md): ZG012 equal since [V31](../TASK/V31.md), rest of ZG013 is skew ([V41](../TASK/V41.md)); likely done, to be confirmed |
 | `v_pmarker` after `vs_clip(0)` | markers clipped, workstation `clip` stays 0 | sets `vwk->clip = 1` and leaves it on | gelesen | [V46](../TASK/V46.md) offen |
+| `v_clswk` + `v_opnwk` (program or new AES session) | pointer position, buttons, hide count, form and `vex_*` vectors kept; a visible pointer paints an old 16x16 remnant on the next `v_hide_c` | centre, buttons 0, count 1, default arrow, vectors default | gemessen (wkprobe W1, W2) | [V53](../TASK/V53.md) offen |
+| Mouse packets after `v_clswk` | pointer keeps moving and drawing, `vq_mouse` reports motion, `vex_*` stay | mouse off, vectors `just_rts` | gemessen (wkprobe C1) | [V53](../TASK/V53.md) offen |
+| `vsc_form` with the pointer visible (direct, not via `graf_mouse`) | new form/hotspot on screen at once | old image until the next redraw | gemessen (wkprobe F1, F2) | [V54](../TASK/V54.md) offen |
+| Reading the screen right after a mouse packet (before the next frame) | pointer already at the new position | still at the old one, `vq_mouse` already new | gemessen (wkprobe M1, M2) | [V55](../TASK/V55.md), user decision open |
+| `v_opnwk` while the physical workstation is open | returns, virtual workstations stay open | hangs | gemessen (wkprobe W9) | [SPEC04](../TASK/SPEC04.md) (COMPATIBILITY entry missing) |
+| `v_opnwk` with `work_in[0]` = mode + 2 | no mode switch, `work_out` = running geometry | `Setscreen`/`VsetMode` to that mode | gemessen (`vdi-v18-t3.tsv` 13) | ADR-017 Rev. 2; entry via [SPEC04](../TASK/SPEC04.md) |
 
 ## XBIOS, keyboard, system variables
 
