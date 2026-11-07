@@ -1,0 +1,87 @@
+WFPROBE (TASK/HW08), test card, sd-fault kernel. Boot fresh for every run.
+o out of range, real command (M-A)      t one write timeout, CMD12 in a transfer (M-C)
+d data CRC errors for a while (M-C)     u busy 1.2 s  v busy 2.2 s  w busy 3.5 s (dir)
+f busy 2.2 s, FAT    3 one refused write   b FAT refused for a while  x b + Fdelete
+p programming 2.6 s, dir    q programming 2.6 s, FAT
+key (other: end): 
+drive to run on, D, E or F: 
+=== WFPROBE case u2: busy 1200 ms, over the limit, directory
+D: partition at 1003520, FATs at 1 and 246, root at 491, data at 523
+save BASE.DAT       Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the baseline (673 bytes)
+  SD diagnosis  up 0:00:29.763   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 0 timeouts 0 recover 0 nonrecover 0 refused 0
+   boot    errors 0 timeouts 0 (base probe, in the counts above)
+   last    cmd_inhibit int 00000000 r1 00000000
+   wait ms cmd_done 0.5 read_rdy 0.7 write_rdy 187.6 read_done 0.0 write_done 35.4
+  write   n 11 sec 20 failed 0 max 209.4 ms
+   time   <1:0 <4:4 <16:0 <64:6 <250:1 <500:0 <1000:0 more:0
+  read    n 66 sec 1043 failed 0 max 9.2 ms
+   time   <1:51 <4:11 <16:4 <64:0 <250:0 <500:0 <1000:0 more:0
+  first   no failure since the boot
+  cache   writeback failed 0 retried 0 dirty 0; last code 0 of 0
+  bcache  dev r 66 w 11 hit 45 miss 1043 sectors
+arm fault 4: Ssystem=0
+save RESULTS.PDF    Fcreate=-2 Fwrite=0,0 Fclose=0
+--- diag after the victim (866 bytes)
+  SD diagnosis  up 0:00:30.881   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 0 timeouts 1 recover 1 nonrecover 1 refused 0
+   boot    errors 0 timeouts 0 (base probe, in the counts above)
+   last    write_done int 00000002 r1 00000000
+   tmo    write_done=1
+   wait ms cmd_done 0.5 read_rdy 0.7 write_rdy 187.6 read_done 0.0
+           write_done 1000.0
+  write   n 12 sec 21 failed 1 max 1100.0 ms
+   time   <1:0 <4:4 <16:0 <64:6 <250:1 <500:0 <1000:0 more:1
+  read    n 70 sec 1047 failed 0 max 9.2 ms
+   time   <1:55 <4:11 <16:4 <64:0 <250:0 <500:0 <1000:0 more:0
+  first   0:00:30.771 write lba 1004011 n 1 write_done timeout 00000002
+  fail    0:00:30.871 write lba 1004011 n 1 write_done NONRECOVERABLE 1fff0002
+  cache   writeback failed 1 retried 0 dirty 1; last code -2 of 1
+   dirty  D: lba 1004011 dir/data tries 0 code 0
+  bcache  dev r 70 w 12 hit 45 miss 1047 sectors
+disarm: fired 1
+save R1.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R2.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R3.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R4.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the saves with the fault gone (837 bytes)
+  SD diagnosis  up 0:00:31.018   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 0 timeouts 1 recover 1 nonrecover 1 refused 0
+   boot    errors 0 timeouts 0 (base probe, in the counts above)
+   last    write_done int 00000002 r1 00000000
+   tmo    write_done=1
+   wait ms dat_inhibit 82.8 cmd_done 0.5 read_rdy 0.7 write_rdy 187.6
+           read_done 0.0 write_done 1000.0
+  write   n 44 sec 89 failed 1 max 1100.0 ms
+   time   <1:0 <4:34 <16:1 <64:6 <250:2 <500:0 <1000:0 more:1
+  read    n 74 sec 1051 failed 0 max 9.2 ms
+   time   <1:59 <4:11 <16:4 <64:0 <250:0 <500:0 <1000:0 more:0
+  first   0:00:30.771 write lba 1004011 n 1 write_done timeout 00000002
+  fail    0:00:30.871 write lba 1004011 n 1 write_done NONRECOVERABLE 1fff0002
+  cache   writeback failed 1 retried 0 dirty 0; last code -2 of 1
+  bcache  dev r 74 w 44 hit 45 miss 1051 sectors
+look BASE.DAT       Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look RESULTS.PDF    Fsfirst=-33 size=-1 want=37156 Fopen=-33 Fread=-1 same=0
+look R1.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R2.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R3.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R4.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+Dfree(D:)=0 free=62226 total=62467
+--- diag at the end (841 bytes)
+  SD diagnosis  up 0:00:31.196   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 0 timeouts 1 recover 1 nonrecover 1 refused 0
+   boot    errors 0 timeouts 0 (base probe, in the counts above)
+   last    write_done int 00000002 r1 00000000
+   tmo    write_done=1
+   wait ms dat_inhibit 82.8 cmd_done 0.5 read_rdy 0.7 write_rdy 187.6
+           read_done 0.0 write_done 1000.0
+  write   n 44 sec 89 failed 1 max 1100.0 ms
+   time   <1:0 <4:34 <16:1 <64:6 <250:2 <500:0 <1000:0 more:1
+  read    n 318 sec 1295 failed 0 max 9.2 ms
+   time   <1:303 <4:11 <16:4 <64:0 <250:0 <500:0 <1000:0 more:0
+  first   0:00:30.771 write lba 1004011 n 1 write_done timeout 00000002
+  fail    0:00:30.871 write lba 1004011 n 1 write_done NONRECOVERABLE 1fff0002
+  cache   writeback failed 1 retried 0 dirty 0; last code -2 of 1
+  bcache  dev r 318 w 44 hit 104 miss 1295 sectors
+END

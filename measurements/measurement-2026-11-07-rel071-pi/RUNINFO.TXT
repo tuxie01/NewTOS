@@ -1,0 +1,104 @@
+measurement-2026-11-07-rel071-pi -- REL071: Pi acceptance of NewTOS 0.7.1 (in progress)
+=========================================================================================
+User on the real Pi 4, lead on the Mac side. 2026-11-07. Package: measurements/measurement-2026-11-07-rel071-final/RUNINFO.TXT
+(ZIP sha256 4fa38e9c..., from 189401b2). No image was booted in QEMU for this run; no manifest.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (the package run's)
+
+CARD (the user's test card, 31.3 GB, MBR: C: disk10s1 BOOT, D: s2, E: s3, then logical F: s5, G: s6, H: s7,
+each FAT16 512 MB)
+  Lead copied with cp -X, each file compared with cmp afterwards:
+  - from the ZIP's KARTE/: kernel8.img, APPS/COREMARK/CORE.NCP + COREVAL.NCP, APPS/DOOM/DOOM.NTP,
+    APPS/HYPVIEW/HYP_VIEW.NAP + hyp_view.rsc, APPS/QED/QED.NAP, APPS/TERADESK/DESKTOP.NAP,
+    APPS/ZVIEW/ZVIEW.NAP + the 10 CODECS/*.NLD, GEMSYS/RSC/GEM.RSC
+  - KERNSDF.IMG = pi-test/kernel8-sd-fault.img (crash-walk,sd-fault; for WFPROBE only, swapped in by the user)
+  - for A140: ACC/HYPVIEW.NAC = HYP_VIEW.NAP, ACC/HYP_VIEW.RSC = hyp_view.rsc
+  Kept as the card had them (test-card settings, not builds): NEWDESK.INF (drives D-F, program icons),
+  APPS/ZVIEW/ZVIEW.INF (window position), config.txt (user's uart_2ndstage diagnosis block), HW08/
+  (WFPROBE.NCP equal to pi-test's), APPS/DOOM/DOOM.NAP (old, beside the new DOOM.NTP), kernela/kernelb.img.
+  sha256 of the key files: card-files.sha256.
+  Before the power-cut and WFPROBE steps: diskutil verifyVolume (fsck_msdos -n) on all six partitions,
+  exit code 0 each: C: 236 files 455200 KiB free; D: 110 / 497848; E: 193 / 481816; F: 108 / 498392;
+  G: 108 / 498400; H: 91 / 498560.
+
+RESULTS SO FAR (user photos, photos/)
+  p08, p09  CoreMark from the desktop (DESK70): "Correct operation validated", CoreMark 1.0 : 7330.889703,
+            110000 iterations, 15.005 s; "Press any key to exit." stays.
+  p03, p04  HypView QED.HYP (A141, A142): toolbar with grey frames, grey disks with orange arrows, orange INX
+            book, blue "i" and "?"; qed logo clean.
+  p05       QED Textinfo: radio buttons drawn cleanly, "Unix" selected (A142).
+  p06, p07  QED Lokale / Globale Einstellungen: check boxes drawn cleanly (A142).
+  p02       File selector: the title bar of the list shows "*.*" (A132).
+  p01       Window shadow (A131, user: "es soll den Schatten zeigen des Rahmens"): right and bottom edge end in
+            a dark line thicker than the inner frame lines, then the green desktop; no grey line seen. The photo
+            is too soft to count pixels.
+
+  A140      HypView as accessory (C:\ACC\HYPVIEW.NAC): user "Hypeview als NAC funktioniert", no crash.
+  copy      User copied the APPS folder in the desktop to F: (logical partition s5): "am Anfang hat es ein klein
+            wenig laenger gedauert als bei den anderen, aber dann lief es recht flott durch ... max 2 Sekunden
+            langsamer". No stopwatch; whether files on F: were replaced is not recorded.
+
+  A140      popup + second window: user "funktioniert".
+  A130/A127 scroll bars (outline when dragging, repeat on an arrow) and quick menu clicks: user "funktioniert".
+  HW05      desktop copy C:\APPS\QED\QED.NAP to D:: "zu schnell, fuer mich nicht messbar, unter einer Sekunde"
+            (QED.NAP 0.7.1 is in the package's FILES.TSV). No stopwatch value.
+
+  power cut REL071 "Stecker-Test": not run in this session. User: "eigentlich haben wir das schon getestet"
+            (an earlier test on the Pi, not recorded as a run in the repository; no photo, no fsck output here).
+
+  FSWBENCH  second Pi run after the HW08 fix, release kernel (log: "Ssystem 2090 = -32 (no sd-diag kernel)"), run
+            on drive D: (not E: as planned), log C:\FSWBENCH.LOG (the program always logs to C:), FAT stamp
+            2026-11-07 00:12:56 = kernel build date + uptime (no RTC). Copied: card/FSWBENCH.LOG (sha256 2f8272a3...).
+            0 failed, every read-back ok. KB/s against the first fix run (measurements/measurement-2026-11-07-hw08-pi5/
+            RUNINFO.TXT, drive E:), first -> now:
+              10 MiB  Fwrite 4096 1897 -> 1913, 32768 5024 -> 4771, whole 9577 -> 9667, L3 6446 -> 6081, L4 3520 -> 2758
+              1 MiB   Fwrite 4096 2570 -> 2573, 32768 6168 -> 6269, whole 3707 -> 3847, L3 3746 -> 3791, L4 2807 -> 2675
+              10 KiB  L2 512 82 -> 432, L4 95 -> 1299: the low values of the first run do not repeat (card pause there).
+            Observation, not analysed: L2 whole file 1 MiB is 3707 and 3847 in both fix runs; the two runs before the
+            fix in pi5's table had 8328 and 8208. User: "die Karte ist nicht die schnellste, hatten wir ja schon
+            festgestellt" -- no ticket. (HW05 names a new card for the pre-fix run hw08-pi2, so the comparison
+            crosses cards.)
+
+  kernel swap for WFPROBE (lead, user's "ja"): kernel8.img -> kernel71.img (b0543dd4...), KERNSDF.IMG ->
+            kernel8.img (ccd73cc4..., crash-walk,sd-fault). Partition starts (diskutil, 512-byte sectors):
+            C: 2048, D: 1003520, E: 2004992, F: 3006464 (logical, s5), G: 4007936, H: 5009408; MBR entry 4 is the
+            extended partition, so a probe that takes F: as MBR entry 4 would not find 3006464.
+
+  WFPROBE t on F: (p10, p11): started from EmuCON (user: from the desktop the text did not stay -- the
+            desktop does not wait, DESK70). "arm fault 3: Ssystem=0", every save ok (RESULTS.PDF 32768+4388,
+            R1..R4 5281), "disarm: fired 0", driver errors 0 timeouts 0, every look same=1, Dfree(F:)=0.
+            The fault never fired: key t = case t1 (F_TORDY, R_ROOT, tosdump/probes/wfprobe.c case table),
+            the region is lo/hi + part_start, and part_start is read from MBR entry drv-'C' (wfprobe.c, the
+            "partition at" lookup) -- for F: entry 4, the extended partition, not F: at 3006464. So t1 aimed at
+            sectors outside F:'s root directory. The "F: partition at" line is above the photo (in C:\WFPROBE.LOG).
+            Not a result for the driver; repeat on D: (MBR entry 2, start 1003520).
+
+  WFPROBE t on D: (card/WFPROBE-t-D.LOG = C:\WFPROBE.LOG, FAT stamp 00:06:26): "D: partition at 1003520" (right).
+            arm fault 3 -> RESULTS.PDF Fcreate=-2 Fwrite=0,0 Fclose=0; driver timeouts 1 recover 1 nonrecover 0,
+            write_rdy 1000.0 ms, dirty D: lba 1004011 (= 1003520 + root 491); "disarm: fired 1"; R1..R4 saved
+            and read back same=1, dirty 0 afterwards; RESULTS.PDF absent (-33), BASE.DAT same=1.
+            diskutil verifyVolume D: (fsck_msdos -n) exit 0, 119 files.
+  WFPROBE d on D: (card/WFPROBE-d-D.LOG): case d1, arm fault 2 (data CRC). RESULTS.PDF and P1..P3 Fcreate=-10
+            while armed; driver errors 4 recover 4 nonrecover 0, dirty D: lba 1004011; "disarm: fired 4"; R1..R4
+            saved and read back same=1, dirty 0 afterwards; the failed files absent (-33). verifyVolume D: exit 0.
+  WFPROBE u on D: (card/WFPROBE-u-D.LOG): key u = case u2, busy 1200 ms over the 1000 ms limit, directory.
+            arm fault 4 -> RESULTS.PDF Fcreate=-2; driver timeouts 1 recover 1 nonrecover 1, tmo write_done=1, write
+            max 1100.0 ms, dirty D: lba 1004011; "disarm: fired 1"; R1..R4 saved and read back same=1, dirty 0
+            afterwards (the HW08 "Glied Treiber" case: the card does not stay unusable). verifyVolume D: exit 0.
+            Not judged here: whether "nonrecover 1" next to "recover 1" is the expected count for u2 (HW08 ticket).
+  WFPROBE b on D: (card/WFPROBE-b-D.LOG): key b = case b3, every write of the FAT refused for a while.
+            arm fault 1 -> RESULTS.PDF Fcreate=7 Fwrite=32768,4388 Fclose=-10; P1..P3 Fcreate=-10; refused 4 at
+            lba 1003766 (= 1003520 + 246, second FAT) R1 04000800, recover 4 nonrecover 0, dirty FAT sector tries 4;
+            "disarm: fired 4"; R1..R4 saved and read back same=1, dirty 0 afterwards (the HW08 "Glied Cache" case:
+            Fcreate no longer fails until restart). RESULTS.PDF is complete (size 37156, same=1) although its Fclose
+            said -10: the FAT sector was written once the fault was gone. P1..P3 absent. verifyVolume D: exit 0,
+            116 files.
+  kernel swap back (lead): kernel8.img = release (b0543dd4...), KERNSDF.IMG = test kernel (ccd73cc4...).
+  D:\QED.NAP (the user's desktop copy, 12:19 Mac time) equals the release QED.NAP and C:\APPS\QED\QED.NAP (cmp).
+
+VERDICT
+  0.7.1 accepted on the Pi for every point the user ran (above). Not run in this session: the power-cut test (user:
+  tested earlier, no record), X-Shot save, old card (HW08 step 2) -- not 0.7.1 blockers.
+
+OPEN (history of this run, superseded by VERDICT)
+  HW05 needs no more than this from the user; power-cut tests 1+2, FSWBENCH on E:,
+  WFPROBE t/d/u/b with KERNSDF.IMG (note: F: is a logical partition, s5; check the probe's "F: partition at N").
