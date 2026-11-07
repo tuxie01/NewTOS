@@ -24,6 +24,13 @@
  * Also (big-endian file format): LoadPicture() takes HYP_PICTURE.width and
  * .height from the file as big-endian words; they are swapped after
  * GetEntryBytes (marked NEWTOS).
+ *
+ * TASK/A142: what goes to vr_trnfm is native words too. The VDI reads a
+ * standard-form MFDB as native words like any other, so a picture copied straight
+ * from the file had the two 8-pixel halves of every word traded (the QED.HYP
+ * logo). be_planes_to_native() converts in place right before vr_trnfm (marked
+ * NEWTOS). The truecolor path stays on the file bytes, mono_bitmap() decodes them.
+ * Host test: sdk/overlays/hypview/tests/prepare-host.sh.
  */
 /*
  * HypView - (c)      - 2006 Philipp Donze
@@ -62,6 +69,21 @@ static unsigned short
 be_word(const unsigned char *p)
 {
 	return (unsigned short)((p[0] << 8) | p[1]);
+}
+
+/* the file's big-endian plane words -> native words, in place */
+static void
+be_planes_to_native(void *addr, long size)
+{
+	unsigned char *p = (unsigned char *)addr;
+	long i;
+
+	for (i = 0; i + 1 < size; i += 2)
+	{
+		unsigned short w = be_word(p + i);
+
+		memcpy(p + i, &w, sizeof(w));
+	}
 }
 
 /* pixel value (0..15) of pixel `bit` (15 = leftmost) of four plane words */
@@ -317,6 +339,8 @@ LoadPicture(HYP_DOCUMENT *hyp_doc, short num)
                                         reduce(std_pic.fd_addr, plane_size, _16to2);
                                 }
         
+                                /* NEWTOS: every plane the file brought, reduce()'s result included */
+                                be_planes_to_native(src, plane_size * max(hyp_pic.planes, std_pic.fd_nplanes));
                                 vr_trnfm(vdi_handle,&std_pic,&pic->mfdb);
         
                                 if (background_col && transparent_pics)
@@ -362,6 +386,7 @@ LoadPicture(HYP_DOCUMENT *hyp_doc, short num)
                         std_pic.fd_stand = 1;
                         std_pic.fd_addr = src;
 
+                        be_planes_to_native(src, plane_size);   /* NEWTOS */
                         vr_trnfm(vdi_handle, &std_pic, &pic->mfdb);
                 }
                 Mshrink(pic,sizeof(LOADED_PICTURE) + plane_size * pic->mfdb.fd_nplanes);

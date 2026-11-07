@@ -344,6 +344,14 @@ report hypview-ref-host $rc "$(tail -1 "$WORK/hypview-ref-host.log")"
 [ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/hypview-win-host.log"
 report hypview-win-host $rc "$(tail -1 "$WORK/hypview-win-host.log")"
 
+# hypview-prepare-host (A142): HypView's picture loader as the SDK builds it (the
+# overlay hyp/prepare.c) hands the VDI native words, swapped exactly once: mono
+# and palette pictures before vr_trnfm, the truecolor path through mono_bitmap().
+# With the patch before A142 7 of 27 checks fail. ASan/UBSan.
+"$SDK/overlays/hypview/tests/prepare-host.sh" > "$WORK/hypview-prepare-host.log" 2>&1; rc=$?
+[ $rc -eq 0 ] || [ $rc -eq 77 ] || sed 's/^/      /' "$WORK/hypview-prepare-host.log"
+report hypview-prepare-host $rc "$(tail -1 "$WORK/hypview-prepare-host.log")"
+
 # sysacc-cmdline-host (SYSINFO02): the System Info accessory's boot-argument
 # logic (sdk/examples/sysacc-cmdline.h, the header sysacc.c includes) -- the
 # parse reads C:\CMDLINE.TXT as kernel/src/bootargs.rs reads the boot
