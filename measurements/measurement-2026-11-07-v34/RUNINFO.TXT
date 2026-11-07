@@ -1,0 +1,92 @@
+V34 -- TASK/V34.md (VDI-TEXT-011: Scrdmp sets dumpflg; VDI-TEXT-012: v_hardcopy = escape 17 calls Scrdmp)
+against the pinned oracle, before the fix, after 011 alone (the ticket's decision point for 012) and after both.
+Developer run, 2026-11-07, on main at 6595238b with the V34 change in the working tree (uncommitted at the time,
+the commit of this run holds it); not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   head = 6595238b, product code untouched: rpi4 release kernel8.img sha256
+           a33a25ddb52681d59ee1863672bbd5162797e2e72fd0b1e34bfb0b199d5d0391 (1521896 B).
+           011  = only tos-api/src/xbios/system.rs scrdmp changed: sha256
+           d3d5d69bd455015f5e24afadb1de42ace6272d41e7e571d5be6f2ad4fbcd71c2 (1521896 B).
+           fix  = the whole change: sha256 80c19cf82a76bc59095e7f5718538fdb249116aa2e4d74e01da20bb24e3adaf2
+           (1521896 B), the same kernel cargo xtask tosdump built for the fix tables (runs/newtos-*/tosdump-run.txt).
+           The fix stage ran twice: after a first version, scrdmp was rewritten to the committed form (same
+           behaviour, shorter comment, DUMPFLG_ADDR moved to the end of system.rs so no line cite below it
+           moves); both builds gave this same kernel sha256, the trace kernel the same 3694b16f... . Every fix
+           result here is from the second pass (the committed code); the first pass gave the same bytes.
+           fix + --features bios-arg-trace: sha256 3694b16fbd6e01cb9a8d109e72372446a7f6570ade83f555b46deacbaa57d34c.
+           Table base = git archive of 6595238b in the session scratchpad (references/ linked), built there by
+           cargo xtask tosdump --tree: kernel8.img sha256 f65ed8a1dbe3481b872d97ad5e315d63c43efae15b44c20d6adfe581b1f8e7e4
+           (other bytes than the head kernel above only by the tree path; same source). Kernels not kept.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img,
+           tools/hatari-oracle.sh falcontc (640x480 16-bit truecolor), Hatari 2.6.1 (probe/e1/hatari.log)
+  Boards   QEMU raspi4b, -append serial=on, APFS clone per boot (removed by the scripts), one QEMU at a time
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests (9): probe/n-head, n-011, n-fix1, n-fix2, n-fix-trace, runs/base-vdi-v18t2, base-vdi-all,
+           newtos-vdi-v18t2, newtos-vdi-all, each card.img.manifest; optional_missing, verbatim, in all of them:
+           optional_missing none
+  Commands method/run.sh (stages head, 011, fix in the order they ran).
+
+INSTRUMENT
+  tosdump/probes/vdprobe.c unchanged (case 372 T18A, from the V18 part 2 audit): dumpflg ($4EE) read under
+  Supexec, set to 5, v_hardcopy (vdi 5/17), read; set to 5, Scrdmp(), read; restore -1.
+  VDPROBE.PRG 7b0b1fe622d8b91464a982bd2afb8774e367090f00acd3baa88901cb483b3ec3,
+  VDPROBE.NAP 14baa9d19ad68896a5f312be5948fc21f647a91dc14f515335ae236d39465b91 (probe/*/run.txt).
+  The probe BINs are not stored here: e1 = e2 = measurements/measurement-2026-11-07-v31/probe/e1 BIN
+  (sha256 8af7228c...c38b105a, LOG a0ee48cb...), n-head = n-011 = n-fix1 = n-fix2 = n-fix-trace BIN
+  c2825bd2...7125c7f7c = the V31 run's probe/n-fix1 BIN (probe/*/sha256.txt).
+
+REPRODUCIBLE
+  probe/e1 == e2 (BIN and LOG), probe/n-fix1 == n-fix2 (BIN c2825bd2..., LOG fbddfb72...).
+
+RESULT, PROBE T18A (probe/*/VDPROBE.LOG, case 372)
+                     after v_hardcopy   after Scrdmp
+  EmuTOS e1/e2              -1               -1
+  NewTOS head                5                5      (red: 011 and 012)
+  NewTOS 011                 5               -1      (011 equal; the "after Scrdmp" line decides 012:
+                                                      v_escape still differs -> 012 is a defect of its own)
+  NewTOS fix                -1               -1      (equal)
+  LOG diffs: probe/log-n-head-n-011.diff (1 line, Scrdmp), log-n-head-n-fix1.diff (exactly the 2 T18A lines);
+  log-e1-n-head.diff 7 lines -> log-e1-n-fix1.diff 5 lines: left only TPC, TPD (V35, VDI-TEXT-013) and TXZ
+  (intentional, V33).
+  Pixels: vdprobe-compare 909 grabbed cases, n-head vs n-011 0 differ, n-head vs n-fix1 0 differ; e1 vs n-head
+  and e1 vs n-fix1 338 each (the known open findings; probe/compare-*.txt).
+
+INPUT TRACE (probe/n-fix-trace, kernel with bios-arg-trace; probe/n-fix-trace/biostrace.txt)
+  The probe's only BIOS/XBIOS calls are T18A's, all from U0, in program order: Supexec(get), Supexec(set5),
+  Supexec(get), [v_hardcopy: VDI trap, no XBIOS record], Supexec(get), Supexec(set5), 14:0x14 Scrdmp "-" ->
+  0x0, Supexec(get), Supexec(restore). Scrdmp arrived with function 0x14 and no argument; v_hardcopy runs
+  scrdmp inside the VDI call (as v_curtext calls Crawio), EmuTOS issues trap #14 there (vdi/vdi_esc.c:262).
+  T18A in this run: -1 / -1 as in n-fix1.
+
+RESULT, TABLES (cargo xtask tosdump vdi; runs/)
+  vdi-v18-t2.tsv vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: base 2 of 32 differ (50, 54 = V35), fix 2 of 32 (50, 54);
+                 case 111 (v_hardcopy, no outputs) equal on both. tosdiff base vs fix: 0 of 32
+                 (runs/tosdiff-base-fix-vdi-v18t2.txt).
+  vdi-all.tsv    vs EMUTOS-1a7484ab-VDI-all-falcontc: base 0 of 182, fix 0 of 182; tosdiff base vs fix 0 of 182.
+  BIN records byte-identical base vs fix in both tables (header differs only in the dumper build id: "----"
+  for the archived tree, which has no .git, "6595" here).
+  VDI.BIN sha256 (BINs are gitignored): base-vdi-v18t2 d61803b2..., newtos-vdi-v18t2 46669165...,
+  base-vdi-all e91b865b..., newtos-vdi-all 28126ac3... (runs/*/tosdump-run.txt).
+
+HOST TEST (hosttest/)
+  tos-api/tests/xbios_scrdmp_dumpflg.rs, 3 tests, added before the product change:
+    head      2 red (scrdmp_sets_dumpflg_to_minus_one: 5 != 0xFFFF; v_hardcopy_runs_scrdmp: 5 != 0xFFFF),
+              1 green (scrdmp_without_a_process_returns_void, control)          test-red-head.txt
+    011       scrdmp green, v_hardcopy red                                      test-after-011.txt
+    fix       3 of 3 green                                                       test-after-012.txt
+  cargo xtask test (full) on the fix: 2261 passed / 0 failed / 1 ignored (hosttest/xtask-test-results.txt);
+  baseline 2258/0/1 (TASK/V31.md, the V31 Tester run on the same product code) + the 3 new tests.
+
+BUILD WARNINGS (builds/warnings.txt; fresh debug builds, cargo xtask build / cargo clippy -p kernel --features board-*)
+  rustc   tos-api 64 / kernel 93, both boards, head and fix (delta 0)
+  clippy  tos-api 73 / kernel 121, both boards, head and fix (delta 0); 0 hits in xbios/system.rs, xbios/mod.rs,
+          vdi/escape.rs
+
+DEPENDENCIES  deps/scrdmp-up.txt, deps/escfn17-up.txt (cargo xtask deps on the tree with the change): identical
+  to measurements/measurement-2026-11-06-v18-t2/deps/ (16 and 13 functions, every layer 100 % mapped, complete).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing. AES tables, shprobe/slprobe, desktop run: the Tester's (V18 "Gemeinsam" point 2).
+  qemu-virt: built, not booted here. No tosdiff case for dumpflg: DUMPBIOS cannot read $4EE around a call
+  (audit section 5, "Lesen von $4EE vor/nach dem Aufruf") -- follow-up for the lead.

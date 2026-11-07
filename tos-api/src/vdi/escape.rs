@@ -848,7 +848,12 @@ pub fn v_escape(pb: &Vdipb, backend: &dyn RasterBackend) {
             pb.set_intout(0, 1);
             pb.set_contrl(4, 1);
         }
-        17 => {} // v_hardcopy: no printer device → documented no-op
+        // v_hardcopy: EmuTOS escfn17 is `Scrdmp()` (`vdi_esc.c:260-263`); the
+        // XBIOS call re-arms `dumpflg` and prints nothing (no printer, its
+        // `dump_vec` is not called: ADR-031).
+        17 => {
+            crate::xbios::system::scrdmp();
+        }
         // v_dspcur: EmuTOS escfn18 ignores the PTSIN coordinates and force-shows
         // the cursor at its current position (`vdi_esc.c:274-278`). It says
         // "show regardless" by storing `INTIN[0] = 0` into the *caller's*

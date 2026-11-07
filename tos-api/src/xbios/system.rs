@@ -53,17 +53,17 @@ pub fn blitmode() -> i64 {
     0x0000
 }
 
-/// `Scrdmp` (0x14) — trigger a screen dump through the installed
-/// `dump_vec`, then reset `dumpflg`. The Pi has no printer, and EmuTOS's
-/// own default `dump_vec` is `just_rts` — a no-op — so a stock `Scrdmp`
-/// does nothing observable. That is exactly the spec's "Default no-op"
-/// behaviour, so on NewTOS this is a documented no-op returning `void`
-/// (→ 0): there is no dump target, and `dumpflg` (the Alt-Help re-arm
-/// flag) has no consumer here. Installing a custom `dump_vec` depends on
-/// the deferred BIOS vector dispatch (STEP2-VALIDATION Y2).
-///
-/// Spec: `docs/api/xbios/14-scrdmp.md` ("Default no-op" criterion).
+/// `Scrdmp` (0x14) — EmuTOS `scrdmp` (`bios/xbios.c:490-494`): `dump_vec`, then
+/// `dumpflg = -1`; `void` (→ 0). `dump_vec` is not called (ADR-031; EmuTOS' default
+/// is `just_rts`, the Pi has no printer). `dumpflg` is set in the calling process's
+/// page 0, through its kernel alias as `bios::tick` does; no process, no page 0.
+/// Spec: `docs/api/xbios/14-scrdmp.md` (VDI-TEXT-011, TASK/V34).
 pub fn scrdmp() -> i64 {
+    if let Some(page0) = crate::bdos::process::current_page0_kva() {
+        let cell = page0.wrapping_add(DUMPFLG_ADDR) as *mut [u8; 2];
+        // SAFETY: the running slot's static 4-KiB page 0; `$4EE..$4F0` lies inside it.
+        unsafe { cell.write_unaligned((-1i16).to_le_bytes()) };
+    }
     0
 }
 
@@ -285,3 +285,8 @@ pub fn rsconf(args: &TrapArgs) -> i64 {
     // ULONG return, zero-extended into x0.
     old as i64
 }
+
+/// `dumpflg` (`$4EE`), the screen-dump flag: a `WORD` in the system-variable area
+/// of each process's page 0 (`references/emutos/tosvars.ld:87`; the loader seeds
+/// `-1`, `bios/bios.c:357`). Written by [`scrdmp`].
+pub const DUMPFLG_ADDR: usize = 0x4EE;

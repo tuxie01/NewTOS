@@ -118,7 +118,10 @@ None.
    "default `dmpfunc` dumps to printer" is wrong — corrected (D-046).
 2. **`dumpflg` is the re-arm flag.** `Scrdmp` sets it to `-1` (idle) after the
    dump; Alt-Help does `dumpflg++` (`bios/ikbd.c:596`) to request a dump the
-   VBL then performs. A program can watch/poke `dumpflg` to coordinate.
+   VBL then performs: the VBL calls `dump_vec` only when `dumpflg == 0`, then
+   stores `-1` (`bios/vectors.S:466-472`), so one Alt-Help from the idle `-1`
+   triggers exactly one dump. A program can watch/poke `dumpflg` to
+   coordinate.
 3. **Runs via `protect_v`.** The dump routine executes in a supervisor
    wrapper that preserves `d2`/`a2`, so a C dump handler is register-safe.
 
@@ -169,6 +172,21 @@ PHASE-07/08: NewTOS may install a default `dump_vec` that writes a PNG of the
 framebuffer to a configured path; `Scrdmp` invokes it and resets `dumpflg`,
 and programs can still replace `dump_vec`.
 
+**Current NewTOS (TASK/V34, VDI-TEXT-011):**
+`tos-api/src/xbios/system.rs:61@scrdmp` returns `void` (→ 0) and stores the
+WORD `-1` at `$4EE` of the calling process's page 0 — the cell the program
+reads, which the loader seeds with `-1` (`bios/bios.c:357`). With no process
+running there is no page 0 and nothing is written. `dump_vec` is **not
+called**: it is a hook NewTOS stores but never calls (ADR-031,
+`docs/MEMORY.md`); a program that writes `$502` gets the ADR-031 warning at
+the page-0 check, not at `Scrdmp`. So the criterion "Invokes `dump_vec`"
+does not hold on NewTOS; "Resets `dumpflg`" and "Default no-op" do. Measured
+against the pinned oracle by probe T18A (`tosdump/probes/vdprobe.c`):
+`dumpflg` poked to 5, then `Scrdmp()` → `-1` on both sides
+(`measurements/measurement-2026-11-07-v34/RUNINFO.TXT`). Neither consumer
+of `dumpflg` exists on NewTOS: the VBL dump (it would call `dump_vec`,
+ADR-031) and Alt-Help's `dumpflg++` (the key is queued as a normal key).
+
 ---
 
 ## Pi / BCM2711 binding
@@ -183,13 +201,11 @@ and programs can still replace `dump_vec`.
   (`docs/HARDWARE-PROFILE.md` §2, §3.9), so the Atari default `dump_vec ==
   just_rts` no-op is the correct, honest behaviour: a stock `Scrdmp` does
   nothing, exactly as on EmuTOS with no dump handler installed.
-- **Not yet wired (Step-2).** `Scrdmp` (XBIOS `0x14`) is **not present in
-  the NewTOS XBIOS dispatcher** (`tos-api/src/xbios/mod.rs` has no `0x14`
-  entry); calling it currently falls through to the dispatcher's
-  unknown-function path rather than performing the "reset `dumpflg`"
-  contract step. Recorded as a Step-2 finding — the no-op *behaviour* is
-  correct for the hardware, but the call and its `dumpflg` re-arm are not
-  implemented.
+- **Wired (TASK/V34).** `Scrdmp` (XBIOS `0x14`) is dispatched by
+  `tos-api/src/xbios/mod.rs` and re-arms `dumpflg`; see "NewTOS
+  implementation notes" above. (An earlier revision said the call was absent
+  from the dispatcher; before V34 it was dispatched but did not store
+  `dumpflg`.)
 - **Future (not required by the hardware).** A `dump_vec` that encodes the
   32 bpp VideoCore framebuffer to a PNG on the SD card is the natural
   NewTOS equivalent of "screen dump to printer" (PHASE-07/08 note); this is

@@ -1,0 +1,6 @@
+361,362c361,362
+<    dumpflg boot=-1 set=5 after v_hardcopy=5 c2=0 c4=0
+<    dumpflg after Scrdmp=5
+---
+>    dumpflg boot=-1 set=5 after v_hardcopy=-1 c2=0 c4=0
+>    dumpflg after Scrdmp=-1

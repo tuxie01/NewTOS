@@ -299,7 +299,7 @@ BIOS/XBIOS calls, not a poke:
 | `membot`/`memtop`/`phystop` | ST-RAM pool extent from the AArch64 memory map | (allocator internal; `Getmpb` vestigial) | `kernel/src/bios/machine/layout.rs` (see `00-getmpb.md`) |
 | `bconstat/in/out/cost_vec[8]` | kernel char-device dispatch, not a poked table | BIOS char calls | `tos-api/src/bios/chardev.rs` (see `_state.md §3`) |
 | `hdv_bpb/rw/mediach/boot` | direct kernel calls into the block layer | `Getbpb`/`Rwabs`/`Mediach` | `tos-api/src/bios/` (see block specs) |
-| `dumpflg` (`0x4ee`) | no screen-dump path on the Pi (`Scrdmp` unwired, S2) | — | — |
+| `dumpflg` (`0x4ee`) | the WORD in the process's own page 0, seeded `-1` by the loader; `Scrdmp` (and `v_hardcopy` through it) stores `-1`; no VBL dump, no Alt-Help `dumpflg++` | direct read/write at `$4EE` in super state | `tos-api/src/xbios/system.rs:61@scrdmp` (see `../xbios/14-scrdmp.md`) [V34] |
 
 | Atari reference | Pi-4 model today |
 |-----------------|------------------|
@@ -317,8 +317,10 @@ BIOS/XBIOS calls, not a poke:
   2026-10-03 (KEYS01) — polled in the input pump, not in the interrupt; see
   `docs/api/xbios/_state.md` §"Key-repeat handler".
 - **`etv_*` hooks stored but never invoked** (see `05-setexc.md`).
-- **`dumpflg` / `Scrdmp` unwired** (Screen S2) — nothing resets the flag because
-  the call does not exist.
+- ~~**`dumpflg` / `Scrdmp` unwired**~~ — **closed 2026-11-07** (TASK/V34):
+  `Scrdmp` re-arms `dumpflg = -1`. Still absent: EmuTOS' two other `dumpflg`
+  users, the VBL dump at `dumpflg == 0` (`bios/vectors.S:466-472`, it calls
+  `dump_vec`, ADR-031) and Alt-Help's `dumpflg++` (`bios/ikbd.c:595-597`).
 - **char-device vector tables are not poke-installable** — native driver
   registration is deferred; only the value-level contract is honoured today.
 

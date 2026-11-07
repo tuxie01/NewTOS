@@ -1,0 +1,8 @@
+[biostrace] 000000 U0  14:0x26 Supexec     p:0x0000000001a233ac -> upcall
+[biostrace] 000001 U0  14:0x26 Supexec     p:0x0000000001a233b8 -> upcall
+[biostrace] 000002 U0  14:0x26 Supexec     p:0x0000000001a233ac -> upcall
+[biostrace] 000003 U0  14:0x26 Supexec     p:0x0000000001a233ac -> upcall
+[biostrace] 000004 U0  14:0x26 Supexec     p:0x0000000001a233b8 -> upcall
+[biostrace] 000005 U0  14:0x14 Scrdmp      - -> 0x0000000000000000
+[biostrace] 000006 U0  14:0x26 Supexec     p:0x0000000001a233ac -> upcall
+[biostrace] 000007 U0  14:0x26 Supexec     p:0x0000000001a233cc -> upcall

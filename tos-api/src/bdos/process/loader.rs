@@ -1252,9 +1252,9 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // zeroed, so the $485 alignment gap stays 0.
     tpa[0x484] = CONTERM_DEFAULT;
     // dumpflg ($4EE): hardcopy/screen-dump-in-progress flag, boot default -1
-    // (EmuTOS `bios/bios.c:357` — `dumpflg = -1;`); consumed by `Scrdmp`
-    // (XBIOS, out of scope). `-1` as a WORD is 0xFFFF.
-    wr_word(tpa, 0x4EE, (-1i16) as u16);
+    // (EmuTOS `bios/bios.c:357` — `dumpflg = -1;`); `Scrdmp` sets it back to
+    // -1 (`xbios::system::scrdmp`, TASK/V34). `-1` as a WORD is 0xFFFF.
+    wr_word(tpa, crate::xbios::system::DUMPFLG_ADDR, (-1i16) as u16);
     // _hz_200 ($4BA): 200 Hz system-tick counter (EmuTOS `bios/vectors.S:503`).
     // Seeded here from the live kernel counter so the cell is already correct
     // before the process runs; from then on the 200 Hz timer interrupt keeps

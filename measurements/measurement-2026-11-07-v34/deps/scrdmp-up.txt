@@ -1,0 +1,42 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps scrdmp --up`
+deps scrdmp --up (kinds asm,direct,layer,table,vector): 16 functions besides scrdmp
+depth	function	layer	reached over	newtos	class
+0	scrdmp	bios	-	tos-api/src/xbios/system.rs@scrdmp	mapped
+1	escfn17	vdi	escfn17 -> scrdmp [layer trap #14 0x14 xbios_vecs[0x14] via xbios_v_v]	tos-api/src/vdi/escape.rs@v_escape	mapped
+1	xbiostrap	bios	xbiostrap -> scrdmp [table xbios_vecs[0x14]]	tos-api/src/xbios/mod.rs@dispatch	mapped
+2	biostrap	bios	biostrap -> xbiostrap [asm jra biosxbios]	tos-api/src/bios/mod.rs@dispatch	mapped
+2	vdi_v_escape	vdi	vdi_v_escape -> escfn17 [vector via esctbl@vdi/vdi_esc.c[]]	tos-api/src/vdi/escape.rs@v_escape	mapped
+3	gsx_graphic	aes	gsx_graphic -> vdi_v_escape [layer trap #2 0x5 jmptb1[0x5] via gsx_0code]	tos-api/src/aes/gsxif.rs@gsx_graphic	mapped
+3	screen	vdi	screen -> vdi_v_escape [table jmptb1[0x5]]	tos-api/src/vdi/mod.rs@screen	mapped
+4	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+4	sh_toalpha	aes	sh_toalpha -> gsx_graphic [direct]	kernel/src/shell_loop.rs@sh_toalpha	mapped
+4	sh_tographic	aes	sh_tographic -> gsx_graphic [direct]	kernel/src/shell_loop.rs@sh_tographic	mapped
+5	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+5	run_accs_and_desktop	aes	run_accs_and_desktop -> sh_tographic [direct]	kernel/src/accs.rs@wait_for_accs_mesag kernel/src/lib.rs@kernel_main_rust	mapped
+5	sh_chgrf	aes	sh_chgrf -> sh_toalpha [direct]	kernel/src/shell_loop.rs@sh_chgrf	mapped
+5	sh_main	aes	sh_main -> sh_toalpha [direct]	kernel/src/shell_loop.rs@sh_main tos-api/src/aes/shell.rs@sh_main_init	mapped
+5	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+6	accdesk_start	aes	accdesk_start -> run_accs_and_desktop [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_accdesk	mapped
+7	ui_start	aes	ui_start -> accdesk_start [asm fallthrough]	tos-api/src/bdos/process/standin.rs@enter_aes	mapped
+
+table edges inside the set (2):
+jmptb1[0x5]	screen -> vdi_v_escape	vdi/vdi_main.c:37
+xbios_vecs[0x14]	xbiostrap -> scrdmp	bios/xbios.c:1310
+
+layer edges inside the set (2):
+trap #14 0x14 xbios_vecs[0x14] via xbios_v_v	escfn17 -> scrdmp	vdi/vdi_esc.c:262
+trap #2 0x5 jmptb1[0x5] via gsx_0code	gsx_graphic -> vdi_v_escape	aes/gemgsxif.c:306
+
+vector edges inside the set (1):
+via esctbl@vdi/vdi_esc.c[]	vdi_v_escape -> escfn17	vdi/vdi_esc.c:349
+
+coverage of the set (17 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes          8      8 100.0%      0   0.0%      0   0.0%
+bios         3      3 100.0%      0   0.0%      0   0.0%
+vdi          6      6 100.0%      0   0.0%      0   0.0%
+total       17     17 100.0%      0   0.0%      0   0.0%
+touched layers: bios (the layers of scrdmp; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

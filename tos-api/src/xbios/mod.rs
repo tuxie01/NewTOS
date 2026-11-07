@@ -46,7 +46,7 @@ const KEYTBL: u16 = 0x10; // keyboard translation tables
 const RANDOM: u16 = 0x11; // system group (Phase 11)
 const PROTOBT: u16 = 0x12; // pure-software boot-sector builder
 const FLOPVER: u16 = 0x13;
-const SCRDMP: u16 = 0x14; // no printer on the Pi → documented no-op
+const SCRDMP: u16 = 0x14; // dumpflg = -1; dump_vec not called (ADR-031)
 const CURSCONF: u16 = 0x15;
 const SETTIME: u16 = 0x16; // clock group — shares the GEMDOS wall clock
 const GETTIME: u16 = 0x17;
@@ -87,7 +87,7 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         PROTOBT => floppy::protobt(args),
         // Absent Atari peripherals → the contract's documented value for
         // "hardware not present", not the generic function-number catch-all.
-        // Scrdmp: no printer / default dump_vec is a no-op (14-scrdmp.md);
+        // Scrdmp: no printer, dump_vec not called; re-arms dumpflg (14-scrdmp.md);
         // Midiws: through the MIDI device-table entry, each byte accepted
         // and dropped (0c-midiws.md, BIOS04).
         SCRDMP => system::scrdmp(),

@@ -248,13 +248,21 @@ single-fixed-640×480 bring-up profile, see `D-076`/`D-077`/`D-078`).
 ### 17 — `v_hardcopy` (`escfn17`, `vdi_esc.c:260-263`)
 
 - **No input, no output.** Calls the XBIOS **`Scrdmp()`** (screen dump to
-  printer). In EmuTOS this is a *real* screen dump, **not** a no-op.
-- **NewTOS:** the bring-up profile has no printer device, so `Scrdmp()`
-  is itself out of bring-up scope; `v_hardcopy` must therefore be a
-  **documented no-op** (return cleanly), recorded under `docs/STATUS.md`
-  "Blocked" if a program actually needs it — an honest deferral, not a
-  faked success. (This is a NewTOS scope decision, not EmuTOS behaviour.)
-  Logged in [`_discrepancies.md`](_discrepancies.md) D-VDI-4.
+  printer), nothing else (`vdi_esc.c:260-263`). What that does is
+  `Scrdmp`'s: call `dump_vec` (default `just_rts`, a no-op), then
+  `dumpflg = -1` ([`../xbios/14-scrdmp.md`](../xbios/14-scrdmp.md)).
+- **NewTOS (TASK/V34, VDI-TEXT-012):** the arm calls the same `Scrdmp`
+  (`tos-api/src/xbios/system.rs:61@scrdmp`) directly, as `v_curtext` calls
+  `Crawio`: `dumpflg` of the calling process becomes `-1`, nothing is
+  printed (no printer; `dump_vec` is not called, ADR-031). Measured by
+  probe T18A against the pinned oracle (`dumpflg` 5 → `-1` on both sides,
+  `measurements/measurement-2026-11-07-v34/RUNINFO.TXT`); DUMPVDI case 111
+  (`tosdump/cases/vdi-v18-t2.tsv`) checks the empty output.
+  **Correction:** earlier revisions made `v_hardcopy` a "documented no-op"
+  as a NewTOS scope decision (no printer). The missing printer does not
+  require that: EmuTOS' observable effect without a dump handler is the
+  `dumpflg` store, which NewTOS now makes. D-VDI-4 in
+  [`_discrepancies.md`](_discrepancies.md) is updated.
 
 ### 18 — `v_dspcur` (`escfn18`, `vdi_esc.c:274-278`)
 
@@ -379,7 +387,7 @@ and console paths documented in [`input/_mouse.md`](input/_mouse.md).
   (`bios/font.c:76`) — glyph rows, cursor height and scroll steps included
   (V32: `tos_api::vdi::font::font_set_default`, used by `escape.rs` for every
   cell; before V32 the console drew 8×16 on every screen).
-- `v_hardcopy` (17) is a documented no-op (no printer) — see above.
+- `v_hardcopy` (17) runs `Scrdmp` (re-arms `dumpflg`, prints nothing) — see above.
 - `v_dspcur`/`v_rmcur` bind to the mouse-cursor sprite path
   ([`input/_mouse.md`](input/_mouse.md)); ignore the `PTSIN` coordinates
   exactly as EmuTOS does.

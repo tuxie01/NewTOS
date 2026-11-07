@@ -1080,7 +1080,7 @@ iorec	bios/xbios.c	tos-api/src/xbios/iorec.rs	record_va	mapped	the signed-WORD d
 kbdvbase	bios/xbios.c	tos-api/src/xbios/kbdvecs.rs	kbdvbase	mapped	Kbdvbase 0x22
 random	bios/xbios.c	tos-api/src/xbios/system.rs	random	mapped	Random 0x11
 rsconf	bios/xbios.c	tos-api/src/xbios/system.rs	rsconf	mapped	Rsconf 0x0F
-scrdmp	bios/xbios.c	tos-api/src/xbios/system.rs	scrdmp	mapped	Scrdmp 0x14
+scrdmp	bios/xbios.c	tos-api/src/xbios/system.rs	scrdmp	mapped	Scrdmp 0x14: dumpflg = -1 in the caller's page 0; dump_vec not called (ADR-031, V34)
 xbios_do_unimpl	bios/xbios.c	tos-api/src/xbios/mod.rs	dispatch	mapped	default arm: the function number
 XHDOSLimits	bios/xhdi.c	-	-	unmapped	XHDI driver interface: not implemented in NewTOS
 XHDriverSpecial	bios/xhdi.c	-	-	unmapped	XHDI driver interface: not implemented in NewTOS
@@ -1506,7 +1506,7 @@ escfn13	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_rvon arm 13
 escfn14	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_rvoff arm 14
 escfn15	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	vq_curaddress arm 15
 escfn16	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	vq_tabstatus arm 16, constant 1
-escfn17	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_hardcopy arm 17 is empty; EmuTOS calls Scrdmp (NewTOS xbios scrdmp is a no-op, not called from here)
+escfn17	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	v_hardcopy arm 17 calls xbios scrdmp, as EmuTOS calls Scrdmp (V34)
 escfn18	vdi/vdi_esc.c	tos-api/src/vdi/mouse.rs	force_show	mapped	v_dspcur; dispatched from v_escape arm 18
 escfn19	vdi/vdi_esc.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	v_rmcur; dispatched from v_escape arm 19
 vdi_v_escape	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	v_escape	mapped	opcode 5
