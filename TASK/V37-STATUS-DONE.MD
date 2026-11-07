@@ -1,7 +1,6 @@
-# V37 — Quittung UNFINISHED (2026-11-07)
+# V37 — Quittung DONE (2026-11-07)
 
-Umgesetzt und gegen das Orakel gemessen; **offen ist nur die Abnahme des Testers** (UNFINISHED heisst hier nicht:
-Implementierung fehlt).
+Umgesetzt, gegen das Orakel gemessen und vom Tester abgenommen (PASS, `a7a84391`, `measurements/measurement-2026-11-07-v37-test/RUNINFO.TXT`): 2291/0/6, Basis gegen Fix genau die 40 Faelle, TVO/TVP/T37 orakelgleich, AES und Desktop bytegleich, Spec-Zitate geprueft, QED-Behauptung am Quelltext bestaetigt. ZG002/003/008/009 bleiben bis [V41](V41.md) verschieden.
 
 Der waagrechte `v_justified` richtet jetzt wie EmuTOS gegen `max_x` aus (`output_text(vwk, cnt, str, max_x, &just)`,
 `vdi/vdi_text.c:1288`; `delh` aus `h_align`, Outline und Skew-Additiv je `v_align`, `:332-390`; Start
