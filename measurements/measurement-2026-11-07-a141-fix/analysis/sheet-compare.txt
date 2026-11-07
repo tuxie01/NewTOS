@@ -1,0 +1,1 @@
+measurements/measurement-2026-11-07-a141-fix/analysis/sheet-build-rsc-under-tos-palette.png vs measurements/measurement-2026-11-07-a141/analysis/sheet-nvdi-recoloured-to-default.png: sizes (1400, 268) (1400, 268), differing pixels 0, bbox None

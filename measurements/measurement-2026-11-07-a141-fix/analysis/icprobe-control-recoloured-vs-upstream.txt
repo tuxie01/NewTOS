@@ -1,0 +1,60 @@
+PENS     EQUAL (1536 words)
+I0.1     EQUAL (1024 words)
+M0.1     EQUAL (64 words)
+T0.0     EQUAL (117760 words)
+T0.1     EQUAL (117760 words)
+T0.2     EQUAL (117760 words)
+T0.3     EQUAL (117760 words)
+I1.6     DIFF 313/672 first at col 1 row 0: E bdd7 N 4100
+M1.6     EQUAL (42 words)
+I1.7     DIFF 367/672 first at col 1 row 0: E bdd7 N 4100
+M1.7     EQUAL (42 words)
+I1.8     DIFF 367/672 first at col 1 row 0: E bdd7 N 4100
+M1.8     EQUAL (42 words)
+I1.9     DIFF 293/672 first at col 1 row 0: E bdd7 N 4100
+M1.9     EQUAL (42 words)
+I1.10    DIFF 324/672 first at col 1 row 0: E bdd7 N 4100
+M1.10    EQUAL (42 words)
+I1.11    DIFF 292/672 first at col 1 row 0: E bdd7 N 4100
+M1.11    EQUAL (42 words)
+I1.12    DIFF 281/672 first at col 1 row 0: E bdd7 N 4100
+M1.12    EQUAL (42 words)
+I1.13    DIFF 436/672 first at col 1 row 0: E bdd7 N 4100
+M1.13    EQUAL (42 words)
+I1.14    DIFF 361/672 first at col 1 row 0: E bdd7 N 4100
+M1.14    EQUAL (42 words)
+I1.15    DIFF 326/672 first at col 1 row 0: E bdd7 N 4100
+M1.15    EQUAL (42 words)
+I1.16    DIFF 363/672 first at col 1 row 0: E bdd7 N 4100
+M1.16    EQUAL (42 words)
+I1.17    DIFF 290/672 first at col 1 row 0: E bdd7 N 4100
+M1.17    EQUAL (42 words)
+I1.18    DIFF 328/672 first at col 1 row 0: E bdd7 N 4100
+M1.18    EQUAL (42 words)
+I1.19    DIFF 272/672 first at col 1 row 0: E bdd7 N 4100
+M1.19    EQUAL (42 words)
+T1.0     DIFF 4613/56448 first at col 21 row 18: E bdd7 N 4100
+T1.1     DIFF 2303/56448 first at col 22 row 18: E bdd7 N 4100
+T1.2     DIFF 2310/56448 first at col 21 row 18: E bdd7 N 4100
+T1.3     DIFF 2310/56448 first at col 21 row 18: E bdd7 N 4100
+T2.0     EQUAL (41216 words)
+T2.1     EQUAL (41216 words)
+T2.2     EQUAL (41216 words)
+T2.3     EQUAL (41216 words)
+T3.0     EQUAL (39424 words)
+T3.1     EQUAL (39424 words)
+T3.2     EQUAL (39424 words)
+T3.3     EQUAL (39424 words)
+T4.0     EQUAL (106720 words)
+T4.1     EQUAL (106720 words)
+T4.2     EQUAL (106720 words)
+T4.3     EQUAL (106720 words)
+T5.0     EQUAL (174080 words)
+T5.1     EQUAL (174080 words)
+T5.2     EQUAL (174080 words)
+T5.3     EQUAL (174080 words)
+T6.0     EQUAL (76800 words)
+T6.1     EQUAL (76800 words)
+T6.2     EQUAL (76800 words)
+T6.3     EQUAL (76800 words)
+cases 59, differing 18

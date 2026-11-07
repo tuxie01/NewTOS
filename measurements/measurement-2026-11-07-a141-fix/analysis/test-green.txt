@@ -1,0 +1,6 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.01s
+     Running unittests src/main.rs (target/debug/deps/xtask-2896962bfa6f77a9)
+running 2 tests
+test rsc_recolour_tests::recolour_palettes_equal_their_sources ... ok
+test rsc_recolour_tests::hypview_rsc_8plane_icons_take_the_nearest_tos_colour ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 242 filtered out; finished in 0.05s

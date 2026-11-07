@@ -131,6 +131,10 @@ in this release.
 - QED: check boxes, radio buttons and the alert icons are drawn
   correctly (GitHub #21); HypView shows the black-and-white
   pictures of .HYP files (e.g. the QED.HYP logo) correctly.
+- HypView: the toolbar icons show the colours they were drawn in, as
+  close as the standard TOS palette allows (GitHub #23). They were drawn
+  for a different palette (NVDI's); the HypView build now adapts them to
+  the TOS palette. NewTOS itself draws colour icons exactly like EmuTOS.
 - CoreMark keeps its result on the screen until you press a key (GitHub
   #12). The desktop itself does not wait after a console program, just
   like EmuTOS.
@@ -170,9 +174,6 @@ Earlier releases: see https://github.com/tuxie01/NewTOS/releases
   clicks and the black highlight stayed. We cannot reproduce it; if you
   still see it in 0.7.1, please tell us in GitHub #19 (a short video
   helps).
-- HypView: the toolbar icons show odd colours (GitHub #23). EmuTOS
-  shows the same; the icons were drawn for a different palette. Not
-  changed yet.
 - Switching off: wait until a program has finished saving. Data a
   program has written but not yet closed is lost, as on an Atari.
 - Doom can freeze in its menu when the X-Shot accessory is installed.

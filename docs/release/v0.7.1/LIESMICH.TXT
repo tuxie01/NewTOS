@@ -136,6 +136,11 @@ die laufen in dieser Version noch NICHT.
 - QED: Checkboxen, Radiobuttons und die Alert-Icons werden richtig
   gezeichnet (GitHub #21); HypView zeigt die Schwarzweiss-Bilder der
   .HYP-Dateien (z. B. das Logo in QED.HYP) richtig.
+- HypView: Die Icons der Werkzeugleiste zeigen die Farben, in denen
+  sie gezeichnet sind, so nah, wie es die Standardpalette von TOS
+  erlaubt (GitHub #23). Sie waren fuer eine andere Palette gezeichnet
+  (die von NVDI); der Bau von HypView passt sie jetzt an die
+  TOS-Palette an. NewTOS selbst zeichnet Farb-Icons genau wie EmuTOS.
 - CoreMark laesst sein Ergebnis stehen, bis du eine Taste drueckst
   (GitHub #12). Der Desktop selbst wartet nach einem Textprogramm nicht,
   genau wie bei EmuTOS.
@@ -175,9 +180,6 @@ Fruehere Versionen: siehe https://github.com/tuxie01/NewTOS/releases
   Klicks brauchte und die schwarze Markierung stehen blieb. Wir koennen
   es nicht nachstellen; falls du es in 0.7.1 noch siehst, bitte in
   GitHub #19 melden (ein kurzes Video hilft).
-- HypView: Die Icons der Werkzeugleiste haben seltsame Farben (GitHub
-  #23). EmuTOS zeigt dasselbe; die Icons sind fuer eine andere Palette
-  gezeichnet. Noch nicht geaendert.
 - Ausschalten: Warten, bis ein Programm fertig gespeichert hat. Was ein
   Programm geschrieben, aber noch nicht geschlossen hat, geht verloren,
   wie beim Atari.

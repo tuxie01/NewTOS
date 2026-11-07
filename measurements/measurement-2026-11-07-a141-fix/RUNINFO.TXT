@@ -1,0 +1,104 @@
+measurement-2026-11-07-a141-fix -- TASK/A141 decision B2 (GitHub #23): the HypView build remaps the 8-plane colour icons of
+hyp_view.rsc from the NVDI palette to the TOS default palette. Kernel, AES and VDI unchanged; they keep drawing like EmuTOS.
+=====================================================================================================================
+Developer, 2026-11-07. Main tree at fdeeeead plus this change (uncommitted at run time: sdk/overlays/hypview/rsc/, sdk/apps/build-hypview.sh,
+tools/xtask/src/rsc_recolour_tests.rs + main.rs; committed afterwards as 857cf10d). kernel, tos-api, tos-types: 0 dirty paths (icprobe run.txt). QEMU and Hatari only; no Pi, no card.
+
+RESULT
+  The toolbar now shows the recoloured icons: grey frames, orange arrows on the floppies, blue "i", orange book, blue-white arrows.
+  Pixel check: every enabled toolbar icon on the QEMU screen equals the recoloured 8-plane icon rendered through the TOS palette,
+  0 differing mask pixels; every DISABLED icon equals it on the parity the disabled pattern leaves alone (0 differing), the other
+  parity is the overdraw. icprobe: oracle and NewTOS give the same device form and screen for the recoloured resource,
+  59 cases, 0 differ. The rendered build resource equals the expected sheet of the first run pixel for pixel.
+
+THE PATCH (sdk/overlays/hypview/rsc/, upstream sdk/apps/hypview/ unchanged)
+  recolour-cicons.py recolour <classic in> <classic out>: per 8-plane CICON variant, each pixel of col_data and sel_data:
+    register n -> pen REV_MAP_COL[n] (EmuTOS init_colors, references/emutos/vdi/vdi_col.c:736-747) -> nvdi.pal[pen]
+    -> the register m whose TOS default colour tos-default.pal[REV_MAP_COL[m]] is nearest.
+    NEAREST: smallest squared Euclidean distance over r, g, b in VDI units 0..1000 (the files' values, unweighted, unquantised),
+    over all 256 registers; on a tie the lowest register.
+  nvdi.pal: verbatim copy of references/freemint/xaaes/src.km/pal/nvdi.pal @ f906416 (sha256 15b4b326...).
+  tos-default.pal: written by `recolour-cicons.py tos-pal kernel/src/vdi_backend.rs ...` from VIDEL_PALETTE1/2
+    (kernel/src/vdi_backend.rs:56@VIDEL_PALETTE1, :70@VIDEL_PALETTE2), equal to EmuTOS videl_palette1/2 (vdi_col.c:130-199; checked
+    in Python here and by the host test). Origins and hashes: sdk/overlays/hypview/rsc/palettes.sha256.
+  sdk/apps/build-hypview.sh: recolour into build/hyp_view-recoloured.rsc (log build/recolour-cicons.log), then tools/mkrsc.py convert
+    of that into build/hyp_view.rsc.
+
+MAPPING (analysis/recolour-cicons.log, the build's own summary)
+  LUT: 256 registers -> 96 distinct targets; 8 registers map to themselves; 75 registers have a tie.
+  hyp_view.rsc: 15 CICONBLKs, 29 variants (15 4-plane, 14 8-plane), no 8-plane SELECTED image: 14 rasters recoloured, 9408 pixels,
+    92 distinct registers used.
+  The ticket's three: 252 (n=1383, NVDI 753 grey) -> 7 (733 grey; tie with 20, same colour); 250 (n=656, NVDI 949 grey) -> 17 (933 grey);
+    93 (n=103, NVDI (400,200,0)) -> 227 (467,200,0).
+  Ties among the 92 used: 23. 10 between registers of the same colour (0, 8, 15, 108, 146, 151, 186, 252, 253, 255: no visible effect).
+    13 between DIFFERENT colours at equal distance (NVDI's cube steps by 200, EmuTOS' by 67): registers 24, 29, 34, 35, 54, 57, 66, 99,
+    129, 135, 136, 202, 209, together 262 of the 9408 pixels; the lowest register wins (e.g. 135 (600,400,0) -> 182 (733,400,0), not
+    224 (467,400,0)). The expected sheet of the first run was made with the same rule (Python min over registers in order).
+
+HOST TEST (tools/xtask/src/rsc_recolour_tests.rs, own classic-file parser, not mkrsc.py's)
+  recolour_palettes_equal_their_sources: nvdi.pal == FreeMiNT's; tos-default.pal == kernel table == EmuTOS videl_palette1/2.
+  hypview_rsc_8plane_icons_take_the_nearest_tos_colour: runs the script on upstream's hyp_view.rsc; 29 variants / 14 8-plane /
+    15 4-plane; no byte outside the 8-plane col_data/sel_data rasters changed (header, tree, mono data/mask, labels, 4-plane
+    variants, all colour masks); every pixel takes a nearest colour and the lowest register on a tie; 252 -> 7, 250 -> 17,
+    93 -> 227 with their pixel counts 1383/656/103.
+  RED (analysis/test-red-identity-lut.txt): the script's lut set to the identity, i.e. what the build shipped before (upstream's
+    bytes): "register 252 -> 252 is not a nearest colour". Done by editing the one line in place and restoring the file from a copy
+    (cmp equal afterwards).
+  GREEN (analysis/test-green.txt): 2 passed. Full `cargo xtask test`: 2241 passed, 0 failed, 1 ignored (analysis/xtask-test-results.txt).
+
+RUNS
+  runs/newtos-hypview: method/newtos-hypview.sh (copy of measurement-2026-11-07-a141/method/newtos-hypview.sh, header line only
+    changed), real HYP_VIEW.NAP + the new build/hyp_view.rsc, #Z autorun, HYP_VIEW.CFG DEFAULT=C:\TEST.HYP (cflib.hyp), one QMP
+    screendump after 30 s: shots/hypview.png (sha256 f564c0e4...). panic-lines 0.
+    Called as: method/newtos-hypview.sh <run>/runs/newtos-hypview <abs kernel8.img> <abs HYP_VIEW.NAP> <abs build/hyp_view.rsc>
+    <abs Applications/cflib-git/bin/cflib.hyp> <session scratch>
+  runs/icprobe-recoloured-emutos, runs/icprobe-recoloured-newtos: tosdump/probes/icprobe.c on both sides with the recoloured
+    resource (classic build/hyp_view-recoloured.rsc on the oracle, its conversion build/hyp_view.rsc on NewTOS), 7 trees:
+      tosdump/probes/run-icprobe.sh emutos falcontc <out> sdk/apps/hypview/build/hyp_view-recoloured.rsc 7
+      tosdump/probes/run-icprobe.sh newtos <out> <kernel8.img> sdk/apps/hypview/build/hyp_view.rsc 7
+    ICPROBE.BIN gzipped (icprobe-compare.py reads either).
+
+WHAT THE SCREEN SHOWS (analysis/toolbar-before-above-after-below.png: band y 38..70, x 0..480, x3; above the first run's
+  runs/newtos-hypview/hypview.png, below this run's)
+  Whole screen vs the first run: 3218 pixels differ, all inside x 6..464, y 44..64 = the toolbar icons; nothing else changed.
+  Above: brown/olive frames, green and magenta blotches. Below, left to right: back arrows white with cyan, disabled (dither);
+    two documents with coloured marks, disabled; a white house with orange roof, disabled; a blue-white arrow on a cyan trail,
+    not dithered; an orange book with "INX", not dithered; a beige-orange folder, not dithered; a document, disabled; a dark-blue
+    dotted "?", not dithered; "<i>" in dark blue, not dithered; two grey floppies with orange arrows, not dithered; a document
+    with blue and yellow lines, disabled. The disabled icons keep the dither bars under them (rows 65..68), the side finding of
+    TASK/A141 that stays.
+  analysis/icon-find-after.txt (method/icon-find.py): each 8-plane icon of build/hyp_view-recoloured.rsc, rendered with register ->
+    pen -> tos-default.pal -> 5 bits per gun as the kernel stores it, searched in the band y 38..72:
+      blocks 2, 3, 4, 8, 9: 0 of 472/474/299/456/397 mask pixels differ (the enabled icons).
+      blocks 1, 5, 6, 7, 10..14: 164..213 differ, ALL on the even parity, 0 on the odd: the DISABLED overdraw.
+      block 0 has no 8-plane variant.
+  Controls: analysis/icon-find-before-control.txt -- upstream's icons on the first run's screen: the same pattern (0 / even only),
+    so the instrument finds "the file through the TOS palette" before and after; analysis/icon-find-upstream-on-after-screen.txt --
+    upstream's icons on this screen: 272..425 differ, on both parities: they are no longer there.
+  analysis/sheet-build-rsc-under-tos-palette.png: the build's recoloured resource drawn by
+    measurements/measurement-2026-11-07-a141/method/palette-test.py (emutos-default sheet) equals
+    measurements/measurement-2026-11-07-a141/analysis/sheet-nvdi-recoloured-to-default.png, 0 differing pixels (analysis/sheet-compare.txt).
+
+KERNEL SIDE UNCHANGED (icprobe)
+  analysis/icprobe-recoloured-compare.txt: cases 59, differing 0 (PENS, I* col_data after rsrc_load, M* col_mask, T* objc_draw x4).
+  Control analysis/icprobe-control-recoloured-vs-upstream.txt: oracle with the recoloured file vs the first run's NewTOS with upstream's:
+    18 differ = I1.6..I1.19 (the 14 icons the device takes the 8-plane variant of) and T1.0..T1.3 (the toolbar tree); every M*
+    (mask) case equal, I0.1 (the icon of tree 0) equal, trees 0 and 2..6 equal: the patch reaches exactly the 8-plane data.
+
+INPUTS
+  host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang of the manifests)
+  manifests  runs/newtos-hypview/card.img.manifest, runs/icprobe-recoloured-newtos/card.img.manifest; optional_missing, verbatim, in both:
+               optional_missing none
+  kernel     cargo xtask build --board rpi4 --release, 07308974c1009d6b2e138827ffceba4af4d8aeb29da634ae4f7333c3f03bddce
+  NewTOS     HYP_VIEW.NAP e65d873cec7d1fc86d125b7bbec09e83a9e1476519d94879915dcab0da1207ef (unchanged by this build step)
+             build/hyp_view-recoloured.rsc 41ab67ee50151ac4bd8431c49f6a4ab0f40f8883ed5202261b1ce96ef187c81e
+             build/hyp_view.rsc 1d1186e81a951c56f819ff4e19c1305d3a7e46f7557545275bdba25f7b847c60 (before: 54589e1c...; same size 27747,
+             7735 bytes differ, as many as between upstream and the recoloured classic file)
+  upstream   sdk/apps/hypview/hyp_view.rsc 402817a801852fd51c98a21bc9487e6162028204299180d55a0f78f0debf656b (unchanged)
+  hyp        Applications/cflib-git/bin/cflib.hyp 36cdcff3f2794db44e790744755a02388bc415f09a482cb8ab59e9e289220aa0
+  oracle     tools/hatari-oracle.sh falcontc (docs/analysis/ORACLE.md)
+  QEMU       -M raspi4b, -append serial=on, APFS clone of each card, deleted after (scratch in the session scratchpad)
+
+OPEN
+  Real Pi: the tester run of the 0.7.1 package (TASK/REL071). Other HypView resources (de, cs, skins) are not built for the card and
+  are not touched.

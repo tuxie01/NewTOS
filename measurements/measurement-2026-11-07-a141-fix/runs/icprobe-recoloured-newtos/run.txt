@@ -1,0 +1,8 @@
+icprobe run, side newtos (2026-11-07T10:59:10Z)
+tree      fdeeeead004956b21b3c53746047af9c39066166 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    ICPROBE.PRG f14d808a79c1cd87f8b19e45557f622e831414c1e0726c7086cc9c94f290b7cc ICPROBE.NAP a16618f717f11e4d11208327d1d3c6e8a9d9084684437245e457f7f76ec8218f
+resource  1d1186e81a951c56f819ff4e19c1305d3a7e46f7557545275bdba25f7b847c60 /Volumes/Daten/Development/PiRusTOS/sdk/apps/hypview/build/hyp_view.rsc (7 trees)
+kernel    07308974c1009d6b2e138827ffceba4af4d8aeb29da634ae4f7333c3f03bddce /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+card      498d2540c1bc3f59e8b01633aa11cc99774a9bb1021164f1086ae0bdac5ea1d8 (tools/mkcard.sh, C:\ICPROBE.NAP, #Z autorun)
+qemu      done
+card      after b6688ff628a06bdee6e507d98b408c92473819849fb181b5db8210f6bb842f87 (the booted clone)
