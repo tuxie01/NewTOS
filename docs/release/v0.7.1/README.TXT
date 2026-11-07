@@ -103,8 +103,7 @@ keyboard, delete KEYBOARD.KBD from the card.
     APPS\QED\QED.NAP                QED (text editor; German menus)
     APPS\ZVIEW\ZVIEW.NAP            zView (image viewer, 10 formats)
     APPS\DOOM\DOOM.NAP              Doom (shareware episode)
-    APPS\COREMARK\CORE.NCP          CoreMark (CPU benchmark, console;
-                                    waits for a key at the end)
+    APPS\COREMARK\CORE.NCP          CoreMark (CPU benchmark, console)
     APPS\HYPVIEW\HYP_VIEW.NAP       HypView (hypertext viewer)
 
 The help texts of QED, zView and TeraDesk are .HYP files in each
@@ -147,19 +146,9 @@ in this release.
   wrongly. Every program using cflib was affected; it showed in QED
   (GitHub #21).
 
-4.3 Included programs
-
-- HypView: no longer crashes when opened a second time as an accessory
-  (GitHub #22).
-- HypView: shows the black-and-white pictures of .HYP files (e.g. the
-  QED.HYP logo) correctly.
-- HypView: the toolbar icons were drawn for NVDI's palette. The port now
-  adapts them to the standard TOS palette, so they show the intended
-  colours as closely as that palette allows (GitHub #23). The operating
-  system is unchanged; it draws colour icons like EmuTOS.
-- CoreMark: keeps its result on the screen until you press a key
-  (GitHub #12). The desktop does not wait after a console program, like
-  EmuTOS.
+Changes to the included programs are not listed here but in the file
+CHANGES.TXT in each program's folder (in 0.7.1: APPS\HYPVIEW and
+APPS\COREMARK).
 
 Earlier releases: see https://github.com/tuxie01/NewTOS/releases
 

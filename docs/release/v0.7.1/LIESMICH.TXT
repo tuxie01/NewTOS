@@ -106,8 +106,7 @@ Fuer eine US-Tastatur KEYBOARD.KBD von der Karte loeschen.
     APPS\QED\QED.NAP                QED (Texteditor)
     APPS\ZVIEW\ZVIEW.NAP            zView (Bildbetrachter, 10 Formate)
     APPS\DOOM\DOOM.NAP              Doom (Shareware-Episode)
-    APPS\COREMARK\CORE.NCP          CoreMark (CPU-Benchmark, Textprogramm;
-                                    wartet am Ende auf eine Taste)
+    APPS\COREMARK\CORE.NCP          CoreMark (CPU-Benchmark, Textprogramm)
     APPS\HYPVIEW\HYP_VIEW.NAP       HypView (Hypertext-Betrachter)
 
 Die Hilfetexte von QED, zView und TeraDesk liegen als .HYP-Datei im
@@ -152,20 +151,9 @@ die laufen in dieser Version noch NICHT.
   vor und wurden deshalb falsch gezeichnet. Betroffen waren alle
   Programme mit cflib, aufgefallen in QED (GitHub #21).
 
-4.3 Mitgelieferte Programme
-
-- HypView: stuerzt als Accessory beim zweiten Oeffnen nicht mehr ab
-  (GitHub #22).
-- HypView: zeigt die Schwarzweiss-Bilder der .HYP-Dateien (z. B. das
-  Logo in QED.HYP) richtig.
-- HypView: Die Icons der Werkzeugleiste waren fuer die Palette von NVDI
-  gezeichnet. Bei der Portierung werden sie jetzt an die Standardpalette
-  von TOS angepasst und zeigen die gemeinten Farben, so nah es diese
-  Palette erlaubt (GitHub #23). Das Betriebssystem ist unveraendert, es
-  zeichnet Farb-Icons wie EmuTOS.
-- CoreMark: laesst sein Ergebnis stehen, bis du eine Taste drueckst
-  (GitHub #12). Der Desktop wartet nach einem Textprogramm nicht, wie
-  bei EmuTOS.
+Aenderungen an den mitgelieferten Programmen stehen nicht hier, sondern
+in der Datei CHANGES.TXT im Ordner des jeweiligen Programms (in 0.7.1:
+APPS\HYPVIEW und APPS\COREMARK).
 
 Fruehere Versionen: siehe https://github.com/tuxie01/NewTOS/releases
 

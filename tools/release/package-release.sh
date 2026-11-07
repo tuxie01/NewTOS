@@ -44,7 +44,8 @@
 #     except docs/release/, which is packaged and must be committed -- and
 #     outside this script itself (not read by any build; its sha256 and git
 #     state go into CHECKS.TXT);
-#   - the release texts carry no `TODO-REL` marker (checked before any build
+#   - the release texts (README/LIESMICH etc. and apps/<DIR>.TXT, packaged as
+#     KARTE/APPS/<DIR>/CHANGES.TXT) carry no `TODO-REL` marker (checked before any build
 #     and again in the packaged copies; there is no override);
 #   - every build product was rebuilt by this run from the checked-out sources
 #     (each build script rebuilds stale libraries itself, sdk/lib-stale.sh); a
@@ -87,7 +88,7 @@ die() { echo "package-release: $*" >&2; exit 1; }
 case "$VER" in ''|*[!0-9.]*) die "version '$VER' is not of the form x.y[.z]" ;; esac
 [ -d "$TEXTS" ] || die "release texts $TEXTS missing"
 for t in $TEXT_FILES; do [ -f "$TEXTS/$t" ] || die "release text $TEXTS/$t missing"; done
-if grep -n 'TODO-REL' "$TEXTS"/* >&2; then die "release texts still carry TODO-REL markers"; fi
+if grep -rn 'TODO-REL' "$TEXTS" >&2; then die "release texts still carry TODO-REL markers"; fi
 case "$(cd "$(dirname "$WORK")" 2>/dev/null && pwd)/" in "$ROOT"/*) die "work-dir must be outside the repository" ;; esac
 mkdir -p "$WORK"; WORK="$(cd "$WORK" && pwd)"
 [ ! -e "$WORK/$NAME" ] && [ ! -e "$WORK/$NAME.zip" ] && [ ! -e "$WORK/prev" ] || die "$WORK already holds a release -- use a fresh work-dir"
@@ -221,6 +222,16 @@ for t in $TEXT_FILES; do
   MANIFEST="$MANIFEST
 $t|$TEXTS/$t|$R docs/release/v$VER/$t$state"
 done
+# Changes to an included program (not to NewTOS) go beside the program, not
+# into README/LIESMICH (user 2026-11-07): docs/release/v<version>/apps/<DIR>.TXT
+# becomes KARTE/APPS/<DIR>/CHANGES.TXT. A new one is a new name: NAMES_ADDED.
+for a in "$TEXTS"/apps/*.TXT; do
+  [ -f "$a" ] || continue
+  n="$(basename "$a" .TXT)"
+  state=""; [ -z "$(git -C "$ROOT" status --porcelain -- "docs/release/v$VER/apps/$n.TXT")" ] || state=" (working tree, uncommitted)"
+  MANIFEST="$MANIFEST
+KARTE/APPS/$n/CHANGES.TXT|$a|$R docs/release/v$VER/apps/$n.TXT$state"
+done
 EMPTY_DIRS="KARTE/CLIPBRD"
 
 D="$WORK/$NAME"; mkdir -p "$D"
@@ -283,7 +294,7 @@ check "kernel8.img crash-walk report matches KERNEL_FEATURES" "$(crashwalk_state
 RE83='^[A-Za-z0-9_$~!#%&(){}^@-]{1,8}(\.[A-Za-z0-9_$~!#%&(){}^@-]{1,3})?$'
 non83="$(cd "$D/KARTE" && find . -mindepth 1 | sed 's#^\./##' | tr '/' '\n' | sort -u | grep -Ev "$RE83" | grep -vx 'bcm2711-rpi-4-b.dtb' || true)"
 check "every TOS-visible name on KARTE is 8.3" "${non83:-ok}"
-todo="$(grep -l 'TODO-REL' "$D"/*.TXT || true)"
+todo="$(grep -rl 'TODO-REL' "$D" --include='*.TXT' || true)"
 check "packaged release texts free of TODO-REL markers" "${todo:-ok}"
 ( cd "$D" && find . -type f | sed 's#^\./##' | sort ) > "$WORK/files-on-disk.txt"
 sed 1d "$WORK/FILES.TSV" | cut -f1 | sed "s#^$NAME/##" | sort > "$WORK/files-listed.txt"

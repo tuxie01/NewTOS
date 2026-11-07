@@ -1,0 +1,25 @@
+CoreMark for NewTOS - changes in NewTOS 0.7.1
+==============================================
+
+(Deutsch: siehe unten)
+
+Changes to the NewTOS port of CoreMark (sdk/overlays/coremark in the
+NewTOS sources). The operating system itself is not affected; see
+README.TXT.
+
+- CORE.NCP and COREVAL.NCP keep their result on the screen until you
+  press a key (GitHub #12). The desktop does not wait after a console
+  program ends, just like EmuTOS, so the program now waits itself.
+
+
+CoreMark fuer NewTOS - Aenderungen in NewTOS 0.7.1
+==================================================
+
+Aenderungen an der NewTOS-Portierung von CoreMark (sdk/overlays/coremark
+in den NewTOS-Quellen). Das Betriebssystem selbst ist nicht betroffen;
+siehe LIESMICH.TXT.
+
+- CORE.NCP und COREVAL.NCP lassen ihr Ergebnis stehen, bis du eine Taste
+  drueckst (GitHub #12). Der Desktop wartet nach dem Ende eines
+  Textprogramms nicht, genau wie bei EmuTOS; deshalb wartet jetzt das
+  Programm selbst.

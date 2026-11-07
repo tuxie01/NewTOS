@@ -10,7 +10,8 @@ Ein paar Anregungen, falls du nicht weisst, wo du anfangen sollst:
 - Mit dem Desktop arbeiten: Fenster, Ordner, Dateien kopieren, umbenennen,
   loeschen, Einstellungen, "Desktop sichern".
 - Die Programme ausprobieren: QED (Texte schreiben), zView (eigene Bilder
-  ansehen), Doom, TeraDesk, CoreMark, HypView (QED.HYP oeffnen).
+  ansehen), Doom, TeraDesk, CoreMark, HypView (QED.HYP oeffnen). Was sich
+  an einem Programm geaendert hat, steht in CHANGES.TXT in seinem Ordner.
 - Das Accessory im Desk-Menue oeffnen, waehrend etwas anderes laeuft.
 - Neustart mit Ctrl+Alt+Del.
 - Alles, was dir vom echten Atari vertraut ist: sieht es gleich aus,
@@ -22,8 +23,6 @@ Neu in 0.7.1, bitte ausprobieren:
   Laufwerke (D:, E:, ...), auch ueber vorhandene Dateien. Danach: Stimmen
   die Groessen? Scheitert ein Speichern, bitte die Meldung des Programms
   und die SD-Karte (Hersteller, Groesse) notieren.
-- HypView als Accessory (wie in GitHub #22): oeffnen, schliessen und
-  mehrmals wieder oeffnen.
 - QED-Dialoge mit Checkboxen und Radiobuttons (z. B. die Optionen).
 - Fenster-Rollbalken: Schieber ziehen, in die Leiste klicken, Taste auf
   einem Pfeil halten.

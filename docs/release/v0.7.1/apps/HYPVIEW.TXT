@@ -1,0 +1,32 @@
+HypView for NewTOS - changes in NewTOS 0.7.1
+=============================================
+
+(Deutsch: siehe unten)
+
+Changes to the NewTOS port of HypView (sdk/apps/hypview in the NewTOS
+sources). The operating system itself is not affected; see README.TXT.
+
+- As an accessory (HYP_VIEW.NAP renamed to HYPVIEW.NAC in \ACC), HypView
+  no longer crashes when it is opened a second time (GitHub #22).
+- The black-and-white pictures in .HYP files (e.g. the logo in QED.HYP)
+  are shown correctly.
+- The toolbar icons were drawn for NVDI's colour palette. The port now
+  adapts them to the standard TOS palette, so they show the intended
+  colours as closely as that palette allows (GitHub #23).
+
+
+HypView fuer NewTOS - Aenderungen in NewTOS 0.7.1
+=================================================
+
+Aenderungen an der NewTOS-Portierung von HypView (sdk/apps/hypview in den
+NewTOS-Quellen). Das Betriebssystem selbst ist nicht betroffen; siehe
+LIESMICH.TXT.
+
+- Als Accessory (HYP_VIEW.NAP umbenannt in HYPVIEW.NAC in \ACC) stuerzt
+  HypView beim zweiten Oeffnen nicht mehr ab (GitHub #22).
+- Die Schwarzweiss-Bilder in .HYP-Dateien (z. B. das Logo in QED.HYP)
+  werden richtig angezeigt.
+- Die Icons der Werkzeugleiste waren fuer die Farbpalette von NVDI
+  gezeichnet. Die Portierung passt sie jetzt an die Standardpalette von
+  TOS an; sie zeigen die gemeinten Farben, so nah es diese Palette
+  erlaubt (GitHub #23).

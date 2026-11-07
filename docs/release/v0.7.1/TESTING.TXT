@@ -12,7 +12,8 @@ Some ideas if you don't know where to start:
 - Work with the desktop: windows, folders, copy, rename and delete files,
   settings, "Save desktop".
 - Try the programs: QED (write texts), zView (look at your own pictures),
-  Doom, TeraDesk, CoreMark, HypView (open QED.HYP).
+  Doom, TeraDesk, CoreMark, HypView (open QED.HYP). What changed in a
+  program is in CHANGES.TXT in its folder.
 - Open the accessory from the Desk menu while something else runs.
 - Restart with Ctrl+Alt+Del.
 - Everything you know from a real Atari: does it look the same, does it
@@ -24,8 +25,6 @@ New in 0.7.1, please try:
   and replace existing files. Afterwards: are the sizes right? If
   saving fails, please note the program's message and your SD card
   (make, size).
-- HypView as an accessory (as in GitHub #22): open, close and open it
-  again several times.
 - QED dialogs with check boxes and radio buttons (e.g. the options).
 - Window scroll bars: drag the slider, click into the bar, hold the
   button on an arrow.
