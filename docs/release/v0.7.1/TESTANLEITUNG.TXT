@@ -1,0 +1,43 @@
+NewTOS 0.7.1 — Wie testen?
+==========================
+
+Ganz einfach: Benutze NewTOS so, wie du einen Atari benutzen wuerdest.
+Es gibt keine Pflichtliste. Die meisten Fehler findet man beim normalen
+Arbeiten und Ausprobieren — genau das brauchen wir.
+
+Ein paar Anregungen, falls du nicht weisst, wo du anfangen sollst:
+
+- Mit dem Desktop arbeiten: Fenster, Ordner, Dateien kopieren, umbenennen,
+  loeschen, Einstellungen, "Desktop sichern".
+- Die Programme ausprobieren: QED (Texte schreiben), zView (eigene Bilder
+  ansehen), Doom, TeraDesk, CoreMark, HypView (QED.HYP oeffnen).
+- Das Accessory im Desk-Menue oeffnen, waehrend etwas anderes laeuft.
+- Neustart mit Ctrl+Alt+Del.
+- Alles, was dir vom echten Atari vertraut ist: sieht es gleich aus,
+  verhaelt es sich gleich?
+
+Neu in 0.7.1, bitte ausprobieren:
+
+- Speichern und Kopieren, auch groessere Dateien und auf andere
+  Laufwerke (D:, E:, ...), auch ueber vorhandene Dateien. Danach: Stimmen
+  die Groessen? Scheitert ein Speichern, bitte die Meldung des Programms
+  und die SD-Karte (Hersteller, Groesse) notieren.
+- HypView als Accessory (wie in GitHub #22): oeffnen, schliessen und
+  mehrmals wieder oeffnen.
+- QED-Dialoge mit Checkboxen und Radiobuttons (z. B. die Optionen).
+- Fenster-Rollbalken: Schieber ziehen, in die Leiste klicken, Taste auf
+  einem Pfeil halten.
+- Menues: reagiert jeder Eintrag auf den ersten Klick? Wenn nicht, hilft
+  ein kurzes Video sehr (GitHub #19).
+
+Was uns besonders interessiert:
+
+- Absturzbericht (Text mit "pc=", Registern und einem Diagnoseblock am
+  Ende): bitte ein FOTO vom ganzen Bildschirm machen, dann eine Taste
+  druecken.
+- Haenger: was hast du kurz vorher gemacht?
+- Alles, was anders aussieht oder sich anders anfuehlt als auf einem
+  Atari mit TOS 4 / EmuTOS — auch Kleinigkeiten.
+
+Rueckmeldung als Issue auf GitHub (https://github.com/tuxie01/NewTOS/issues
+-> New issue -> Bug report); FEEDBACK.TXT nennt, was uns hilft. Danke!

@@ -1,0 +1,42 @@
+NewTOS 0.7.1 - Feedback
+=======================
+
+(Deutsch: siehe FEEDBACK.TXT)
+
+Please fill in and send as a GitHub issue
+(https://github.com/tuxie01/NewTOS/issues -> New issue). Photos of the
+screen are welcome as attachments. Leave out what you don't know.
+
+
+1. Your setup
+-------------
+
+Raspberry Pi 4, RAM (1/2/4/8 GB):
+Monitor (resolution, HDMI direct / adapter):
+Keyboard and mouse (make/model, German/US):
+SD card (make, size), partitioned with (macOS/Windows/Linux):
+
+
+2. Bugs (copy one block per bug)
+--------------------------------
+
+What did you do:
+What happened:
+What did you expect:
+Does it happen again? (always / sometimes / once):
+Crash report / photo attached? (yes/no):
+
+
+3. Different from the original
+------------------------------
+
+What looks or behaves differently from a real Atari (TOS 4 / EmuTOS)?
+
+
+4. Impression
+-------------
+
+What worked well:
+What bothered you most:
+Which Atari program would you like to see on NewTOS next:
+Anything else:

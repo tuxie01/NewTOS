@@ -1,0 +1,41 @@
+NewTOS 0.7.1 — Rueckmeldung
+===========================
+
+Bitte ausfuellen und als Issue auf GitHub schicken
+(https://github.com/tuxie01/NewTOS/issues -> New issue). Fotos vom
+Bildschirm gern als Anhang. Was du nicht weisst, einfach leer lassen.
+
+
+1. Dein Aufbau
+--------------
+
+Raspberry Pi 4, RAM (1/2/4/8 GB):
+Monitor (Aufloesung, HDMI direkt / Adapter):
+Tastatur und Maus (Hersteller/Modell, deutsch/US):
+SD-Karte (Hersteller, Groesse), partitioniert mit (macOS/Windows/Linux):
+
+
+2. Fehler (je Fehler einen Block kopieren)
+------------------------------------------
+
+Was hast du gemacht:
+Was ist passiert:
+Was hast du erwartet:
+Passiert es wieder? (immer / manchmal / einmal):
+Absturzbericht / Foto angehaengt? (ja/nein):
+
+
+3. Anders als beim Original
+---------------------------
+
+Was sieht anders aus oder verhaelt sich anders als auf einem echten
+Atari (TOS 4 / EmuTOS)?
+
+
+4. Eindruck
+-----------
+
+Was hat gut funktioniert:
+Was hat am meisten gestoert:
+Welches Atari-Programm moechtest du als naechstes auf NewTOS sehen:
+Sonstiges:

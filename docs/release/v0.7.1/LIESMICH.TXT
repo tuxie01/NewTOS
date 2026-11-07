@@ -1,0 +1,214 @@
+NewTOS 0.7.1 — Alpha-Testversion
+================================
+
+(English: see README.TXT)
+
+NewTOS ist das Atari-TOS (GEMDOS, BIOS, XBIOS, VDI, AES) als eigenes
+Betriebssystem fuer den Raspberry Pi 4 — kein Emulator. Atari-Programme
+werden aus ihren Quellen fuer ARM neu uebersetzt und laufen nativ.
+Vorbild und Messlatte ist EmuTOS (Falcon/TOS-4-Profil).
+
+Das ist eine ALPHA-Version. Sie ist zum Ausprobieren und Fehlerfinden da,
+nicht fuer den Alltag. Bitte eine eigene SD-Karte verwenden — nichts
+darauf, das du noch brauchst.
+
+
+WICHTIG fuer 0.7 und 0.6.1 — Datenverlust beim Kopieren/Verschieben
+-------------------------------------------------------------------
+
+NewTOS 0.7 (und 0.6.1) kann Dateiinhalte ohne jede Fehlermeldung
+verlieren: Wer eine Datei auf ein ANDERES Laufwerk kopiert oder
+verschiebt (z. B. von C: nach D:) und dort eine gleichnamige Datei
+ersetzt, konnte eine leere Kopie (0 Byte) bekommen; beim Verschieben
+wurde zusaetzlich das Original geloescht, beide Inhalte waren weg. Das
+passierte nur zufaellig (es haengt davon ab, wo die Dateien in ihren
+Ordnern stehen). Gesehen im NewTOS-Desktop; TeraDesk geht denselben
+Weg. 0.7.1 behebt das.
+
+Wenn du 0.7 oder 0.6.1 mit mehr als einem Laufwerk benutzt hast: Pruefe
+die Dateien, die du auf ein anderes Laufwerk ueber eine vorhandene Datei
+kopiert oder verschoben hast. Ist eine davon 0 Byte gross? Nach dem
+Verschieben fehlt auch das Original — dann aus einer Sicherung holen.
+Kopien innerhalb eines Laufwerks und Kopien, die keine Datei ersetzt
+haben, sind nicht betroffen.
+
+
+1. Was du brauchst
+------------------
+
+- Raspberry Pi 4 Model B (RAM-Groesse bitte im Feedback angeben)
+- Monitor an HDMI 0 (die Buchse neben dem USB-C-Strom), Full HD
+- USB-Tastatur und USB-Maus (deutsche oder US-Belegung); Funk-Sets mit
+  einem USB-Empfaenger fuer Tastatur und Maus gehen auch
+- eine microSD-Karte, die du komplett loeschen darfst (2 GB reichen)
+- ein Netzteil fuer den Pi 4
+
+
+2. Installation
+---------------
+
+WICHTIG — so muss die Karte aussehen:
+
+- Partitionstabelle: MBR (nicht GPT).
+- Erste Partition: FAT16, HOECHSTENS 2 GB. Darauf kommt NewTOS (Laufwerk C:).
+- FAT32 und exFAT erkennt NewTOS noch nicht. Der Raspberry Pi Imager und
+  das normale Formatieren unter Windows/macOS erzeugen FAT32 oder exFAT —
+  das funktioniert NICHT.
+- Die Grenze von 2 GB ist hart: FAT16 mit mehr als 2 GB braucht 64-KB-
+  Cluster (Windows erlaubt das bis 4 GB), NewTOS nimmt hoechstens
+  32-KB-Cluster an — wie das Atari-TOS.
+- Optional: weitere Partitionen (primaer oder logisch), ebenfalls FAT16
+  bis 2 GB, erscheinen als Laufwerke D:, E:, ... bis P:. Der Rest der
+  Karte darf einfach frei bleiben.
+
+macOS (Terminal, DISK durch die Karte ersetzen, z. B. disk4 —
+mit "diskutil list" pruefen, sonst loeschst du die falsche Platte):
+
+    diskutil partitionDisk /dev/DISK 2 MBR "MS-DOS FAT16" NEWTOS 2G "Free Space" FREI R
+
+Windows (Eingabeaufforderung als Administrator; N = Nummer der Karte aus
+"list disk" — genau pruefen, "clean" loescht die ganze Platte!):
+
+    diskpart
+    list disk
+    select disk N
+    clean
+    convert mbr
+    create partition primary size=2000
+    format fs=fat quick label=NEWTOS
+    assign
+    exit
+
+Linux (sdX = die Karte, mit "lsblk" pruefen):
+
+    sudo parted /dev/sdX --script mklabel msdos mkpart primary fat16 1MiB 2000MiB
+    sudo mkfs.fat -F 16 -n NEWTOS /dev/sdX1
+
+Dann den INHALT dieses ZIP-Ordners "KARTE" auf die Partition kopieren
+(die Dateien muessen direkt im Wurzelverzeichnis liegen, nicht in einem
+Unterordner), Karte auswerfen, in den Pi stecken, einschalten.
+
+Nach einigen Sekunden erscheint der Startbildschirm, danach der Desktop.
+
+Tastatur: Voreingestellt ist die deutsche Belegung (Datei KEYBOARD.KBD).
+Fuer eine US-Tastatur KEYBOARD.KBD von der Karte loeschen.
+
+
+3. Was drauf ist
+----------------
+
+    kernel8.img, config.txt,        NewTOS selbst und die Startdateien
+    start4.elf, fixup4.dat,         der Raspberry-Pi-Firmware
+    bcm2711-rpi-4-b.dtb
+    ACC\SYSACC.NAC                  Accessory "NewTOS System Information"
+                                    (Desk-Menue)
+    APPS\TERADESK\DESKTOP.NAP       TeraDesk (alternativer Desktop)
+    APPS\QED\QED.NAP                QED (Texteditor)
+    APPS\ZVIEW\ZVIEW.NAP            zView (Bildbetrachter, 10 Formate)
+    APPS\DOOM\DOOM.NAP              Doom (Shareware-Episode)
+    APPS\COREMARK\CORE.NCP          CoreMark (CPU-Benchmark, Textprogramm;
+                                    wartet am Ende auf eine Taste)
+    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (Hypertext-Betrachter)
+
+Die Hilfetexte von QED, zView und TeraDesk liegen als .HYP-Datei im
+jeweiligen Programmordner (z. B. APPS\QED\QED.HYP) und lassen sich mit
+HypView oeffnen.
+
+Programmendungen: .NAP = GEM-Programm, .NCP = Textprogramm,
+.NTP = Textprogramm mit Parametern, .NAC = Accessory. Die Atari-Endungen
+.PRG/.TOS/.TTP/.ACC bleiben fuer echte 68000-Programme reserviert —
+die laufen in dieser Version noch NICHT.
+
+
+4. Neu in 0.7.1
+---------------
+
+- Kopieren und Verschieben zwischen Laufwerken verliert keine Daten
+  mehr (siehe Kasten oben).
+- Speichern: Ein einzelner Kartenfehler laesst nicht mehr jedes spaetere
+  Speichern bis zum Neustart scheitern. Das Programm bekommt einen
+  Fehlercode, und sobald die Karte wieder antwortet, geht das Speichern
+  wieder. Groessere Dateien kommen beim Schliessen auf die Karte (wie bei
+  EmuTOS), mit viel weniger Schreibzugriffen; Speichern und Kopieren
+  sind dadurch schneller.
+- HypView als Accessory stuerzt beim zweiten Oeffnen nicht mehr ab
+  (GitHub #22).
+- QED: Checkboxen, Radiobuttons und die Alert-Icons werden richtig
+  gezeichnet (GitHub #21); HypView zeigt die Schwarzweiss-Bilder der
+  .HYP-Dateien (z. B. das Logo in QED.HYP) richtig.
+- CoreMark laesst sein Ergebnis stehen, bis du eine Taste drueckst
+  (GitHub #12). Der Desktop selbst wartet nach einem Textprogramm nicht,
+  genau wie bei EmuTOS.
+- Fenster-Rollbalken verhalten sich wie bei EmuTOS: Beim Ziehen des
+  Schiebers erscheint ein Umriss statt Streifen, gehaltene Taste auf
+  einem Pfeil oder in der Leiste wiederholt (GitHub #2).
+- Der Fensterschatten hat die Rahmenfarbe (schwarz) wie bei EmuTOS
+  statt einer grauen Linie (GitHub #7).
+- Menues: Ein schneller Klick auf einen Menueeintrag geht nicht mehr
+  verloren. Im Desktop wirkt ein Menueklick nach der Doppelklickzeit
+  (etwa 0,2 s), wie bei EmuTOS.
+- Dateiauswahl: Die Titelleiste zeigt die Dateimaske (z. B. *.*).
+- Viele kleinere Zeichenkorrekturen im VDI, gemessen an EmuTOS (Linien,
+  Fuellungen, Flutfuellung, Unterstreichung, GDOS-Fonts).
+
+Fruehere Versionen: siehe https://github.com/tuxie01/NewTOS/releases
+
+
+5. Bekannte Einschraenkungen
+----------------------------
+
+- Keine 68000-Programme (.PRG/.TOS/.TTP/.ACC) — nur fuer NewTOS neu
+  uebersetzte Programme laufen.
+- Nur ein Programm gleichzeitig (plus Desktop und Accessories), wie
+  beim Atari ohne MiNT.
+- Kein Ton, kein Netzwerk, keine Uhr mit Batterie (nach dem Einschalten
+  beginnt das Datum beim Baudatum des Kerns).
+- Nur FAT16; nur Raspberry Pi 4.
+- Drucken und serielle Schnittstelle fehlen.
+- "Shutdown" in TeraDesk haelt den Pi absichtlich an (wie das Original):
+  danach Strom aus und wieder an.
+- Ein Programm, das in einer Endlosschleife haengt, laesst sich nicht
+  per Ctrl+Alt+Del beenden — dann Strom aus und wieder an.
+- Mausrad mancher Kabelmaeuse (Logitech B100, Raspberry-Pi-Maus): scrollt
+  noch nicht; die mittlere Taste wird noch nicht genutzt (GitHub #8).
+- Menues: Ein Tester meldete fuer 0.7, dass ein Menueeintrag mehrere
+  Klicks brauchte und die schwarze Markierung stehen blieb. Wir koennen
+  es nicht nachstellen; falls du es in 0.7.1 noch siehst, bitte in
+  GitHub #19 melden (ein kurzes Video hilft).
+- HypView: Die Icons der Werkzeugleiste haben seltsame Farben (GitHub
+  #23). EmuTOS zeigt dasselbe; die Icons sind fuer eine andere Palette
+  gezeichnet. Noch nicht geaendert.
+- Ausschalten: Warten, bis ein Programm fertig gespeichert hat. Was ein
+  Programm geschrieben, aber noch nicht geschlossen hat, geht verloren,
+  wie beim Atari.
+- Doom kann im Menue haengen bleiben, wenn das Accessory X-Shot
+  installiert ist.
+- Stuerzt ein Programm ab, erscheint ein Absturzbericht; nach einer
+  Taste geht es zurueck zum Desktop. Der Bericht endet mit einem
+  Diagnoseblock (Zeilen mit "crash-walk", "model" und "ladder"). Bitte
+  ein Foto vom GANZEN Bildschirm machen, bevor du eine Taste drueckst!
+
+
+6. Rueckmeldung
+---------------
+
+Einfach ausprobieren (Anregungen in TESTANLEITUNG.TXT) und auf GitHub
+melden: https://github.com/tuxie01/NewTOS/issues -> New issue -> Bug
+report (Deutsch oder Englisch). FEEDBACK.TXT nennt, was uns hilft. Fotos
+von Absturzberichten bitte anhaengen. Jede Rueckmeldung hilft, auch
+"alles lief".
+
+
+7. Lizenz und Quellen
+---------------------
+
+NewTOS steht unter der GNU GPL v2 oder spaeter. Die enthaltenen Programme
+stehen unter ihren eigenen Lizenzen (TeraDesk, QED, zView, HypView, Doom: GPL).
+Die vollstaendigen Quelltexte (NewTOS, SDK und die Anpassungen der
+Programme) liegen auf https://github.com/tuxie01/NewTOS, Tag v0.7.1.
+Die Raspberry-Pi-Firmware (start4.elf, fixup4.dat, .dtb) stammt von der
+Raspberry Pi Foundation und steht unter deren Lizenz (LICENCE.broadcom,
+liegt dem ZIP bei). DOOM1.WAD ist die frei weitergebbare Shareware-
+Episode von id Software.
+
+Projekt und Fehlermeldungen: https://github.com/tuxie01/NewTOS

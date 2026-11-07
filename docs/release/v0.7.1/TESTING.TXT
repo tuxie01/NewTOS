@@ -1,0 +1,45 @@
+NewTOS 0.7.1 - How to test
+==========================
+
+(Deutsch: siehe TESTANLEITUNG.TXT)
+
+Simple: use NewTOS the way you would use an Atari. There is no checklist.
+Most bugs show up during normal work and trying things out - that is
+exactly what we need.
+
+Some ideas if you don't know where to start:
+
+- Work with the desktop: windows, folders, copy, rename and delete files,
+  settings, "Save desktop".
+- Try the programs: QED (write texts), zView (look at your own pictures),
+  Doom, TeraDesk, CoreMark, HypView (open QED.HYP).
+- Open the accessory from the Desk menu while something else runs.
+- Restart with Ctrl+Alt+Del.
+- Everything you know from a real Atari: does it look the same, does it
+  behave the same?
+
+New in 0.7.1, please try:
+
+- Save and copy, also larger files and onto other drives (D:, E:, ...),
+  and replace existing files. Afterwards: are the sizes right? If
+  saving fails, please note the program's message and your SD card
+  (make, size).
+- HypView as an accessory (as in GitHub #22): open, close and open it
+  again several times.
+- QED dialogs with check boxes and radio buttons (e.g. the options).
+- Window scroll bars: drag the slider, click into the bar, hold the
+  button on an arrow.
+- Menus: does every entry react to the first click? If not, a short
+  video helps a lot (GitHub #19).
+
+What we are especially interested in:
+
+- Crash report (text with "pc=", registers and a diagnosis block at the
+  end): please take a PHOTO of the whole screen, then press a key.
+- Hangs: what did you do just before?
+- Anything that looks or feels different from an Atari with TOS 4 /
+  EmuTOS - small things too.
+
+Report as a GitHub issue (https://github.com/tuxie01/NewTOS/issues ->
+New issue -> Bug report); FEEDBACK-EN.TXT lists what helps us.
+Thank you!
