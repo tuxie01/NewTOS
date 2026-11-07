@@ -1,0 +1,25 @@
+measurement-2026-11-07-rel071-final2 -- REL071: NewTOS 0.7.1 package with per-program CHANGES.TXT
+=================================================================================================
+Lead, TASK/REL071, 2026-11-07 (host clock CET). HEAD 6baafc92, tree clean. No tag, no push, no GitHub, no card.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+WHAT / WHY
+  User 2026-11-07 after reading the texts: "hier sind immer noch App-Fehler mit NewTOS-Fehlern vermischt ... lege
+  Changelog-Textdateien an fuer jede App, wo wir Fehler gefixt haben. Aber in die LIESMICH nur Infos zu Aenderungen
+  im Kernel und im SDK." 6baafc92: README/LIESMICH section 4 = operating system + SDK only; HypView and CoreMark
+  changes in docs/release/v0.7.1/apps/{HYPVIEW,COREMARK}.TXT, packaged by tools/release/package-release.sh as
+  KARTE/APPS/<DIR>/CHANGES.TXT; TESTING/TESTANLEITUNG point there.
+
+HOW
+  method/package.sh (NAMES_ADDED = the two CHANGES.TXT, KERNEL_FEATURES=crash-walk, previous = v0.7 asset a5191394...).
+
+RESULT
+  "done:", exit 0, every check PASS (package/CHECKS.TXT).
+  ZIP /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/rel071-c/NewTOS-0.7.1.zip
+    sha256 801ed08ac7ef3b562ed83f4f89c1054b8e5a3867907dcbd69f38f0cdf8a0ce82, 6633783 bytes, 72 entries.
+  Against measurements/measurement-2026-11-07-rel071-final/RUNINFO.TXT (the ZIP of the Pi acceptance,
+  package/vs-final.txt): the two new CHANGES.TXT, the four edited texts, kernel8.img. Every other file equal.
+  kernel8.img sha256 820780483f35fb17b17a4df39409411a5233493e2c69da1ada82eb988ae55993: 14 bytes differ from the
+  Pi-accepted b0543dd4... (package/kernel-bytes-vs-final.txt), the build revision 6baafc92 against 189401b2; git diff
+  189401b2..6baafc92 -- kernel tos-api tos-types Cargo.toml Cargo.lock is empty.
+  pi-test/ copied beside the ZIP unchanged (not in the ZIP).

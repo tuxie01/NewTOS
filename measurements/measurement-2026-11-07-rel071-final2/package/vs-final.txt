@@ -1,0 +1,7 @@
+Only in rel071-c/NewTOS-0.7.1/KARTE/APPS/COREMARK: CHANGES.TXT
+Only in rel071-c/NewTOS-0.7.1/KARTE/APPS/HYPVIEW: CHANGES.TXT
+Files rel071-b/NewTOS-0.7.1/KARTE/kernel8.img and rel071-c/NewTOS-0.7.1/KARTE/kernel8.img differ
+Files rel071-b/NewTOS-0.7.1/LIESMICH.TXT and rel071-c/NewTOS-0.7.1/LIESMICH.TXT differ
+Files rel071-b/NewTOS-0.7.1/README.TXT and rel071-c/NewTOS-0.7.1/README.TXT differ
+Files rel071-b/NewTOS-0.7.1/TESTANLEITUNG.TXT and rel071-c/NewTOS-0.7.1/TESTANLEITUNG.TXT differ
+Files rel071-b/NewTOS-0.7.1/TESTING.TXT and rel071-c/NewTOS-0.7.1/TESTING.TXT differ
