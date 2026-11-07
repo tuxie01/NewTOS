@@ -1,0 +1,59 @@
+V35 acceptance (tester) -- TASK/V35.md (fix 788a8aa9: handlers read GSX_ENTRY's local PTSIN copy; run + ticket 7558532a; docs a862f764). Date 2026-11-07.
+No product code touched in the repo, no card, no Pi, no push. Main tree HEAD a862f764 clean at start (the untracked foreign dir measurements/measurement-2026-11-07-v49-pi is not mine).
+Built/measured in git-archive trees of the session scratchpad (references/ linked): base = 3a9221eb (before the fix), fix = a862f764 (product code = 788a8aa9).
+Scratch-only experiment trees (never in the repo): fixpad = fix + 4 KiB dead data (image size = base's), fixdbg = fix + call/pair counters printed to the console.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 40 card.img.manifest files in this run)
+optional_missing, verbatim, in ALL 40 manifests: optional_missing none
+QEMU 11.0.2 raspi4b (-append serial=on, APFS clone per boot, own socket per run) and virt (xtask run --headless, own ELF). Oracle EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc.
+A second worker (V49) ran on the same host: host load average was 55 at the start of the timing runs, 5-10 for the later ones (runs/bct*/loads*).
+
+KERNELS (rpi4 release kernel8.img)  base 739609f6ca623e99... (1521896 B), fix 768ab2edc1ee8b2a... (1517800 B), fixpad 8fe10947b9efffe4... (1521896 B)
+  qemu-virt release ELF: base 60546fda2a79799f..., fix 1aa34694bcfbe639...   Probe BINs (gitignored): e1 f498fb23658a5b2e, n-base c1021646877ad113, n-fix1 = n-fix2 9fbbeeb65f8aa430 (e1 and n-fix = developer's hashes)
+
+RESULTS
+ 1 PASS  cargo xtask test, main tree, fix: rc 0, 2273 passed / 0 failed / 2 ignored (197 "test result" lines; analysis/cargo-xtask-test-fix.txt) = developer's number.
+         Base: cargo test --no-fail-fast -p tos-api -p tos-types -p xtask in the archive tree of 3a9221eb: 2250 / 11 failed / 1 ignored (analysis/cargo-test-base-archive.txt); the 11 are archive artefacts
+         (doc_check x4, rsc_obfix x3, rsc_recolour x2, rsc_cicon x2: no .git / ignored files) that pass in the main tree -> base 2261/0/1 (not measured as a clean main-tree run). Delta +12 passed, +1 ignored (TPH).
+         cases_v35 (13 tests): fix 12 ok + 1 ignored (analysis/green-v35-fix.txt); the same test files copied into a base archive tree: 3 ok, 9 FAILED, 1 ignored (analysis/red-v35-base.txt).
+         Red for the right reason (stale/caller value instead of the copy): TPC vsl_width left [3,0] right [9,0]; TPD vst_height [7,13,8,16] vs [14,27,16,32]; TPF [1,0] vs [7,0]; TPG [1,0] vs [5,0];
+         negative count [1,0] vs [7,0]; cases 50/54, TPA, TPB red in the harness comparison. Green on base: case 52 (equal by chance), 55, TPE (controls). TPH #[ignore = "TASK/V35 open point: ... decision pending"].
+ 2 PASS  both boards fresh builds (target removed before each), rc 0 (analysis/builds-rc.txt, build-*, clippy-*): rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121 on base AND fix, both boards (delta 0);
+         vdi/mod.rs 8 private_interfaces notes before and after, 0 hits for raster.rs, vdi_client.rs, selftest_vdi.rs. rpi4 (serial=on) reached the desktop in every desk/shprobe-desk run, 0 exception/panic lines;
+         qemu-virt headless, own ELF, 100 s: base and fix "[desk] desktop up (0 drives)", 0 exception/panic (runs/virt-base, runs/virt-fix).
+ 3 PASS  oracle, probe vdprobe (tosdump/probes/run-vdprobe.sh, probe incl. t35, same probe on both kernels; probe/):
+         e1 vs n-fix1: 912 cases, 335 differ; TPA TPB TPC TPD TPE TPF TPG EQUAL, TPH DIFF (NewTOS 9 vs oracle 3 = V52, open point); LOG differs only in TXZ (V33 intentional) and TPH line 1591 (po 3 0 vs po 9 0).
+         n-base vs n-fix1: exactly 7 cases differ = TPA TPB TPC TPD TPF TPG TPH, the other 905 byte-identical; LOG diff base/fix: lines 343, 345, 1586, 1589, 1591 only. e1 vs n-base: 341 differ.
+         n-fix1 == n-fix2 (BIN and LOG). Tables (cargo xtask tosdump --tree, runs/tab-*): vdi-v18-t2 base 2/32 (cases 50, 54), fix 0/32; vdi-all base 0/182, fix 0/182, VDI.BIN byte-identical (e91b865b92b5dbf2);
+         tosdiff base vs fix v18t2 = exactly 2 of 32 (50, 54), all 0 of 182 (analysis/cmp-bins.txt).
+ 4 PASS  AES aes-r2-wind / r3-wind-state / r4-subfunctions base vs fix: tosdiff 0/78, 0/39, 0/181 differing cases (analysis/tosdiff-base-vs-fix-r*.txt); AES.BIN differs in exactly one byte per case
+         (cmp -l: 0x4a -> 0x3a, the address cell 0x4a50 -> 0x3a50; 78 / 39 / 181 bytes), nothing else; address check 0 bad cells.
+         shprobe 12/12 + shprobe-desk 2/2 PNG byte-identical base vs fix; desktop + IKBD injector (11 shots) 11/11 identical at 640x480 and 11/11 at 1920x1080 (the first desk1080-base try failed in mkcard, host hdiutil
+         "Simulators are still shutting down": kept as runs/gui/desk1080-base-failed-mkcard, rerun in gui2.sh); boot screen + AUTO console 640x480 6/6 identical; 1920x1080 4/6 (6, 10, 32, 45 s identical; 18 s and 24 s differ, see 7).
+         slprobe 155 shots x 6 runs: not byte-stable (analysis/slprobe-pairs.txt). Differing shots over all pairs: 021 044 067 071 094 098 121 125 148 152 = ten "...-pagelo/pagehi-held1" frames; base vs base differs in 6/6/6
+         shots, fix vs fix 6-10, base vs fix 4-7. 021 (V-pagehi-held1, size 1000) is new to the earlier union of 9, but identical (1e9871c2...) in 5 of 6 runs; the odd run is slprobe-fix(1), where the cursor on the
+         scroll-down arrow is missing (viewed). Same class (held page-scroll frame vs shot tick), not attributable to the fix.
+ 5 PASS  Cost: method/vbench (VBENCH.NAP sha e9933b51... = developer's), icount shift=0,sleep=off, ticks of _hz_200 (1 tick = 5 M instr), two runs each (bench/ic*):
+         base A 63/63  B 60/60  C 48/48  D 52/52  E 106/106; fix A 64/64  B 60/60  C 48/48  D 52/52  E 106/106 = the developer's table exactly (A +1 tick = <= 50 instr/call, inside the quantum).
+         Plausible: D reads 1024 pairs per call; the pairs were read from the caller's space by the handler before, now once by the copy (the handler reads kernel memory) -> equal total.
+ 6 PASS  Spec cites (docs/api/vdi/_dispatcher.md "Local PTSIN copy", docs/COMPATIBILITY.md new entry) against references/emutos, line by line (nl -ba): vdi_asm.S:21 (#define lcl_ptsin _vdishare), 74-83, 79-81, 93 (jeq no_ptsin),
+         95-98 (cap, signed jle), 99-108 (copy loop), 115-116 (restore) ok; include/vdiext.h:47-56 (union VDISHARE: local_ptsin, fill_buffer, queue, deftxbuf) ok; vdi_control.c:239-240 arb_corner(PTSIN) ok; vdi_fill.c:300 and :596 ok;
+         vdi_raster.c:1336-1337 ok; vdi_text.c:501-503 ok, :578 and :1360 scrtchp = vdishare.deftxbuf ok; vdi_textblit.c:396-682 SCRTCHP writes ok; vdi_gdp.c:183-205, 235-336, 431-444 ok; vdi_line.c:1581-1590 ok (code at 1582-1588);
+         vdi_marker.c:124, vdi_line.c:1106, 1397-1398, 1524 ok; aes/gsx2.c:20-32 (trap #2 via vdipb) ok; D-VDI-24 exists. cargo xtask doc-check on both docs: 0 failures. No mismatch.
+         Note (not a mismatch): vdiext.h also has fill_buffer behind local_ptsin in the same struct; the spec lists the overlay members but not that one (it is not overlaid).
+ 7 BOOT SCREEN 1920x1080 "18 s difference" -- CLASSIFICATION: timing only, but a small real slowdown of the console phase is measurable and its cause is NOT the PTSIN copy (and not established).
+   a) Positions: boot screen (initinfo, gtext with CONTRL[1]=1) PNG byte-identical base vs fix at 6 s and 10 s at 640x480 AND 1920x1080; viewed: logo, 8 info rows, rules, footer all in place (runs/gui/bc480-fix, bc1080-fix 00-t006).
+   b) Final state: 37 final screendumps (base, fix, fixpad, fixdbg, 3+ rounds, 3 s after the BC07 line) all have the same sha256 dd0519063af1... ; serial logs base vs fix differ only in the "stand-in PDs" address line.
+   c) The 18-s/24-s images (viewed): both show the identical APITEST console (same left margin, line pitch, glyphs; base also shows a mid-scroll doubled line); base is at T33.3, fix at T31.1, i.e. fix is a few lines behind.
+   d) Serial-marker timing (method/bc-timing*.py, polls the serial file at 10 ms; runs/bct*, bct4 is the fine one), host quiet: first byte, [proc] stand-in, T01, T20 .. T27: base and fix equal within 0.1 s (15.1-15.3 s).
+      From T28 (appl_init) on the console is slower on fix: T28..T33 base 0.87-0.88 s, fix 1.41-1.45 s; BC07 reached at base 17.22/17.30/17.24 s, fix 18.49/18.56/18.50 s (bct4, 3 of 3 each), bct2 (4 rounds, order ABC CBA ABC CBA): BC07 base 17.18/17.07/17.07/18.65, fix 18.24/18.23/20.56/19.86, fixpad 18.27/18.39/19.02/19.78 (rounds 3-4 noisier).
+      So fix is ~1.2-1.3 s (7%) later on this path; with host load 20-60 (bct) the order flips between runs (fix-2 19.8 < base-2 21.5): why the developer saw 18 s differ "3 of 3" and 24 s equal and I see both 18 s and 24 s differ.
+   e) fixpad (fix + 4 KiB dead data, same image size as base) is as slow as fix (BC07 18.3/18.4/19.0/19.8 s vs fix 18.2/18.2/20.6/19.9, bct2): the smaller image is not the cause.
+   f) fixdbg (counter printed to the console at every 2000th call and at the first five calls with > 8 pairs): over the whole boot + APITEST run NO such line appeared (runs/dbg/dbg-1-serial.txt: 0 "[v35dbg]" lines),
+      i.e. fewer than 2000 VDI calls and none copied more than 8 pairs. The copy cannot account for ~0.6 s of console time.
+   g) The V49 developer reported the same 18-s-only difference with an unrelated change (NEON fill, kernel size changed). Consistent with a layout/codegen-dependent speed of the 1080p console scroll under QEMU TCG after AES init,
+      not shown. Not a rendering difference. Left open (see report).
+ NOT DRIVEN / OPEN
+  Real Pi4 / HDMI / USB (QEMU-TCG cannot show cache/QUIRK-001 effects); qemu-virt interactive (only headless boot to "desktop up"); clean main-tree run of the base cargo xtask test (archive tree, see 1);
+  no tosdiff case for TPF-TPH (DUMPVDI cannot use a foreign handle / second workstation; developer's note, follow-up ticket is the lead's); TPH (handler writes into the copy) is red against the oracle by design = V52;
+  cause of the console-phase slowdown after appl_init (7d-g); slprobe held1 frames compared by hash, only 021 viewed; other cards' programs (QED, TeraDesk, HYP, ...) not run;
+  an EL0 call with CONTRL[1] > 0 and a bad PTSIN pointer now faults before any handler (as EmuTOS' bus error) -- not exercised by a test of mine.

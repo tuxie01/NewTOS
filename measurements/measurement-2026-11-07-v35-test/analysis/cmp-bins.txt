@@ -1,0 +1,10 @@
+v18t2 VDI.BIN fix!=base (3 bytes)
+  tosdiff base vs fix v18t2 rc 1: 2 of 32 cases differ
+all VDI.BIN fix==base e91b865b92b5dbf2
+  tosdiff base vs fix all rc 0: 0 of 182 cases differ
+r2 AES.BIN fix!=base (78 bytes)
+  tosdiff base vs fix r2 rc 0: address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 78 address cells checked, 0 not < 0x80000000
+r3 AES.BIN fix!=base (39 bytes)
+  tosdiff base vs fix r3 rc 0: address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 39 address cells checked, 0 not < 0x80000000
+r4 AES.BIN fix!=base (181 bytes)
+  tosdiff base vs fix r4 rc 0: address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 181 address cells checked, 0 not < 0x80000000

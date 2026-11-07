@@ -1,0 +1,12 @@
+load before base-1: 4,85 23,93 35,18
+load before fix-1: 4,61 22,02 34,10
+load before fixpad-1: 5,39 20,55 33,15
+load before fixpad-2: 4,82 18,95 32,13
+load before fix-2: 4,51 17,50 31,14
+load before base-2: 4,39 16,23 30,21
+load before base-3: 4,56 15,13 29,32
+load before fix-3: 4,88 14,19 28,49
+load before fixpad-3: 5,58 13,46 27,73
+load before fixpad-4: 7,52 13,26 27,17
+load before fix-4: 9,53 13,08 26,54
+load before base-4: 10,49 12,96 26,03

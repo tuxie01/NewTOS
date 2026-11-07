@@ -1,0 +1,11 @@
+first-byte 0.03
+dump t12 at 12.01
+dump t14 at 14.01
+dump t16 at 16.01
+SX15 16.74
+B1 BIOS 16.87
+BC07 17.06
+dump t18 at 18.00
+dump t20 at 20.00
+dump t22 at 22.01
+final dump at 22.01

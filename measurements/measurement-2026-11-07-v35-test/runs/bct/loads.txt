@@ -1,0 +1,12 @@
+base-1 load 55,41 48,58 44,25
+fix-1 load 63,92 51,65 45,70
+fixpad-1 load 60,30 52,08 46,26
+base-2 load 48,03 49,56 45,74
+fix-2 load 32,65 45,65 44,47
+fixpad-2 load 23,27 42,13 43,23
+base-3 load 17,45 39,26 42,17
+fix-3 load 13,46 36,18 40,95
+fixpad-3 load 10,78 33,34 39,75
+base-4 load 9,25 30,81 38,61
+fix-4 load 9,05 28,67 37,56
+fixpad-4 load 6,98 26,28 36,39

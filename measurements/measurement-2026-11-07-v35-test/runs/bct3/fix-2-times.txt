@@ -1,0 +1,15 @@
+first-byte 0.02
+dump t12 at 12.01
+dump t14 at 14.00
+[proc] stand-in 15.10
+
+T01  15.18
+
+T20  15.23
+dump t16 at 16.00
+dump t18 at 18.00
+SX15 18.93
+BC07 19.60
+dump t20 at 20.01
+dump t22 at 22.01
+final dump at 22.61
