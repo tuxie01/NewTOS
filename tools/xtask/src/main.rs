@@ -25,6 +25,11 @@ mod rsc_obfix_tests;
 /// as the application's C structs into NRSC v11/v12.
 #[cfg(test)]
 mod rsc_cicon_tests;
+/// A141 — HypView's resource patch remaps the 8-plane colour icons from the
+/// NVDI palette to the TOS default one and leaves every other byte alone
+/// (`sdk/overlays/hypview/rsc/recolour-cicons.py`).
+#[cfg(test)]
+mod rsc_recolour_tests;
 /// SER01 — the kernel's boot-argument token parser (`serial=on`). The kernel
 /// crate cannot be built for the host, so its pure, dependency-free module is
 /// compiled here by path and its own `#[cfg(test)]` tests run with the host

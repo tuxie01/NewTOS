@@ -1,0 +1,18 @@
+# Palettes of the HypView icon patch (recolour-cicons.py, TASK/A141).
+# Check: (cd sdk/overlays/hypview/rsc && shasum -a 256 -c palettes.sha256)
+#
+# nvdi.pal: verbatim copy of FreeMiNT's xaaes/src.km/pal/nvdi.pal at commit
+#   f906416a9387ed68876c738cfc5c30037b294fc0 (references/freemint, ADR-027),
+#   the palette XaAES maps HypView-style icons from (`icn_pal_name = nvdi`,
+#   references/freemint/xaaes/src.km/example.cnf:609-630). GPL, as FreeMiNT.
+#
+# tos-default.pal: the NewTOS default palette, written by
+#   python3 sdk/overlays/hypview/rsc/recolour-cicons.py tos-pal \
+#       kernel/src/vdi_backend.rs sdk/overlays/hypview/rsc/tos-default.pal
+#   from kernel/src/vdi_backend.rs:56@VIDEL_PALETTE1 (pens 0..15) and
+#   kernel/src/vdi_backend.rs:69@VIDEL_PALETTE2 (pens 16..255), which are
+#   EmuTOS' videl_palette1/videl_palette2 (references/emutos/vdi/vdi_col.c:130-199,
+#   EmuTOS 1a7484ab, the same file in the oracle tree). The host test
+#   tools/xtask/src/rsc_recolour_tests.rs holds it equal to both.
+15b4b326f0b6f05717ec9470fc766019556232f566f3dcccc11901eb1f40cfc5  nvdi.pal
+a5ea7f8b3ae0a15a1331bac6fef1394ccbbc57ce083f0f7e5d785e1457682177  tos-default.pal

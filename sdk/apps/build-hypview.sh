@@ -21,8 +21,11 @@
 # path so its quoted relative includes ("../diallib.h") still resolve. Each
 # patch file's header says why it exists.
 #
-# RESOURCE: hyp_view.rsc (English, = hyp_view/en.rsc) converted with
-# tools/mkrsc.py into build/hyp_view.rsc, to sit beside HYP_VIEW.NAP.
+# RESOURCE: hyp_view.rsc (English, = hyp_view/en.rsc), patched by
+# sdk/overlays/hypview/rsc/recolour-cicons.py into
+# build/hyp_view-recoloured.rsc (its 8-plane colour icons were drawn for the
+# NVDI palette and are remapped to the TOS one, TASK/A141), then converted
+# with tools/mkrsc.py into build/hyp_view.rsc, to sit beside HYP_VIEW.NAP.
 #
 # Usage:  sdk/apps/build-hypview.sh      -> sdk/apps/hypview/build/
 set -uo pipefail
@@ -73,5 +76,8 @@ echo "compiled $n files ($npatch from sdk/overlays/hypview)"
 "$CC" -nap -o "$BUILD/HYP_VIEW.NAP" $OBJS -Wl,-Map="$BUILD/hyp_view.map" || exit 1
 ls -l "$BUILD/HYP_VIEW.NAP"
 
-python3 "$ROOT/tools/mkrsc.py" convert "$SRC/hyp_view.rsc" "$BUILD/hyp_view.rsc" || exit 1
+python3 "$OVL/rsc/recolour-cicons.py" recolour "$SRC/hyp_view.rsc" "$BUILD/hyp_view-recoloured.rsc" \
+    > "$BUILD/recolour-cicons.log" || exit 1
+head -2 "$BUILD/recolour-cicons.log"
+python3 "$ROOT/tools/mkrsc.py" convert "$BUILD/hyp_view-recoloured.rsc" "$BUILD/hyp_view.rsc" || exit 1
 ls -l "$BUILD/hyp_view.rsc"
