@@ -1,11 +1,9 @@
-# V49 — Quittung: UMGESETZT, Tester und Pi offen
+# V49 — Quittung DONE (2026-11-07)
 
 Datum 2026-11-07 · Zweig `v49`, Basis `3a9221eb` · Commits `87b2a9fd` (Kern), `8403f75b` (`raster-prof`)
 · Beleg `measurements/measurement-2026-11-07-v49/RUNINFO.TXT`
 
-**UNFINISHED heisst hier:** Kern, Rahmen, Hosttest und Debug-Feature stehen und sind in QEMU und gegen die Basis
-belegt. Offen sind die unabhaengige Abnahme durch den Tester und der Pi-Lauf des Anwenders, der nach ADR-036
-Punkt 5 entscheidet, ob der Kern bleibt.
+**Abgeschlossen:** Tester PASS (`c723f24b`, `measurements/measurement-2026-11-07-v49-test/RUNINFO.TXT`: ADR-036-Regeln am Quelltext, eigene Mutanten, 100 Zusatzfaelle Polygon/Kreis/Ellipse/Kuchen/`v_rfbox` bytegleich, Pi-Kerne bytegleich nachgebaut). Pi des Anwenders, Fbench mit `V49CHG.IMG`: jede Fuellzeile schneller, Filled rect im ganzen Fenster 35,4 -> 578,2/s, Fill full window 23,3 -> 377,3/s, Window open+close 26,3 -> 220,7/s (`measurements/measurement-2026-11-07-v49-pi/RUNINFO.TXT`) — ADR-036 Punkt 5 erfuellt. In `main` zusammengefuehrt `2795e432`. Offen, nicht blockierend: Profiler-Foto (Anteil `clean`), Mono blit 15282 -> 13460/s ungeklaert (an [V50](V50.md)).
 
 ## Was getan wurde
 

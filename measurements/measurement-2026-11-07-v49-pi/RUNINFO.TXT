@@ -1,0 +1,42 @@
+V49 Pi run (user's real Raspberry Pi 4) -- Fbench with the NEON fill kernel. Date 2026-11-07.
+Why: ADR-036 point 5 -- a raster kernel lands only if Fbench on the real Pi shows it faster than the code it replaces.
+Who: user ran Fbench on the Pi; lead wrote the card and copied the results. No worker touched card or Pi.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1; kernels built by the V49 developer, see below)
+No image was booted from this run: the card is the user's hand-kept test card; only the files below were written.
+
+KERNELS written to the card (BOOT partition, cp -X, re-read after a forced remount, sha256 equal)
+  V49BASE.IMG  739609f6ca623e99c16d073b60448e26c81382dd32782662946b3ec529c46612  before (3a9221eb, release)
+  V49CHG.IMG   35b1d793d15c9ca1f29da50b3260e816a9531f5f56ae2e533827d03e8204b20a  after  (8403f75b, release, raster-prof off)
+  V49BASP.IMG  e615044141fb4d377b781b7c220a70627eba56b56c85f7c99619bd27e17abfe6  before + raster-prof
+  V49CHGP.IMG  37ac5065fe6751520c870601ce04121d91a8389fe5ad78c37ccb0fdca6e72266  after  + raster-prof
+  Source: measurements/measurement-2026-11-07-v49/RUNINFO.TXT (pi-kernels/, gitignored); rebuilt byte-equal by the tester,
+  measurements/measurement-2026-11-07-v49-test/RUNINFO.TXT.
+  kernel8.img (0.7.1 release, b0543dd4837cb3a5...) left untouched. config.txt line 9 switched by the lead:
+  kernel=kernel8.img -> V49BASE.IMG -> (user: "haettest gleich den neuen nehmen koennen") V49CHG.IMG -> V49CHGP.IMG.
+  card/config.txt is the state of the Fbench run below (kernel=V49CHG.IMG), sha256 7866f81c1ed5a0e8...
+
+RESULT -- Fbench 1.1.1 complete run on V49CHG.IMG (card/FBNEU.TXT sha256 64b85c78a8d627fb..., card/RESMEU.PDF 8a2f4e8565f0d194...;
+FAT stamps 2026-11-07 00:02/00:03 = kernel build date + uptime, no RTC). "Before" is the user's profile of 2026-11-05
+(kernel e56021e7, release; user's comparison PDF compare_NewTOS_vs_V4SA_core10850.pdf), not a V49BASE run: between e56021e7
+and 3a9221eb only V31/V34/HW08 changed, none on the fill path. ops/s, before -> after (factor); V4SA for reference:
+  Filled rect, full window      35.4 ->    578.2  (x16.3)   V4SA 140.1
+  Fill full window (desktop)    23.3 ->    377.3  (x16.2)   V4SA 139.5
+  Fill 64x64, aligned        11376   ->  114116    (x10.0)  V4SA 27971
+  Fill 64x64, x+3            10934   ->   46810    (x4.3)   V4SA 21660
+  Window open+close             26.3 ->    220.7  (x8.4)    V4SA 143.0
+  Open/close full window        13.1 ->    135.5  (x10.3)   V4SA 32.2
+  Top full / test window        26.7 ->    292.6  (x11.0)   V4SA 60.8
+  Window top (2 windows)        52.1 ->    447.0  (x8.6)    V4SA 90.0
+  Window resize                199.0 ->    844.3  (x4.2)    V4SA 337.5
+  XOR filled rect            27971   ->  121063    (x4.3)   V4SA 33209
+  Filled circle                682.5 ->   2618.6  (x3.8)    V4SA 1448.1
+  Contour fill 64x40          2559   ->    7383.6 (x2.9)    V4SA 3294.0
+  Filled rect 32x32          37235   ->   93621    (x2.5)   V4SA 74811
+  Controls (paths V49 did not change): Blit 64x64 aligned 24093 -> 24211, Blit scroll window 119.0 -> 119.2,
+  Scroll up aligned 123.3 -> 123.9, Text 84 chars 2570.7 -> 2870.0.
+  Mono blit (vrt_cpyfm) 15282 -> 13460 (-12%): blit_mono is not touched by V49; not explained here, passed to V50.
+Full window fill 1896x1018 px x 4 B x 377.3/s = about 2.9 GB/s.
+
+VERDICT ADR-036 point 5: met -- every fill row is faster on the real Pi.
+OPEN: raster-prof table on V49CHGP.IMG (photo, kernel vs clean share for "Fill full window"); a V49BASE.IMG Fbench run
+(would pin the mono-blit drop on the same card and day). card/ holds copies of the card files named above.
