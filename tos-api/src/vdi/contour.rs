@@ -31,6 +31,19 @@
 //!   room ends the whole fill on the spot (`:929-932`): what is drawn stays
 //!   drawn, the rest is not filled.
 //!
+//! ## Emergency brake (TASK/V38, NewTOS only)
+//!
+//! EmuTOS' fill is not proven to end, and it does not always: a fill whose
+//! spans stop changing what the search reads (it paints the region's own
+//! colour, or red up to a boundary once every span is red) can repeat its
+//! queue state for ever — the smallest found is a 5x3 clip with two dots
+//! (`tests::dots_5x3`). A VDI trap runs with IRQs masked, so such a fill
+//! would stop the machine. NewTOS ends a fill after [`BRAKE_SPANS_PER_PIXEL`]
+//! taken spans per screen pixel and returns as from a finished one: what is
+//! drawn stays drawn. A fill that ends by itself takes at most one span
+//! per pixel in every real case measured, so it never meets the brake
+//! (sanctioned deviation, `docs/COMPATIBILITY.md`).
+//!
 //! The previous NewTOS fill (a 4096-entry point stack with a visited
 //! bitmap, 1197d493) dropped seeds silently once the stack was full and
 //! left pockets of a dot lattice unfilled where EmuTOS fills them
@@ -90,6 +103,20 @@ fn row(y: u16) -> i16 {
 /// decides where an over-complex fill stops.
 pub(super) const QSIZE: usize = (2 * MAX_VERTS + MAX_VERTS) / 3;
 
+/// The emergency brake: a fill ends after this many taken spans per screen
+/// pixel (TASK/V38). Not EmuTOS, which loops on (see the module doc).
+///
+/// The bound comes from the geometry. A span is at least one pixel, so a
+/// fill that draws every span once takes at most one span per screen pixel;
+/// the largest real fills measured stay at or below that — the whole
+/// 1920x1080 screen 1080 spans, a serpentine maze of one-pixel corridors
+/// over it 1,035,841 (0.5 per pixel), a comb of one-pixel teeth 0.5 per
+/// pixel (`tests::largest_real_fills_stay_far_below_the_brake`). Sixteen per
+/// pixel is sixteen times that: 33,177,600 spans at 1920x1080, 4,915,200 at
+/// 640x480. The screen, not the clip, sets it, so a fill confined to a
+/// small window has the same headroom.
+pub(super) const BRAKE_SPANS_PER_PIXEL: u64 = 16;
+
 /// One queue entry, EmuTOS `SEGMENT` (`include/vdiext.h:17-21`).
 #[derive(Clone, Copy)]
 struct Segment {
@@ -148,9 +175,16 @@ pub(super) fn pixelread(backend: &dyn RasterBackend, x: i16, y: i16) -> u16 {
     }
 }
 
-/// Signals a full queue: EmuTOS `get_seed` returns `-1` and `contourfill`
-/// quits (`vdi_fill.c:929-932,1009,1016,1023,1030`).
-struct Overflow;
+/// Why a fill stopped before its queue ran empty.
+#[derive(Debug, PartialEq, Eq)]
+enum Stop {
+    /// A full queue: EmuTOS `get_seed` returns `-1` and `contourfill`
+    /// quits (`vdi_fill.c:929-932,1009,1016,1023,1030`).
+    Overflow,
+    /// The emergency brake: [`BRAKE_SPANS_PER_PIXEL`] spans per screen
+    /// pixel taken (NewTOS only, TASK/V38).
+    Brake,
+}
 
 /// One `contourfill` call's state: EmuTOS' file-scope `search_color`,
 /// `seed_type`, `qbottom`/`qtop`/`qptr` (`vdi_fill.c:34-41`; `qbottom` is
@@ -170,9 +204,48 @@ struct Flood<'a> {
     qtop: usize,
     /// The entry the next `pop` starts its search at.
     qptr: usize,
+    /// Spans the fill may still take before the brake ends it.
+    budget: u64,
 }
 
-impl Flood<'_> {
+impl<'a> Flood<'a> {
+    /// A fill inside `bounds` (the clip cut to the device), drawing through
+    /// `clip`, with the colour model of `backend` (truecolor for
+    /// `v_planes > 8`, `vdi_defs.h:22`).
+    fn new(
+        backend: &'a dyn RasterBackend,
+        bounds: ClipRect,
+        clip: ClipRect,
+        search_color: u16,
+        seed_type: bool,
+        fill: PatternFill<'a>,
+        queue: &'a mut [Segment; QSIZE],
+    ) -> Flood<'a> {
+        Flood {
+            backend,
+            bounds,
+            clip,
+            truecolor: backend.planes() > 8,
+            search_color,
+            seed_type,
+            fill,
+            queue,
+            qtop: 0,
+            qptr: 0,
+            budget: BRAKE_SPANS_PER_PIXEL * backend.width() as u64 * backend.height() as u64,
+        }
+    }
+
+    /// Fill from the seed `(sx, sy)`, which lies inside `bounds`: nothing
+    /// unless the seed's own span is fillable (`vdi_fill.c:990-991`), else
+    /// the seed queue's main loop.
+    fn fill_from(&mut self, sx: i16, sy: i16) -> Result<(), Stop> {
+        let Some((oldxleft, oldxright, true)) = self.end_pts(sx, sy) else {
+            return Ok(());
+        };
+        self.run(sy as u16, oldxleft, oldxright)
+    }
+
     /// The colour `end_pts` compares: the screen word with `OVERLAY_BIT`
     /// off under truecolor (`vdi_fill.c:709,733,755`), the index otherwise.
     #[inline]
@@ -230,7 +303,7 @@ impl Flood<'_> {
     /// span either meets an opposite-direction entry with the same row and
     /// left end — that entry is freed and the span drawn now — or is queued
     /// in the first hole, else on top. `Ok(true)` = a seed was queued.
-    fn get_seed(&mut self, xin: i16, yin: u16, xleftout: &mut i16, xrightout: &mut i16) -> Result<bool, Overflow> {
+    fn get_seed(&mut self, xin: i16, yin: u16, xleftout: &mut i16, xrightout: &mut i16) -> Result<bool, Stop> {
         let Some((xl, xr, fillable)) = self.end_pts(xin, row(yin)) else {
             return Ok(false);
         };
@@ -266,7 +339,7 @@ impl Flood<'_> {
             None => {
                 // No hole: raise `qtop` if there is room, else give up.
                 if self.qtop >= QSIZE {
-                    return Err(Overflow);
+                    return Err(Stop::Overflow);
                 }
                 self.qtop += 1;
                 self.qtop - 1
@@ -280,7 +353,7 @@ impl Flood<'_> {
     /// started with the seed span `(oldy, oldxleft..=oldxright)`; `oldy`
     /// carries no `DOWN_FLAG`, so the seed row is searched upwards first
     /// and then, once its queued downward copy is taken, downwards.
-    fn run(&mut self, mut oldy: u16, mut oldxleft: i16, mut oldxright: i16) -> Result<(), Overflow> {
+    fn run(&mut self, mut oldy: u16, mut oldxleft: i16, mut oldxright: i16) -> Result<(), Stop> {
         self.queue[0] = Segment { y: oldy | DOWN_FLAG, xleft: oldxleft, xright: oldxright };
         self.qptr = 0;
         self.qtop = 1;
@@ -325,6 +398,13 @@ impl Flood<'_> {
             if self.qtop == 0 {
                 return Ok(());
             }
+            // The emergency brake (NewTOS only): checked before a span is
+            // taken, so a fill that empties its queue within the budget
+            // runs exactly as in EmuTOS.
+            if self.budget == 0 {
+                return Err(Stop::Brake);
+            }
+            self.budget -= 1;
 
             // Take the next entry, scanning circularly from `qptr`.
             while self.queue[self.qptr].y == EMPTY {
@@ -430,25 +510,283 @@ pub fn v_contourfill(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // SAFETY: single trap path (see `SeedQueue`); no other borrow of the
     // queue is live, `v_contourfill` does not re-enter the VDI.
     let queue = unsafe { &mut *QUEUE.0.get() };
-    let mut flood = Flood {
-        backend,
-        bounds,
-        clip,
-        truecolor,
-        search_color,
-        seed_type,
-        fill,
-        queue,
-        qtop: 0,
-        qptr: 0,
-    };
+    // A full queue ends the fill where it stands (`vdi_fill.c:1009-1030`), and so
+    // does the emergency brake (TASK/V38); there is no error channel.
+    let _ = Flood::new(backend, bounds, clip, search_color, seed_type, fill, queue).fill_from(sx, sy);
+}
 
-    // Check if anything to do (`vdi_fill.c:990-991`): the seed's own span
-    // must be fillable.
-    let Some((oldxleft, oldxright, true)) = flood.end_pts(sx, sy) else {
-        return;
-    };
-    // A full queue ends the fill where it stands (`vdi_fill.c:1009-1030`); there is
-    // no error channel.
-    let _ = flood.run(sy as u16, oldxleft, oldxright);
+#[cfg(test)]
+mod tests {
+    //! TASK/V38: the emergency brake. A memory screen of 16-bit words (the
+    //! truecolor model, `planes() == 16`) whose `fill_pattern` paints, so the
+    //! fill reads back what it drew; `draws` counts every span draw, and
+    //! the harness guard `cap` ends a fill that would not stop with a panic
+    //! instead of hanging the test run.
+    use super::super::backend::{MonoSrc, Pel, Rect};
+    use super::*;
+    use std::sync::atomic::{AtomicU16, AtomicU64, Ordering};
+
+    /// Pens 0..3 as screen words: white (`0xFFDF`, the pseudo-palette's
+    /// pen 0 without `OVERLAY_BIT`), black, red, green.
+    const PENS: [u16; 4] = [0xFFDF, 0x0000, 0xF800, 0x07C0];
+    const WHITE: u16 = PENS[0];
+    const BLACK: u16 = PENS[1];
+
+    /// The brake the tests expect: 16 spans per screen pixel.
+    const SPANS_PER_PIXEL: u64 = 16;
+
+    struct Canvas {
+        w: u16,
+        h: u16,
+        px: Vec<AtomicU16>,
+        /// The read-back never shows a draw (an artificial screen).
+        frozen: bool,
+        draws: AtomicU64,
+        cap: u64,
+    }
+
+    impl Canvas {
+        fn new(w: u16, h: u16, frozen: bool, cap: u64) -> Canvas {
+            let px = (0..w as usize * h as usize).map(|_| AtomicU16::new(WHITE)).collect();
+            Canvas { w, h, px, frozen, draws: AtomicU64::new(0), cap }
+        }
+        fn set(&self, x: i32, y: i32, c: u16) {
+            self.px[y as usize * self.w as usize + x as usize].store(c, Ordering::Relaxed);
+        }
+        fn get(&self, x: i32, y: i32) -> u16 {
+            self.px[y as usize * self.w as usize + x as usize].load(Ordering::Relaxed)
+        }
+        fn draws(&self) -> u64 {
+            self.draws.load(Ordering::Relaxed)
+        }
+        fn count(&self, c: u16) -> usize {
+            self.px.iter().filter(|p| p.load(Ordering::Relaxed) == c).count()
+        }
+    }
+
+    impl RasterBackend for Canvas {
+        fn width(&self) -> u16 {
+            self.w
+        }
+        fn height(&self) -> u16 {
+            self.h
+        }
+        fn num_colors(&self) -> u16 {
+            256
+        }
+        fn planes(&self) -> u16 {
+            16
+        }
+        fn set_color(&self, _: u16, _: u16, _: u16, _: u16) {}
+        fn query_color(&self, _: u16) -> (u16, u16, u16) {
+            (0, 0, 0)
+        }
+        fn set_active_palette(&self, _: &[u16; 256]) {}
+        fn pel_to_device16(&self, pel: Pel) -> u16 {
+            PENS[pel as usize & 3]
+        }
+        fn device_to_rgb565(&self, argb: u32) -> u16 {
+            argb as u16
+        }
+        fn rgb565_to_device(&self, px: u16) -> u32 {
+            px as u32
+        }
+        fn read_pixel(&self, _: i16, _: i16) -> Pel {
+            0
+        }
+        fn fill_rect(&self, _: i16, _: i16, _: i16, _: i16, _: Pel, _: ClipRect) {}
+        fn abline(&self, _: i16, _: i16, _: i16, _: i16, _: Pel, _: WriteMode, _: ClipRect, mask: u16, _: bool) -> u16 {
+            mask
+        }
+        fn fill_pattern(&self, x: i16, y: i16, w: i16, h: i16, f: PatternFill, clip: ClipRect) {
+            let n = self.draws.fetch_add(1, Ordering::Relaxed) + 1;
+            assert!(n <= self.cap, "harness guard: the fill has not ended after {} span draws", self.cap);
+            assert_eq!(f.mode, WriteMode::Replace, "the tests fill in replace mode only");
+            if self.frozen {
+                return;
+            }
+            let (fg, bg) = (PENS[f.fg as usize & 3], PENS[f.bg as usize & 3]);
+            for yy in y as i32..y as i32 + h as i32 {
+                for xx in x as i32..x as i32 + w as i32 {
+                    let in_clip = (clip.xmn as i32..=clip.xmx as i32).contains(&xx)
+                        && (clip.ymn as i32..=clip.ymx as i32).contains(&yy);
+                    if !in_clip || xx < 0 || yy < 0 || xx >= self.w as i32 || yy >= self.h as i32 {
+                        continue;
+                    }
+                    // Replace mode: pen `fg` on set pattern bits, `bg` on clear ones.
+                    let set = f.pattern[yy as usize & (f.pattern.len() - 1)] & (0x8000 >> (xx & 15)) != 0;
+                    self.set(xx, yy, if set { fg } else { bg });
+                }
+            }
+        }
+        fn draw_glyph_sized(&self, _: i16, _: i16, _: &[u8], _: i16, _: i16, _: Pel, _: WriteMode, _: ClipRect) {}
+        fn blit_mono(&self, _: Rect, _: MonoSrc, _: Pel, _: Pel, _: WriteMode, _: ClipRect) {}
+        fn copy_rect(&self, _: Rect, _: i16, _: i16, _: u8, _: ClipRect) {}
+        fn get_device_pixel(&self, x: i16, y: i16) -> u32 {
+            if x < 0 || y < 0 || x as u16 >= self.w || y as u16 >= self.h {
+                return 0;
+            }
+            self.get(x as i32, y as i32) as u32
+        }
+        fn put_device_pixel(&self, _: i16, _: i16, _: u32) {}
+        fn flush_rect(&self, _: i16, _: i16, _: i16, _: i16) {}
+    }
+
+    static SOLID: [u16; 1] = [0xFFFF];
+
+    /// The fill `v_contourfill` runs once the seed, the clip and the colour
+    /// are checked: solid, replace mode, pen `fill_color`, `search_color`
+    /// a screen word, `seed_type` as in EmuTOS (true = fill-while-same,
+    /// `INTIN[0] < 0`), in a queue of its own.
+    fn flood(c: &Canvas, x: i16, y: i16, search_color: u16, seed_type: bool, fill_color: Pel, clip: ClipRect) {
+        let mut queue = Box::new([Segment { y: EMPTY, xleft: 0, xright: 0 }; QSIZE]);
+        let fill = PatternFill { fg: fill_color, bg: 0, pattern: &SOLID, mode: WriteMode::Replace };
+        let _ = Flood::new(c, clip, clip, search_color, seed_type, fill, &mut queue).fill_from(x, y);
+    }
+
+    /// The smallest never-ending input found (TASK/V38): a 5x3 clip with
+    /// black dots at (3,1) and (1,2), seed (0,2). The fill circles the dot
+    /// at (3,1); once nothing on the screen changes any more, the queue
+    /// repeats a cycle of 4 taken spans. EmuTOS' model does the same
+    /// (`measurements/measurement-2026-11-07-v38/RUNINFO.TXT`).
+    fn dots_5x3(c: &Canvas, x0: i32, y0: i32) {
+        c.set(x0 + 3, y0 + 1, BLACK);
+        c.set(x0 + 1, y0 + 2, BLACK);
+    }
+
+    #[test]
+    fn brake_ends_a_fill_that_never_ends() {
+        // A real input: fill-while-same (INTIN[0] = -1) with pen 0, so the
+        // fill paints the region's own colour and never sees its work.
+        let budget = SPANS_PER_PIXEL * 5 * 3;
+        let c = Canvas::new(5, 3, false, 100 * budget);
+        dots_5x3(&c, 0, 0);
+        flood(&c, 0, 2, WHITE, true, 0, ClipRect::full(5, 3));
+        // The brake fires after `budget` taken spans; every pass may add
+        // collision draws (`get_seed`), at most one per span searched.
+        assert!(c.draws() >= budget, "stopped early: {} draws", c.draws());
+        assert!(c.draws() <= 2 * budget, "{} draws for a budget of {budget}", c.draws());
+        // What was drawn stays: white on white, the dots untouched.
+        assert_eq!(c.count(BLACK), 2);
+    }
+
+    #[test]
+    fn brake_ends_a_boundary_fill_that_never_ends() {
+        // The same dots filled red up to the black boundary (INTIN[0] = 1):
+        // a red span stays fillable, and once the region is red the fill
+        // circles as on the white screen.
+        let budget = SPANS_PER_PIXEL * 5 * 3;
+        let c = Canvas::new(5, 3, false, 100 * budget);
+        dots_5x3(&c, 0, 0);
+        flood(&c, 0, 2, BLACK, false, 2, ClipRect::full(5, 3));
+        assert!(c.draws() >= budget, "stopped early: {} draws", c.draws());
+        assert!(c.draws() <= 2 * budget, "{} draws for a budget of {budget}", c.draws());
+        // What was drawn stays drawn: the whole region red.
+        assert_eq!((c.count(PENS[2]), c.count(BLACK)), (13, 2));
+    }
+
+    #[test]
+    fn brake_counts_the_screen_not_the_clip() {
+        // An artificial screen whose read-back never shows a draw: the
+        // same dots in a 5x3 clip window of a 64x48 screen, filled red.
+        // The brake is set by the screen (64 x 48), not by the window.
+        let budget = SPANS_PER_PIXEL * 64 * 48;
+        let c = Canvas::new(64, 48, true, 100 * budget);
+        dots_5x3(&c, 10, 20);
+        flood(&c, 10, 22, WHITE, true, 2, ClipRect { xmn: 10, ymn: 20, xmx: 14, ymx: 22 });
+        assert!(c.draws() >= budget, "stopped early: {} draws", c.draws());
+        assert!(c.draws() <= 2 * budget, "{} draws for a budget of {budget}", c.draws());
+    }
+
+    #[test]
+    fn a_terminating_fill_of_the_same_dots_is_unchanged() {
+        // The same 5x3 dots filled red while-same: drawn spans turn red and
+        // stop being fillable, so the fill ends by itself as before.
+        let c = Canvas::new(5, 3, false, 1000);
+        dots_5x3(&c, 0, 0);
+        flood(&c, 0, 2, WHITE, true, 2, ClipRect::full(5, 3));
+        assert_eq!(c.count(PENS[2]), 13);
+        assert!(c.draws() < 20, "{} draws", c.draws());
+    }
+
+    /// Fill a white region red and return the span draws: while-same
+    /// (`INTIN[0] = -1`), or up to the black boundary (`INTIN[0] = 1`),
+    /// where the red spans stay fillable and the fronts end by meeting.
+    fn real_fill(c: &Canvas, x: i16, y: i16, to_boundary: bool) -> u64 {
+        let (search, seed_type) = if to_boundary { (BLACK, false) } else { (WHITE, true) };
+        flood(c, x, y, search, seed_type, 2, ClipRect::full(c.w, c.h));
+        c.draws()
+    }
+
+    /// The screens of the largest real fills, all white regions bounded by
+    /// black, filled red.
+    #[derive(Clone, Copy, Debug)]
+    enum Shape {
+        /// The whole screen: one span per row.
+        Full,
+        /// Corridors one pixel wide between walls on every odd column,
+        /// open at the bottom and the top in turn: every row of every
+        /// corridor is a span of its own.
+        Serpentine,
+        /// A spine along the top row, teeth one pixel wide down every even
+        /// column: all teeth are filled side by side, the queue holds one
+        /// front per tooth.
+        Comb,
+        /// The V21 lattice (`vdi-v18.tsv` K8): 40 dotted rows (`0x8888`),
+        /// rows 200..317 step 3, x 20..619.
+        Lattice,
+    }
+
+    fn real_screen(shape: Shape, w: u16, h: u16) -> (Canvas, i16, i16) {
+        let c = Canvas::new(w, h, false, w as u64 * h as u64);
+        let (w, h) = (w as i32, h as i32);
+        match shape {
+            Shape::Full => return (c, (w / 2) as i16, (h / 2) as i16),
+            Shape::Serpentine => {
+                for x in (1..w).step_by(2) {
+                    let gap = if (x / 2) % 2 == 0 { h - 1 } else { 0 };
+                    (0..h).filter(|&y| y != gap).for_each(|y| c.set(x, y, BLACK));
+                }
+            }
+            Shape::Comb => {
+                for x in (1..w).step_by(2) {
+                    (1..h).for_each(|y| c.set(x, y, BLACK));
+                }
+            }
+            Shape::Lattice => {
+                for y in (200..=317).step_by(3) {
+                    (20..=619).filter(|x| 0x8888u16 & (0x8000 >> (x & 15)) != 0).for_each(|x| c.set(x, y, BLACK));
+                }
+                return (c, 320, 340);
+            }
+        }
+        (c, 0, h as i16 - 1)
+    }
+
+    #[test]
+    fn largest_real_fills_stay_far_below_the_brake() {
+        // The comb's 320/960 fronts make every seed search scan the queue:
+        // 640x480 keeps the test short; the serpentine and the full screen
+        // run at 1920x1080.
+        let cases = [
+            (Shape::Full, 1920, 1080),
+            (Shape::Serpentine, 1920, 1080),
+            (Shape::Comb, 640, 480),
+            (Shape::Lattice, 640, 480),
+        ];
+        for (shape, w, h) in cases {
+            for to_boundary in [false, true] {
+                let (c, x, y) = real_screen(shape, w, h);
+                let spans = real_fill(&c, x, y, to_boundary);
+                let area = w as u64 * h as u64;
+                eprintln!("{shape:?} {w}x{h} to_boundary={to_boundary}: {spans} spans drawn, {area} pixels");
+                if !matches!(shape, Shape::Lattice) {
+                    assert_eq!(c.count(WHITE), 0, "{shape:?} not filled");
+                }
+                // At most one span per screen pixel: the brake (16 per
+                // pixel) lies 16 times further out.
+                assert!(spans <= area, "{shape:?}: {spans} spans on {area} pixels");
+            }
+        }
+    }
 }

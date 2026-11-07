@@ -1,0 +1,5 @@
+size 16: buckets(<=1/16,<=1,<=4,<=16,<=64,<=256,<=2048,capped) [361, 80, 26, 71, 42, 9, 5, 6] max terminating draws/area 1598.38
+size 32: buckets(<=1/16,<=1,<=4,<=16,<=64,<=256,<=2048,capped) [371, 50, 125, 45, 3, 1, 0, 5] max terminating draws/area 73.07
+size 64: buckets(<=1/16,<=1,<=4,<=16,<=64,<=256,<=2048,capped) [352, 178, 63, 3, 0, 0, 0, 4] max terminating draws/area 6.74
+size 128: buckets(<=1/16,<=1,<=4,<=16,<=64,<=256,<=2048,capped) [91, 57, 2, 0, 0, 0, 0, 0] max terminating draws/area 1.68
+test vdi::contour::explore::x_scale ... ok

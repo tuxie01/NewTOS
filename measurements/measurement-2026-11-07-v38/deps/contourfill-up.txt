@@ -1,0 +1,29 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps contourfill --up`
+deps contourfill --up (kinds asm,direct,layer,table,vector): 8 functions besides contourfill
+depth	function	layer	reached over	newtos	class
+0	contourfill	vdi	-	tos-api/src/vdi/contour.rs@run tos-api/src/vdi/contour.rs@v_contourfill	mapped
+1	linea_fill	vdi	linea_fill -> contourfill [direct]	-	design
+1	vdi_v_contourfill	vdi	vdi_v_contourfill -> contourfill [direct]	tos-api/src/vdi/contour.rs@v_contourfill	mapped
+2	linea_0	bios	linea_0 -> linea_fill [asm dc.l]	-	design
+2	screen	vdi	screen -> vdi_v_contourfill [table jmptb2[0x67]]	tos-api/src/vdi/mod.rs@screen	mapped
+3	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+3	int_linea	bios	int_linea -> linea_0 [asm lea linea_vecs]	-	design
+4	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+4	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+
+table edges inside the set (1):
+jmptb2[0x67]	screen -> vdi_v_contourfill	vdi/vdi_main.c:78
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (9 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         2      0   0.0%      2 100.0%      0   0.0%
+vdi          7      6  85.7%      1  14.3%      0   0.0%
+total        9      6  66.7%      3  33.3%      0   0.0%
+touched layers: vdi (the layers of contourfill; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

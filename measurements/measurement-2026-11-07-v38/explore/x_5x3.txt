@@ -1,0 +1,5 @@
+5x3 fg2 stfalse: ok=false pops=9 cycle=Some((5, 4)) draws=9
+5x3 fg0 stfalse: ok=false pops=8 cycle=Some((4, 4)) draws=8
+5x3 fg0 sttrue: ok=false pops=8 cycle=Some((4, 4)) draws=8
+5x3 fg2 sttrue: ok=true pops=5 cycle=None draws=5
+test vdi::contour::explore::x_5x3 ... ok

@@ -1304,8 +1304,9 @@ fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_blit	mapped	the pla
 bub_sort	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the ascending sort of the crossings is an inline insertion sort in fill_polygon
 clc_flit	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	scan-line polygon fill, even-odd, perimeter pixels included
 clipbox	vdi/vdi_fill.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	rectangle clipping is done inside the backend (rect intersect clip intersect screen); vr_recfl passes vwk.clip_rect()
-contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	guards, search colour and seed_type, the seed span; the main loop is Flood::run (V21)
-contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	run	mapped	the seed-queue main loop: next-row search, left/right leak-back, circular take from qptr, span draw (V21)
+contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	guards, search colour and seed_type; the seed span is Flood::fill_from, the main loop Flood::run (V21)
+contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	fill_from	mapped	the check that the seed's own span is fillable, then the main loop (V21; split out in V38)
+contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	run	mapped	the seed-queue main loop: next-row search, left/right leak-back, circular take from qptr, span draw (V21); NewTOS adds the emergency brake before each take (V38, docs/COMPATIBILITY.md)
 crunch_queue	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	crunch_queue	mapped	Flood::crunch_queue, qtop lowered over trailing holes (V21)
 end_pts	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts: run of one colour, fillable verdict; palette branch reads indices through pixelread (V21)
 end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts, truecolor: 16-bit screen words with OVERLAY_BIT masked on the screen side

@@ -1,0 +1,21 @@
+worst ratio 3066/1000 draws 3809 iter 5 w27 h46 frozenfalse dens14 modeRevTransparent pat[34952, 0, 8738, 0]
+worst ratio 5866/1000 draws 2059 iter 9 w27 h13 frozenfalse dens20 modeRevTransparent pat[0]
+worst ratio 9211/1000 draws 6264 iter 13 w20 h34 frozenfalse dens45 modeReplace pat[34952, 0, 8738, 0]
+worst ratio 10615/1000 draws 4586 iter 32 w27 h16 frozenfalse dens26 modeXor pat[34952, 0, 8738, 0]
+CYCLE iter 33 w9 h11 frozentrue modeTransparent pat[0] stfalse fg1 sf800: state at pop 57 repeats after 75 pops
+worst ratio 17528/1000 draws 5206 iter 66 w27 h11 frozenfalse dens13 modeXor pat[34952, 0, 8738, 0]
+worst ratio 23315/1000 draws 4430 iter 67 w10 h19 frozenfalse dens15 modeXor pat[65535]
+CYCLE iter 115 w17 h39 frozenfalse modeRevTransparent pat[43690, 21845] stfalse fg3 sf800: state at pop 37262 repeats after 710 pops
+worst ratio 25003/1000 draws 6301 iter 159 w12 h21 frozenfalse dens21 modeXor pat[65535]
+worst ratio 25540/1000 draws 5057 iter 171 w11 h18 frozenfalse dens54 modeXor pat[65535]
+worst ratio 81481/1000 draws 13037 iter 206 w16 h10 frozenfalse dens56 modeXor pat[61680, 3855]
+CYCLE iter 286 w35 h11 frozenfalse modeReplace pat[61680, 3855] stfalse fg1 sf800: state at pop 1075 repeats after 48 pops
+CYCLE iter 293 w14 h33 frozenfalse modeTransparent pat[43690, 21845] stfalse fg3 s0000: state at pop 1054323 repeats after 6034 pops
+CYCLE iter 380 w20 h43 frozenfalse modeTransparent pat[43690, 21845] stfalse fg3 s0000: state at pop 51534 repeats after 71954 pops
+HANG iter 1361 w39 h29 frozenfalse dens24 pat[43690, 21845] modeTransparent fg1 stfalse sf800 seed(29,1)
+worst ratio 130225/1000 draws 15627 iter 1477 w10 h12 frozenfalse dens29 modeRevTransparent pat[65535]
+worst ratio 413628/1000 draws 109198 iter 1487 w33 h8 frozenfalse dens11 modeXor pat[43690, 21845]
+HANG iter 1610 w29 h19 frozenfalse dens49 pat[34952, 0, 8738, 0] modeXor fg2 stfalse s0000 seed(27,5)
+worst ratio 1068000/1000 draws 205056 iter 1888 w24 h8 frozenfalse dens15 modeXor pat[43690, 21845]
+cycles 34 hangs-without-cycle 2
+test vdi::contour::explore::x_fuzz ... ok

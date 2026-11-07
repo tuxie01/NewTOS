@@ -1,0 +1,2 @@
+Some((15, "w5 h3 stfalse seed(0,2) cycle at pop 4 len 4: .....|...#.|.#...|"))
+test vdi::contour::explore::x_small_cycle ... ok

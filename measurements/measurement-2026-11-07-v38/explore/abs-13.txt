@@ -1,0 +1,6 @@
+seed 13: iters 1500 capped(>20M) 20 draws/s 5755962
+  terminating 17450663: w9 h38 frozenfalse dens49 ncol2 pat[8888, 0, 2222, 0] modeReplace fg3 stfalse s0000 seed(0,10)
+  terminating 1921036: w24 h39 frozenfalse dens1 ncol3 pat[8888, 0, 2222, 0] modeRevTransparent fg1 stfalse s07c0 seed(20,2)
+  terminating 861483: w14 h19 frozenfalse dens15 ncol2 pat[0] modeReplace fg3 stfalse sf800 seed(2,4)
+  terminating 434728: w62 h32 frozentrue dens55 ncol2 pat[f0f0, f0f] modeTransparent fg3 stfalse sf800 seed(37,8)
+  terminating 223222: w48 h21 frozenfalse dens4 ncol1 pat[8888, 0, 2222, 0] modeRevTransparent fg3 stfalse sf800 seed(41,14)

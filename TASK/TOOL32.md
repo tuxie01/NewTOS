@@ -73,7 +73,7 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
    Woerter statt `INQ_TAB[4]*16`.
 7. `vdi_raster.c:1331,588` gegen `tos-api/src/vdi/raster.rs:796@vro_cpyfm`: Speicher-nach-Speicher
    mit gleich vielen Ebenen <= 8: EmuTOS planarer BitBlt, NewTOS 16-Bit-Chunky; PAT_FLAG fehlt.
-8. `vdi_fill.c:888` gegen `tos-api/src/vdi/contour.rs:352@v_contourfill`: Seed-Warteschlange gegen
+8. `vdi_fill.c:888` gegen `tos-api/src/vdi/contour.rs:433@v_contourfill`: Seed-Warteschlange gegen
    Seed-Stack + Visited-Bitmap; Muster, Ueberlauf, Reihenfolge nicht gezeigt.
 9. `vdi_asm.S:496` gegen `tos-api/src/vdi/mouse.rs:215@feed_relative`: EmuTOS zeichnet den Zeiger
    im VBL, NewTOS sofort.

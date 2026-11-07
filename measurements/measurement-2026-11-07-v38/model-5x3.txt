@@ -1,0 +1,2 @@
+fill=0: hang=True overflow=False max_live=3 screen=[[0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 1, 0, 0, 0]]
+fill=2: hang=True overflow=False max_live=3 screen=[[2, 2, 2, 2, 2], [2, 2, 2, 1, 2], [2, 1, 2, 2, 2]]

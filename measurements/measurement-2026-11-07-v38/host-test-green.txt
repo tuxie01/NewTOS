@@ -1,0 +1,16 @@
+     Running unittests src/lib.rs (target/debug/deps/tos_api-1dde971958c73158)
+running 5 tests
+test vdi::contour::tests::brake_ends_a_fill_that_never_ends ... ok
+test vdi::contour::tests::brake_ends_a_boundary_fill_that_never_ends ... ok
+test vdi::contour::tests::a_terminating_fill_of_the_same_dots_is_unchanged ... ok
+test vdi::contour::tests::brake_counts_the_screen_not_the_clip ... ok
+Full 1920x1080 to_boundary=false: 1080 spans drawn, 2073600 pixels
+Full 1920x1080 to_boundary=true: 1080 spans drawn, 2073600 pixels
+Serpentine 1920x1080 to_boundary=false: 1035841 spans drawn, 2073600 pixels
+Serpentine 1920x1080 to_boundary=true: 1035841 spans drawn, 2073600 pixels
+Comb 640x480 to_boundary=false: 153281 spans drawn, 307200 pixels
+Comb 640x480 to_boundary=true: 153281 spans drawn, 307200 pixels
+Lattice 640x480 to_boundary=false: 6480 spans drawn, 307200 pixels
+Lattice 640x480 to_boundary=true: 6480 spans drawn, 307200 pixels
+test vdi::contour::tests::largest_real_fills_stay_far_below_the_brake ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.13s

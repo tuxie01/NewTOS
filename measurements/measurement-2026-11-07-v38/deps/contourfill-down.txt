@@ -1,0 +1,44 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps contourfill --down`
+deps contourfill --down (kinds asm,direct,layer,table,vector): 22 functions besides contourfill
+depth	function	layer	reached over	newtos	class
+0	contourfill	vdi	-	tos-api/src/vdi/contour.rs@run tos-api/src/vdi/contour.rs@v_contourfill	mapped
+1	crunch_queue	vdi	contourfill -> crunch_queue [direct]	tos-api/src/vdi/contour.rs@crunch_queue	mapped
+1	draw_rect_common	vdi	contourfill -> draw_rect_common [direct]	kernel/src/vdi_backend.rs@fill_pattern	mapped
+1	end_pts	vdi	contourfill -> end_pts [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+1	get_seed	vdi	contourfill -> get_seed [direct]	tos-api/src/vdi/contour.rs@get_seed	mapped
+1	no_abort	vdi	contourfill -> no_abort [vector via SEEDABORT]	-	design
+1	pixelread	vdi	contourfill -> pixelread [direct]	tos-api/src/vdi/contour.rs@pixelread	mapped
+2	end_pts16	vdi	end_pts -> end_pts16 [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+2	get_color	vdi	end_pts -> get_color [direct]	-	design
+2	get_start_addr	vdi	end_pts -> get_start_addr [direct]	-	design
+2	get_start_addr16	vdi	pixelread -> get_start_addr16 [direct]	kernel/src/vdi_backend.rs@get_device_pixel kernel/src/vdi_backend.rs@get_device_pixel_wrapped kernel/src/vdi_backend.rs@put_device_pixel tos-api/src/vdi/backend.rs@get_device_pixel_wrapped tos-api/src/vdi/line.rs@index	mapped
+2	hwblit_rect_common	vdi	draw_rect_common -> hwblit_rect_common [direct]	-	design
+2	search_to_left	vdi	end_pts -> search_to_left [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+2	search_to_right	vdi	end_pts -> search_to_right [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+2	swblit_rect_common	vdi	draw_rect_common -> swblit_rect_common [direct]	-	design
+2	swblit_rect_common16	vdi	draw_rect_common -> swblit_rect_common16 [direct]	kernel/src/vdi_backend.rs@fill_pattern tos-api/src/vdi/line.rs@abline	mapped
+3	draw_rect_setup	vdi	hwblit_rect_common -> draw_rect_setup [direct]	-	design
+3	flush_data_cache	bios	hwblit_rect_common -> flush_data_cache [direct]	-	unmapped
+3	hwblit_rect_nonstd	vdi	hwblit_rect_common -> hwblit_rect_nonstd [direct]	-	design
+3	invalidate_data_cache	bios	hwblit_rect_common -> invalidate_data_cache [direct]	-	unmapped
+3	muls	include	get_start_addr -> muls [direct]		unmapped
+3	search_to_left16	vdi	end_pts16 -> search_to_left16 [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+3	search_to_right16	vdi	end_pts16 -> search_to_right16 [direct]	tos-api/src/vdi/contour.rs@end_pts	mapped
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (1):
+via SEEDABORT	contourfill -> no_abort	vdi/vdi_fill.c:1060
+
+coverage of the set (23 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         2      0   0.0%      0   0.0%      2 100.0%
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi         20     13  65.0%      7  35.0%      0   0.0%
+total       23     13  56.5%      7  30.4%      3  13.0%
+touched layers: vdi (the layers of contourfill; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

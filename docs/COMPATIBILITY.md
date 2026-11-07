@@ -705,7 +705,7 @@ there. Reason: kernel memory safety; that memory is not the program's.
 last row (or sideways past the first/last pixel): EmuTOS answers a foreign
 memory word, NewTOS 0. `v_contourfill` reads only inside its clip rectangle
 cut to the screen and is not affected. Code
-`tos-api/src/vdi/contour.rs:135@pixelread`,
+`tos-api/src/vdi/contour.rs:162@pixelread`,
 `tos-api/src/vdi/backend.rs:386@get_device_pixel_wrapped`; spec
 `docs/api/vdi/inquiry/_color-pixel-input.md` (§ "Coordinates outside the
 screen"); host test `tos-api/tests/vdi_reference/cases_v24.rs`.
@@ -770,7 +770,7 @@ text scratch buffer (`references/emutos/include/vdiext.h:47-56`; every
 workstation's `scrtchp` points there, `references/emutos/vdi/vdi_text.c:578,1360`,
 and the effect blits write it, `references/emutos/vdi/vdi_textblit.c:396-682`);
 after a contour fill or text with effects the buffer holds their data. NewTOS keeps those in their own memory
-(`tos-api/src/vdi/contour.rs:110@QUEUE`), like decision C (V22) an internal
+(`tos-api/src/vdi/contour.rs:137@QUEUE`), like decision C (V22) an internal
 memory arrangement. **Observable difference:** only for a call whose
 `CONTRL[1]` is smaller than what its handler reads (gemlib always passes the
 full count): after a contour fill or effect text EmuTOS' handler reads queue
@@ -1764,6 +1764,42 @@ of the system:
 
 Code `tos-api/src/vdi/font.rs`, `tos-api/src/vdi/attributes.rs:416@vst_load_fonts`; host test
 `tos-api/tests/vdi_reference/cases_v33.rs`.
+
+**`v_contourfill` stops after 16 spans per screen pixel (emergency brake)** — user
+decision 2026-11-06 ([V38](../TASK/V38.md), from [V21](../TASK/V21.md)). EmuTOS' seed fill
+ends only when its queue runs empty or overflows
+(`references/emutos/vdi/vdi_fill.c:1034-1036`, `:929-932`); `SEEDABORT` is `no_abort` for
+the VDI (`references/emutos/vdi/vdi_fill.c:1076-1090`). It does not always end: once the
+spans a pass seeds stop changing what the next search reads, the queue can return to an
+earlier state and repeat it for ever. The smallest case found is a 5x3 clip with black
+dots at (3,1) and (1,2) and the seed at (0,2), filled red up to black or while-same with
+the region's own colour: the fill circles the dot at (3,1), four spans per round. NewTOS'
+fill and the independent Python model of `vdi_fill.c` from V21 both loop on it
+(`measurements/measurement-2026-11-07-v38/RUNINFO.TXT`); it is not measured on the oracle,
+which would not return. A VDI trap runs with IRQs masked from exception entry on (ARM ARM
+DDI 0487M.c D1.4.2, rule R_WTXBY; `kernel/src/arch/aarch64/exception_vectors.s:23@EXC_BODY`
+unmasks nothing on the way to `tos_api::vdi::dispatch_in`), so such a fill stops the
+machine: no timer tick, no USB input, no way out but a reset.
+
+NewTOS counts the spans the fill takes from its queue and ends the fill when
+16 x screen width x screen height of them are taken, returning as from a finished fill:
+what is drawn stays drawn, the rest is not filled, no error (there is no error channel)
+(`tos-api/src/vdi/contour.rs:118@BRAKE_SPANS_PER_PIXEL`, the check in
+`tos-api/src/vdi/contour.rs:404@budget`). The bound comes from the geometry: a span is at
+least one pixel, and the largest real fills measured take at most one span per screen pixel
+(the whole 1920x1080 screen 1080 spans, a serpentine maze of one-pixel corridors over it
+1,035,841, a comb of one-pixel teeth 0.5 per pixel, the V21 dot lattice 6480 at 640x480).
+Sixteen per pixel is 33,177,600 spans at 1920x1080 and 4,915,200 at 640x480; the screen,
+not the clip, sets it.
+
+**Observable difference:** only for a fill that takes more spans than that. Where EmuTOS
+never returns, NewTOS returns. A fill that would end after more spans than the bound is cut
+as well; such fills exist, but not among real ones: among 6000 random fills on small screens
+of their own (random dots of three colours, patterns, all write modes) the longest that ended
+drew 17.4 million spans, and in the 20 longest the picture had stopped changing within the
+first 12,000 draws in every one outside XOR mode, so a cut leaves the same picture there. The
+long XOR fills (up to 4.35 million draws) changed the screen to their end. Host tests
+`tos-api/src/vdi/contour.rs` (`tests`, red on the code without the brake).
 
 ## EmuTOS is the reference, not the template
 

@@ -1,0 +1,129 @@
+V38 -- TASK/V38.md: emergency brake for v_contourfill. Developer run, 2026-11-07, on main at 3380004f
+with the V38 change in the working tree (the commit of this run holds it); not the Tester's acceptance.
+No card, no Pi, no push.
+
+WHAT RAN
+  Trees    base = git archive of 3380004fba83f567b24291ad8acec0e0cd21c24c, fix = base + the V38
+           tos-api/src/vdi/contour.rs; both in the session scratchpad, references/ symlinked, so the
+           uncommitted V53 work in the main tree (tos-api/src/vdi/mouse.rs, workstation.rs, aes/) is in
+           neither. method/build.sh, method/run.sh, method/hosttest.sh.
+  Kernels  rpi4 release kernel8.img: base d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3,
+           fix c478e8b41e3c3d4606489b3669a43def8cc9ecb881b05bc14413ad6f78df5e6b (the same kernel cargo xtask
+           tosdump built for the fix tables, runs/fix-*/tosdump-run.txt). Kernels not kept.
+  Oracle   EmuTOS 1a7484ab (falcontc, 640x480 16-bit): vdprobe run measurements/measurement-2026-11-07-v37-test/probe/e1
+           (VDPROBE.PRG 9478d501..., the same PRG this run built; tosdump/probes/vdprobe.c unchanged since
+           2bf28d71; its local VDPROBE.BIN sha256 2a6329dc6a2ae6c92bb0e4ab2ab7a13f3fda19f5e960b52bc097d2171066caa2,
+           not tracked), and the pinned table references
+           tosdump/reference/EMUTOS-1a7484ab-VDI-{all,v18,v18t2}-falcontc.BIN.
+  Boards   QEMU raspi4b, -append serial=on, APFS clone of the card per boot (removed by the scripts), one QEMU
+           at a time, each stopped by the PID its script started.
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests (8): probe/n-base, probe/n-fix, runs/{base,fix}-vdi-{all,v18,v18t2}, each card.img.manifest;
+           optional_missing, verbatim, in all of them:
+           optional_missing none
+
+WHERE THE BRAKE SITS
+  tos-api/src/vdi/contour.rs: Flood::run (EmuTOS contourfill main loop, vdi_fill.c:1003-1062) checks a span
+  budget after the "queue empty" exit and before the next entry is taken; budget = BRAKE_SPANS_PER_PIXEL (16) x
+  screen width x screen height (Flood::new). A fill that empties its queue within the budget runs exactly as
+  before; at the budget the fill returns like a finished one (Stop::Brake, ignored like Stop::Overflow: no
+  error channel), what is drawn stays drawn. Each pass between two takes is bounded (end_pts by the clip width,
+  the queue scans by QSIZE = 1024, the take scan terminates because queue[qtop-1] is never EMPTY), so the main
+  loop is the only unbounded one and the take count bounds the whole fill.
+
+INTERRUPTS (read)
+  Exception entry sets PSTATE.{D,A,I,F} (ARM ARM DDI 0487M.c D1.4.2, rule R_WTXBY; docs/MEMORY.md:3690).
+  The SVC path: EXC_BODY (kernel/src/arch/aarch64/exception_vectors.s:23@EXC_BODY) saves the frame and calls
+  rust_sync_handler without touching DAIF; TrapClass::Gem selector 115 calls tos_api::vdi::dispatch_in
+  (kernel/src/arch/aarch64/exceptions.rs:531@dispatch_in); screen() dispatches 103 to
+  contour::v_contourfill (tos-api/src/vdi/mod.rs:554@v_contourfill). The only places that unmask IRQs inside
+  a trap are the wait loops (kernel/src/host_env.rs pump_input, console_read_byte_blocking,
+  console_read_key_blocking, read_key_loop; kernel/src/console.rs aux_read_blocking); v_contourfill calls
+  none of them, only the raster backend (get_device_pixel_wrapped, device_to_rgb565, read_pixel,
+  fill_pattern). So a fill that never ends runs with IRQs masked: no timer tick, no USB, the machine stops.
+  The ticket's claim holds.
+
+NEVER-ENDING INPUTS (modelled, not measured on the oracle)
+  The smallest found (explore/x_small_cycle.txt, 200000 random frozen screens up to 10x10): a 5x3 clip, black
+  dots at (3,1) and (1,2), seed (0,2). Filled up to black (seed_type 0) with red, or while-same with white
+  (the region's own colour), the queue returns to an earlier state after 4 or 5 taken spans and repeats
+  (state = queue entries, qptr, current span, screen; explore/x_5x3.txt). Filled while-same with red it ends
+  after 5 spans (red spans stop being fillable). Cross-check with an independent model: the V21 Tester's
+  Python port of vdi_fill.c (measurements/measurement-2026-11-06-v21-test/method/cf.py, read from there by
+  method/cycle-5x3.py) hangs on the same screen for fill colour 0 and 2 (model-5x3.txt). A Hatari run of
+  this input would not return; it was not done (oracle side would need a time-out case).
+  Random screens (explore/x_fuzz.txt: 3000 fills, screens 8..47 square-ish, random dots in 3 colours,
+  5 patterns, all 4 write modes, both seed modes, a quarter with a read-back that never shows a draw):
+  34 proven cycles (repeated state), 2 more without end within 2,000,000 draws.
+
+HOW LONG REAL FILLS ARE
+  Host test tests::largest_real_fills_stay_far_below_the_brake (host-test-green.txt), solid red over white,
+  bounded by black, both seed modes (identical counts):
+    whole 1920x1080 screen          1,080 spans
+    serpentine maze 1920x1080       1,035,841 spans (one-pixel corridors, every corridor row a span; 0.50/px)
+    comb 640x480 (320 teeth)        153,281 spans (0.50/px; all fronts in the queue at once)
+    V21 dot lattice (K8) 640x480    6,480 spans
+  Bound: 16 per screen pixel = 33,177,600 at 1920x1080, 4,915,200 at 640x480 -- 32 times the maze.
+  Long fills that do end exist (explore/abs-*.txt: 6000 random fills on small screens of their own, cap
+  20,000,000 draws; explore/abs2-*.txt the same fills with the draw of the last screen change): the longest
+  17,450,663 draws on a 9x38 screen (pattern, replace mode), last change at draw 219; of the 20 longest (top 5
+  per seed) every one outside XOR mode stopped changing the screen within 11,610 draws, so a brake after that
+  leaves the same picture. The XOR ones change to the end (longest 4,352,308 draws, 7x9 screen). explore/x_scale.txt: the ratio of
+  draws to area falls with the screen size (max 1598/px at 16x16, 1.68/px at 128x128).
+  These exploration tests are not in the product: method/explore.patch (applied to the HEAD contour.rs,
+  with a test-only trace hook in Flood::run) reproduces them; run with
+  cargo test --release -p tos-api --lib vdi::contour::explore::<x_fuzz|x_scale|x_small_cycle|x_5x3|x_abs>
+  (x_abs: env XSEED=11..14, XITERS=1500).
+
+HOST TEST (red / green)
+  tos-api/src/vdi/contour.rs mod tests (5 tests), with a harness guard: the test double panics after
+  100 x budget span draws instead of hanging.
+  red  (host-test-red.txt): the same test module on the code without the brake (method/red-code.patch = HEAD
+       + the split of v_contourfill into Flood::new/fill_from, no budget): 3 FAILED by the guard
+       (brake_ends_a_fill_that_never_ends, brake_ends_a_boundary_fill_that_never_ends,
+       brake_counts_the_screen_not_the_clip), 2 ok (a_terminating_fill_of_the_same_dots_is_unchanged,
+       largest_real_fills_stay_far_below_the_brake).
+  green (host-test-green.txt): 5 of 5.
+  cargo xtask test (full, hosttest-totals.txt):
+    main tree (with the uncommitted V53 work)   before 2297 / 0 / 6 (measured at the start), after 2302 / 0 / 6
+    scratch base / fix                           2284 / 7 / 5 and 2289 / 7 / 5; the same 7 xtask tests fail in
+                                                 both scratch trees (doc_check needs git ls-files, two rsc tests
+                                                 need untracked inputs: no .git in a git archive), not V38.
+
+BUILD WARNINGS (builds/; fresh debug builds after cargo clean -p tos-api -p kernel)
+  rustc   tos-api 64 / kernel 93, rpi4 and qemu-virt, base and fix (delta 0)
+  clippy  tos-api 73 / kernel 121 (cargo clippy -p kernel --features board-*), both boards, base and fix,
+          identical message lists; host clippy --lib --tests: lib test 78 on both; 0 hits in contour.rs.
+
+RESULT, PROBE (954 cases; probe/compare-*.txt)
+  n-base vs n-fix   0 differ; VDPROBE.BIN and VDPROBE.LOG byte-identical
+                    (c7b004e6ade7fe75dc92c7ad69223b1f823de19b480d644ac62cb10b0fccf235, probe/n-*/sha256.txt).
+  e1 vs n-fix       K8A-K8J, K14A-K14C EQUAL (the V21 cases, incl. the queue overflow K14A/B); 333 others
+                    differ, the same list as e1 vs n-base (other tickets).
+  0 exception/panic lines in both BOOT-SERIAL.txt.
+
+RESULT, TABLES (cargo xtask tosdump vdi; runs/)
+  vdi-all.tsv    vs EMUTOS-1a7484ab-VDI-all-falcontc     base 0 of 182, fix 0 of 182
+  vdi-v18.tsv    vs EMUTOS-1a7484ab-VDI-v18-falcontc     base 0 of 19,  fix 0 of 19 (V21 cases 109/154/199)
+  vdi-v18-t2.tsv vs EMUTOS-1a7484ab-VDI-v18t2-falcontc   base 0 of 32,  fix 0 of 32
+  VDI.BIN base == fix byte for byte in all three.
+
+AES / DESKTOP
+  No caller of v_contourfill outside the VDI dispatcher: none in tos-api/src/aes/, kernel/src/ (a comment in
+  vdi_backend.rs only), programs/, sdk/apps/ (HighWire has an unused struct field cancontourfill). The fill
+  only takes new code paths when a fill reaches the brake; no AES or desktop scene was run.
+
+DEPENDENCIES  deps/contourfill-up.txt, deps/contourfill-down.txt: vdi layer complete (0 unmapped).
+  mapping.tsv: contourfill -> fill_from row added (the seed span check moved there), the run row names the brake.
+
+V53 LANDED DURING THE RUN
+  4cc7005c (V53, mouse/workstation, no contour.rs change) was committed while this run was going. Re-checked on
+  the main tree at 4cc7005c (method/rebuild-on-v53.sh, builds/v53-*.log): HEAD's contour.rs vs the V38 one,
+  both boards, rustc tos-api 64 / kernel 93, clippy 73 / 121 on both (delta 0, 0 in contour.rs);
+  cargo xtask test 2302 / 0 / 6 (hosttest-totals.txt, last line). The QEMU runs above are on 3380004f.
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing. How long a braked fill takes on silicon is not measured (33,177,600 spans at 1920x1080;
+  on the host the test double draws about 4-6 million spans per second).
+  Oracle: the never-ending 5x3 input is modelled twice, not run in Hatari.
+  qemu-virt: built, not booted here.
