@@ -1,0 +1,10 @@
+build-rpi4.log:warning: `tos-api` (lib) generated 64 warnings
+build-rpi4.log:warning: `kernel` (lib) generated 93 warnings
+build-qemu-virt.log:warning: `tos-api` (lib) generated 64 warnings
+build-qemu-virt.log:warning: `kernel` (lib) generated 93 warnings
+clippy-qemu-virt.log:warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+clippy-qemu-virt.log:warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+clippy-rpi4.log:warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions)
+clippy-rpi4.log:warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions)
+release-rpi4.log:warning: `kernel` (lib) generated 93 warnings
+release-rpi4.log:warning: `tos-api` (lib) generated 64 warnings

@@ -1,0 +1,16 @@
+test cases_v37::v37_probe_t3726_negative_max_x_uses_calc_width ... ok
+test cases_v37::v37_probe_t3723_t3725_interchar ... ok
+test cases_v37::v37_probe_zg002_skew_replace_interword ... ignored, skew in replace mode: the cell background of TASK/V41 (R1 and others), not V37's d1
+test cases_v37::v37_probe_zg003_skew_replace_interchar ... ignored, skew in replace mode: the cell background of TASK/V41 (R1 and others), not V37's d1
+test cases_v37::v37_probe_zg008_all_effects_replace_interword ... ignored, bold+skew+outline in replace mode: TASK/V41 (R1, R2, R7), not V37's d1
+test cases_v37::v37_probe_zg009_all_effects_replace_interchar ... ignored, bold+skew+outline in replace mode: TASK/V41 (R1, R2, R7), not V37's d1
+test cases_v37::v37_probe_t3728_t3736_8x16_skew_d1 ... ok
+test cases_v37::v37_probe_tvo_centre_underline ... ok
+test cases_v37::v37_probe_t3737_t3741_8x16_skew_additive_per_v_align ... ok
+test cases_v37::v37_probe_t3727_zero_max_x ... ok
+test cases_v37::v37_probe_t3712_t3717_right_against_max_x ... ok
+test cases_v37::v37_probe_t3718_t3722_skew_additive_per_v_align ... ok
+test cases_v37::v37_probe_tvp_right_underline ... ok
+test cases_v37::v37_probe_t3706_t3711_centre_against_max_x ... ok
+test cases_v37::v37_probe_t3700_t3705_left ... ok
+test result: ok. 11 passed; 0 failed; 4 ignored; 0 measured; 332 filtered out; finished in 0.08s

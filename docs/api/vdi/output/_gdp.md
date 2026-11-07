@@ -174,8 +174,15 @@ engine as [`v_gtext`](_text.md)).
   that `width` (`vdi_text.c:354-364`), i.e. centre/right alignment of a
   justified run is against `max_x`, not the natural width. Only a
   **negative** `max_x` makes `output_text` fall back to `calc_width`
-  (`if (width < 0)`, `vdi_text.c:305-306`). `delv` and the skew additives
-  are as for `v_gtext`.
+  (`if (width < 0)`, `vdi_text.c:305-306`); `max_x` 0 is not negative, so a
+  right-aligned run with `max_x` 0 has `delh = 0 - 2 * outline`. `delv` and
+  the skew additives (`d1`/`d2` = `left_offset`/`right_offset` under
+  `F_SKEW`, `:332-341`, added per `v_align`, `:366-390`) are as for
+  `v_gtext`, and so is the start: `DESTX = x - delh - outline` at `chup` 0
+  (`:410`), the underline's `startx` = that `DESTX` (`:412`). Measured, every
+  `chup` 0 case: `vdprobe` T3700–T3741, TVO, TVP (TASK/V37; `h_align` 0/1/2 ×
+  plain/skew/outline/underline, each `v_align` with skew, interchar, `max_x`
+  −40 and 0, the default and the 8×16 font).
 - **Rotation:** the anchor (`DESTX`/`DESTY` per `chup`,
   `vdi_text.c:408-440`), the per-glyph rotation and blit position and the
   base advance along the rotated baseline (`text_blt`:

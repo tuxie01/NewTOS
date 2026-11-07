@@ -1305,12 +1305,13 @@ impl JustInfo {
 /// `PTSIN[0..1]` = position, `PTSIN[2]` = target width.
 ///
 /// EmuTOS `gdp_justified` (`vdi_text.c:1177-1289`) and the justification
-/// branch of the `output_text` apply-loop (`vdi_text.c:476-492`). At a
-/// right-angle `chup` the run goes through `v_gtext`'s rotated path
-/// ([`output_text_rotated`]) with the `JustInfo` deltas on the rotated axis
-/// and `delh` taken against `width = max_x` (`output_text(vwk, cnt, str,
-/// max_x, &just)`, `:1288`; a negative `max_x` falls back to `calc_width`,
-/// `:305-306`). Spec: `docs/api/vdi/output/_gdp.md` "Justified-text
+/// branch of the `output_text` apply-loop (`vdi_text.c:476-492`). At every
+/// `chup` `delh` is taken against `width = max_x` (`output_text(vwk, cnt,
+/// str, max_x, &just)`, `:1288`; a negative `max_x` falls back to
+/// `calc_width`, `:305-306`), as `v_gtext` takes it against the natural
+/// width (TASK/V37). At a right-angle `chup` the run goes through `v_gtext`'s
+/// rotated path ([`output_text_rotated`]) with the `JustInfo` deltas on the
+/// rotated axis. Spec: `docs/api/vdi/output/_gdp.md` "Justified-text
 /// rendering".
 pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // EmuTOS: cnt = CONTRL[3] - 2 (strip the two leading flag words).
@@ -1349,7 +1350,8 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // Natural on-screen width — EmuTOS calc_width (:1203); this is the scaled
     // advance plus skew/outline extents, NOT nchars*cell_w. Kept as the base
     // that the slack is measured against and that the interchar block divides.
-    let mut width = calc_width(pb, 2, base, f, cnt, vwk);
+    let natural = calc_width(pb, 2, base, f, cnt, vwk);
+    let mut width = natural;
 
     let mut just = JustInfo::default(); // bzero default (:1207)
 
@@ -1440,25 +1442,31 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let clip = line_clip(vwk);
     let call = TextCall { pb, vwk, backend, base, f, clip };
 
-    // Right angle: `v_gtext`'s rotated `output_text` with the deltas
-    // (`gdp_justified` → `output_text(vwk, cnt, str, max_x, &just)`, :1288).
+    // `output_text(vwk, cnt, str, max_x, &just)` (:1288): the alignment
+    // offset `delh` — `h_align` against `max_x`, the outline's start pixel,
+    // the skew additive of `v_align` — for every `chup`; only a negative
+    // `max_x` falls back to `calc_width` (`vdi_text.c:305-306`, `:347-390`).
+    let outline = outline_of(vwk);
+    let run_width = if max_x < 0 { natural } else { max_x };
+    let delh = delh_for(f, vwk, run_width, outline);
+
+    // Right angle: `v_gtext`'s rotated `output_text` with the deltas.
     if matches!(vwk.chup, 900 | 1800 | 2700) {
-        let outline = outline_of(vwk);
-        let run_width = if max_x < 0 { calc_width(pb, 2, base, f, cnt, vwk) } else { max_x };
-        let delh = delh_for(f, vwk, run_width, outline);
         let run = Run { first: 2, count: cnt, x: x0, y: pb.ptsin(1), delh, outline };
         output_text_rotated(st, &call, &run, Some(&mut just));
         return;
     }
 
-    // Horizontal apply-loop — EmuTOS output_text (:459-492). Each glyph
-    // blits at the current pen; the base advance moves the pen (EmuTOS
-    // `text_blt`'s DELX), then [`JustInfo::step`] adds the interchar and —
-    // on a space — the interword delta, each spreading its saved remainder
-    // one pixel at a time. At chup 0 the y-components are zero, so `desty`
-    // stays on the cell top.
+    // Horizontal apply-loop — EmuTOS output_text (:459-492). The run starts
+    // at `DESTX = x - delh - outline` (`:410`; [`horizontal_at`] takes the
+    // outline). Each glyph blits at the current pen; the base advance moves
+    // the pen (EmuTOS `text_blt`'s DELX), then [`JustInfo::step`] adds the
+    // interchar and — on a space — the interword delta, each spreading its
+    // saved remainder one pixel at a time. At chup 0 the y-components are
+    // zero, so `desty` stays on the cell top.
+    let x_pen0 = x0.wrapping_sub(delh);
     let mut xdda: u16 = 0x7fff;
-    let mut destx = x0;
+    let mut destx = x_pen0;
     let mut desty = top_y;
     for i in 0..cnt as usize {
         let code = pb.intin(2 + i);
@@ -1467,9 +1475,9 @@ pub fn v_justified(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         just.step(code, &mut destx, &mut desty);
         destx = destx.wrapping_add(advance.hor);
     }
-    // As in `v_gtext`: `DESTX`/`DESTY` carry the outline shift (`vdi_text.c:410-411`).
-    let outline = outline_of(vwk);
-    underline(backend, f, vwk, x0.wrapping_sub(outline), top_y.wrapping_sub(outline), destx.wrapping_sub(outline), clip);
+    // As in `v_gtext`: `startx` is the first `DESTX` (`:412`); `DESTX`/`DESTY`
+    // carry the outline shift (`vdi_text.c:410-411`).
+    underline(backend, f, vwk, x_pen0.wrapping_sub(outline), top_y.wrapping_sub(outline), destx.wrapping_sub(outline), clip);
 }
 
 #[cfg(test)]

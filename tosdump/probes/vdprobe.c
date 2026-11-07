@@ -46,6 +46,9 @@
  *
  * TASK/V35 appends cases TPF-TPH (function t35, after t31): the local PTSIN copy on an unknown handle,
  * across two workstations, and after a handler sorted it.
+ *
+ * TASK/V37 appends cases T37* (function t37, after t35): the horizontal v_justified against max_x --
+ * h_align 0/1/2 x effects, v_align with skew, interchar, a negative and a zero max_x.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -2707,6 +2710,75 @@ static void t35(void)
 	t35_width("TPH");
 }
 
+/* ---- T37 (TASK/V37): the horizontal v_justified aligned against max_x ---------------------------------
+ * gdp_justified hands output_text width = max_x (vdi_text.c:1288); output_text takes delh from h_align against
+ * that width, the outline start and the skew additive of v_align (d1/d2), calc_width only for a negative max_x
+ * (:305-306, :347-390), and starts DESTX at x - delh - outline (:410).  Default font (6x6 here), 'AB CD EF'
+ * interword at (300,100), length 200, unless the case says otherwise.  Skew is drawn transparent (the
+ * replace-mode cell of a skewed glyph is TASK/V41); every other effect in replace.  The default font has no
+ * left_offset (d1 0); the cases from T3728 on repeat the skew cases in the 8x16 font (vst_height 13, d1 1). */
+static int t37_height;
+
+static void t37_case(const char *tag, const char *what, int h, int v, int eff, int mode, int x, int len, int iw,
+		     int ic, const char *s)
+{
+	tbegin(tag, what);
+	if (t37_height)
+		p1(12, 0, (int16_t)t37_height);
+	i2(39, (int16_t)h, (int16_t)v);
+	i1(106, (int16_t)eff);
+	i1(32, (int16_t)mode);
+	justified(x, 100, len, iw, ic, s);
+	i1(32, 1);
+	grab(tag, 60, 60, 520, 64);
+}
+
+static void t37(void)
+{
+	static const int effs[] = { 0, 4, 16, 8, 4 | 8, 16 | 8 };
+	char tag[16], what[80];
+	int h, e, v, n = 0;
+
+	for (h = 0; h < 3; h++)
+		for (e = 0; e < 6; e++) {
+			snprintf(tag, sizeof tag, "T37%02d", n++);
+			snprintf(what, sizeof what, "v_justified h_align %d effects %d, 'AB CD EF' (300,100) len 200", h, effs[e]);
+			t37_case(tag, what, h, 0, effs[e], effs[e] & 4 ? 2 : 1, 300, 200, 1, 0, "AB CD EF");
+		}
+	for (v = 1; v <= 5; v++) {	/* the skew additive of each v_align (vdi_text.c:366-390), h_align 1 */
+		snprintf(tag, sizeof tag, "T37%02d", n++);
+		snprintf(what, sizeof what, "v_justified h_align 1 v_align %d skew transparent", v);
+		t37_case(tag, what, 1, v, 4, 2, 300, 200, 1, 0, "AB CD EF");
+	}
+	for (h = 1; h < 3; h++) {	/* interchar */
+		snprintf(tag, sizeof tag, "T37%02d", n++);
+		snprintf(what, sizeof what, "v_justified interchar h_align %d 'ABCDEFGH' (300,100) len 200", h);
+		t37_case(tag, what, h, 0, 0, 1, 300, 200, 0, 1, "ABCDEFGH");
+	}
+	snprintf(tag, sizeof tag, "T37%02d", n++);
+	t37_case(tag, "v_justified interchar h_align 2 skew+underline transparent", 2, 0, 4 | 8, 2, 300, 200, 0, 1, "ABCDEFGH");
+	snprintf(tag, sizeof tag, "T37%02d", n++);	/* calc_width for the alignment (vdi_text.c:305-306) */
+	t37_case(tag, "v_justified h_align 1 underline, max_x -40", 1, 0, 8, 1, 300, -40, 1, 0, "AB CD EF");
+	snprintf(tag, sizeof tag, "T37%02d", n++);	/* zero is not negative: delh 0 - 2*outline */
+	t37_case(tag, "v_justified h_align 2 outline+underline, max_x 0", 2, 0, 16 | 8, 1, 300, 0, 1, 0, "AB CD EF");
+
+	t37_height = 13;			/* the 8x16 font: d1 = 1, d2 = 7 */
+	for (h = 0; h < 3; h++)
+		for (e = 0; e < 3; e++) {
+			static const int eff16[] = { 4, 4 | 8, 16 | 8 };
+
+			snprintf(tag, sizeof tag, "T37%02d", n++);
+			snprintf(what, sizeof what, "8x16 v_justified h_align %d effects %d", h, eff16[e]);
+			t37_case(tag, what, h, 0, eff16[e], eff16[e] & 4 ? 2 : 1, 300, 200, 1, 0, "AB CD EF");
+		}
+	for (v = 1; v <= 5; v++) {
+		snprintf(tag, sizeof tag, "T37%02d", n++);
+		snprintf(what, sizeof what, "8x16 v_justified h_align 0 v_align %d skew transparent", v);
+		t37_case(tag, what, 0, v, 4, 2, 300, 200, 1, 0, "AB CD EF");
+	}
+	t37_height = 0;
+}
+
 static void t2(void)
 {
 	t19();
@@ -2725,6 +2797,7 @@ static void t2(void)
 	tz();
 	t31();
 	t35();
+	t37();
 }
 
 

@@ -1519,7 +1519,7 @@ make_header	vdi/vdi_text.c	tos-api/src/vdi/text.rs	scaled_header	mapped	scratch 
 ok_for_direct_blit	vdi/vdi_text.c	-	-	unmapped	CONF_WITH_VDI_TEXT_SPEEDUP test; NewTOS has no direct-blit path to select
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_gtext	mapped	horizontal path and alignment
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	output_text_rotated	mapped	chup 900/1800/2700
-output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_justified	mapped	justified apply loop
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	v_justified	mapped	justified apply loop; at chup 0 the run starts at x - delh (h_align against max_x, outline, skew d1/d2; V37)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	delh_for	mapped	h_align/v_align delh against width (natural, or v_justified's max_x)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	outline_of	mapped	outline start shift
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	step	mapped	JustInfo::step, the justified apply loop after each glyph

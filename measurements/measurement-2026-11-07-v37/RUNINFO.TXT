@@ -1,0 +1,104 @@
+V37 -- TASK/V37.md: the horizontal v_justified aligned against max_x (h_align, outline, the skew additives d1/d2)
+against the pinned oracle, before and after the fix, plus the AES/desktop counter-check. Developer run, 2026-11-07, on
+main at f9525a3d with the V37 change in the working tree (uncommitted at the time, the commit of this run holds it);
+not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   base = f9525a3d, product code untouched: rpi4 release kernel8.img sha256
+           ba48d2c57ff090362621b50ef09c1be2855136c8d20903703158ac20b8dcee6a (1517800 B).
+           fix  = the V37 change: 70e47d898942da0fea4b28e2397e2cec5cc26e4be62df13b249be50952b29e59 (1517800 B).
+           A first fix kernel f9d7a8b8... (probe n-fix1, the fix tables) was built before the doc comment of v_justified
+           grew by one line; it differs from the final one in 1 byte (a core::panic::Location line field); probe
+           n-fix2 on the final kernel = n-fix1 byte for byte.
+           Table base = git archive of f9525a3d in the session scratchpad (references/ linked), cargo xtask tosdump --tree.
+           Desktop kernels (tools/inject-arm.py desktop=<V34 test mouse file>, method/trees.sh + V35's desk-kernel.sh):
+           base 72c210a1f171349276f883fb5aae7a81a9a8a253ad56a4b7e0d16db22f5df0e8,
+           fix  8605d1080b67d915c467dacef5503e506038f4775365a2271a2f9859d0b69620. Kernels not kept.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img,
+           tools/hatari-oracle.sh falcontc (640x480 16-bit truecolor), Hatari v2.6.1 (probe/e1/hatari.log)
+  Boards   QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (removed by the scripts), one QEMU of mine at a
+           time (the V50 worker ran its own QEMU virt in parallel at times; host load average 5-6)
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests probe/n-head, n-fix1, n-fix2; runs/tab-* (10); runs/gui/* (GUI section) -- each card.img.manifest (the
+           EmuTOS side boots no card); optional_missing, verbatim, in all of them:
+           optional_missing none
+  Commands method/run.sh (in the order they ran), method/builds.sh, method/tables.sh, method/trees.sh, method/gui.sh,
+           method/gen-grabs.py (expected hashes of the host test), method/shift.py (shift analysis).
+
+INSTRUMENT
+  tosdump/probes/vdprobe.c: t37 appended after t35 (cases 937-978, T3700-T3741). Each: tbegin, vst_alignment(h, v),
+  vst_effects, vswr_mode (skew transparent -- the replace-mode cell of a skewed glyph is TASK/V41 --, the rest replace),
+  v_justified 'AB CD EF' interword at (300,100) length 200 unless named, vswr_mode 1, grab (60,60) 520x64.
+    T3700-T3717  default font (6x6 here, left_offset 0, right_offset 3): h_align 0/1/2 x effects 0, skew, outline,
+                 underline, skew+underline, outline+underline
+    T3718-T3722  default font, h_align 1, v_align 1..5, skew (the d1/d2 additive of each v_align)
+    T3723-T3725  interchar 'ABCDEFGH': h_align 1, 2, and 2 with skew+underline
+    T3726        h_align 1 underline, max_x -40 (calc_width for the alignment)
+    T3727        h_align 2 outline+underline, max_x 0 (not negative: delh 0 - 2*outline)
+    T3728-T3736  8x16 font (vst_height 13; left_offset 1, right_offset 7): h_align 0/1/2 x skew, skew+underline,
+                 outline+underline
+    T3737-T3741  8x16, h_align 0, v_align 1..5, skew
+  The 936 earlier records are unchanged: the V35 run's probe/e1 BIN is a byte prefix of e1 (cmp: EOF on the V35 file).
+  VDPROBE.PRG 942244a6b1b3334adc977b315f487551998b033d7202b707cf2a807ae09b8757,
+  VDPROBE.NAP f62a059e790602a4ec6488ed5250b1eea6acee0a600df10deebcc9bfd07b0e46 (probe/*/run.txt).
+  probe/e1/VDPROBE.BIN.gz: the oracle BIN the host test's hashes come from (method/gen-grabs.py).
+  After the runs one comment line of t37 was corrected ("8x16" -> "6x6", same line count): VDPROBE.NAP rebuilds to the
+  same f62a059e...; VDPROBE.PRG is not byte-reproducible (two builds of the same source differ), so its hash is not
+  comparable across builds.
+
+RESULT, PROBE (probe/compare-*.txt, probe/log-*.diff, probe/shift-*.txt)
+  e1 vs n-head: 954 cases, 369 differ. Among the V37 cases: TVO, TVP and 40 of the 42 T37 differ; equal only where
+                EmuTOS' delh is 0 (T3700-T3705 left in the 6x6 font, T3730 left without skew, T3739 v_align bottom).
+  shift analysis (method/shift.py: the horizontal shift s with N(x) == E(x - s) over the whole grab): every differing
+                V37 case on the base is the oracle's image moved by exactly EmuTOS' delh, and by nothing else
+                (probe/shift-e1-n-head.txt): h_align 1 -> 100 (outline 99), h_align 2 -> 200 (outline 198), 6x6 skew
+                per v_align 1..5 -> 102 103 100 100 103, max_x -40 -> 24 (calc_width 48 / 2), max_x 0 right with
+                outline -> -2, 8x16 skew baseline -> 1 (= d1; h_align 1/2: 101/201), 8x16 per v_align 1..5 ->
+                4 5 0 1 8; TVO 100, TVP 200. Each value is output_text's delh (vdi/vdi_text.c:332-390).
+  n-head vs n-fix1: exactly 40 cases differ -- TVO, TVP, ZG002, ZG003, ZG008, ZG009, T3706-T3729, T3731-T3738, T3740,
+                T3741; the other 914 byte-identical. LOG identical.
+  e1 vs n-fix1: 333 differ. TVO, TVP and all 42 T37 EQUAL (shift 0, probe/shift-e1-n-fix1.txt).
+                ZG002/003/008/009 still differ (500/1024/604/1296 words; base 514/994/720/1398): skew and bold+skew+
+                outline in replace mode on a pen-2 ground, TASK/V41. LOG differs only in TXZ (V33, intentional) and TPH (V52).
+  ZG against V41: git archive of HEAD + the V37 files + measurements/measurement-2026-11-06-v41/method/candidate-scratch.patch
+                (applies cleanly; scratch, evidence only), host test cases_v37 with --include-ignored: 15/15 green, i.e.
+                ZG002/003/008/009 equal to the oracle with both. Host harness only, no QEMU run of that tree.
+  The other V41/V45 cases (Y*, Z* except ZG002/3/8/9, ZG012/ZG013) byte-identical base vs fix.
+  n-fix1 == n-fix2 (BIN 5ea7c8ae..., LOG eddc4ccd...).
+
+RESULT, HOST TEST (tos-api/tests/vdi_reference/cases_v37.rs, 15 tests: 11 + 4 ZG ignored with the V41 reason)
+  base (product code f9525a3d, the new test file): 10 of the 11 active red (green only the control T3700-T3705), the 4
+  ZG red too (--include-ignored; hosttest/red-base.txt, the git archive of f9525a3d + the two test files).
+  fix: 11 green, 4 ignored (hosttest/green-fix.txt). vdi_reference 342 passed / 0 failed / 5 ignored.
+  cargo xtask test: see TESTS.
+
+RESULT, TABLES (runs/tab-*; tosdiff base vs fix runs/tosdiff-base-vs-fix-*.txt)
+  vdi-v18-t2   vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: base 0 of 32, fix 0 of 32.
+  vdi-all      vs EMUTOS-1a7484ab-VDI-all-falcontc:   base 0 of 182, fix 0 of 182.
+  aes-r2-wind / aes-r3-wind-state / aes-r4-subfunctions: tosdiff base vs fix 0 of 78 / 0 of 39 / 0 of 181.
+  Bytes, every table: base vs fix differ only in header bytes 13-16, the build id ("f952" against "----" of the archive
+  tree); every record byte-identical (same kernel size, no address shift).
+
+GUI (runs/gui/compare.txt, per run run.txt, card.img.manifest, shots.sha256; the V34 test run's desk-inj.sh, boot-console.sh,
+mouse file, NEWDESK.INF, shot list; C: file set 40 files LONGNM01..40.TXT "V37 desktop file nn", sha256-of-files e60ded3383d2624e)
+  desk480, desk1080 (menu, dialog, rubberband, window/slider/sizer/icon drags): 11/11 shots identical base vs fix.
+  bc480, bc1080 (boot screen + APITEST.NCP console, 6/10/18/24/32/45 s): 6/6 identical each.
+  0 exception/panic lines in every run. (A first gui.sh attempt stopped before any shot: the file set was missing.)
+
+DEPENDENCIES (deps/)
+  gdp_justified --up: vdi_v_gdp, screen, GSX_ENTRY, mouse_int, vditrap; vdi 6/6 mapped, complete.
+  output_text --up: 180 functions; vdi 0 unmapped (complete), aes 1 unmapped, desk 130 unmapped (desk/*.c not mapped);
+  reached over vdi_v_gtext, which V37 does not change. cargo xtask deps --check-mapping: all rows resolve.
+
+WARNINGS (builds/warnings-*.txt; fresh target per board)
+  rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121, rpi4 and qemu-virt, base = fix. No warning in the new
+  test file (cargo clippy -p tos-api --test vdi_reference).
+
+TESTS
+  cargo xtask test (full, fix tree, xtask-test.txt, the result lines): 2291 passed, 0 failed, 6 ignored (baseline of the brief 2280/0/2; +11 passed and
+  +4 ignored = cases_v37). vdi_reference alone 342/0/5.
+
+NOT MEASURED
+  Real Pi; qemu-virt beyond the build; any card program started (QED's call is read from sources: TA_LEFT/TA_TOP,
+  no skew on that path); rotated v_justified changed only by refactoring (same values; vdi-v18-t2 99/102/105 and
+  T1600-T1632 unchanged); proportional and loaded fonts with h_align (calc_width only for a negative max_x).

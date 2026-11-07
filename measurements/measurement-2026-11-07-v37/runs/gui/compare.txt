@@ -1,0 +1,4 @@
+desk480: 11 shots base, 11 fix, 0 differ: | exc/panic base 0 fix 0
+desk1080: 11 shots base, 11 fix, 0 differ: | exc/panic base 0 fix 0
+bc480: 6 shots base, 6 fix, 0 differ: | exc/panic base 0 fix 0
+bc1080: 6 shots base, 6 fix, 0 differ: | exc/panic base 0 fix 0

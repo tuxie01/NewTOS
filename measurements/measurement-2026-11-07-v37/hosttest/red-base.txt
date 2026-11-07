@@ -1,0 +1,30 @@
+test cases_v37::v37_probe_t3700_t3705_left ... ok
+test cases_v37::v37_probe_t3728_t3736_8x16_skew_d1 ... FAILED
+test cases_v37::v37_probe_t3727_zero_max_x ... FAILED
+test cases_v37::v37_probe_t3737_t3741_8x16_skew_additive_per_v_align ... FAILED
+test cases_v37::v37_probe_tvo_centre_underline ... FAILED
+test cases_v37::v37_probe_t3718_t3722_skew_additive_per_v_align ... FAILED
+test cases_v37::v37_probe_t3706_t3711_centre_against_max_x ... FAILED
+test cases_v37::v37_probe_t3712_t3717_right_against_max_x ... FAILED
+test cases_v37::v37_probe_t3723_t3725_interchar ... FAILED
+test cases_v37::v37_probe_t3726_negative_max_x_uses_calc_width ... FAILED
+test cases_v37::v37_probe_tvp_right_underline ... FAILED
+test cases_v37::v37_probe_zg002_skew_replace_interword ... FAILED
+test cases_v37::v37_probe_zg003_skew_replace_interchar ... FAILED
+test cases_v37::v37_probe_zg008_all_effects_replace_interword ... FAILED
+test cases_v37::v37_probe_zg009_all_effects_replace_interchar ... FAILED
+thread 'cases_v37::v37_probe_t3728_t3736_8x16_skew_d1' (5066747) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3727_zero_max_x' (5066746) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3737_t3741_8x16_skew_additive_per_v_align' (5066748) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_tvo_centre_underline' (5066749) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3718_t3722_skew_additive_per_v_align' (5066743) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3706_t3711_centre_against_max_x' (5066741) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3712_t3717_right_against_max_x' (5066742) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3723_t3725_interchar' (5066744) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_t3726_negative_max_x_uses_calc_width' (5066745) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_tvp_right_underline' (5066750) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_zg002_skew_replace_interword' (5066751) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_zg003_skew_replace_interchar' (5066752) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_zg008_all_effects_replace_interword' (5066753) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+thread 'cases_v37::v37_probe_zg009_all_effects_replace_interchar' (5066754) panicked at tos-api/tests/vdi_reference/cases_v37.rs:104:5:
+test result: FAILED. 1 passed; 14 failed; 0 ignored; 0 measured; 332 filtered out; finished in 0.04s

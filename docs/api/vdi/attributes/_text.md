@@ -105,7 +105,7 @@ font's id when the request was unavailable).
 > Added 2026-11-06 for `TASK/V33.md` (VDI-TEXT-010). Source: EmuTOS @
 > `1a7484ab`, `CONF_WITH_GDOS` = 1 (`include/config.h:1620-1622`). Notes:
 > *cited* = read in the file named; *inferred* = reasoned from cited code, not
-> measured. Measured = probe T13A/T13B (`tosdump/probes/vdprobe.c:1221@t13`,
+> measured. Measured = probe T13A/T13B (`tosdump/probes/vdprobe.c:1224@t13`,
 > oracle log `measurements/measurement-2026-11-06-v18-t2/probe/e1/VDPROBE.LOG:273-284`)
 > and TX* (`tosdump/probes/vdprobe.c`, function `tx`, run
 > `measurements/measurement-2026-11-06-v33/RUNINFO.TXT`).

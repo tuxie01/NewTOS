@@ -51,3 +51,6 @@ mod cases_v33;
 
 #[path = "vdi_reference/cases_v35.rs"]
 mod cases_v35;
+
+#[path = "vdi_reference/cases_v37.rs"]
+mod cases_v37;
