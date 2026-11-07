@@ -1,11 +1,11 @@
 //! Software VDI rasterizer backend (Phase 12).
 //!
 //! Implements [`tos_api::vdi::backend::RasterBackend`] over the board's
-//! linear [`Framebuffer`]. This is the **bring-up** backend: every
-//! primitive is plain scalar CPU code. It is the swappable boundary the
-//! VDI layer draws through — a later NEON / DMA / VideoCore-V3D backend
-//! replaces this impl without the VDI layer changing (see the
-//! `RasterBackend` docs).
+//! linear [`Framebuffer`]. Scalar CPU code, except the rectangle fills
+//! (`fill_rect`, `fill_pattern`): NEON kernels, [`crate::raster_kernel`]
+//! (ADR-036, TASK/V49). It is the swappable boundary the VDI layer draws
+//! through — NEON / DMA / VideoCore-V3D work replaces parts of this impl
+//! without the VDI layer changing (see the `RasterBackend` docs).
 //!
 //! Colours arrive as PEL (palette index); we resolve each at the write
 //! point through the **active** per-workstation pseudo-palette
@@ -28,7 +28,7 @@ use core::sync::atomic::{AtomicBool, AtomicU16, AtomicU32, Ordering};
 use tos_api::vdi::backend::{ClipRect, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
 use tos_api::vdi::line::LineTarget;
 
-use crate::hal::framebuffer::{rgb, Framebuffer};
+use crate::{hal::framebuffer::{rgb, Framebuffer}, raster_kernel};
 
 /// Number of palette entries the VDI advertises as `DEV_TAB[13]`. The
 /// Falcon truecolor profile reports 256 (`vdi_control.c:206`,
@@ -316,6 +316,7 @@ impl VdiScreen {
         if x1 < x0 || y1 < y0 {
             return;
         }
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::clean();
         let stride_bytes = fb.stride_px() as usize * 4;
         let base = fb.pixels() as usize;
         let start = base + y0 as usize * stride_bytes + x0 as usize * 4;
@@ -348,9 +349,9 @@ impl VdiScreen {
 
     /// Combine one candidate pixel into the framebuffer per the VDI
     /// [`WriteMode`], where `set` is the primitive's source bit
-    /// (pattern / dash / glyph) at this pixel. This is the single point
-    /// that realises the four modes from EmuTOS' truecolor VDI driver
-    /// (`swblit_vertical_line16`/`draw_rect_common`, `vdi_textblit.c`).
+    /// (pattern / dash / glyph) at this pixel: the four modes of EmuTOS'
+    /// truecolor VDI driver (`swblit_vertical_line16`/`draw_rect_common`,
+    /// `vdi_textblit.c`), as `raster_kernel::fill_pattern` does them (V49).
     /// Bounds are enforced by [`Framebuffer::put_pixel`] and
     /// [`Self::xor_pixel`].
     #[inline]
@@ -600,7 +601,9 @@ impl RasterBackend for VdiScreen {
         let Some((x0, y0, x1, y1)) = rect.clamp_to(fb.width() as u16, fb.height() as u16) else {
             return;
         };
-        fb.fill_rect(x0 as u32, y0 as u32, (x1 - x0 + 1) as u32, (y1 - y0 + 1) as u32, Self::pel_to_rgb(pel));
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::fill_rect(x0, y0, x1, y1);
+        // SAFETY: the clamped rectangle lies in the pixel store (`kernel_area`).
+        unsafe { raster_kernel::fill_solid(kernel_surface(fb), kernel_area(x0, y0, x1, y1), Self::pel_to_rgb(pel)) };
         Self::clean(fb, x0 as u32, y0 as u32, x1 as u32, y1 as u32);
     }
 
@@ -618,6 +621,7 @@ impl RasterBackend for VdiScreen {
         last: bool,
     ) -> u16 {
         let fb = active_fb();
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::abline();
         let color = Self::pel_to_rgb(pel);
         // Background pen (pen 0) for Replace's dash gaps — EmuTOS
         // `swblit_*16` writes `bgcol = palette[0]` on the dash-off pixels in
@@ -660,17 +664,13 @@ impl RasterBackend for VdiScreen {
         let Some((x0, y0, x1, y1)) = rect.clamp_to(fb.width() as u16, fb.height() as u16) else {
             return;
         };
-        let pmask = fill.pattern.len() - 1; // pattern len is a power of two
-        let fg_rgb = Self::pel_to_rgb(fill.fg);
-        let bg_rgb = Self::pel_to_rgb(fill.bg);
-        for yy in y0..=y1 {
-            // Pattern rows are screen-aligned to the absolute y coordinate.
-            let row = fill.pattern[(yy as usize) & pmask];
-            for xx in x0..=x1 {
-                let set = row & (0x8000u16 >> (xx & 0xF)) != 0;
-                Self::combine(fb, xx as u32, yy as u32, set, fill.mode, fg_rgb, bg_rgb);
-            }
-        }
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::fill_pattern(x0, y0, x1, y1);
+        // Pattern rows screen-aligned to the absolute x and y, each pixel
+        // combined per `fill.mode` as `Self::combine` does (TASK/V49).
+        let (fg, bg) = (Self::pel_to_rgb(fill.fg), Self::pel_to_rgb(fill.bg));
+        let kfill = raster_kernel::Fill { pattern: fill.pattern, mode: fill.mode, fg, bg };
+        // SAFETY: the clamped rectangle lies in the pixel store (`kernel_area`).
+        unsafe { raster_kernel::fill_pattern(kernel_surface(fb), kernel_area(x0, y0, x1, y1), &kfill) };
         Self::clean(fb, x0 as u32, y0 as u32, x1 as u32, y1 as u32);
     }
 
@@ -687,6 +687,7 @@ impl RasterBackend for VdiScreen {
         clip: ClipRect,
     ) {
         let fb = active_fb();
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::glyph();
         // Clipping off (`vs_clip(0)`, the VDI text path): EmuTOS' `text_blt`
         // cuts nothing and writes each cell pixel at its store address, so a
         // glyph past a screen edge runs on into the neighbouring row; the
@@ -766,6 +767,7 @@ impl RasterBackend for VdiScreen {
         let Some((x0, y0, x1, y1)) = box_.clamp_to(fb.width() as u16, fb.height() as u16) else {
             return;
         };
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::blit_mono(x0, y0, x1, y1);
         let fg_rgb = Self::pel_to_rgb(fg);
         let bg_rgb = Self::pel_to_rgb(bg);
         // Reuse the shared four-mode `combine` (DRY with glyph/pattern/line).
@@ -817,6 +819,7 @@ impl RasterBackend for VdiScreen {
         let Some((tx0, ty0, tx1, ty1)) = dbox.clamp_to(scr_w as u16, scr_h as u16) else {
             return;
         };
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::copy_rect(tx0, ty0, tx1, ty1);
         // Choose copy direction so overlapping moves don't corrupt.
         let down = dy as i32 > src.y as i32;
         let right = dx as i32 > src.x as i32;
@@ -941,6 +944,7 @@ impl RasterBackend for VdiScreen {
 
     fn flush_rect(&self, x0: i16, y0: i16, x1: i16, y1: i16) {
         let fb = active_fb();
+        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::flush_rect();
         let (w, h) = (fb.width(), fb.height());
         if w == 0 || h == 0 {
             return;
@@ -1059,4 +1063,22 @@ pub fn set_draw_base(va: u64) -> bool {
 /// scan-out is untouched.
 pub fn set_scanout_base(va: u64) -> bool {
     active_fb().set_scanout_base(va)
+}
+
+/// The pixel store of `fb` as a raster-kernel target (TASK/V49).
+#[inline]
+fn kernel_surface(fb: &dyn Framebuffer) -> raster_kernel::Surface {
+    raster_kernel::Surface { base: fb.pixels(), stride_px: fb.stride_px() as usize }
+}
+
+/// The inclusive device rectangle `[x0..=x1] x [y0..=y1]` that
+/// [`ClipRect::clamp_to`] returned as a raster-kernel area (TASK/V49).
+///
+/// `clamp_to` puts all four inside `[0, width) x [0, height)` with
+/// `x0 <= x1`, `y0 <= y1`; that rectangle lies in the `height * stride_px`
+/// pixel store, and the single IRQ-off VDI trap path is the only writer —
+/// the `# Safety` contract of the [`raster_kernel`] fills.
+#[inline]
+fn kernel_area(x0: i32, y0: i32, x1: i32, y1: i32) -> raster_kernel::Area {
+    raster_kernel::Area { x: x0 as usize, y: y0 as usize, w: (x1 - x0 + 1) as usize, h: (y1 - y0 + 1) as usize }
 }

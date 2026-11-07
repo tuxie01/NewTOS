@@ -156,6 +156,15 @@ selftest-desk = []
 # handshake repair, which changes the normal build on purpose. Built with
 # `cargo xtask build --board rpi4 --release --features usb-diag`.
 usb-diag = []
+# Raster profile (TASK/V49): per VDI backend raster call (fill_rect,
+# fill_pattern, abline, glyph, blit_mono, copy_rect, flush_rect) the calls,
+# pixels, whole time and, separately, the time of the cache maintenance
+# `clean` inside it, on the generic-timer counter (`kernel/src/raster_prof.rs`).
+# Ctrl+Alt+F8 shows the report over the top left of the screen and on the
+# serial console and restarts the count; again hides it. Writes no drive.
+# Off by default (the module and every hook are compiled out); for the real-Pi
+# Fbench run: `cargo xtask build --board rpi4 --release --features raster-prof`.
+raster-prof = []
 
 [dependencies]
 tos-types = { path = "../tos-types" }

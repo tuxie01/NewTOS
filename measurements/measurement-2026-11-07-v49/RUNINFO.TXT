@@ -1,0 +1,92 @@
+V49 -- TASK/V49.md: NEON pattern-fill kernel for the VDI screen backend, its frame (ADR-036), host tests, and the
+debug feature raster-prof. Developer run, 2026-11-07. No card, no Pi, no push.
+Worktree branch v49 (agent worktree), base 3a9221eb (main). Commits: 87b2a9fd perf(vdi) kernel + frame + host test,
+8403f75b feat(vdi) raster-prof. Measured = 8403f75b (feature off unless named), against the base 3a9221eb.
+Every QEMU/build side ran in a `git archive` tree of its commit in the session scratchpad (references/ linked);
+method/accept.sh holds the phases (trees builds identity boots pikernels probe tables gui), method/ the helpers.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (27 manifests)
+QEMU 11.0.2: raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot, one QEMU
+at a time, QMP sockets by relative path in their own scratch dirs) and virt (qemu-virt kernels, headless).
+
+KERNELS (rpi4 --release kernel8.img; 4 Pi test kernels also in pi-kernels/, gitignored)
+  base       3a9221eb                      739609f6ca623e99c16d073b60448e26c81382dd32782662946b3ec529c46612 1521896 B
+  chg        8403f75b                      35b1d793d15c9ca1f29da50b3260e816a9531f5f56ae2e533827d03e8204b20a 1521896 B
+  chg-prof   8403f75b --features raster-prof  37ac5065fe6751520c870601ce04121d91a8389fe5ad78c37ccb0fdca6e72266 1530088 B
+  base-prof  3a9221eb + raster-prof (method/make-bprof-tree.sh, measuring kernel only)
+                                           e615044141fb4d377b781b7c220a70627eba56b56c85f7c99619bd27e17abfe6 1530088 B
+  Reproducible by commit: chg built in two different scratch trees gave the same 35b1d793... (analysis/kernels.sha256,
+  analysis/identity-chg-off.sha256).
+
+RESULTS
+ 1 PASS  host tests (tos-api/tests/raster_kernel_fill.rs, 7 tests, on this arm64 Mac = the instructions the Pi runs):
+         kernel against the scalar reference over 4 modes x 11 patterns (len 1..32) x start column 0..33 x widths
+         1..72,127..129,255..257 (233 376 cases) and heights 1..20 x every pattern-row phase x strides end/+1/1920
+         (227 040 cases), plus full-screen rows, empty area/pattern, solid fill, XOR twice, and the source check that
+         every V register named is v0..v14 and each kernel's save list = restore list (Replace v0-v10, others v0-v8,
+         v10-v14). Green: analysis/green.txt (0.75 s).
+         RED with 8 deliberately wrong kernels, each one textual edit, file restored byte for byte after each
+         (method/red-mutants.py, analysis/red-mutants.txt): bit->bif, 1-pixel tail dropped, phase +1, RevTransparent
+         without the complement, fg/bg swapped, v13/v14 not saved, pattern row not advanced, 8-pixel tail without the
+         mask slide -- every one fails (the v13/v14 one by the source check, the others by kernel != reference).
+ 2 PASS  cargo xtask test: base 2261 / 0 / 1, change 2268 / 0 / 1 (+7 = the new tests) (analysis/cargo-xtask-test-*.txt;
+         the worktree needed two gitignored rsc inputs linked from the main checkout: sdk/apps/teradesk/cicons.rsc,
+         sdk/apps/hypview/hyp_view.rsc).
+ 3 PASS  builds, fresh target per build, both boards (analysis/builds-rc.txt, build-*.log, clippy-*.txt, warnings.txt):
+         rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121 -- base, change, and change + raster-prof, on
+         rpi4 and qemu-virt: delta 0; 0 clippy hits in the touched files (raster_kernel.rs, raster_prof.rs,
+         vdi_backend.rs, ikbd.rs; lib.rs only as the `missing_docs` "lint level defined here" note, as on the base).
+         Host test target clippy: 0 warnings.
+ 4 PASS  feature off = the build without the feature (CLAUDE.md "Testing"; analysis/identity-*.txt): 87b2a9fd and
+         8403f75b (feature off) built in the same scratch directory, rpi4/qemu-virt x release/dev, raw binaries
+         (llvm-objcopy): same size; the only differing words are `line` fields of core::panic::Location records of
+         kernel/src/vdi_backend.rs (5 / 5 / 49 / 49 words for rpi4-release / qemu-virt-release / rpi4-dev /
+         qemu-virt-dev), 0 unexplained (method/locdiff.py, copied from measurements/measurement-2026-10-28-tool08).
+ 5 PASS  boots: qemu-virt headless, each tree's own fresh release build, 100 s: base and change "[desk] desktop up
+         (0 drives)", 0 exception/panic lines (runs/boot-virt-*/). raspi4b serial=on:
+         every rpi4 run of 6-8 reached its desktop with 0 exception/panic lines; the two Pi profiling
+         kernels booted on their own (method/pi-boot.sh, runs/boot-rpi4-{base,chg}-prof/): "[desk] desktop up
+         (1 drives)", 0 exception/panic lines each.
+ 6 PASS  vdprobe (tosdump/probes/run-vdprobe.sh, probe/): n-base vs n-chg VDPROBE.BIN byte-identical, VDPROBE.LOG
+         identical, vdprobe-compare 909 cases 0 differ; n-chg vs n-chg2 the same (reproducible).
+ 7 PASS  tables via cargo xtask tosdump --tree <archive tree> with the pinned references (runs/tab-*):
+         records base == change byte-identical in all five (analysis/tables-bin-compare.txt):
+           vdi-v18-t2 VDI.BIN d61803b2fd94beb3   vs oracle 2 of 32 differ on both sides (cases 50, 54 = V35)
+           vdi-all    VDI.BIN e91b865b92b5dbf2   vs oracle 0 of 182 on both sides
+           aes-r2     AES.BIN 0f67649ea7807644   vs oracle 78 of 78 on both sides (address words, as in the sibling runs)
+           aes-r3     AES.BIN 532a3bd942869be0   vs oracle 39 of 39 on both sides (same)
+           aes-r4     AES.BIN 87b7748495c04801   no reference
+ 8 PASS  pictures base vs change, PNG byte for byte (analysis/shots-compare.txt, runs/gui/; kernels: base/chg plain,
+         shprobe- and injector-armed builds of each commit, sha256 in the run.txt files):
+           shprobe 12/12 identical; shprobe-desk 2/2 identical (rerun, see below); desktop + IKBD injector
+           (menu, dialog, rubberband, window/slider/sizer/icon drags) 11/11 identical at 640x480 and 11/11 at
+           1920x1080; boot screen + AUTO console (APITEST.NCP) 6/6 identical at 640x480, 5/6 at 1920x1080.
+           The one difference, bc1080 02-t018 (a screendump 18 s after start), is timing: both show the same
+           APITEST console text, the change's run has scrolled further (T28..BC07 vs T15..SX); the shots at
+           24/32/45 s are identical again. Viewed by me: both 02-t018 PNGs and desk1080-chg 02-02-dialog.png
+           (desktop 1920x1080, C:\ window with 41 items, icon labels, scroll-bar pattern fills).
+         0 exception/panic lines in every run. Inputs: analysis/gui-inputs.txt (40 generated LONGNMxx.TXT,
+         APITEST.NCP copied from the main checkout's gitignored build).
+ 9 PASS  raster-prof smoke, qemu-virt headless with a usb-kbd, QMP send-key Ctrl+Alt+F8 (method/prof-smoke.py,
+         runs/prof-smoke-virt/; kernel = this worktree's qemu-virt release build of 8403f75b with raster-prof,
+         raw image sha256 beaf30673fcd971ef53037048deb672ceb35825b6f1fb44ea8c2107f4f4d243b): first show prints the
+         table on the serial line and over the top left of the screen (1-shown.png, viewed: legible, 7 op rows +
+         sum); hide restores the pixels (0-desktop.png == 2-hidden.png byte for byte); the second show reports only
+         the two box flushes of the interval, as documented. QEMU timings are TCG, not the Pi's -- not used.
+
+RERUNS AND INCIDENTS
+  - accept.sh was edited (phase pikernels added) while its first invocation was still reading it; bash went on
+    into the edited file after "done boots" and started part of the new phase ("ach: command not found" in the
+    log). That and the second invocation left three raspi4b QEMUs of runs/boot-rpi4-*-prof running for ~35 min
+    (two of them writing the same BOOT-SERIAL.txt). The lead pointed them out; I killed exactly those PIDs
+    (17777, 18277, 18518). Their outputs were discarded; method/rerun.sh repeated both boots with
+    method/pi-boot.sh (result 5).
+  - shprobe-desk base failed once before QEMU: macOS refused hdiutil's unmount in tools/mkcard.sh ("Simulators
+    are still shutting down"). method/rerun.sh repeated it: 2/2 identical to the change.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime gain (ADR-036 point 5) -- plan in TASK/V49.md "Uebergabe Pi"; not touched (no card, no HW).
+  slprobe not run (known non-deterministic held1 frames, V30-V34 test runs). Oracle side not rerun: the records are
+  byte-identical base vs change, so the oracle comparison is the base's.
+  references/tos4x (tag build/tos404) and references/fvdi/fvdi/drivers/saga/ not read (see TASK/V49.md).
+  HAL Framebuffer::fill_rect/clear (also clear_screen_word) stay scalar -- outside the ticket.

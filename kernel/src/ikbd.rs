@@ -251,11 +251,11 @@ fn decode_key(raw: u8) {
     if let Some(kind) = tos_api::bios::reset::reset_key(raw, shift_state()) {
         crate::reset::restart(kind, "keyboard Ctrl+Alt+Del");
     }
-    // Debug feature `sd-diag` (TASK/HW08): the report's hot key.
+    // Debug features `sd-diag` (TASK/HW08), `raster-prof` (TASK/V49): hot keys.
     #[cfg(feature = "sd-diag")]
-    if crate::sd_diag::hotkey(raw, shift_state()) {
-        return;
-    }
+    if crate::sd_diag::hotkey(raw, shift_state()) { return; }
+    #[cfg(feature = "raster-prof")]
+    if crate::raster_prof::hotkey(raw, shift_state()) { return; }
     let make = raw & 0x80 == 0;
     let code = raw & 0x7F;
     // `CONF_WITH_EXTENDED_MOUSE` is `1` in the reference build

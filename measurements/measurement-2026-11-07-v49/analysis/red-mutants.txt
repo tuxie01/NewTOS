@@ -1,0 +1,99 @@
+original kernel/src/raster_kernel.rs sha256 a4e9a20ed3676720a385698e0bbb0a761c9d4ccc96d5c2fa75d20adcbec42996
+
+== M1 Transparent/RevTransparent insert-if-true becomes insert-if-false (bit -> bif)
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test every_v_register_used_is_saved_and_restored ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test a_full_screen_row_set_matches_the_reference ... FAILED
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test every_height_row_phase_and_stride_matches_the_reference ... FAILED
+   test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+   first message: kernel != reference: mode Transparent pattern [ffff] area Area { x: 35, y: 41, w: 850, h: 40 } stride 1920 fg b42164fb bg b58b3335: first difference at store index 78755 (row 41, col 35): kernel 1b914f7f, reference b42164fb
+
+== M2 the one-pixel tail of the Replace kernel is dropped
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test every_height_row_phase_and_stride_matches_the_reference ... FAILED
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test the_solid_fill_writes_its_colour_on_the_area_only ... FAILED
+   test every_v_register_used_is_saved_and_restored ... ok
+   test a_full_screen_row_set_matches_the_reference ... ok
+   test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: kernel != reference: mode Replace pattern [ffff] area Area { x: 0, y: 0, w: 1, h: 1 } stride 1 fg f489daef bg c5323392: first difference at store index 0 (row 0, col 0): kernel 78b75240, reference f489daef
+
+== M3 pattern phase off by one column
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test every_v_register_used_is_saved_and_restored ... ok
+   test a_full_screen_row_set_matches_the_reference ... FAILED
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test every_height_row_phase_and_stride_matches_the_reference ... FAILED
+   test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+   first message: kernel != reference: mode Replace pattern [aaaa, 5555] area Area { x: 35, y: 41, w: 850, h: 40 } stride 1920 fg 5252126e bg 9b6d51ff: first difference at store index 78755 (row 41, col 35): kernel 9b6d51ff, reference 5252126e
+
+== M4 RevTransparent without the complemented word (behaves as Transparent)
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test every_v_register_used_is_saved_and_restored ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test a_full_screen_row_set_matches_the_reference ... FAILED
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test every_height_row_phase_and_stride_matches_the_reference ... FAILED
+   test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+   first message: kernel != reference: mode RevTransparent pattern [ffff] area Area { x: 35, y: 41, w: 850, h: 40 } stride 1920 fg 0a024736 bg 2f672501: first difference at store index 78755 (row 41, col 35): kernel 0a024736, reference 6cb44583
+
+== M5 Replace: fg and bg swapped in the first four pixels of the block
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test every_v_register_used_is_saved_and_restored ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test every_height_row_phase_and_stride_matches_the_reference ... FAILED
+   test a_full_screen_row_set_matches_the_reference ... FAILED
+   test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: kernel != reference: mode Replace pattern [ffff] area Area { x: 0, y: 0, w: 1, h: 3 } stride 4 fg 1f620f01 bg b3dd386c: first difference at store index 0 (row 0, col 0): kernel b3dd386c, reference 1f620f01
+
+== M6 read-modify-write kernel: v13/v14 not saved (restore kept)
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test every_v_register_used_is_saved_and_restored ... FAILED
+   test a_full_screen_row_set_matches_the_reference ... ok
+   test every_phase_and_width_matches_the_reference ... ok
+   test every_height_row_phase_and_stride_matches_the_reference ... ok
+   test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+   first message: assertion `left == right` failed: save list == restore list per kernel
+
+== M7 pattern row not advanced per row
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test every_v_register_used_is_saved_and_restored ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test a_full_screen_row_set_matches_the_reference ... FAILED
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test every_height_row_phase_and_stride_matches_the_reference ... FAILED
+   test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+   first message: kernel != reference: mode Replace pattern [aaaa, 5555] area Area { x: 35, y: 41, w: 850, h: 40 } stride 1920 fg 5252126e bg 9b6d51ff: first difference at store index 80675 (row 42, col 35): kernel 5252126e, reference 9b6d51ff
+
+== M8 the 8-pixel tail of the read-modify-write kernel does not slide its masks
+   exit 101
+   test an_empty_area_or_pattern_writes_nothing ... ok
+   test xor_twice_restores_the_store ... ok
+   test every_v_register_used_is_saved_and_restored ... ok
+   test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+   test a_full_screen_row_set_matches_the_reference ... ok
+   test every_phase_and_width_matches_the_reference ... FAILED
+   test every_height_row_phase_and_stride_matches_the_reference ... ok
+   test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.74s
+   first message: kernel != reference: mode Transparent pattern [8000] area Area { x: 0, y: 0, w: 9, h: 3 } stride 12 fg c4cc6bbe bg d6626eb2: first difference at store index 8 (row 0, col 8): kernel c4cc6bbe, reference 39c2afe9
+
+restored kernel/src/raster_kernel.rs sha256 a4e9a20ed3676720a385698e0bbb0a761c9d4ccc96d5c2fa75d20adcbec42996 (== original: True)

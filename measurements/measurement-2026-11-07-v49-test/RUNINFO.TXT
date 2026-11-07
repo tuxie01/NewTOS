@@ -1,0 +1,79 @@
+V49 tester acceptance -- TASK/V49.md, run 2026-11-07 (independent of the developer's run
+measurements/measurement-2026-11-07-v49/). Worktree branch v49, base 3a9221eb, change 8403f75b (head ce5e79c2 adds only
+run + ticket). No card, no Pi, no push, no product-code change.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (29 manifests)
+QEMU 11.0.2; raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot) and virt;
+one QEMU at a time; every QEMU of this run ended by PID / script teardown (see INCIDENTS).
+Method: git archive trees of the commits in scratch (references/ linked), the developer's helper scripts read and reused
+(method/accept.sh = his accept.sh with outputs redirected here; his method/ helpers called from measurements/measurement-2026-11-07-v49/method/).
+Kernels (rpi4 --release): base 739609f6..., chg 35b1d793..., chg-prof 37ac5065..., base-prof e6150441... (analysis/kernels.sha256,
+analysis/pi-kernels.sha256) -- all equal to the developer's values and to the four files in v49/pi-kernels/ (analysis/pi-kernels-sha256-checked.txt).
+
+RESULTS
+ 1 PASS  ADR-036 by reading kernel/src/raster_kernel.rs (not only the developer's test): asm instructions are dup, cmtst, bsl, bit,
+         eor, mov, ext, ld1/st1, ldrh/stp/ldp/str/ldr q -- no FP arithmetic, no saturating instruction. Register use vs save list:
+         Replace uses v0-v3 (pixels), v4-v7 (lane bits), v8 fg, v9 bg, v10 row word; saves/restores q0..q10 (stp q0..q9 + str/ldr q10)
+         = exactly those. rmw (Transparent/Xor/RevTransparent) uses v0-v3, v4-v7, v8, v10, v11-v14; saves/restores q0-q8, q10-q14 (v9
+         unused). Both blocks restore before the asm! ends, then `.arch armv8-a+nofp+nosimd`. FP-context argument: kernel is a leaf asm block;
+         rust_irq_handler (kernel/src/drivers/gic.rs) = timer/PL011 drain, irq_input_pump returns at once unless the IRQ came from EL0
+         (kernel/src/host_env.rs), blink_tick draws via the VDI scalar methods; save_fp_context/restore_fp_context
+         (kernel/src/arch/aarch64/exceptions.rs) are called only at lines 1090 (save_yield_frame), 1332 (apply_switch), 1715, 2318 (Pexec/Pterm)
+         -- none in the IRQ path. Not run (a runtime V-register check is not in the host test; see OPEN).
+ 2 PASS  host test tos-api/tests/raster_kernel_fill.rs: 7 passed, 0.89 s. It compares against fill_pattern_reference, which mirrors the
+         old combine path for all four modes (Replace fg/bg; Transparent fg on set; Xor !dst on set; RevTransparent fg on clear), whole
+         store compared. My own mutants (analysis/own-mutants.txt): M1 Xor combine eor->bit: 4 tests FAILED; M2 drop `ldp q13,q14`
+         restore: v_register test FAILED (6 others pass -- only the source check catches it); M3 Replace bsl v2 fg/bg swapped: 3 tests
+         FAILED; M4 (no-op edit, equivalent) stayed green as expected. File restored by cp from a pre-edit copy, sha1 7b03d1ab... before == after.
+         cargo xtask test on the change: passed 2268 failed 0 ignored 1 (analysis/cargo-xtask-test-chg.txt, rc 0). Base 2261/0/1 NOT
+         independently re-run: a git-archive tree of the base fails 9 xtask tests (doc_check needs .git, rsc inputs) -- see analysis/cargo-xtask-test-base.txt,
+         an artefact of the tree, not a result. The change touches tos-api/tos-types/xtask only by the one new test file (7 tests), so +7 is consistent.
+ 3 PASS  builds (analysis/builds-rc.txt, warnings.txt): rpi4 and qemu-virt fresh, base, change, change+raster-prof: all rc 0; rustc tos-api 64 /
+         kernel 93, clippy tos-api 73 / kernel 121 in all three -- delta 0. Feature-off byte check (analysis/identity-locdiff.txt): 87b2a9fd vs
+         8403f75b (feature off), same dir, rpi4/qemu-virt x release/dev raw binaries: only core::panic::Location line fields of
+         vdi_backend.rs differ (5/5/49/49 words), 0 unexplained. Boots: qemu-virt headless, each tree's own release build, 100 s:
+         base and change "[desk] desktop up (0 drives)", 0 exception/panic lines (runs/boot-virt-*). raspi4b serial=on: every run below
+         reached its desktop with 0 exception/panic lines.
+ 4 PASS  base == change byte for byte (pixels do not change):
+         tables via cargo xtask tosdump --tree (analysis/tables-bin-compare.txt): vdi-v18-t2 VDI.BIN, vdi-all VDI.BIN, aes-r2-wind AES.BIN,
+         aes-r3-wind-state AES.BIN, aes-r4-subfunctions AES.BIN: all five identical base/change. Against the oracle, same both sides:
+         vdi-v18-t2 2/32 differ (V35 cases), vdi-all 0/182, r2 78/78, r3 39/39 (the r2/r3 oracle diffs are identical base vs change; their
+         cause predates V49 and is not examined here), r4 no reference.
+         vdprobe (probe/): VDPROBE.BIN base == change, VDPROBE.LOG equal, vdprobe-compare 909 cases 0 differ; change run twice equal.
+         pictures (analysis/shots-compare.txt): shprobe 12/12, shprobe-desk 2/2, desktop+injector 11/11 at 640x480 and 11/11 at 1920x1080,
+         boot screen + console (APITEST.NCP) 6/6 at 640x480 and 6/6 at 1920x1080 (the developer saw one timing frame at 1920x1080; none here).
+         PNGs compared byte for byte. Viewed by me: runs/gui/desk480-chg/shots/02-02-dialog.png (About dialog: grey panel, bevel, text, scroll
+         bar pattern at the right), runs/gui/shprobe-chg/shots/06-s3-w2-overlap-w1top-a.png (two windows, dotted slider pattern, green hatch
+         desktop), and prof-smoke 1-shown.png.
+ 5 PASS  extra case, the span-fill paths of the primitives with pattern/hatch/user fills (not in vdprobe: it has only degenerate GDP curves
+         K15 plus one solid r=12 circle; vdi-all has circle/ellipse/pie/rfbox/fillarea/contourfill but reads back single v_get_pixel points;
+         vdprobe covers v_fillarea, v_bar, udpat, v_contourfill K8 incl. XOR/hatch/pattern). Scratch copy of vdprobe.c with an added k99()
+         (method/fillpaths/vdprobe-k99.c, build/run scripts there; vdprobe.c itself untouched): 5 shapes (v_circle r45, v_ellipse 70x30,
+         v_pieslice 30..270 deg, v_ellpie, v_rfbox) x 5 fills (interior 2 styles 3 and 8, hatch 2 and 6, user pattern) x 4 write modes
+         (replace, transparent, xor, rev-transparent), perimeter on/off, over a two-colour backdrop, 220x130 grab each = 100 cases,
+         run in addition to the standard vdprobe cases: probe-k99/{base,chg}: VDPROBE.BIN byte-identical (cmp exit 0), VDPROBE.LOG
+         identical, vdprobe-compare 1009 cases 0 differ (the 100 X cases among them, non-uniform: 2..4 colours each). Viewed:
+         probe-k99/montage.png (circle, pie slice, XOR hatch ellipse-pie over the backdrop, user-pattern rounded box: all drawn as expected).
+         v_contourfill: covered by the existing K8 cases (K8A..K8J, K14) inside the 909.
+ 6 PASS  raster-prof, qemu-virt headless (QMP send-key Ctrl+Alt+F8, developer's prof-smoke.py on my own kernel: qemu-virt release build of 8403f75b
+         --features raster-prof, binary sha256 8d38e647cfbd4bc18184115b410b7458c59104df8092b5de3caf9d6a1b7b4a84): the table appears on the screen
+         (1-shown.png, legible: 7 op rows + sum) and on the serial line; the second press hides it and 0-desktop.png == 2-hidden.png byte for
+         byte (cmp); 0 exception/panic lines. A third press shows only the interval since (two flush_rect), as documented. QEMU TCG times, not used.
+ 7 PASS  the four Pi kernels in measurements/measurement-2026-11-07-v49/pi-kernels/ against the sha256 in RUNINFO v49: all four equal
+         (analysis/pi-kernels-sha256-checked.txt). "after" (35b1d793...) = my own build of the git archive of 8403f75b without the feature
+         (analysis/kernels.sha256), reproducible; "after+prof" 37ac5065... = same commit with --features raster-prof (my build equal).
+         "before+prof" e6150441... = base + the developer's make-bprof-tree.sh (my rebuild equal). The two profile kernels booted on raspi4b
+         serial=on to "[desk] desktop up (1 drives)", 0 exception/panic lines (runs/boot-rpi4-*-prof).
+
+INCIDENTS
+  - The pikernels phase of the developer's accept.sh (reused as method/accept.sh) leaves its two raspi4b QEMUs running: its subshell pid file
+    did not kill them (the exact bug the lead mentioned). Both were found (PIDs 3276, 3487, my run dirs boot-rpi4-{base,chg}-prof), killed by PID,
+    and ps shows no QEMU of mine afterwards. Their summaries were taken while they ran; the desktop-up line was in the serial file before.
+  - I deleted runs/gui/*.stdout (the shprobe wrapper stdout logs) by a careless rm; the run dirs (BOOT-SERIAL.txt, shots) are intact.
+  - A QEMU of the parallel V35 tester ran during my first steps; not touched.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: runtime gain (ADR-036 point 5) -- the user's Fbench plan in TASK/V49.md. Cache behaviour (Non-Cacheable FB / dc civac) is
+  real-HW only. A runtime check of V-register preservation across the kernel (EL0 values untouched) is not in any test: the host test
+  checks the source lists, not live registers. slprobe not run (known non-deterministic frames). Oracle side not rerun (records equal base/change).
+  Base cargo xtask test count not independently re-run (see 2).

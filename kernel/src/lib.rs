@@ -79,6 +79,7 @@ pub mod initinfo;
 pub mod bootlog;
 #[cfg(feature = "board-rpi4")]
 pub mod selftest_emmc;
+pub mod raster_kernel;
 pub mod vdi_backend;
 pub mod vdi_client;
 
@@ -1325,3 +1326,8 @@ fn log_boot_clock() {
         tos_api::build::OS_DOSDATE,
     );
 }
+
+/// Raster profile of the VDI screen backend (TASK/V49; feature `raster-prof`
+/// only).
+#[cfg(feature = "raster-prof")]
+pub mod raster_prof;
