@@ -1,0 +1,16 @@
+Read from card 3 after measurements/measurement-2026-11-07-hw08-pi6/RUNINFO.TXT, lead, 2026-11-07. Nothing written to the card.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built).
+
+C:\Apps against D:\APPS, sha256 of every file, names compared upper case, AppleDouble files left out:
+  72 files on each side, 16532456 bytes on each side, 0 files differ.
+  One name differs: the folder "daleks-newtos" (a long name from the Mac) is DALEKS~9 on D:, with its 3 files equal. GEMDOS sees the 8.3 name, and the desktop copied under that name.
+fsck_msdos not run: needs root on the raw device.
+
+FBENCH, the user's report of an empty white test window in many tests. No fix, no ticket yet; read only:
+  AES opcodes: every one of the 79 opcodes in references/emutos/include/aesdefs.h has an arm in crysbind (tos-api/src/aes/mod.rs), none extra. This shows dispatch, not that each behaves like EmuTOS.
+  appl_getinfo: not in that list, so "not available" in the report is the same on EmuTOS by source.
+  Fbench source, /Volumes/Daten/Development/fbench/tests.c (outside this repo, read at this date): each test clears its area first. Several bodies call no drawing function, e.g. b_extent, and by name AES.WGET, AES.CALC, AES.UPDATE, AES.MKSTATE, AES.EVPOLL, AES.MSG, VDI.GETPIX, VDI.ATTR; those bodies were not all read one by one.
+  n/a in FBENC.TXT: VDI.TRNFM needs planes <= 8, the Pi reports 16; the other four are the GDOS font tests, a_gdos/a_twofont/a_vector. None of them is an AES call.
+  Which tests the user saw empty is not known, and no test window was looked at by the lead.
