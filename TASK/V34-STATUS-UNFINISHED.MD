@@ -5,7 +5,7 @@ UNFINISHED heisst hier: umgesetzt und gegen das Orakel gemessen, die Tester-Abna
 `Scrdmp` setzt `dumpflg` (`$4EE`) wie EmuTOS `scrdmp` (`bios/xbios.c:490-494`) auf -1, in der Seite 0 des aufrufenden
 Prozesses; `dump_vec` wird nach ADR-031 nicht gerufen (011). `v_hardcopy` (Escape 17) ruft `Scrdmp` wie EmuTOS `escfn17`
 (`vdi/vdi_esc.c:260-263`) (012, nach Probe T18A auf dem 011-Stand entschieden: "after Scrdmp" gleich, "after v_hardcopy"
-noch verschieden). Code `tos-api/src/xbios/system.rs` (`scrdmp`, `DUMPFLG_ADDR`), `tos-api/src/vdi/escape.rs` (`v_escape`
+noch verschieden). Fix `5f299bf8`. Code `tos-api/src/xbios/system.rs` (`scrdmp`, `DUMPFLG_ADDR`), `tos-api/src/vdi/escape.rs` (`v_escape`
 Arm 17); Spec-Korrektur zu EmuTOS in `docs/api/xbios/14-scrdmp.md`, `docs/api/vdi/_escape.md`, `docs/api/vdi/_discrepancies.md`
 (D-VDI-4), `docs/api/bios/_state.md`; `docs/analysis/deps/mapping.tsv` Notizen; Test `tos-api/tests/xbios_scrdmp_dumpflg.rs`
 (3, vor dem Fix 2 rot).
