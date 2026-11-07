@@ -1,0 +1,47 @@
+HW08/FS31, FSWBENCH on the new test card on the real Pi, run by the user (2026-11-07). Numbers read from the photos by the lead.
+Card: measurements/measurement-2026-11-06-hw08-pi/RUNINFO.TXT, "NEW CARD", 6 x 512 MB FAT16, drive D:.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; files copied by hand in the earlier run).
+
+THE KERNEL IS NOT THE HW08 FIX
+  The card was not touched between measurements/measurement-2026-11-06-hw08-fs31-card/RUNINFO.TXT and this run, so by that record it carries kernel 378f760a... (20f87d1d, FS31, without 16bfa004).
+  The report agrees: its cache line prints "gave up 0". That text is in tos-api/src/bios/sd_diag.rs at 16bfa004^ and in no source at HEAD.
+  The kernel hash itself was not read from the card for this run. FSWBENCH is the newer one: it prints "longest contiguous run".
+  So this run says nothing about the HW08 fix. It is a second baseline without the fix, and the Pi check of FS31.
+
+RESULT: no failure, uptime 0:05:28, photos/ in screen order.
+  driver: 4-bit multi, errors 0, timeouts 0, recover 0, nonrecover 0, refused 0. Longest wait: write_rdy 249.4 ms, write_done 250.2 ms.
+  write n 10997, sectors 299553, failed 0, max 1430.8 ms; <4 ms 9696, <16 1060, <64 119, <250 110, <500 9, <1000 0, more 3.
+  read n 492, sectors 45827, failed 0, max 855.6 ms. cache: writeback failed 0, retried 0, gave up 0, dirty 0.
+  H: every sector about 1126 us, data, directory and FAT alike, max 1161 us.
+
+FS31 ON THE PI
+  log last Fwrite=774 Fclose=0. Before the FS31 fix, on this card and drive: Fwrite=-36 Fclose=-65 (measurements/measurement-2026-11-06-hw08-pi2/RUNINFO.TXT).
+  C:\FSWBENCH.LOG itself not read yet: needs the card in the Mac.
+
+BLOCK R, FIRST TIME ON THE PI: the longest run works
+  test file: longest contiguous run 130784 of 131072 sectors, at cluster 191; patterns on it. Rwabs, 4 KiB per write, us:
+    pattern                n    p50   p90   max      >=1 s  failed
+    random over 64 MiB     64   3995  4969  5068     0      0
+    random within 256 KiB  64   1408  2376  3989     0      0
+    same offset            64   1424  1429  157308   0      0
+    sequential             64   1409  2388  100184   0      0
+    new small files        64   6040  7039  105735   0      0
+
+SPEED, KB/s, drive D:, this run against measurements/measurement-2026-11-06-hw08-pi2/RUNINFO.TXT (kernel 56c6050f); neither has the HW08 fix
+  size     L2 Fwrite 512  4096        32768       whole file  L3 fwrite 1K  L4 copy 32K
+  10 KiB   359 / 360      1019 / 1130 1566 / 1849 1566 / 1867 1005 / 1116   1154 / 1154
+  100 KiB  382 / 123      1452 / 1433 3482 / 3219 4937 / 4470  531 / 2900   2823 / 2703
+  1 MiB    -              590 / 893   4169 / 3006 8328 / 8208 4113 / 1281   2932 / 3033
+  10 MiB   -              934 / 835   2849 / 2058 9092 / 9447 3917 / 4264   2369 / 2913
+  Fcreate and Fclose about 1130-1190 us each.
+
+WHAT THIS MEANS FOR THE COMPARISON
+  Between two runs with no change in the write path (FS31 touches ixdel only) single cells differ by up to about 5.5 (L3 100 KiB 2900 / 531), 3.2 (L3 1 MiB) and 3.1 (512 B 100 KiB).
+  Small sizes take only some hundred ms, so one card pause can decide a cell: likely, not traced per request. The two runs also do not start from the same D:.
+  One run with the fix against one without cannot show a speed-up in these cells. The fix needs at least two runs, and the 10-MiB rows and the write count n weigh more than the small cells.
+  The cause of the scatter is not established.
+
+STILL OPEN, NOT FOLLOWED
+  L1 is skipped in every size: "not contiguous (16 of 20 sectors)", the first cluster stands apart again, as in hw08-pi2 ("32 of 200"). Only block R uses the longest run. Layout not read from the card.
