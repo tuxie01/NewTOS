@@ -79,6 +79,7 @@ pub mod initinfo;
 pub mod bootlog;
 #[cfg(feature = "board-rpi4")]
 pub mod selftest_emmc;
+pub mod raster_kernel;
 pub mod vdi_backend;
 pub mod vdi_client;
 
