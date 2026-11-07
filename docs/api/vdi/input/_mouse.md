@@ -20,9 +20,15 @@
 > `vex_*` "new in `CONTRL[7..8]`, old out in `CONTRL[9..10]`" exchange
 > shape. **Reference** (NewTOS reimplements freely): `set_mouse_form`'s
 > interleaved `Mcdb.maskdata[]`, the Line-A `mouse_cdb`/`mcs_ptr` storage,
-> `cur_display`/`cur_replace` sprite rasterisation, and the VBL draw path —
-> NewTOS uses its own `RasterBackend` (`tos-api/src/vdi/mouse.rs`,
-> `backend.rs`).
+> `cur_display`/`cur_replace` sprite rasterisation — NewTOS uses its own
+> `RasterBackend` (`tos-api/src/vdi/mouse.rs`, `backend.rs`). **Not free: the
+> moment of drawing.** EmuTOS draws a pointer that follows a mouse packet in the
+> next VBL, not in the packet (`mov_cur` only stores `newx`/`newy` and sets
+> `draw_flag`, `vdi/vdi_asm.S:496-534`; `vb_draw` redraws, `vdi/vdi_mouse.c:668-686`,
+> installed `vblqueue[0] = vb_draw` at `:602`). A program that reads the screen between
+> packet and VBL sees the pointer at the old place while `vq_mouse` already reports the
+> new one; NewTOS draws in the packet (measured, wkprobe M1/M2, VDI-WK-004; decision open,
+> [V55](../../../../TASK/V55.md)).
 
 | Op | Fn | Input | Output | Effect |
 |----|----|-------|--------|--------|
@@ -391,6 +397,20 @@ by `tick_int`, which also chains the old system timer vector
   vector, and its `Pterm` puts the previous one back while the slot still
   holds its vector (`tos-api/src/vdi/mouse.rs:1042@exchange_hook`). The
   values stored and returned are unchanged.
+- **Pointer drawing is deferred to the VBL on EmuTOS (VDI-WK-004, SPEC04).** The
+  packet path `mouse_int` → `user_cur` = `mov_cur` stores the position and sets
+  `draw_flag` only when the pointer is not hidden (`vdi/vdi_asm.S:496-534`); several
+  packets in one frame give one redraw at the last position. `vb_draw` (`vdi/vdi_mouse.c:668-686`)
+  returns at once while `mouse_flag` (a `vsc_form` in progress) or `HIDE_CNT` is set,
+  otherwise it takes the position atomically, `cur_replace`s the old image and
+  `cur_display`s the new one. `dis_cur` and `hide_cur` draw/erase **at once** and clear
+  `draw_flag` (`:127-171`), `set_mouse_form` only stores (`:450-492`). Measured effect
+  (≤ 1 frame, end state equal): right after a packet `vq_mouse` is new and the screen
+  old on EmuTOS, both new on NewTOS; `v_show_c`/`v_hide_c` are synchronous on both
+  (`docs/audits/2026-11-07-v18-t3-vdi-workstation.md`, VDI-WK-004, probe M1-M3/D1/P1;
+  `measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`). Which side is the contract
+  is the open user decision [V55](../../../../TASK/V55.md); until then the VBL path is
+  **observable**, not a free internal.
 - **Workstation open and close (V53).** Every `v_opnwk` runs `timer_init` +
   `vdimouse_init` (`vdi/vdi_control.c:562-563`): hide count 1 without
   restoring a visible pointer, the centre, buttons 0, `cur_ms_stat` 0, the

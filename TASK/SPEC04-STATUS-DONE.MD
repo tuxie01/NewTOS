@@ -1,0 +1,7 @@
+# SPEC04 — Quittung DONE (2026-11-08)
+
+Doku-Nacharbeit aus V18 Teil 3 (Researcher, kein Produktcode): `docs/COMPATIBILITY.md` hat die Eintraege K23 (`v_opnwk` mit Moduswunsch schaltet nicht, ADR-017 Rev. 2) und VDI-WK-005 (`v_opnwk` bei offener physischer Workstation: EmuTOS haengt in der zweiten `timer_init`, NewTOS kehrt zurueck), je mit EmuTOS-`file:line` und Messlauf `measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`; das Nichtleeren der virtuellen Slots ist ausdruecklich nicht gebilligt (VDI-WK-006). `docs/analysis/deps/mapping.tsv`: `open_physical`-Text berichtigt, `build_vwk_chain` -> `design:ADR-030`, `cargo xtask deps --check-mapping` sauber. Spec: `docs/api/vdi/input/_mouse.md` (VBL-Zeichenweg beobachtbar, V55), `docs/api/vdi/workstation/101-v_clsvwk.md` (`vdimouse_exit` -> `vblqueue`/`statvec`), `docs/api/vdi/workstation/01-v_opnwk.md` (Verweise, Zitat `:545-546`). `docs/DEVIATIONS.md`: Zeilen W9 und K23 auf die Eintraege gestellt, Zeile fuer VDI-WK-006 neu.
+
+Gemessen wurde nichts neu; alle Messwerte stammen aus dem V18-Teil-3-Lauf. Gelesen: Ursache des EmuTOS-Haengers (W9), VDI-WK-006.
+
+Offen (Einzelheiten in [SPEC04](SPEC04.md)): (1) Generator-Fehler `tools/deps/gen-deps.py` (VDI-WK-007: `scrn_clip` -> `GSX_ENTRY`, `mousevec`-Parameterfluss, `vblqueue`-Zeigerspeicherung und Asm-Schleife) — beschrieben, nicht behoben, Developer. (2) Messfall VDI-WK-006 (`wkauto` + Probe `W10`) — entworfen, nicht gefahren.

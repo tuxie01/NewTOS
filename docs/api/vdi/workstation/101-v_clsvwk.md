@@ -88,7 +88,11 @@ mode). Inputs/outputs: 0/0/0/0.
   packet moves or draws the pointer, and none reaches the AES's
   `far_bcha`/`far_mcha`, until the next `v_opnwk`. The pointer itself
   (position, hide count, form, a visible sprite and its save-under) and
-  `mousexvec` (extra buttons) stay. **`timer_exit`** (`vdi/vdi_misc.c:144-150`)
+  `mousexvec` (extra buttons) stay. `vdimouse_exit` also re-installs
+  `vblqueue[0] = vb_draw` (`:631`, the VBL redraw stays active; with the packets
+  off it only draws a pending `draw_flag`) and, with `CONF_WITH_EXTENDED_MOUSE`,
+  puts the saved `statvec` back (`:636-641`; NewTOS has no `wheel_int`
+  to restore). **`timer_exit`** (`vdi/vdi_misc.c:144-150`)
   restores the old `etv_timer` and leaves `tim_addr` as it is.
 - **NewTOS:** the AES calls it at every session end (`gsx_wsclose`,
   `aes/gemgsxif.c:191-194`, `aes/geminit.c:749`). `tos-api/src/vdi/workstation.rs`

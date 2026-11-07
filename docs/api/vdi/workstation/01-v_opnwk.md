@@ -250,8 +250,10 @@ allocation and no free-handle scan; the physical handle is fixed).
   lifetime" — nothing ever called `v_opnwk`, so handle 1 was closed and
   every call on the `graf_handle` handle was a VDI no-op (zView M4 K1,
   `measurements/measurement-2026-10-06-zview-m4/checks/k1-evidence.txt`).
-- `v_opnwk`'s `vwk_ptr[2..] = NULL` (`vdi_control.c:544-545`) is **not**
-  reproduced by `vwk::open_physical` (open point, not part of K1). In the
+- `v_opnwk`'s `vwk_ptr[2..] = NULL` (`vdi_control.c:545-546`; earlier text cited
+  `:544-545`, off by one) is **not**
+  reproduced by `vwk::open_physical` (`tos-api/src/vdi/vwk.rs:373@open_physical`,
+  open point, not part of K1; VDI-WK-006, PLAUSIBLE, measuring case in `TASK/SPEC04.md`). In the
   AES's own sequence it only shows when a virtual workstation is still open
   at the first session start (an AUTO program that never called
   `v_clsvwk`); a later session opens after `v_clswk` closed them all. A
@@ -323,6 +325,11 @@ allocation and no free-handle scan; the physical handle is fixed).
   the corrected geometry above.
   `DEV_TAB[0,1]` always reflect the live framebuffer size regardless of
   `work_in[0]`, matching this spec's "idempotent geometry" note.
+- **Two sanctioned differences (SPEC04, 2026-11-08), both in `docs/COMPATIBILITY.md`:**
+  `work_in[0]` = mode + 2 never switches the mode (K23, ADR-017 Rev. 2; measured
+  `vdi-v18-t3.tsv` case 13), and a `v_opnwk` while the physical workstation is open
+  returns here while EmuTOS hangs in the second `timer_init`
+  (`vdi_control.c:562`, `vdi_misc.c:88,131-132`; measured wkprobe W9, VDI-WK-005).
 - **Bring-up sequence is native.** `init_colors`/`timer_init`/
   `vdimouse_init`/`esc_init` are reference; NewTOS initialises the
   framebuffer palette (`vdi_backend::PALETTE`), the mouse sprite

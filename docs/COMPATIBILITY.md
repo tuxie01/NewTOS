@@ -1802,6 +1802,53 @@ first 12,000 draws in every one outside XOR mode, so a cut leaves the same pictu
 long XOR fills (up to 4.35 million draws) changed the screen to their end. Host tests
 `tos-api/src/vdi/contour.rs` (`tests`, red on the code without the brake).
 
+**`v_opnwk` with a video-mode request does not switch modes** — K23 of the V18 part 3
+audit, accepted 2026-11-08 ([SPEC04](../TASK/SPEC04.md)); the ground is ADR-017
+Revision 2 ("there is no runtime resolution switch", `docs/MEMORY.md`) and the
+hardware exception (no Shifter, no Videl). EmuTOS reads the request from
+`work_in[0]`: `newrez = INTIN[0] - 2` (`references/emutos/vdi/vdi_control.c:506`); for
+ST low/medium/high (and TT low/medium with `CONF_WITH_TT_SHIFTER`) that differs from
+`Getrez()` it calls `Setscreen(-1L, -1L, newrez, 0)` (`:507-515`), and for the Falcon
+mode it reads the new Videl mode from `INTOUT[45]` (sic) and calls
+`Setscreen(0L, 0L, newrez, newvidel)` (`:517-525`, `CONF_WITH_VIDEL`). The tables
+copied afterwards (`:529-539`, `update_rez_dependent`) then describe the new mode.
+NewTOS ignores `work_in[0]` — `tos-api/src/vdi/workstation.rs:360@v_opnwk` reads
+no request, `work_out` always describes the running geometry (spec:
+`docs/api/vdi/workstation/01-v_opnwk.md`, "NewTOS implementation notes").
+
+**Observable difference** (measured, `tosdump/cases/vdi-v18-t3.tsv`, case 13 =
+`v_opnwk` with `work_in[0]` = 2 after `v_clswk`, case 12 = the `v_clswk`; wkprobe Z2-Z8;
+oracle EmuTOS 1a7484ab profile `falcontc` against NewTOS 640x480): `work_out[0,1,3,4,13,39]`
+is 319, 199, 556, 556, 16, 4096 on EmuTOS (ST low) and 639, 479, 278, 278, 256, 0 on
+NewTOS (`measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`; the audit
+`docs/audits/2026-11-07-v18-t3-vdi-workstation.md` section 8 lists modes 2/3/4 and the
+Falcon request with `INTOUT[45]` = 0x1B). A program that asks for a mode and checks the
+returned geometry sees the running one and must adapt, as it must for any resolution
+`config.txt` sets. A program that only passes the usual 1 is unaffected.
+
+**`v_opnwk` while the physical workstation is open (no `v_clswk` before)** — VDI-WK-005,
+recorded 2026-11-08 ([SPEC04](../TASK/SPEC04.md)). EmuTOS has no defined result: its
+`vdi_v_opnwk` runs `timer_init()` on every call (`references/emutos/vdi/vdi_control.c:562`),
+which saves the old `etv_timer` in `tim_chain` and installs `tick_int`
+(`vdi/vdi_misc.c:119-133`). On the second call the old vector already is `tick_int`, so
+`tim_chain = tick_int`, and `tick_int` ends by calling `tim_chain(u)`
+(`vdi/vdi_misc.c:88`): at the next timer tick it calls itself without end.
+**Measured:** wkprobe W9 — the EmuTOS log ends at "W9 before" in both runs and Hatari had to
+be stopped (`measurements/measurement-2026-11-07-v18-t3/probe/e1/WKPROBE.LOG:112-113`,
+`run.txt` `hatari w9-no-end`); NewTOS returns, three `Vsync` run, `hz_200` counts
+(`measurements/measurement-2026-11-07-v18-t3/probe/n1/WKPROBE.LOG:118-122`). The cause on
+the EmuTOS side is read from the code, not shown in a debugger.
+
+NewTOS returns because it has no `etv_timer` chain (ADR-031; `tick_int`, `timer_init` and
+`timer_exit` are `design:ADR-031` in `docs/analysis/deps/mapping.tsv`): the mechanism of
+the hang does not exist, and a hang is not something to reproduce. **What is *not*
+sanctioned here:** where EmuTOS returns (the first `v_opnwk` of a session) it sets
+`vwk_ptr[2..]` to NULL, closing virtual workstations left open
+(`vdi/vdi_control.c:545-546`); NewTOS `tos-api/src/vdi/vwk.rs:373@open_physical` resets
+only the physical slot (read; whether a left-open workstation survives is VDI-WK-006,
+PLAUSIBLE, measuring case in `TASK/SPEC04.md`). That difference is an open defect
+candidate, not part of this entry.
+
 ## EmuTOS is the reference, not the template
 
 CLAUDE.md Rule 1 says EmuTOS source *is* the spec. Through this charter that
