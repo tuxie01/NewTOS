@@ -1,0 +1,18 @@
+bc1080-fix: exception-panic-lines 0 
+bc1080-head: exception-panic-lines 0 
+bc480-fix: exception-panic-lines 0 
+bc480-head: exception-panic-lines 0 
+desk1080-fix: shots  shots 11 exception-panic-lines 0 
+desk1080-head: shots  shots 11 exception-panic-lines 0 
+desk480-fix: shots  shots 11 exception-panic-lines 0 
+desk480-head: shots  shots 11 exception-panic-lines 0 
+shprobe-desk-fix: 
+shprobe-desk-head: 
+shprobe-fix: 
+shprobe-head: 
+slprobe-fix: 
+slprobe-head: 
+slprobe2-fix: 
+slprobe2-head: 
+slprobe3-fix: 
+slprobe3-head: 

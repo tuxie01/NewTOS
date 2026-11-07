@@ -1,0 +1,28 @@
+test cases_v31::v31_case_0086_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_case_0094_clipped_glyphs_control ... ok
+test cases_v31::v31_probe_t14d_clip_off_from_x_minus_60 ... ok
+test cases_v31::v31_probe_t14e_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t14f_nothing_clipped ... ok
+test cases_v31::v31_probe_t14i_justified_clip_off ... ok
+test cases_v31::v31_probe_t14j_scale_down_clip_off ... ok
+test cases_v31::v31_probe_t14k_doubled_4096th_char_drifts ... FAILED
+test cases_v31::v31_case_0090_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t14a_doubled_short_run ... ok
+test cases_v31::v31_probe_t31a_justified_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t31b_rot1800_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t31c_rot900_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t31d_rot2700_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t31e_scale_down_clipped_glyphs_leave_xdda ... FAILED
+test cases_v31::v31_probe_t14m_doubled_clip_on_control ... FAILED
+thread 'cases_v31::v31_case_0086_clipped_glyphs_leave_xdda' (3674650) panicked at tos-api/tests/vdi_reference/cases_v20.rs:69:9:
+thread 'cases_v31::v31_probe_t14e_clipped_glyphs_leave_xdda' (3674655) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_probe_t14k_doubled_4096th_char_drifts' (3674659) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_case_0090_clipped_glyphs_leave_xdda' (3674651) panicked at tos-api/tests/vdi_reference/cases_v20.rs:69:9:
+thread 'cases_v31::v31_probe_t31a_justified_clipped_glyphs_leave_xdda' (3674661) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_probe_t31b_rot1800_clipped_glyphs_leave_xdda' (3674662) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_probe_t31c_rot900_clipped_glyphs_leave_xdda' (3674663) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_probe_t31d_rot2700_clipped_glyphs_leave_xdda' (3674664) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_probe_t31e_scale_down_clipped_glyphs_leave_xdda' (3674665) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v31::v31_probe_t14m_doubled_clip_on_control' (3674660) panicked at tos-api/tests/vdi_reference/harness.rs:400:33:
+attempt to add with overflow
+test result: FAILED. 6 passed; 10 failed; 0 ignored; 0 measured; 303 filtered out; finished in 0.07s

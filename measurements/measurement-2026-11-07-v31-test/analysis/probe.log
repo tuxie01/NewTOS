@@ -1,0 +1,9 @@
++ tosdump/probes/run-vdprobe.sh emutos falcontc measurements/measurement-2026-11-07-v31-test/probe/e1
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v31-test/probe/n-head /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/kernels/head-rpi4.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v31-test/probe/n-fix1 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/kernels/fix-rpi4.img
++ tosdump/probes/run-vdprobe.sh newtos measurements/measurement-2026-11-07-v31-test/probe/n-fix2 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/kernels/fix-rpi4.img
++ python3 tosdump/probes/vdprobe-compare.py measurements/measurement-2026-11-07-v31-test/probe/e1 measurements/measurement-2026-11-07-v31-test/probe/n-head
++ python3 tosdump/probes/vdprobe-compare.py measurements/measurement-2026-11-07-v31-test/probe/e1 measurements/measurement-2026-11-07-v31-test/probe/n-fix1
++ python3 tosdump/probes/vdprobe-compare.py measurements/measurement-2026-11-07-v31-test/probe/n-head measurements/measurement-2026-11-07-v31-test/probe/n-fix1
++ echo finished
+finished

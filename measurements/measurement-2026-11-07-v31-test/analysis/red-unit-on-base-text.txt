@@ -1,0 +1,6 @@
+test vdi::text::tests::exact_double_spacing_dda_drifts ... FAILED
+thread 'vdi::text::tests::exact_double_spacing_dda_drifts' (3674628) panicked at tos-api/src/vdi/text.rs:1706:9:
+assertion `left == right` failed
+  left: (16, 2, 15)
+ right: (16, 2, 7)
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 202 filtered out; finished in 0.00s

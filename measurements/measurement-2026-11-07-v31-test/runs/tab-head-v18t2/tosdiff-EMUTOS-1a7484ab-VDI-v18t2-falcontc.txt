@@ -1,0 +1,16 @@
+EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN -- area VDI, 32 cases from vdi-v18-t2.tsv
+
+case 50  opcode 16  rider vsl_width with CONTRL[1]=0 (EmuTOS: the stale 9)
+    ptsout[0]              EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN = 0x0009 (9)   NEWTOS.BIN                             = 0x0001 (1)
+
+case 54  opcode 19  rider vsm_height with CONTRL[1]=0 (EmuTOS: the stale 30)
+    ptsout[0]              EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN = 0x002D (45)   NEWTOS.BIN                             = 0x000F (15)
+    ptsout[1]              EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN = 0x0021 (33)   NEWTOS.BIN                             = 0x000B (11)
+
+case 86  opcode 105  K14 (107,43)
+    intout[1]              EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN = 0xFFDF (-33)   NEWTOS.BIN                             = 0x0000 (0)
+
+case 90  opcode 105  K14 (116,43)
+    intout[1]              EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN = 0x0000 (0)   NEWTOS.BIN                             = 0xFFDF (-33)
+
+4 of 32 cases differ

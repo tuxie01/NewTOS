@@ -1,0 +1,15 @@
+slprobe-head vs slprobe2-head: 155 shots, 4 differ: 121-12 152-15 44-044 67-067
+slprobe-head vs slprobe3-head: 155 shots, 1 differ: 98-098
+slprobe-head vs slprobe2-fix: 155 shots, 7 differ: 121-12 148-14 152-15 44-044 67-067 71-071 94-094
+slprobe-head vs slprobe3-fix: 155 shots, 4 differ: 121-12 152-15 44-044 67-067
+slprobe2-head vs slprobe3-head: 155 shots, 5 differ: 121-12 152-15 44-044 67-067 98-098
+slprobe2-head vs slprobe3-fix: 155 shots, 0 differ:
+slprobe-fix vs slprobe-head: 155 shots, 6 differ: 121-12 125-12 152-15 44-044 67-067 71-071
+slprobe-fix vs slprobe2-head: 155 shots, 2 differ: 125-12 71-071
+slprobe-fix vs slprobe3-head: 155 shots, 7 differ: 121-12 125-12 152-15 44-044 67-067 71-071 98-098
+slprobe-fix vs slprobe2-fix: 155 shots, 4 differ: 125-12 148-14 71-071 94-094
+slprobe-fix vs slprobe3-fix: 155 shots, 2 differ: 125-12 71-071
+slprobe2-fix vs slprobe2-head: 155 shots, 3 differ: 148-14 71-071 94-094
+slprobe2-fix vs slprobe3-head: 155 shots, 8 differ: 121-12 148-14 152-15 44-044 67-067 71-071 94-094 98-098
+slprobe2-fix vs slprobe3-fix: 155 shots, 3 differ: 148-14 71-071 94-094
+slprobe3-fix vs slprobe3-head: 155 shots, 5 differ: 121-12 152-15 44-044 67-067 98-098

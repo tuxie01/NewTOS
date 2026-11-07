@@ -1,0 +1,13 @@
+t0 = detection of 'launch:SHPROBE armed at hz_200' on the serial file
+00 s0-w1-alone-a planned 3.500s request 3.502s done 3.510s ok
+01 s0-w1-alone-b planned 7.000s request 7.010s done 7.017s ok
+02 s1-w2-apart-w2top-a planned 11.500s request 11.510s done 11.518s ok
+03 s1-w2-apart-w2top-b planned 15.000s request 15.010s done 15.017s ok
+04 s2-w1top-a planned 19.500s request 19.510s done 19.517s ok
+05 s2-w1top-b planned 23.000s request 23.008s done 23.015s ok
+06 s3-w2-overlap-w1top-a planned 27.500s request 27.510s done 27.517s ok
+07 s3-w2-overlap-w1top-b planned 31.000s request 31.010s done 31.017s ok
+08 s4-w2top-overlap-a planned 35.500s request 35.501s done 35.508s ok
+09 s4-w2top-overlap-b planned 39.000s request 39.010s done 39.017s ok
+10 s5-wbox-red-a planned 43.500s request 43.502s done 43.509s ok
+11 s5-wbox-red-b planned 47.000s request 47.001s done 47.008s ok

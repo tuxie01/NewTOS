@@ -1,0 +1,54 @@
+V31 acceptance -- TASK/V31.md (fix 17bcaf56 in tos-api/src/vdi/text.rs, docs 35d052a9) by the tester. Date 2026-11-07.
+No product code touched, no card, no Pi, no push. Main tree clean at the start (HEAD 35d052a9); everything built/measured in
+git-archive trees of the session scratchpad (references/ linked): fix = 35d052a9, head (= before the fix) = deaad5df with tosdump/probes/vdprobe.c
+of 35d052a9 laid over it (only the probe program differs; the kernel product code is deaad5df's), redtest = fix tree with text.rs of deaad5df.
+Numbers measured by me; the developer's run (measurements/measurement-2026-11-07-v31/) was used only for its scripts (method/ copies, re-pathed).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 31 card.img.manifest files in this run)
+optional_missing, verbatim, in ALL 31 manifests: optional_missing none
+QEMU 11.0.2 raspi4b (rpi4, -append serial=on, APFS clone per boot) and virt (xtask run --headless). Oracle EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc, probe e1 measured anew.
+
+KERNELS (rpi4 release kernel8.img, built in the scratch trees; hashes differ from the developer's because panic Location paths differ per tree, sizes equal):
+  fix  f65ed8a1dbe3481b872d97ad5e315d63c43efae15b44c20d6adfe581b1f8e7e4 (1521896 B) = developer's size
+  head ebaf691197b9dfb867d13f180cf6ff97eca5263931a3af651ac355e394b0886e (1517800 B) = developer's size; difference 4096 B
+  qemu-virt ELF: fix e2945bc1b576880bc33c4eecee30908cc48d89fb05c92a21f757a86d4fb25426, head 8e1da43961534f29efcbe691b429f4f5f8badc98c81359a66ca2da40506efd9e
+  (first virt attempt copied kernel8.img of the rpi4 build -- identical hash, caught; virt has no kernel8.img, rebuilt fresh with the target dir removed, the ELF taken.)
+
+RESULTS
+ 1 PASS  cargo xtask test on the main tree (35d052a9) rc 0: 2258 passed / 0 failed / 1 ignored (196 "test result" lines) = developer's number
+         (analysis/cargo-xtask-test-fix.txt; 16 cases_v31 tests and vdi::text::tests::exact_double_spacing_dda_drifts ok). Base 2241/0/1 not re-run (developer's number only).
+         Red on the old text.rs (tree redtest, text.rs of deaad5df, tests of 35d052a9):
+           cases_v31: 10 failed / 6 passed (analysis/red-v31-on-base-text.txt). Red: 86, 90, T14E, T14K, T31A, T31B, T31C, T31D, T31E = pixel/oracle differences
+           (panics at cases_v20.rs:69 / cases_v30.rs:158 = the compare against the oracle spans); green: 94, T14A, T14D, T14F, T14I, T14J (controls).
+           T14M red for a different reason: panic harness.rs:400:33 "attempt to add with overflow" (test double draw_glyph_sized x+col in i16, cell near x 32767, clip on)
+           = harness overflow, NOT the defect; green after the fix because those cells are skipped before the blit. = developer's statement exactly.
+           Unit test exact_double_spacing_dda_drifts: that test lives in text.rs, so I appended it (adapted to the old resize() tuple return, last assert `.0`) to the old text.rs in the scratch tree:
+           FAILED at the first assert, left (16, 2, 15) right (16, 2, 7) = xdda stays 15 instead of drifting to 7: the defect (008) (analysis/red-unit-on-base-text.txt).
+ 2 PASS  both boards, fresh builds, rc 0 (analysis/build-*.log, clippy-*.txt): rustc warnings tos-api 64 / kernel 93 on head and fix, both boards (delta 0);
+         cargo clippy -p kernel --features board-rpi4 / board-qemu-virt: tos-api 73 / kernel 121 on head and fix, both boards (delta 0), 0 hits in vdi/text.rs.
+         rpi4: booted to the desktop in every run (14 BOOT-SERIALs of the desk480/desk1080/tab-* runs contain "desktop up"; the other runs have no desktop line by design: shprobe, slprobe, boot screen + console), 0 exception/panic lines in every BOOT-SERIAL of this run.
+         qemu-virt (fix ELF): cargo xtask run --board qemu-virt --headless --release, bounded 100 s: "[desk] desktop up (0 drives)", 0 exception/panic lines (runs/boot-virt-fix/serial.txt). Head virt not booted.
+ 3 PASS  oracle (cargo xtask tosdump, fix tree and head tree, runs/tab-*): vdi-v18-t2 fix 2 of 32 differ = cases 50, 54 only (V35); head 4 of 32 = 50, 54, 86, 90.
+         VDI.BIN fix vs head: 4 bytes differ = the intout[1] of cases 86 and 90 (0x0000<->0xFFDF), nothing else. vdi-all: 0 of 182 differ on both; VDI.BIN byte-identical fix==head (e91b865b92b5dbf2).
+         Probe tosdump/probes/vdprobe.c (933 cases, probe/): e1 vs n-head 346 differ, e1 vs n-fix1 338; n-head vs n-fix1 exactly 9 differ: T14E, T14K, T31A, T31B, T31C, T31D, T31E, ZG012, ZG013.
+         vs the oracle after the fix: T14E, T14K, T31A-E, ZG012 EQUAL (each DIFF before, raw px 1490, 26, 1455, 764, 570, 794, 589, 523); ZG013 485 px -> 98 px (not equal; remainder = skew, V41).
+         The DIFF list e1 vs fix = list e1 vs head minus exactly those 8 names (diff of the two lists); every other case byte-identical head vs fix.
+         Reproducible: n-fix1 == n-fix2 (BIN c2825bd27f3548c0..., LOG identical); e1 BIN 8af7228c02e1b03f.. = the developer's hashes; n-fix1 = developer's c2825bd2.
+ 4 PASS  AES tables aes-r2-wind / aes-r3-wind-state / aes-r4-subfunctions, fix vs head: tosdiff 0 of 78, 0 of 39, 0 of 181 cases differ (analysis/aes-r*-before-vs-fix.txt); AES.BIN differs in exactly
+         ONE byte per record, always record offset 68, 0x4a (fix) vs 0x3a (head) = the low address cell +0x1000 = the kernel's growth of 4096 B (1521896-1517800); address check ok (all cells < 0x80000000).
+         (vs the oracle r2 78/78 and r3 39/39 differ on both sides: address words, as in the sibling runs; not a V31 difference.)
+         shprobe 12/12 and shprobe-desk 2/2 PNG byte-identical head vs fix; desktop + IKBD injector (menu, dialog, rubberband, window/icon/slider drags: 11 shots) 11/11 identical at 640x480
+         and 11/11 at 1920x1080; boot screen + AUTO console (APITEST.NCP) 6/6 identical at 640x480 and 6/6 at 1920x1080 (analysis/shots-compare.txt). 0 exception/panic lines in all runs.
+         Viewed desk480-fix 02-02-dialog.png (About dialog, text complete, no garbling) and desk1080-fix 01-01-menu-file.png (desktop, file window, icon labels intact; the File menu is not open in this
+         shot -- same bytes as the head's, an injector timing matter, not a regression).
+         slprobe 155 shots x 6 runs (3 head, 3 fix): NOT byte-stable between runs. Head vs head differs in 4, 1, 5 shots, fix vs fix in 2..4, head vs fix 2..8 (analysis/slprobe-pairs.txt).
+         The union of all differing shots is 044 067 071 094 098 121 125 148 152 = the "held1" frames of the page-scroll gestures, the same set as the V30/V33/V44 test noise sets (V44 test RUNINFO).
+         This time the head runs varied among themselves too, so the noise is not attributable to the fix; I did not look at the pixels of these shots (the V44 test viewed them: slider thumb at
+         different positions) -- the identical shot set is the evidence I rely on, honest caveat: not re-viewed here.
+ 5 PASS (limits named)  cargo xtask deps text_blt --up / scale --up / char_resize --up / check_clip --up (deps/): vdi 0 unmapped ("complete: yes"), desk 130 unmapped (desk/*.c, NEWDESK not mapped),
+         = developer's counts. Developer's claim that AES draws through draw_glyph_sized and not v_gtext: v_gtext/v_justified have, in a grep over tos-api/src, kernel/src and programs/desktop/src, only the VDI dispatcher
+         (vdi/mod.rs:549, gdp.rs:47) as callers (plus a trace in kernel/src/dbg_qedtrace.rs); initinfo.rs goes through the VDI client, not looked at; measured: AES tables 0 case differences, desktop/dialog/menu/boot pictures byte-identical at 640x480 and 1920x1080.
+         Not proven: the SDK apps (QED, HighWire, HypView, TeraDesk) with scaled text in a window clip -- they are the intended changed callers (visible columns of a line leaving the window to the left); not driven.
+
+NOT DRIVEN / OPEN
+  Real Pi4/HDMI/cache-sensitive rendering (not needed for pure arithmetic in the text path, developer's remark; not verified); qemu-virt interactive input; head kernel on qemu-virt booted; base cargo xtask test count re-run;
+  SDK apps with scaled text (QED, HighWire, HypView, TeraDesk); AES r4 against an oracle (no reference BIN); clippy delta of other crates; rotation/skew remainder of ZG013 (V41).

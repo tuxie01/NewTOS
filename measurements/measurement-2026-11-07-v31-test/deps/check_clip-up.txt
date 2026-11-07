@@ -1,0 +1,229 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps check_clip --up`
+deps check_clip --up (kinds asm,direct,layer,table,vector): 184 functions besides check_clip
+depth	function	layer	reached over	newtos	class
+0	check_clip	vdi	-	kernel/src/vdi_backend.rs@draw_glyph_sized tos-api/src/vdi/primitives.rs@line_clip tos-api/src/vdi/text.rs@wholly_clipped	mapped
+1	text_blt	vdi	text_blt -> check_clip [direct]	tos-api/src/vdi/text.rs@assemble_and_blit tos-api/src/vdi/text.rs@fits_narrow tos-api/src/vdi/text.rs@glyph_advance tos-api/src/vdi/text.rs@horizontal_at tos-api/src/vdi/text.rs@make_glyph tos-api/src/vdi/text.rs@output_glyph tos-api/src/vdi/text.rs@output_text_rotated tos-api/src/vdi/text.rs@raw_glyph	mapped
+2	linea_0	bios	linea_0 -> text_blt [asm dc.l]	-	design
+2	output_text	vdi	output_text -> text_blt [direct]	tos-api/src/vdi/text.rs@delh_for tos-api/src/vdi/text.rs@horz_step tos-api/src/vdi/text.rs@outline_of tos-api/src/vdi/text.rs@output_text_rotated tos-api/src/vdi/text.rs@step tos-api/src/vdi/text.rs@underline tos-api/src/vdi/text.rs@underline_lines tos-api/src/vdi/text.rs@v_gtext tos-api/src/vdi/text.rs@v_justified	mapped
+3	gdp_justified	vdi	gdp_justified -> output_text [direct]	tos-api/src/vdi/text.rs@v_justified	mapped
+3	int_linea	bios	int_linea -> linea_0 [asm lea linea_vecs]	-	design
+3	vdi_v_gtext	vdi	vdi_v_gtext -> output_text [direct]	tos-api/src/vdi/text.rs@v_gtext	mapped
+4	gsx_tblt	aes	gsx_tblt -> vdi_v_gtext [layer trap #2 0x8 jmptb1[0x8] via gsx2]	tos-api/src/aes/graf.rs@draw_ibm_glyph tos-api/src/aes/object.rs@gsx_tblt	mapped
+4	screen	vdi	screen -> vdi_v_gtext [table jmptb1[0x8]]	tos-api/src/vdi/mod.rs@screen	mapped
+4	vdi_v_gdp	vdi	vdi_v_gdp -> gdp_justified [direct]	tos-api/src/vdi/gdp.rs@v_gdp	mapped
+5	GSX_ENTRY	vdi	GSX_ENTRY -> screen [asm jsr]	tos-api/src/vdi/mod.rs@dispatch_in	mapped
+5	dr_fnode	desk	dr_fnode -> gsx_tblt [direct]		unmapped
+5	gr_gicon	aes	gr_gicon -> gsx_tblt [direct]	tos-api/src/aes/object.rs@draw_icon	mapped
+5	gr_gtext	aes	gr_gtext -> gsx_tblt [direct]	tos-api/src/aes/object.rs@gr_gtext	mapped
+5	just_draw	aes	just_draw -> gsx_tblt [direct]	tos-api/src/aes/object.rs@add_3d_effect tos-api/src/aes/object.rs@draw_3d_outline tos-api/src/aes/object.rs@draw_icon tos-api/src/aes/object.rs@draw_tree tos-api/src/aes/object.rs@just_draw tos-api/src/aes/window.rs@act_ink tos-api/src/aes/window.rs@draw_elevator tos-api/src/aes/window.rs@draw_shadow tos-api/src/aes/window.rs@gadget_sel	mapped
+6	dr_code	desk	dr_code -> dr_fnode [direct]		unmapped
+6	mouse_int	vdi	mouse_int -> GSX_ENTRY [asm jbsr scrn_clip]	tos-api/src/vdi/mouse.rs@feed_relative tos-api/src/vdi/mouse.rs@update_ms_stat	mapped
+6	ob_change	aes	ob_change -> just_draw [direct]	tos-api/src/aes/object.rs@change_clip_t tos-api/src/aes/object.rs@change_t tos-api/src/aes/object.rs@objc_change tos-api/src/aes/window.rs@arrow_change tos-api/src/aes/window.rs@elev_change	mapped
+6	vditrap	vdi	vditrap -> GSX_ENTRY [asm jsr]	kernel/src/arch/aarch64/exceptions.rs@sync_handler	mapped
+7	crysbind	aes	crysbind -> ob_change [direct]	tos-api/src/aes/mod.rs@crysbind	mapped
+7	do_chg	aes	do_chg -> ob_change [direct]	tos-api/src/aes/menu.rs@do_chg	mapped
+7	fm_button	aes	fm_button -> ob_change [direct]	tos-api/src/aes/form.rs@fm_button tos-api/src/aes/form.rs@form_button tos-api/src/aes/form.rs@select_radio tos-api/src/aes/form.rs@wait_up	mapped
+7	fm_keybd	aes	fm_keybd -> ob_change [direct]	tos-api/src/aes/form.rs@fm_keybd tos-api/src/aes/form.rs@form_keybd	mapped
+7	fs_input	aes	fs_input -> ob_change [direct]	tos-api/src/aes/fsel.rs@drag_delta tos-api/src/aes/fsel.rs@modal tos-api/src/aes/fsel.rs@nav_into_folder tos-api/src/aes/fsel.rs@run tos-api/src/aes/fsel.rs@set_drive tos-api/src/aes/fsel.rs@slider_click	mapped
+7	fs_sel	aes	fs_sel -> ob_change [direct]	tos-api/src/aes/fsel.rs@modal	mapped
+7	gr_watchbox	aes	gr_watchbox -> ob_change [direct]	tos-api/src/aes/graf.rs@graf_watchbox tos-api/src/aes/graf.rs@watchbox tos-api/src/aes/graf.rs@watchbox_t	mapped
+7	hctl_window	aes	hctl_window -> ob_change [direct]	tos-api/src/aes/window.rs@hctl_window tos-api/src/aes/window.rs@slide_elevator tos-api/src/aes/window.rs@slide_hit	mapped
+8	ctlmgr	aes	ctlmgr -> hctl_window [direct]	tos-api/src/aes/window.rs@intercept	mapped
+8	fm_do	aes	fm_do -> fm_button [direct]	tos-api/src/aes/form.rs@form_do tos-api/src/aes/form.rs@run_form	mapped
+8	fs_nscroll	aes	fs_nscroll -> fs_sel [direct]	tos-api/src/aes/fsel.rs@nscroll_top tos-api/src/aes/fsel.rs@scroll	mapped
+8	fsel_exinput	desk	fsel_exinput -> fs_input [layer trap #2 0x5b crysbind[0x5b] via gem_if]		unmapped
+8	handle_popup	aes	handle_popup -> do_chg [direct]	tos-api/src/aes/menu.rs@popup_shown	mapped
+8	hctl_rect	aes	hctl_rect -> do_chg [direct]	tos-api/src/aes/event.rs@menu_intercept	mapped
+8	menu_down	aes	menu_down -> do_chg [direct]	tos-api/src/aes/menu.rs@open_box	mapped
+8	menu_icheck	desk	menu_icheck -> do_chg [layer trap #2 0x1f crysbind[0x1f] via gem_if]		unmapped
+8	menu_ienable	desk	menu_ienable -> do_chg [layer trap #2 0x20 crysbind[0x20] via gem_if]		unmapped
+8	menu_select	aes	menu_select -> do_chg [direct]	tos-api/src/aes/menu.rs@rehilite	mapped
+8	menu_tnormal	desk	menu_tnormal -> do_chg [layer trap #2 0x21 crysbind[0x21] via gem_if]		unmapped
+8	mn_do	aes	mn_do -> do_chg [direct]	tos-api/src/aes/menu.rs@track tos-api/src/aes/menu.rs@track_owned	mapped
+8	xif	aes	xif -> crysbind [direct]	tos-api/src/aes/mod.rs@dispatch_in	mapped
+9	app_read_inf	desk	app_read_inf -> fsel_exinput [direct]		unmapped
+9	cnx_get	desk	cnx_get -> menu_icheck [direct]		unmapped
+9	deskmain	desk	deskmain -> menu_icheck [direct]		unmapped
+9	do_optnmenu	desk	do_optnmenu -> menu_icheck [direct]		unmapped
+9	do_viewmenu	desk	do_viewmenu -> menu_icheck [direct]		unmapped
+9	fm_alert	aes	fm_alert -> fm_do [direct]	tos-api/src/aes/form.rs@do_alert tos-api/src/aes/form.rs@form_alert tos-api/src/aes/form.rs@modal_loop tos-api/src/aes/form.rs@save_under_alert	mapped
+9	form_do	desk	form_do -> fm_do [layer trap #2 0x32 crysbind[0x32] via gem_if]		unmapped
+9	hndl_kbd	desk	hndl_kbd -> menu_tnormal [direct]		unmapped
+9	hndl_menu	desk	hndl_menu -> menu_tnormal [direct]		unmapped
+9	men_list	desk	men_list -> menu_ienable [direct]		unmapped
+9	men_update	desk	men_update -> menu_icheck [direct]		unmapped
+9	mn_popup	aes	mn_popup -> handle_popup [direct]	tos-api/src/aes/menu.rs@mn_popup	mapped
+9	remove_locate_shortcut	desk	remove_locate_shortcut -> fsel_exinput [direct]		unmapped
+9	super	aes	super -> xif [direct]	tos-api/src/aes/mod.rs@dispatch_in tos-api/src/aes/thread.rs@call	mapped
+10	aestrap	aes	aestrap -> super [asm jsr]	-	design
+10	check_alt_letter_key	desk	check_alt_letter_key -> men_update [direct]		unmapped
+10	deskstart	desk	deskstart -> deskmain [asm jsr]		unmapped
+10	dir_op	desk	dir_op -> form_do [direct]		unmapped
+10	do_aopen	desk	do_aopen -> remove_locate_shortcut [direct]		unmapped
+10	do_deskmenu	desk	do_deskmenu -> form_do [direct]		unmapped
+10	do_fopen	desk	do_fopen -> remove_locate_shortcut [direct]		unmapped
+10	do_format	desk	do_format -> form_do [direct]		unmapped
+10	do_info	desk	do_info -> remove_locate_shortcut [direct]		unmapped
+10	do_namecon	desk	do_namecon -> form_do [direct]		unmapped
+10	fm_show	aes	fm_show -> fm_alert [direct]	tos-api/src/aes/form.rs@fm_error	mapped
+10	form_alert	desk	form_alert -> fm_alert [layer trap #2 0x34 crysbind[0x34] via gem_if]		unmapped
+10	fun_file2any	desk	fun_file2any -> remove_locate_shortcut [direct]		unmapped
+10	fun_mkdir	desk	fun_mkdir -> form_do [direct]		unmapped
+10	hndl_button	desk	hndl_button -> men_update [direct]		unmapped
+10	hndl_msg	desk	hndl_msg -> men_update [direct]		unmapped
+10	inf_backgrounds	desk	inf_backgrounds -> form_do [direct]		unmapped
+10	inf_conf	desk	inf_conf -> form_do [direct]		unmapped
+10	inf_show	desk	inf_show -> form_do [direct]		unmapped
+10	ins_app_dialog	desk	ins_app_dialog -> form_do [direct]		unmapped
+10	install_desktop_icon	desk	install_desktop_icon -> form_do [direct]		unmapped
+10	install_window_icon	desk	install_window_icon -> form_do [direct]		unmapped
+11	change_falcon_rez	desk	change_falcon_rez -> inf_show [direct]		unmapped
+11	change_tt_rez	desk	change_tt_rez -> inf_show [direct]		unmapped
+11	do_filemenu	desk	do_filemenu -> do_format [direct]		unmapped
+11	do_open	desk	do_open -> do_aopen [direct]		unmapped
+11	end_dialog	desk	end_dialog -> hndl_msg [direct]		unmapped
+11	eralert	aes	eralert -> fm_show [direct]	-	unmapped
+11	fm_error	aes	fm_error -> fm_show [direct]	tos-api/src/aes/form.rs@fm_error tos-api/src/aes/form.rs@form_error	mapped
+11	fun_alert	desk	fun_alert -> form_alert [direct]		unmapped
+11	fun_alert_merge	desk	fun_alert_merge -> form_alert [direct]		unmapped
+11	fun_desk2desk	desk	fun_desk2desk -> fun_file2any [direct]		unmapped
+11	fun_desk2win	desk	fun_desk2win -> do_aopen [direct]		unmapped
+11	fun_file2desk	desk	fun_file2desk -> do_aopen [direct]		unmapped
+11	fun_mask	desk	fun_mask -> inf_show [direct]		unmapped
+11	fun_msg	desk	fun_msg -> hndl_msg [direct]		unmapped
+11	fun_op	desk	fun_op -> dir_op [direct]		unmapped
+11	fun_win2win	desk	fun_win2win -> do_aopen [direct]		unmapped
+11	get_new_name	desk	get_new_name -> do_namecon [direct]		unmapped
+11	inf_disk	desk	inf_disk -> inf_show [direct]		unmapped
+11	inf_file_folder	desk	inf_file_folder -> inf_show [direct]		unmapped
+11	inf_pref	desk	inf_pref -> inf_show [direct]		unmapped
+11	ins_icon	desk	ins_icon -> install_desktop_icon [direct]		unmapped
+11	ins_one_app	desk	ins_one_app -> ins_app_dialog [direct]		unmapped
+11	opn_appl	desk	opn_appl -> inf_show [direct]		unmapped
+11	output_fname	desk	output_fname -> do_namecon [direct]		unmapped
+11	process_funkey	desk	process_funkey -> do_aopen [direct]		unmapped
+11	refresh_window	desk	refresh_window -> do_fopen [direct]		unmapped
+11	retake	aes	retake -> aestrap [asm move.l]	-	design
+11	search_prompt	desk	search_prompt -> inf_show [direct]		unmapped
+11	set_aestrap	aes	set_aestrap -> aestrap [asm move.l]	-	design
+11	w_setpath	desk	w_setpath -> do_fopen [direct]		unmapped
+12	app_alloc	desk	app_alloc -> fun_alert [direct]		unmapped
+12	change_resolution	desk	change_resolution -> change_falcon_rez [direct]		unmapped
+12	change_st_rez	desk	change_st_rez -> fun_alert [direct]		unmapped
+12	check_function_key	desk	check_function_key -> process_funkey [direct]		unmapped
+12	d_dofcopy	desk	d_dofcopy -> fun_alert_merge [direct]		unmapped
+12	d_dofdel	desk	d_dofdel -> fun_alert_merge [direct]		unmapped
+12	d_dofileren	desk	d_dofileren -> get_new_name [direct]		unmapped
+12	d_dofoldel	desk	d_dofoldel -> fun_alert_merge [direct]		unmapped
+12	d_doop	desk	d_doop -> fun_alert [direct]		unmapped
+12	delete_ffd	desk	delete_ffd -> fun_op [direct]		unmapped
+12	do_diropen	desk	do_diropen -> fun_msg [direct]		unmapped
+12	do_dopen	desk	do_dopen -> fun_alert [direct]		unmapped
+12	form_error	desk	form_error -> fm_error [layer trap #2 0x35 crysbind[0x35] via gem_if]		unmapped
+12	fs_active	aes	fs_active -> fm_error [direct]	tos-api/src/aes/fsel.rs@relist tos-api/src/aes/fsel.rs@sort_entries	mapped
+12	fun_close	desk	fun_close -> w_setpath [direct]		unmapped
+12	fun_del	desk	fun_del -> fun_op [direct]		unmapped
+12	fun_drag	desk	fun_drag -> fun_desk2win [direct]		unmapped
+12	fun_file2win	desk	fun_file2win -> fun_op [direct]		unmapped
+12	fun_search	desk	fun_search -> fun_alert [direct]		unmapped
+12	fun_selectall	desk	fun_selectall -> fun_msg [direct]		unmapped
+12	fun_win2desk	desk	fun_win2desk -> fun_file2desk [direct]		unmapped
+12	gem_main	aes	gem_main -> set_aestrap [direct]	kernel/src/lib.rs@kernel_main_rust tos-api/src/aes/init.rs@init tos-api/src/aes/mod.rs@reinit	mapped
+12	get_funkey	desk	get_funkey -> fun_alert [direct]		unmapped
+12	giveerr	aes	giveerr -> retake [asm jra call_err]	-	design
+12	illegal_op_msg	desk	illegal_op_msg -> fun_alert [direct]		unmapped
+12	ins_app	desk	ins_app -> ins_one_app [direct]		unmapped
+12	malloc_fail_alert	desk	malloc_fail_alert -> fun_alert [direct]		unmapped
+12	nomem_alert	desk	nomem_alert -> fun_alert [direct gimple-only]		unmapped
+12	output_path	desk	output_path -> get_new_name [direct]		unmapped
+12	print_buf	desk	print_buf -> fun_alert [direct]		unmapped
+12	print_file	desk	print_file -> end_dialog [direct]		unmapped
+12	printer_alert	desk	printer_alert -> fun_alert_merge [direct]		unmapped
+12	rebuild_window	desk	rebuild_window -> fun_msg [direct]		unmapped
+12	refresh_drive	desk	refresh_drive -> refresh_window [direct]		unmapped
+12	retry_format	desk	retry_format -> fun_alert [direct]		unmapped
+12	save_shortcut	desk	save_shortcut -> fun_alert [direct]		unmapped
+12	save_to_disk	desk	save_to_disk -> fun_alert [direct]		unmapped
+12	search_display	desk	search_display -> fun_alert [direct]		unmapped
+12	sh_main	aes	sh_main -> fm_error [direct]	kernel/src/shell_loop.rs@sh_main tos-api/src/aes/shell.rs@sh_main_init	mapped
+12	sh_tographic	aes	sh_tographic -> retake [direct]	kernel/src/shell_loop.rs@sh_tographic	mapped
+12	takeerr	aes	takeerr -> retake [asm jbsr call_err]	-	design
+12	trash_alert	desk	trash_alert -> fun_alert_merge [direct]		unmapped
+12	user_abort	desk	user_abort -> fun_alert [direct]		unmapped
+12	valid_drive	desk	valid_drive -> fun_alert_merge [direct]		unmapped
+12	wants_to_delete_files	desk	wants_to_delete_files -> fun_msg [direct]		unmapped
+12	win_shwall	desk	win_shwall -> fun_msg [direct]		unmapped
+13	allocate_window_anode	desk	allocate_window_anode -> app_alloc [direct]		unmapped
+13	app_save	desk	app_save -> save_to_disk [direct]		unmapped
+13	app_start	desk	app_start -> app_alloc [direct]		unmapped
+13	count_ffs	desk	count_ffs -> d_doop [direct]		unmapped
+13	d_dofoldren	desk	d_dofoldren -> d_dofileren [direct]		unmapped
+13	desk_all	desk	desk_all -> win_shwall [direct]		unmapped
+13	format_floppy	desk	format_floppy -> malloc_fail_alert [direct]		unmapped
+13	fs_newdir	aes	fs_newdir -> fs_active [direct]	tos-api/src/aes/fsel.rs@relist	mapped
+13	fun_print	desk	fun_print -> print_file [direct]		unmapped
+13	fun_rebld	desk	fun_rebld -> rebuild_window [direct]		unmapped
+13	fun_rebld_marked	desk	fun_rebld_marked -> rebuild_window [direct]		unmapped
+13	ins_shortcut	desk	ins_shortcut -> app_alloc [direct]		unmapped
+13	install_drive	desk	install_drive -> app_alloc [direct]		unmapped
+13	must_alloc_buf	desk	must_alloc_buf -> nomem_alert [direct]		unmapped
+13	pn_sort	desk	pn_sort -> malloc_fail_alert [direct]		unmapped
+13	run_accs_and_desktop	aes	run_accs_and_desktop -> sh_tographic [direct]	kernel/src/accs.rs@wait_for_accs_mesag kernel/src/lib.rs@kernel_main_rust	mapped
+13	search_recursive	desk	search_recursive -> search_display [direct]		unmapped
+13	setup_iconblks	desk	setup_iconblks -> malloc_fail_alert [direct]		unmapped
+13	sh_chgrf	aes	sh_chgrf -> sh_tographic [direct]	kernel/src/shell_loop.rs@sh_chgrf	mapped
+13	sh_toalpha	aes	sh_toalpha -> giveerr [direct]	kernel/src/shell_loop.rs@sh_toalpha	mapped
+13	show_file	desk	show_file -> form_error [direct]		unmapped
+13	sob_malloc	desk	sob_malloc -> nomem_alert [direct]		unmapped
+13	ui_start	aes	ui_start -> gem_main [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_aes	mapped
+13	update_modified_windows	desk	update_modified_windows -> fun_close [direct]		unmapped
+14	accdesk_start	aes	accdesk_start -> run_accs_and_desktop [asm jsr]	tos-api/src/bdos/process/standin.rs@enter_accdesk	mapped
+14	app_rdicon	desk	app_rdicon -> setup_iconblks [direct]		unmapped
+14	ins_devices	desk	ins_devices -> install_drive [direct]		unmapped
+14	obj_init	desk	obj_init -> sob_malloc [direct]		unmapped
+14	pn_active	desk	pn_active -> pn_sort [direct]		unmapped
+14	search_icon	desk	search_icon -> search_recursive [direct]		unmapped
+14	setup_mono_icons	desk	setup_mono_icons -> setup_iconblks [direct]		unmapped
+14	win_srtall	desk	win_srtall -> pn_sort [direct]		unmapped
+15	win_start	desk	win_start -> obj_init [direct]		unmapped
+
+table edges inside the set (15):
+crysbind[0x1f]	crysbind -> do_chg	aes/gemsuper.c:172
+crysbind[0x20]	crysbind -> do_chg	aes/gemsuper.c:175
+crysbind[0x21]	crysbind -> do_chg	aes/gemsuper.c:179
+crysbind[0x24]	crysbind -> mn_popup	aes/gemsuper.c:190
+crysbind[0x2f]	crysbind -> ob_change	aes/gemsuper.c:230
+crysbind[0x32]	crysbind -> fm_do	aes/gemsuper.c:240
+crysbind[0x34]	crysbind -> fm_alert	aes/gemsuper.c:246
+crysbind[0x35]	crysbind -> fm_error	aes/gemsuper.c:249
+crysbind[0x37]	crysbind -> fm_keybd	aes/gemsuper.c:258
+crysbind[0x38]	crysbind -> fm_button	aes/gemsuper.c:262
+crysbind[0x4b]	crysbind -> gr_watchbox	aes/gemsuper.c:282
+crysbind[0x5a]	crysbind -> fs_input	aes/gemsuper.c:323
+crysbind[0x5b]	crysbind -> fs_input	aes/gemsuper.c:326
+jmptb1[0x8]	screen -> vdi_v_gtext	vdi/vdi_main.c:40
+jmptb1[0xb]	screen -> vdi_v_gdp	vdi/vdi_main.c:43
+
+layer edges inside the set (8):
+trap #2 0x1f crysbind[0x1f] via gem_if	menu_icheck -> do_chg	desk/gembind.c:306
+trap #2 0x20 crysbind[0x20] via gem_if	menu_ienable -> do_chg	desk/gembind.c:315
+trap #2 0x21 crysbind[0x21] via gem_if	menu_tnormal -> do_chg	desk/gembind.c:324
+trap #2 0x32 crysbind[0x32] via gem_if	form_do -> fm_do	desk/gembind.c:456
+trap #2 0x34 crysbind[0x34] via gem_if	form_alert -> fm_alert	desk/gembind.c:480
+trap #2 0x35 crysbind[0x35] via gem_if	form_error -> fm_error	desk/gembind.c:492
+trap #2 0x5b crysbind[0x5b] via gem_if	fsel_exinput -> fs_input	desk/gembind.c:707
+trap #2 0x8 jmptb1[0x8] via gsx2	gsx_tblt -> vdi_v_gtext	aes/gemgraf.c:528
+
+vector edges inside the set (0):
+
+coverage of the set (185 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+aes         43     37  86.0%      5  11.6%      1   2.3%
+bios         2      0   0.0%      2 100.0%      0   0.0%
+desk       130      0   0.0%      0   0.0%    130 100.0%
+vdi         10     10 100.0%      0   0.0%      0   0.0%
+total      185     47  25.4%      7   3.8%    131  70.8%
+touched layers: vdi (the layers of check_clip; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)
