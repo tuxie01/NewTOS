@@ -1,0 +1,2 @@
+fc4cd38d1d539a4c65e223b089f407885a9b7559158550955e9711dc9de6dbfb  <scratch>/kernel-inj.img
+f244a35e525b79b33f0dc9a15842110da149fc18c0979dc8d19e12921f5b43bd  <scratch>/card/card.img

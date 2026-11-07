@@ -1,0 +1,19 @@
+PASS NAMES_REMOVED/NAMES_ADDED declared against NewTOS-0.7
+PASS name list = NewTOS-0.7 minus [] plus [] (apart from the version, case-sensitive)
+PASS no AppleDouble/.DS_Store/__MACOSX entries
+PASS kernel8.img carries "NewTOS 0.7.1"
+PASS kernel8.img carries build rev (3e825c13)
+PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+PASS every TOS-visible name on KARTE is 8.3
+PASS packaged release texts free of TODO-REL markers
+PASS FILES.TSV lists every file of the ZIP
+PASS ZIP unpacks byte-identical to NewTOS-0.7.1/
+version 0.7.1  commit 3e825c13595338405b4ea90cc86132308d455511  tree_dirty_build=no  tree_dirty_docs=yes
+packager tools/release/package-release.sh 75b99e591af3c25a1a4b4a94a5db3792b2555524a50a65901b6638547f72e087 (committed)
+previous zip a51913942d7c8f10427e5cf5e8ce001fc4514f744a98265457e5245a8ecbbbba <scratch>/prev07/NewTOS-0.7.zip
+names_removed none
+names_added none
+kernel_features crash-walk
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+zip 79b2fa041d0099e2af7f3c72f54afdd693b3d8b70a5f28bf2da79e4909ed2b53 6632895 <scratch>/rel071/NewTOS-0.7.1.zip
+entries 70

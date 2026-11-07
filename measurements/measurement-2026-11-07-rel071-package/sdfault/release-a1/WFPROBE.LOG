@@ -1,0 +1,22 @@
+=== WFPROBE case a1: one refused write, file data
+C: partition at 63, FATs at 1 and 129, root at 257, data at 289
+save BASE.DAT       Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the baseline (-32 bytes)
+arm fault 1: Ssystem=-32
+save RESULTS.PDF    Fcreate=7 Fwrite=32768,4388 Fclose=0
+--- diag after the victim (-32 bytes)
+disarm: fired -32
+save R1.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R2.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R3.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+save R4.FBP         Fcreate=7 Fwrite=5281,0 Fclose=0
+--- diag after the saves with the fault gone (-32 bytes)
+look BASE.DAT       Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look RESULTS.PDF    Fsfirst=0 size=37156 want=37156 Fopen=7 Fread=37156 same=1
+look R1.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R2.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R3.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+look R4.FBP         Fsfirst=0 size=5281 want=5281 Fopen=7 Fread=5281 same=1
+Dfree(C:)=0 free=32637 total=32672
+--- diag at the end (-32 bytes)
+END

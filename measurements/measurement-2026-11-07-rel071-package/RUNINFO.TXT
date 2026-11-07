@@ -1,0 +1,236 @@
+measurement-2026-11-07-rel071-package -- TASK/REL071: the NewTOS 0.7.1 tester package and the Pi test files
+==============================================================================================================
+Developer, TASK/REL071, 2026-11-07 (host clock CET). Package from HEAD 3e825c13
+(3e825c13595338405b4ea90cc86132308d455511), clean tree except this run directory (untracked
+while it was made). No push, no tag, no GitHub release, no issue comment, no SD card, no Pi.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+WHAT / WHY
+  The stability release 0.7.1 for the user's Pi acceptance (TASK/REL071), made like 0.7
+  (measurements/measurement-2026-11-04-rel07-final/RUNINFO.TXT) by tools/release/package-release.sh,
+  against the v0.7 GitHub asset. Commits of this work:
+    8d3df21d chore: set the product version to 0.7.1 (REL071)
+             [workspace.package] version = "0.7.1"; Cargo.lock (kernel, tos-api, tos-types) and
+             programs/Cargo.lock (tos-types) follow; the two "heute" lines of
+             docs/api/emucon/06-mapping-and-decisions.md name the new text. TOS-visible versions
+             (_TOS/OSHEADER, NTOS cookie, Sversion) untouched.
+    3e825c13 docs(release): draft the 0.7.1 tester texts (REL071)
+             docs/release/v0.7.1/ (six files), the draft for the user's review.
+  cargo xtask test (full) after the version change: passed 2239, failed 0, ignored 1 (= baseline).
+  cargo build both boards (dev): warnings tos-api 64, kernel 93 (= baseline, HW08 run); no code
+  changed, so no clippy run.
+
+1 VERSION SHOWN (version/, QEMU raspi4b)
+  Calls the committed REL07 scripts unchanged (measurements/measurement-2026-11-04-rel07-version/
+  method/build-kernel.sh, mkcard-call.sh, run.sh, about-ver.script): an rpi4 release kernel with the
+  scripted IKBD injector, built in a scratch copy of the committed tree (8d3df21d content; no .git,
+  so the stamp reads "(unknown)"), card "#R 02" only. Kernel fc4cd38d..., card f244a35e...
+  (version/sha256.txt), clone unchanged after the run (version/serial/main.img-after.sha256).
+  Card manifest version/card.img.manifest:
+    optional_missing none
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  Screendumps (looked at):
+    version/screendumps/main-10.png  boot screen "Version : NewTOS 0.7.1"
+    version/screendumps/main-22.png  desktop About box (Ssystem(2019)) "Version  NewTOS 0.7.1"
+    version/screendumps/main-42.png  EmuCON `ver`: "NewTOS 0.7.1 - clean-room TOS for AArch64"
+  Serial version/serial/main.log has the same `ver` line.
+
+2 PACKAGE (method/package-call.sh <scratch>)
+    KERNEL_FEATURES=crash-walk tools/release/package-release.sh 0.7.1 <scratch>/rel071 <scratch>/prev07/NewTOS-0.7.zip
+  Previous release: the v0.7 GitHub asset, `gh release download v0.7 -p NewTOS-0.7.zip` into a fresh
+    scratch dir, sha256 a51913942d7c8f10427e5cf5e8ce001fc4514f744a98265457e5245a8ecbbbba (= TASK/REL07
+    receipt).
+  NAMES_REMOVED none, NAMES_ADDED none: the name list equals 0.7's (package/names.diff empty).
+  One run, exit 0, ends with "done:" (package/package-run.log). The packager is committed
+  (26918e74, sha256 75b99e59... as in the 0.7 run).
+
+  ZIP (scratch, not committed; the unpacked folder NewTOS-0.7.1/ lies next to it):
+    /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/rel071/NewTOS-0.7.1.zip
+    sha256 79b2fa041d0099e2af7f3c72f54afdd693b3d8b70a5f28bf2da79e4909ed2b53
+    6632895 bytes, 70 entries (55 files + 15 folders; 0.7: 70)
+
+  package/CHECKS.TXT, all PASS:
+    PASS NAMES_REMOVED/NAMES_ADDED declared against NewTOS-0.7
+    PASS name list = NewTOS-0.7 minus [] plus [] (apart from the version, case-sensitive)
+    PASS no AppleDouble/.DS_Store/__MACOSX entries
+    PASS kernel8.img carries "NewTOS 0.7.1"
+    PASS kernel8.img carries build rev (3e825c13)
+    PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+    PASS every TOS-visible name on KARTE is 8.3
+    PASS packaged release texts free of TODO-REL markers
+    PASS FILES.TSV lists every file of the ZIP
+    PASS ZIP unpacks byte-identical to NewTOS-0.7.1/
+
+  Against 0.7 (package/vs-0.7.txt, cmp per file): 23 changed, 32 the same, none new or gone.
+    changed: kernel8.img (every kernel commit v0.7..3e825c13: FS31, HW08, A127 D1, A130-A133, the
+             V-series); the six texts; CORE.NCP/COREVAL.NCP (DESK70 c07fa71a); QED.NAP (A142
+             2f6ea7eb cflib images, V33 877a14b9 gemlib/libc overlays); HYP_VIEW.NAP (A140 fba96623,
+             A142 56fd81a1, V33); ZVIEW.NAP + the 10 codecs, DESKTOP.NAP (V33 gemlib/libc overlays).
+             The source of each changed file is the commit range; not traced per byte.
+    same:    firmware, LICENCE.broadcom, config.txt, NEWDESK.INF, both TERADESK.INF, KEYBOARD.KBD,
+             GEM.RSC, both qed.rsc, SYSACC.NAC, DOOM.NAP/.NTP, DOOM1.WAD, ZVIEW.RSC/.INF/.HYP, the
+             six icons, QED CONFIG.TXT/QED.HYP, TeraDesk resources and TERADESK.HYP, hyp_view.rsc.
+  The six texts are byte-identical to `git show 3e825c13:docs/release/v0.7.1/<file>`.
+
+3 SMOKE (method/smoke-call.sh <scratch>; QEMU raspi4b, headless, -append serial=on)
+  Calls measurements/measurement-2026-11-04-rel07-package/method/mkcard-call.sh and run.sh unchanged.
+  card-karte.img = exactly the package's KARTE/ (48 files), manifest cards/card-karte.img.manifest:
+    optional_missing none
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  Card 0fcc1cc6..., per-run APFS clone, unchanged after the run (serial/karte.img-after.sha256),
+  deleted. Kernel = KARTE/kernel8.img of the package.
+    screendumps/karte-8.png   boot screen "Version : NewTOS 0.7.1", "Built : 2026-11-07 (3e825c13)"
+    screendumps/karte-22.png  desktop (shipped NEWDESK.INF: DISK C, QED.NAP, TRASH, PRINTER)
+  serial/karte.log: "[acc] loaded C:\ACC\SYSACC.NAC", "[desk] desktop up (1 drives)", no panic or
+  exception. Not driven: About of the package kernel (section 1 shows it on the same tree), programs.
+
+4 PI TEST FILES (not in the ZIP; <scratch>/rel071/pi-test/)
+  For the WFPROBE cases of the Pi run (TASK/HW08, measurements/measurement-2026-11-06-hw08/PI-RUN.TXT
+  step 3). Both from 3e825c13, the package's commit.
+    kernel8-sd-fault.img  cargo xtask build --board rpi4 --release --features crash-walk,sd-fault
+                          sha256 ccd73cc4d7ef6685c00eec04e05baafc4b9d181be7086755f2ecc492a8a59964
+                          1571048 bytes; carries "NewTOS 0.7.1" and "(3e825c13)"
+                          warnings tos-api 64, kernel 93 (= baseline)
+    WFPROBE.NCP           tosdump/build-wfprobe-newtos.sh <pi-test>/WFPROBE.NCP, no WFCASE, no WFKEYS
+                          (asks for the key and the drive on the console, as in the HW08 run)
+                          sha256 cec531744b6eeea06bb82f2c6a5674bd4350da6d4d768ccb97400cd0cb6e6d63
+                          162944 bytes
+  Release kernel for comparison: KARTE/kernel8.img sha256
+    dda373db3877c6bf6c51aec3610622b77d43285c246d4fd0b1dffa1241454735, 1550568 bytes.
+
+5 SD-FAULT ONLY IN THE TEST KERNEL (sdfault/, QEMU raspi4b)
+  tosdump/probes/run-wfprobe.sh newtos a1 <out> <kernel>, unchanged; case a1 (one refused write, file
+  data), the probe built by the script with WFCASE=a1 (WFPROBE.NAP 94796afd..., a scratch build, not
+  the Pi file). Same test image and card (616914...) for both.
+    release KARTE/kernel8.img  (sdfault/release-a1): "arm fault 1: Ssystem=-32", "disarm: fired -32",
+        every Ssystem(S_NEWTOS_SDDIAG) -32 (EINVFN): the release kernel does not answer either mode.
+        All saves complete (RESULTS.PDF Fwrite=32768,4388), fsck_msdos -n clean.
+    kernel8-sd-fault.img       (sdfault/test-a1): "arm fault 1: Ssystem=0", "disarm: fired 1", the SD
+        diagnosis text in the log; RESULTS.PDF Fwrite=-10, R1-R4 ok, fsck exit 206: save lines
+        identical to measurements/measurement-2026-11-06-hw08-fix/results/after/newtos-a1 (HW08
+        "Nicht erledigt", a1).
+  Neither run has a panic or an exception on the serial line.
+
+FILE LIST (path below NewTOS-0.7.1/, sha256, bytes, vs 0.7, source; = package/FILES.TSV)
+  KARTE/start4.elf
+      77260733037721d20209325b01b1fbc167f0bef387c18888b07bd57e06e7ce26  2303680 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware
+  KARTE/fixup4.dat
+      80fde48a87ec7ee94e150680b754db53e9800887694e58299c65630c952b5fd9     5498 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware
+  KARTE/bcm2711-rpi-4-b.dtb
+      75761b73c284e26623e4d1624bff13e67bce2ae620880efd81d6571a3739fcfb    56407 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware
+  LICENCE.broadcom
+      c7283ff51f863d93a275c66e3b4cb08021a5dd4d8c1e7acc47d872fbe52d3d6b     1594 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware licence
+  KARTE/config.txt
+      99736bd98554cd0358371a6e2397475f657b8f3b98ecc057bd616c570b1f89b0     2844 0.7=same    <- repo 3e825c13 boot/rpi4/config.txt
+  KARTE/kernel8.img
+      dda373db3877c6bf6c51aec3610622b77d43285c246d4fd0b1dffa1241454735  1550568 0.7=changed <- repo 3e825c13 cargo xtask build --board rpi4 --release --features crash-walk
+  KARTE/NEWDESK.INF
+      8ae4d27dcddf45ae364344f25014d5856523b3be482fc7c31732c4a045a0e9dc      675 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): tester desktop configuration
+  KARTE/TERADESK.INF
+      f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5     3058 0.7=same    <- repo 3e825c13 tools/make-sd-image.sh (TERADESK.INF heredoc)
+  KARTE/KEYBOARD.KBD
+      697066cb49277ab5cf98375d04bc9e9b76cbf4a679c04cdc23b4e46dafbde799      409 0.7=same    <- repo 3e825c13 keyboards/german.kbd (= tools/mkkbd.py de)
+  KARTE/GEMSYS/RSC/GEM.RSC
+      2d1b1b22e9779c151160063115d1e204ad2059d0cd56668d94597b3eca94f4de     5047 0.7=same    <- repo 3e825c13 tos-api/src/aes/gem_fsel.nrsc (= tools/mkrsc.py convert references/emutos/aes/gem.rsc)
+  KARTE/GEMSYS/RSC/qed.rsc
+      30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79    41378 0.7=same    <- repo 3e825c13 sdk/apps/build-qed.sh
+  KARTE/ACC/SYSACC.NAC
+      812ddd574dda3f854ad5d11274abf6741dea23c8231163a11b49dbdca85602d6    38688 0.7=same    <- repo 3e825c13 sdk/build.sh sdk/examples/sysacc.c
+  KARTE/APPS/DOOM/DOOM.NAP
+      86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132   790816 0.7=same    <- repo 3e825c13 sdk/apps/build-doom.sh
+  KARTE/APPS/DOOM/DOOM.NTP
+      86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132   790816 0.7=same    <- repo 3e825c13 sdk/apps/build-doom.sh (same program as DOOM.NAP, .NTP = asks for parameters)
+  KARTE/APPS/DOOM/DOOM1.WAD
+      1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771  4196020 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): id Software shareware WAD
+  KARTE/APPS/ZVIEW/ZVIEW.NAP
+      38444d741a1db7f68d62aa2e05e6a3d8555f41bd10ebefb4b2224004f62e4d9d   522592 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ZVIEW.RSC
+      7252fc16fb320c6a8dc778f1a226c5ce7d2763b351a0fb1c4f63c193b09a635b    21606 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ZVIEW.INF
+      dbc32da47a6516d52a0803f98c2fd163c44d09edc145d17bc4851c04e3ed7d72      328 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): zView settings
+  KARTE/APPS/ZVIEW/ZVIEW.HYP
+      90a11ec9d36f2fe2b88a2477a65bd61f13210a768fee0110dd402cc35385f14a   247856 0.7=same    <- repo 3e825c13 sdk/zview/z-tools-04805b7.tar.xz zview/_dist/doc/zView.hyp
+  KARTE/APPS/QED/QED.NAP
+      ed05b558094f364e8876541982a595d90dbcadc6b007c4409948a1a1d0e58a1e   544280 0.7=changed <- repo 3e825c13 sdk/apps/build-qed.sh
+  KARTE/APPS/QED/qed.rsc
+      30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79    41378 0.7=same    <- repo 3e825c13 sdk/apps/build-qed.sh
+  KARTE/APPS/QED/CONFIG.TXT
+      e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855        0 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): empty file
+  KARTE/APPS/QED/QED.HYP
+      dab1d3cbcb34379ff600bde885c68dfd53fc61e3db6005eddb5eb56c517e0d82    43102 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): QED hypertext (FreeMiNT 1.19 distribution)
+  KARTE/APPS/COREMARK/CORE.NCP
+      5727171f7a4158d59b5850348ddfb679935ae315b357cfb95fd3bf54e1bf22f5   158224 0.7=changed <- repo 3e825c13 sdk/apps/build-coremark.sh
+  KARTE/APPS/COREMARK/COREVAL.NCP
+      6a4c57bca5c1623864f4ef74ec01ed1042f16342c8cdd855d265ee007e5a0223   158224 0.7=changed <- repo 3e825c13 sdk/apps/build-coremark.sh
+  KARTE/APPS/TERADESK/DESKTOP.NAP
+      94b1439a395cac5c5e629ebde924f8d83a11cb042e2c426b00bf2d3c82b3dfc8   353312 0.7=changed <- repo 3e825c13 sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/desktop.rsc
+      409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08    39278 0.7=same    <- repo 3e825c13 sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/icons.rsc
+      8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75    13284 0.7=same    <- repo 3e825c13 sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/cicons.rsc
+      ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241    63650 0.7=same    <- repo 3e825c13 sdk/apps/build-teradesk.sh
+  KARTE/APPS/TERADESK/TERADESK.INF
+      f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5     3058 0.7=same    <- repo 3e825c13 tools/make-sd-image.sh (TERADESK.INF heredoc)
+  KARTE/APPS/TERADESK/TERADESK.HYP
+      5fbd9faef249466af04d08ec5c763d1a34560d7a949adb848f938c33c855ab62    77176 0.7=same    <- previous release NewTOS-0.7 (no source in this repository): TeraDesk hypertext (FreeMiNT 1.19 distribution)
+  KARTE/APPS/HYPVIEW/HYP_VIEW.NAP
+      e65d873cec7d1fc86d125b7bbec09e83a9e1476519d94879915dcab0da1207ef   280560 0.7=changed <- repo 3e825c13 sdk/apps/build-hypview.sh
+  KARTE/APPS/HYPVIEW/hyp_view.rsc
+      54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa    27747 0.7=same    <- repo 3e825c13 sdk/apps/build-hypview.sh
+  KARTE/APPS/ZVIEW/CODECS/BMP.NLD
+      9cd330a641b1bfc4bf4a15d65f94860253701843c9f1939c14a2ca06c9e370a6    90968 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/DEGAS.NLD
+      85b1068b1306ce517c5c62f16a98a6ed8ca8a8abf1626e6fe55e12c4eb1fd7f0    90824 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/EUREKA.NLD
+      b3df6064ea8882da0342a99f78e574984fb9b75028cbcbec8d6da85eb075d990    90984 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/GIF.NLD
+      01af8fe8f36dbf69c7a1f4ee5fc09fa20108b473d66ae3b5ef74e6eda1f9d745   104776 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/GODPAINT.NLD
+      95797cf5dbe8ffe513ca6d8a1535d3efc661f3e748a1bea5fdac1771237ba9e4    89488 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/IMG.NLD
+      0c458624711b330a39d1b77ea824a35f0fc0206a5490e174afcf4cb27e5350e3    94616 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/JPG.NLD
+      f5b658e41b6367297edefec0c8b6f6ef67ce216e4ec33b35a6f5684c8d214f7a   715128 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/NEO.NLD
+      0d7736b421ece699f9fdf1d4ae6ac43acd78427dec5668d7d2f25229f62e8e3c    89600 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/PNG.NLD
+      84ec831152d6ee633d6e4d24f124192af1f76bd2220d9b434465f13d68370400   408432 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/CODECS/TGA.NLD
+      327590af9b734803734d83eb20cc29623fb43614f928525bd6a23eae07471df1    90264 0.7=changed <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/FILE.GOD
+      f1cc3a809aa25195ae486d56422d3772ab411574447e85667905f10a637561f3     2054 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/FOLDER.GOD
+      bda81600aedc7e5376f8ce4e5ced208a0e2e91853ba2aaea6209e17d8176e813     2054 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/IMAGE.GOD
+      cc139b6a3e35e1c895766534c06432f265d9ffe383b89b24d75c1b20a7ef0ca9     2054 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/PDF.GOD
+      de7c636f2a14193d1abbcf47a5b1b79acaecb371d549a44a25691e5017cc9a47     2054 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/PRG.GOD
+      71594ffeadf23678c68ec05e9767091522e95c3317d91d5ae9b889760f931f34     2054 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  KARTE/APPS/ZVIEW/ICONS/SMALL.GOD
+      75dd26b3c7403a8e4f1c964901a9d83c69c636848c5010b8952e385c2ef6c5d1    14342 0.7=same    <- repo 3e825c13 sdk/zview/build-zview.sh
+  README.TXT
+      4a3f49e6d6f90c271168bdf20381d2890d31b731b7d3069315957de2f7d8fd8a     8684 0.7=changed <- repo 3e825c13 docs/release/v0.7.1/README.TXT
+  LIESMICH.TXT
+      1a99c9ef626d143eb73ee80bf8d4e74df41b8019b50505e18e6b28ed8b45fd30     9412 0.7=changed <- repo 3e825c13 docs/release/v0.7.1/LIESMICH.TXT
+  TESTING.TXT
+      48adb87bbc132e4d5b72d1e1646ffb648fe61d213dc5f2f82134be3440d93033     1780 0.7=changed <- repo 3e825c13 docs/release/v0.7.1/TESTING.TXT
+  TESTANLEITUNG.TXT
+      e59d971b9085dfd5bd0e70d5c05af236ac2bd3455ebee3651953d60fbd950dc9     1944 0.7=changed <- repo 3e825c13 docs/release/v0.7.1/TESTANLEITUNG.TXT
+  FEEDBACK.TXT
+      a69483b8185e9a5ea211f0950840df38374ce41d4c93ae247682c4adade17f60     1039 0.7=changed <- repo 3e825c13 docs/release/v0.7.1/FEEDBACK.TXT
+  FEEDBACK-EN.TXT
+      380951f12c00f92bb8a37ddb84f0755a2f7ca7773a6953c7f26d2e3dbc50e07d      970 0.7=changed <- repo 3e825c13 docs/release/v0.7.1/FEEDBACK-EN.TXT
+
+FILES
+  method/        package-call.sh, smoke-call.sh (calls only)
+  package/       FILES.TSV, CHECKS.TXT, names-{prev,expected,new}.txt, names.diff (empty),
+                 vs-0.7.txt, unzip-l-0.7.1.txt, package-run.log, build-logs/ (one log per step)
+  version/       section 1: screendumps/, serial/, card.img.manifest, sha256.txt
+  cards/         card-karte.img.manifest
+  serial/        karte.log, karte.img-after.sha256
+  screendumps/   karte-8.png, karte-22.png
+  sdfault/       release-a1/, test-a1/ (run-wfprobe.sh output each)
+  Not kept: the ZIP, the unpacked folder, the work dir and pi-test/ (scratch path above), the card
+  images and scratch kernels (deleted). Scratch paths in copied files are written <scratch>.
