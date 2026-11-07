@@ -1,0 +1,48 @@
+DESK70 -- Tester verification of c07fa71a (CoreMark always waits for a key; SD_COREMARK_AUTO removed)
+=====================================================================================================
+
+Date      2026-11-07
+Who       Tester agent. No product code, no fixes, no card, no hardware, no push.
+Ticket    TASK/DESK70.md
+NewTOS    main @ c07fa71a1779114db9f5206f75840afb0ce4c305, tree clean. Kernels built from a scratch `git clone` of it
+          (never in the tree); CoreMark built by sdk/apps/build-coremark.sh in the tree (build/ is gitignored).
+QEMU      qemu-system-aarch64, -M raspi4b -append serial=on (method/qemu-shots.py, per-run `cp -c` clone, deleted after the run)
+Host      host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the manifests)
+Method    copied from measurements/measurement-2026-11-07-desk70-build2/method/ (NEWDESK.INF with #Z, qemu-shots.py,
+          z-key.actions, cards.sh as cards-z.sh) and measurements/measurement-2026-11-07-desk70-test/method/ (core-return.actions,
+          coreval-space.actions); injector kernels built with measurements/measurement-2026-11-07-desk70/method/build-inj.sh
+          (scratch clone only, host_env.rs cmp-restored). NEWDESK-desk.INF = NEWDESK.INF without the #Z line (window C:\COREMARK\*.*).
+          Card images: tools/make-sd-image.sh (default.img) and tools/mkcard.sh (desk.img, z.img).
+Manifests default.img.manifest, desk.img.manifest, z.img.manifest -- optional_missing none (verbatim, all three).
+
+RESULTS
+ 1 build  build-coremark.sh rc=0, 0 warnings, MD5 6/6 ok (build/build-coremark.log). CORE.NCP 5727171f... COREVAL.NCP 6a4c57bc...
+          (= binaries of build2, binaries.sha256). Kernel release rpi4 and qemu-virt, fresh per board (kernels.sha256), both build.
+          rpi4 boots to "[desk] desktop up (1 drives)" (serial/p2-default, p3-*), qemu-virt --headless: "[desk] desktop up (0 drives)",
+          no exception/panic (serial/p1-virt/serial.log). PASS
+ 2 default image (make-sd-image.sh, no input): C:\AUTO holds only MXPROBE.NCP and READ.ME (default.img.manifest); serial/p2-default:
+          "[auto] 1 AUTO program(s) run" -> "desktop up (1 drives)" at 15.3 s. No CoreMark in AUTO. PASS
+ 3 double-click via injector (desk.img, windows C:\COREMARK):
+   CORE.NCP + RETURN (serial/p3-core-return): launched 19.6 s, result + "Correct operation validated" 43.26 s, "Press any key to exit."
+          43.26 s; screen-005 (44-76 s, viewed) full report + prompt, no key; key at 95.15 s: "exited with rc=0", desktop NEWDESK
+          restarted, "desktop up" 95.35 s; screen-007 (viewed) = desktop as screen-003 before launch, only the mouse cursor differs
+          (bbox of the pixel difference covers cursor start/end positions only). PASS
+   COREVAL.NCP + SPACE (serial/p3-coreval-space): launched 19.6 s, "Correct operation validated" 42.74 s, prompt 42.77 s; screen-006
+          (44-74 s, viewed) report + prompt + cursor, no key; SPACE at 95.13 s: rc=0, "desktop up" 95.32 s; screen-008 (viewed)
+          desktop, window C:\COREMARK\ as before, only the cursor differs. PASS
+   Per-run clone sha256 after run: 3fcbf394... (= base desk.img, both runs; no write to the card).
+ 4 #Z autorun, no input (z.img, serial/p4-z-nokey, 90 s): "sh_ldapp: starting C:\COREMARK\CORE.NCP" 15.08 s; full report incl.
+          crc lines, "Correct operation validated" and "CoreMark 1.0 : 5287.19 ..." 38.09 s, then "Press any key to exit." 38.09 s, in
+          that order; stays to the end (88 s), no "desktop up" (waits, as designed). Clone sha256 4d5d4780... = base z.img. PASS
+ 5 git grep SD_COREMARK_AUTO outside measurements/TASK: only docs/STATUS.md line 261 (a Recent Decisions text about the removal);
+          tools/, sdk/, tosdump/, tools/xtask: no hit; no script copies CORE/COREVAL into AUTO (grep CORE(VAL).NCP in tools, tosdump,
+          sdk/*.sh, xtask: only build-coremark.sh and make-sd-image.sh's C:\COREMARK install and prerequisites). PASS
+ 6 cargo xtask test: exit=0, 2239 passed / 0 failed / 1 ignored (serial/hosttest-full.log; sum of all "test result" lines),
+          = baseline docs/STATUS.md 2239 / 0 / 1, delta 0. PASS
+ default.img sha256 0462bcdc... (clone after p2 run identical).
+
+NOT DRIVEN
+  Real Pi 4 (keyboard Crawcin, HDMI). Interactive USB input on qemu-virt (injector IKBD path used instead on raspi4b).
+  clippy not run (no Rust changed; not asked). Screen PNGs are stored beside each run's serial log in serial/<run>/.
+
+CLEANUP  per-run clones deleted by qemu-shots.py; scratch clone, kernels, cards remain only in the session scratchpad.

@@ -1,0 +1,3 @@
+# #Z autorun of C:\COREMARK\CORE.NCP: no input until tick 8000 after arming (40 s; the injector arms on the first
+# pump while an EL0 program runs, CoreMark ends about 22 s after its start), then RETURN
+8000 key 1C

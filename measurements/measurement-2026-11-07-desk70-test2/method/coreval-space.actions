@@ -1,0 +1,5 @@
+# double-click COREVAL.NCP (icon 274,95), no key until tick 16000 (80 s), then SPACE (not RETURN)
+200 parkbr
+600 move 274 95
+800 dclick
+16000 key 39
