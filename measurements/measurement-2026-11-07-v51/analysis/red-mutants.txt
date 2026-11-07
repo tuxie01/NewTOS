@@ -1,0 +1,134 @@
+original kernel/src/raster_copy.rs sha256 2095771a8c7d341f0b88df39f5725d1f5576e91de8a22b91a026eb50deb89cc2
+
+== M1 the one-pixel tail is dropped (every kernel)
+   exit 101 -> RED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   test copy_area_xor_twice_restores_the_store ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test result: FAILED. 2 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'copy_area_matches_the_reference_for_every_op_width_and_start_column' (5307968) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M2 the eight-pixel tail is dropped (every kernel)
+   exit 101 -> RED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test result: FAILED. 4 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'copy_area_matches_the_reference_at_every_height_and_stride' (5308087) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M3 op constant c0 ^ c1 taken as c0
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test copy_area_xor_twice_restores_the_store ... FAILED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test result: FAILED. 2 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+   first message: thread 'copy_rect_matches_the_backend_loop_at_every_overlap' (5308212) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M4 bsl picks Y where S is set and X where it is clear
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test result: FAILED. 3 passed; 7 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+   first message: thread 'copy_rect_matches_the_backend_loop_at_every_overlap' (5308351) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M5 adapter: columns always left to right
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test result: FAILED. 6 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+   first message: thread 'copy_rect_matches_the_backend_loop_off_the_screen_and_clipped' (5308472) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M6 adapter: rows always top-down
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test result: FAILED. 6 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+   first message: thread 'copy_rect_matches_the_backend_loop_off_the_screen_and_clipped' (5308593) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M7 adapter: source column clip lets one column past the right screen edge through
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+   first message: thread 'copy_rect_matches_the_backend_loop_off_the_screen_and_clipped' (5308712) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M8 right-to-left rows: destination cursor starts one pixel short
+   exit 101 -> RED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   test copy_area_xor_twice_restores_the_store ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test result: FAILED. 2 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+   first message: thread 'copy_area_matches_the_reference_at_every_height_and_stride' (5308826) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M9 the pure copy also taken for op 12 (NOT S)
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test result: FAILED. 4 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+   first message: thread 'copy_rect_matches_the_backend_loop_at_every_overlap' (5308952) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M10 op kernel: v12/v13 not saved (restore kept)
+   exit 101 -> RED
+   test every_v_register_used_is_saved_and_restored ... FAILED
+   test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+   first message: thread 'every_v_register_used_is_saved_and_restored' (5309083) panicked at tos-api/tests/raster_kernel_copy.rs:431:5:
+
+== M11 bottom-up walk steps down instead of up
+   exit 101 -> RED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   first message: process didn't exit successfully: `/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a76fdd16f4fbe1958/target/debug/deps/raster_kernel_copy-bcea58c7b580e96e` (signal: 10, SIGBUS: access to undefined memory)
+
+== M12 left-to-right op kernel loads the destination from the source cursor
+   exit 101 -> RED
+   first message: process didn't exit successfully: `/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a76fdd16f4fbe1958/target/debug/deps/raster_kernel_copy-bcea58c7b580e96e` (signal: 10, SIGBUS: access to undefined memory)
+
+== M13 the 16-pixel loop needs 32 pixels to start
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_for_every_op_on_overlap ... FAILED
+   test copy_area_matches_the_reference_at_every_height_and_stride ... FAILED
+   test copy_area_takes_the_low_nibble_of_the_op ... FAILED
+   test copy_area_matches_the_reference_for_every_op_width_and_start_column ... FAILED
+   test copy_rect_at_screen_size_with_a_wide_stride ... FAILED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test copy_area_xor_twice_restores_the_store ... FAILED
+   test copy_rect_matches_the_backend_loop_at_every_overlap ... FAILED
+   test result: FAILED. 2 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'copy_rect_matches_the_backend_loop_for_every_op_on_overlap' (5309499) panicked at tos-api/tests/raster_kernel_copy.rs:136:13:
+
+== M14 adapter: source row clip lets the row above the screen through
+   exit 101 -> RED
+   test copy_rect_matches_the_backend_loop_off_the_screen_and_clipped ... FAILED
+   test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+   first message: thread 'copy_rect_matches_the_backend_loop_off_the_screen_and_clipped' (5309623) panicked at tos-api/tests/../../kernel/src/raster_copy.rs:340:41:
+
+restored kernel/src/raster_copy.rs sha256 2095771a8c7d341f0b88df39f5725d1f5576e91de8a22b91a026eb50deb89cc2 (== original: True)

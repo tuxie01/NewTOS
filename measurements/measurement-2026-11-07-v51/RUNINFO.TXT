@@ -1,0 +1,107 @@
+V51 -- TASK/V51.md: NEON screen-to-screen rectangle copy with all 16 BitBlt ops (raster kernel 3) for the VDI
+screen backend's copy_rect (vro_cpyfm screen->screen, AES window move/scroll, VT52 scroll), on the V49 frame
+(ADR-036). Developer run, 2026-11-07. No card, no Pi, no push.
+Worktree branch v51 (agent worktree), base abe8dae1 (the V50 head: kernel 3255df27 + run bbf7197f + ticket).
+Change = 1197fed7 perf(vdi). Measured: base abe8dae1 against chg 1197fed7.
+Every QEMU/build side ran in a `git archive` tree of its commit in the session scratchpad (references/ linked);
+method/accept.sh holds the phases (trees builds boots tables probe slprobe gui pikernels; adapted from the V50 run's
+accept.sh, the pikernels phase is one pi-boot.sh per kernel, not V49's), method/rerun-gui.sh the rerun of two gui runs
+(below); the other method/ files are the V50 run's helpers with REPO = this worktree (boot-virt.sh now kills its QEMU
+by PID instead of a pattern), plus red-mutants.py and clippy.sh (adapted) and sllog-mask.py (new).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (33 manifests)
+QEMU 11.0.2: raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot, one QEMU
+at a time, each killed by its PID, QMP sockets by relative path in their own scratch dirs) and virt (qemu-virt,
+headless). After every QEMU step accept.sh listed the QEMUs whose command line names the scratch: none, every time
+(analysis/qemu-leak-check.txt).
+
+KERNELS (rpi4 --release kernel8.img; also in pi-kernels/, gitignored)
+  base       abe8dae1                         e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f 1525992 B
+  base-prof  abe8dae1 --features raster-prof  6ea946d09d04a29e17ace8a28fd19388a5f315e2a873b0e0287df9ceceedf96a 1534184 B
+  chg        1197fed7                         d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48 1525992 B
+  chg-prof   1197fed7 --features raster-prof  5fdb50ee93301ac80bb826de722306af7a83be617862c6c7e24850297409d30e 1534184 B
+  base and base-prof are byte-identical to the V50 run's "nachher" and "nachher + Profil" kernels (same sha256 in
+  TASK/V50.md): built here in another scratch tree, so the build reproduces. The change keeps the image size.
+  analysis/kernels.sha256, analysis/pi-kernels.sha256.
+
+RESULTS
+ 1 PASS  host tests (tos-api/tests/raster_kernel_copy.rs, 10 tests, on this arm64 Mac = the instructions the Pi runs;
+         analysis/green.txt, 0.42 s): copy_area against copy_area_reference (per pixel in the walk's order) for all 16
+         ops, widths 1..72,127..129,255..257, start columns 0..17, heights 1..12, strides minimal/+1/+3/1920, both
+         directions; copy_rect against copy_rect_reference (the backend's per-pixel loop before V51) behind the
+         backend's own clipping (ClipRect::clamp_to): destination shifted against the source by -17..+17 px and -3..+3
+         rows (same row and same column included), all 16 ops, 34 widths up to 257, on a roomy and a tight screen
+         (copy runs off the edges), >150000 cases; sources/destinations partly off the screen, clip cut on every side,
+         empty clips; 1920-px rows (scroll by one row, pan by 16/8/3) with a wider stride; op 5 and empty areas write
+         nothing; only the low op nibble counts; XOR twice restores; the V-register save/restore check on the source
+         (copy kernel v0-v3, op kernel v0-v13). Every store sits between two pages made inaccessible with
+         mmap+mprotect, once right after the lower one and once with the last screen row ending right before the upper
+         one, so a read or write past the screen rectangle crashes the test. The whole store is compared.
+         RED with 14 deliberately wrong kernels/adapters, each one textual edit, file restored byte for byte after each
+         (method/red-mutants.py, analysis/red-mutants.txt): 1-pixel tail dropped, 8-pixel tail dropped, op constant
+         c0^c1 taken as c0, bsl operands swapped, adapter columns always forward, adapter rows always top-down, source
+         column clip one past the right edge, right-to-left destination cursor one pixel short, op 12 taken as a plain
+         copy, v12/v13 not saved, bottom-up step with the wrong sign (SIGBUS at the guard page), forward op kernel
+         loading D from the source cursor (SIGBUS), 16-pixel loop starting at 32, source row clip one row above the
+         screen -- all 14 fail.
+ 2 PASS  cargo xtask test (worktree, references/ and the two gitignored rsc inputs linked from the main checkout):
+         base abe8dae1 2279 / 0 / 1, change 2289 / 0 / 1 (+10 = the new tests) (analysis/cargo-xtask-test-*.txt).
+         The change run was taken on the worktree before commit; the commit differs from it only in three doc-comment
+         lines of kernel/src/vdi_backend.rs, which no host test compiles.
+ 3 PASS  builds, fresh target per build, both boards, base / base+raster-prof / chg / chg+raster-prof
+         (analysis/builds-rc.txt, build-*.log, clippy-*.txt, warnings.txt): rustc tos-api 64 / kernel 93, clippy
+         tos-api 73 / kernel 121 everywhere: delta 0. Hits in the touched files: only kernel/src/lib.rs:9:9, the
+         `missing_docs` "lint level defined here" note, as on the base. Host test target clippy: 0 warnings
+         (analysis/clippy-host-test.txt).
+ 4 PASS  boots: qemu-virt headless, each tree's own fresh release build, 100 s (runs/boot-virt-*/): base and change
+         "[desk] desktop up (0 drives)", 0 exception/panic lines. raspi4b serial=on: every BOOT-SERIAL.txt of the run
+         0 exception/panic lines. The two Pi test kernels chg and chg-prof booted on their own (method/pi-boot.sh,
+         runs/boot-rpi4-{chg,chg-prof}/): "[desk] desktop up (1 drives)", 0 lines each.
+ 5 PASS  vdprobe (tosdump/probes/run-vdprobe.sh, probe/; the V26 rider TRA-TRM included, TRJ-TRM = screen->screen
+         overlapping copies in four directions): n-base vs n-chg VDPROBE.BIN byte-identical (cmp exit 0), VDPROBE.LOG
+         identical, vdprobe-compare 909 cases 0 differ; n-chg vs n-chg2 the same.
+ 6 PASS  tables via cargo xtask tosdump --tree <archive tree> with the pinned references (runs/tab-*,
+         analysis/tables-bin-compare.txt):
+           vdi-v18-t2 VDI.BIN base == chg byte-identical d61803b2fd94beb3; vs oracle 2 of 32 differ on both (V35)
+           vdi-all    VDI.BIN base == chg byte-identical e91b865b92b5dbf2; vs oracle 0 of 182 on both
+           aes-r2/r3/r4 AES.BIN base == chg byte-identical (3177719b8ba49866 / 3189d838b86b81fb / d106307edbc1d747):
+             the kernel image keeps its size, so even the address cell is equal. vs oracle: r2 78 of 78, r3 39 of 39
+             on both sides (the address words, as in the sibling runs); r4 no reference.
+ 7 PASS  slprobe (tosdump/probes/run-slprobe.sh, armed kernels per commit, base twice and change twice; runs/sl-*,
+         analysis/slprobe-compare.txt), 155 shots each:
+           base vs base2  4 differ: 121, 44, 67, 98                       (all "held1")
+           chg  vs chg2   6 differ: 121, 148, 152, 44, 67, 98             (all "held1")
+           base vs chg    5 differ: 121, 148, 152, 67, 98                 (all "held1")
+           base2 vs chg2  3 differ: 152, 67, 98                           (all "held1")
+         Only "held1" shots (40 ticks into a held page click) differ, base against base as much as base against
+         change; viewed 67-V-pagelo-held1 of base, base2 and chg: an empty white window, the vertical slider at three
+         different heights -- the known timing scatter (TASK/V44.md, TASK/HW08.md). SLPROBE.LOG differs the same way
+         base/base2 and base/chg (68-71 of 108 lines raw): with the tick stamps, the running event counter at the
+         start of a line and the repeat count of a held arrow masked, 0 lines differ in all four pairs
+         (method/sllog-mask.py, analysis/slprobe-log-masked.txt).
+ 8 PASS  pictures base vs change, PNG byte for byte (analysis/shots-compare-rerun.txt, runs/gui/; kernels: base/chg
+         plain, shprobe- and injector-armed builds of each commit, sha256 in the run.txt files; inputs
+         analysis/gui-inputs.txt):
+           shprobe 12/12 identical; shprobe-desk 2/2; desktop + IKBD injector (menu, dialog, rubberband, window drag
+           and release, slider drag, sizer drag, icon drags) 11/11 at 640x480 and 11/11 at 1920x1080; boot screen +
+           AUTO console (APITEST.NCP) 6/6 at 640x480 and 6/6 at 1920x1080. 0 exception/panic lines in every run.
+         Two runs of the first pass (shprobe-desk-chg and bc1080-chg) took 0 shots: their screendump client got
+         ConnectionRefusedError on QEMU's QMP socket right after the socket file appeared (shprobe-qmpshots.py /
+         timed-shots.py; the boot itself ran, 0 exception lines). Kept as runs/gui/*-qmpfail; analysis/
+         shots-compare.txt is that first pass. Both reran once with the same kernels and inputs (method/rerun-gui.sh)
+         and are the runs compared above.
+
+INFORMAL (not a result, not reproducible from this run)
+  An ad-hoc host micro-benchmark (test file written and deleted again, not committed) on the arm64 Mac, release, a
+  1920x1080 plain store: 64x64 copy 161 ns kernel vs 4.3 us for the old volatile per-pixel loop, 64x64 src+3 dst+11
+  237 ns vs 4.3 us, 64x64 XOR 359 ns vs 4.3 us, scroll up one line full screen 0.13 ms vs 2.1 ms, pan left 3 px full
+  screen 0.13 ms vs 2.1 ms. Says nothing about the Pi (memory bandwidth and the cache clean of the box decide there);
+  ADR-036 point 5 is decided by Fbench there.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime gain (ADR-036 point 5) -- plan in TASK/V51.md "Uebergabe Pi"; not touched (no card, no HW).
+  Oracle side not rerun: the records are base == change byte for byte, so the oracle comparison is the base's.
+  "Feature off = build without the feature" (CLAUDE.md "Testing") not applicable: raster-prof is unchanged; its
+  copy_rect hook exists since V49.
+  docs/DEVIATIONS.md does not exist on this branch (it came with V52 on main); read there (9f7b7557), it lists no
+  screen-to-screen copy behaviour.

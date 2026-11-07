@@ -1,0 +1,4 @@
+sl-base vs sl-base2: 155 shots, 4 differ, SLPROBE.LOG DIFFER: 121-121-min-V-pagelo-held1 44-044-1000-H-pagehi-held1 67-067-300-V-pagelo-held1 98-098-300-H-pagehi-held1
+sl-chg vs sl-chg2: 155 shots, 6 differ, SLPROBE.LOG DIFFER: 121-121-min-V-pagelo-held1 148-148-min-H-pagelo-held1 152-152-min-H-pagehi-held1 44-044-1000-H-pagehi-held1 67-067-300-V-pagelo-held1 98-098-300-H-pagehi-held1
+sl-base vs sl-chg: 155 shots, 5 differ, SLPROBE.LOG DIFFER: 121-121-min-V-pagelo-held1 148-148-min-H-pagelo-held1 152-152-min-H-pagehi-held1 67-067-300-V-pagelo-held1 98-098-300-H-pagehi-held1
+sl-base2 vs sl-chg2: 155 shots, 3 differ, SLPROBE.LOG DIFFER: 152-152-min-H-pagehi-held1 67-067-300-V-pagelo-held1 98-098-300-H-pagehi-held1

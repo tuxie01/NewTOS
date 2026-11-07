@@ -1,0 +1,2 @@
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v51/sl/slprobe.K8fGvR/tree: tag [inj], launch:SLPROBE (6630 bytes)
+kernel b661a1142d18d737403658fa86e92d1194df6aaa17681be5709a4ca30dd53879 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v51/k/sl-chg.img (commit 1197fed7328baba278dc0bdfee16540173c9f165, armed launch:SLPROBE)
