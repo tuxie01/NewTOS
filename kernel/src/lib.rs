@@ -1331,3 +1331,7 @@ fn log_boot_clock() {
 /// only).
 #[cfg(feature = "raster-prof")]
 pub mod raster_prof;
+
+/// NEON expansion of 1-bit sources (glyphs, mono blits) for the VDI screen
+/// backend (TASK/V50, ADR-036).
+pub mod raster_expand;

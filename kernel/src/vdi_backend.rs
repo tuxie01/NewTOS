@@ -1,11 +1,11 @@
 //! Software VDI rasterizer backend (Phase 12).
 //!
 //! Implements [`tos_api::vdi::backend::RasterBackend`] over the board's
-//! linear [`Framebuffer`]. Scalar CPU code, except the rectangle fills
-//! (`fill_rect`, `fill_pattern`): NEON kernels, [`crate::raster_kernel`]
-//! (ADR-036, TASK/V49). It is the swappable boundary the VDI layer draws
-//! through — NEON / DMA / VideoCore-V3D work replaces parts of this impl
-//! without the VDI layer changing (see the `RasterBackend` docs).
+//! linear [`Framebuffer`]. Scalar CPU code, except the rectangle fills and the
+//! 1-bit expansions (glyph box, `blit_mono`): NEON, [`crate::raster_kernel`]
+//! (TASK/V49), [`crate::raster_expand`] (TASK/V50), ADR-036. The swappable
+//! boundary the VDI layer draws through — NEON / DMA / VideoCore-V3D work
+//! replaces parts of this impl without the VDI layer changing (`RasterBackend` docs).
 //!
 //! Colours arrive as PEL (palette index); we resolve each at the write
 //! point through the **active** per-workstation pseudo-palette
@@ -28,7 +28,7 @@ use core::sync::atomic::{AtomicBool, AtomicU16, AtomicU32, Ordering};
 use tos_api::vdi::backend::{ClipRect, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
 use tos_api::vdi::line::LineTarget;
 
-use crate::{hal::framebuffer::{rgb, Framebuffer}, raster_kernel};
+use crate::{hal::framebuffer::{rgb, Framebuffer}, raster_expand, raster_kernel};
 
 /// Number of palette entries the VDI advertises as `DEV_TAB[13]`. The
 /// Falcon truecolor profile reports 256 (`vdi_control.c:206`,
@@ -687,7 +687,7 @@ impl RasterBackend for VdiScreen {
         clip: ClipRect,
     ) {
         let fb = active_fb();
-        #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::glyph();
+        #[cfg(feature = "raster-prof")] let mut _prof = crate::raster_prof::glyph();
         // Clipping off (`vs_clip(0)`, the VDI text path): EmuTOS' `text_blt`
         // cuts nothing and writes each cell pixel at its store address, so a
         // glyph past a screen edge runs on into the neighbouring row; the
@@ -732,24 +732,28 @@ impl RasterBackend for VdiScreen {
         let Some((x0, y0, x1, y1)) = cell.clamp_to(fb.width() as u16, fb.height() as u16) else {
             return;
         };
+        #[cfg(feature = "raster-prof")] _prof.add_area(x0, y0, x1, y1);
         let fg_rgb = Self::pel_to_rgb(fg);
         // Replace's cell-clear background is VDI pen 0 (`bgcol = palette[0]`
         // in EmuTOS `vdi_textblit.c` `WM_REPLACE`).
         let bg_rgb = Self::pel_to_rgb(0);
         // Each row occupies `bytes_per_row = ceil(cell_w/8)` bytes, MSB-first,
-        // leftmost byte first (so a cell wider than 8 px — text effects such as
-        // outline/skew widen the cell beyond the base 8 px — is a run of bytes
-        // per row). For `cell_w <= 8` this is one byte per row: `col/8 == 0` and
-        // `col & 7 == col`, so the 8×16 / 6×6 / 8×8 system-font path is byte-for-
-        // byte the former single-byte-per-row blit.
-        let bpr = (cell_w as usize).div_ceil(8);
-        for yy in y0..=y1 {
-            let base = (yy - y as i32) as usize * bpr;
-            for xx in x0..=x1 {
-                let col = (xx - x as i32) as usize; // 0..cell_w within the cell
-                let byte = glyph[base + col / 8];
-                let set = byte & (0x80u8 >> (col & 7)) != 0;
-                Self::combine(fb, xx as u32, yy as u32, set, mode, fg_rgb, bg_rgb);
+        // leftmost byte first (a cell wider than 8 px — text effects such as
+        // outline/skew widen the base cell — is a run of bytes per row). The
+        // NEON expansion draws the box (TASK/V50); the scalar loop it replaced
+        // runs only for what that refuses: a glyph shorter than the box (the
+        // loop panics on it, as ever) or one in the screen rows.
+        let (surface, bx) = (kernel_surface(fb), (x0, y0, x1, y1));
+        // SAFETY: the clamped box lies in the pixel store (`kernel_area`).
+        if !unsafe { raster_expand::glyph(surface, x as i32, y as i32, glyph, cell_w as usize, bx, mode, fg_rgb, bg_rgb) } {
+            let bpr = (cell_w as usize).div_ceil(8);
+            for yy in y0..=y1 {
+                let base = (yy - y as i32) as usize * bpr;
+                for xx in x0..=x1 {
+                    let col = (xx - x as i32) as usize; // 0..cell_w within the cell
+                    let set = glyph[base + col / 8] & (0x80u8 >> (col & 7)) != 0;
+                    Self::combine(fb, xx as u32, yy as u32, set, mode, fg_rgb, bg_rgb);
+                }
             }
         }
         Self::clean(fb, x0 as u32, y0 as u32, x1 as u32, y1 as u32);
@@ -770,27 +774,24 @@ impl RasterBackend for VdiScreen {
         #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::blit_mono(x0, y0, x1, y1);
         let fg_rgb = Self::pel_to_rgb(fg);
         let bg_rgb = Self::pel_to_rgb(bg);
-        // Reuse the shared four-mode `combine` (DRY with glyph/pattern/line).
-        // `combine`'s `RevTransparent` paints its `fg` slot on the *clear*
-        // bits; `vrt_cpyfm`'s `MD_ERASE` paints the **background** colour
-        // (INTIN[2]) there, so hand `combine` `bg_rgb` as its fg slot for
-        // that one mode. All other modes forward (fg, bg) directly:
-        //   Replace: set→fg, clear→bg; Transparent: set→fg; Xor: set→~D.
-        let (c_fg, c_bg) = match mode {
-            WriteMode::RevTransparent => (bg_rgb, fg_rgb),
-            _ => (fg_rgb, bg_rgb),
-        };
-        let stride = src.stride_words as usize;
-        for dyc in y0..=y1 {
-            let sy = src.y as i32 + (dyc - dst.y as i32);
-            for dxc in x0..=x1 {
-                let sx = src.x as i32 + (dxc - dst.x as i32);
-                let widx = sy as usize * stride + (sx as usize) / 16;
-                let set = src
-                    .bits
-                    .word(widx)
-                    .is_some_and(|w| w & (0x8000u16 >> (sx & 15)) != 0);
-                Self::combine(fb, dxc as u32, dyc as u32, set, mode, c_fg, c_bg);
+        // The four modes of `combine`, `MD_ERASE` with the background colour on
+        // the clear bits (`raster_expand::mono_colors`). The NEON expansion
+        // draws the box (TASK/V50); the scalar loop it replaced runs only for
+        // what that refuses: a negative source origin, a raster shorter than
+        // the box (missing words read as clear bits), a raster in the screen rows.
+        let (surface, bx) = (kernel_surface(fb), (x0, y0, x1, y1));
+        // SAFETY: the clamped box lies in the pixel store (`kernel_area`).
+        if !unsafe { raster_expand::mono(surface, dst.x as i32, dst.y as i32, &src, bx, mode, fg_rgb, bg_rgb) } {
+            let (c_fg, c_bg) = raster_expand::mono_colors(mode, fg_rgb, bg_rgb);
+            let stride = src.stride_words as usize;
+            for dyc in y0..=y1 {
+                let sy = src.y as i32 + (dyc - dst.y as i32);
+                for dxc in x0..=x1 {
+                    let sx = src.x as i32 + (dxc - dst.x as i32);
+                    let widx = sy as usize * stride + (sx as usize) / 16;
+                    let set = src.bits.word(widx).is_some_and(|w| w & (0x8000u16 >> (sx & 15)) != 0);
+                    Self::combine(fb, dxc as u32, dyc as u32, set, mode, c_fg, c_bg);
+                }
             }
         }
         Self::clean(fb, x0 as u32, y0 as u32, x1 as u32, y1 as u32);

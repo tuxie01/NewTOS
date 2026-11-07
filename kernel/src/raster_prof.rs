@@ -5,7 +5,7 @@
 //!
 //! Counted, per backend method (`crate::vdi_backend`): calls that reached the
 //! drawing (a rectangle clipped away entirely is not counted), pixels of the
-//! clipped rectangle (rectangle methods only), the method's whole time, and
+//! clipped rectangle (rectangle methods and the glyph box), the method's whole time, and
 //! the part of it spent in `clean`. `flush_rect` is its own row (tos-api's
 //! own row writers flush through it), so every `clean` belongs to exactly
 //! one row.
@@ -111,7 +111,7 @@ pub fn fill_pattern(x0: i32, y0: i32, x1: i32, y1: i32) -> Scope {
 pub fn abline() -> Scope {
     scope(2, 0)
 }
-/// `RasterBackend::draw_glyph_sized`.
+/// `RasterBackend::draw_glyph_sized` (pixels: [`Scope::add_area`]).
 pub fn glyph() -> Scope {
     scope(3, 0)
 }
@@ -306,4 +306,14 @@ pub fn hotkey(raw: u8, shifty: u8) -> bool {
         }
     }
     true
+}
+
+impl Scope {
+    /// Count the pixels of the inclusive rectangle `clamp_to` returned, for
+    /// a method that knows them only after its scope began
+    /// (`draw_glyph_sized`'s box path, TASK/V50; its clip-off run-on path
+    /// counts none).
+    pub fn add_area(&mut self, x0: i32, y0: i32, x1: i32, y1: i32) {
+        self.pixels += area(x0, y0, x1, y1);
+    }
 }
