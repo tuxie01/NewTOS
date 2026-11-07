@@ -119,36 +119,47 @@ in this release.
 4. New in 0.7.1
 ---------------
 
-- Copying and moving between drives no longer loses data (see the box
-  at the top).
-- Saving: a single card error no longer makes every later save fail
-  until a restart. The program receives an error code, and saving works
-  again as soon as the card answers. Larger files are written to the
-  card when they are closed (as on EmuTOS), with far fewer card writes,
-  so saving and copying are faster.
-- HypView as an accessory no longer crashes when it is opened a second
-  time (GitHub #22).
-- QED: check boxes, radio buttons and the alert icons are drawn
-  correctly (GitHub #21); HypView shows the black-and-white
-  pictures of .HYP files (e.g. the QED.HYP logo) correctly.
-- HypView: the toolbar icons show the colours they were drawn in, as
-  close as the standard TOS palette allows (GitHub #23). They were drawn
-  for a different palette (NVDI's); the HypView build now adapts them to
-  the TOS palette. NewTOS itself draws colour icons exactly like EmuTOS.
-- CoreMark keeps its result on the screen until you press a key (GitHub
-  #12). The desktop itself does not wait after a console program, just
-  like EmuTOS.
-- Window scroll bars behave like EmuTOS: dragging the slider shows an
-  outline instead of stripes, holding the button on an arrow or in the
-  bar repeats (GitHub #2).
-- The window shadow has the frame colour (black) like EmuTOS instead of
-  a grey line (GitHub #7).
-- Menus: a quick click on a menu entry is no longer lost. In the desktop
+4.1 Operating system (NewTOS)
+
+- GEMDOS: copying and moving between drives no longer loses data (see
+  the box at the top).
+- GEMDOS and SD card: a single card error no longer makes every later
+  save fail until a restart. The program receives an error code, and
+  saving works again as soon as the card answers. Larger files are
+  written to the card when they are closed (as on EmuTOS), with far
+  fewer card writes, so saving and copying are faster.
+- AES: window scroll bars behave like EmuTOS: dragging the slider shows
+  an outline instead of stripes, holding the button on an arrow or in
+  the bar repeats (GitHub #2).
+- AES: the window shadow has the frame colour (black) like EmuTOS
+  instead of a grey line (GitHub #7).
+- AES: a quick click on a menu entry is no longer lost. In the desktop
   a menu click acts after the double-click time (about 0.2 s), as on
   EmuTOS.
-- File selector: the title bar shows the file mask (e.g. *.*).
-- Many smaller drawing corrections in the VDI, measured against EmuTOS
+- AES: the file selector's title bar shows the file mask (e.g. *.*).
+- VDI: many smaller drawing corrections, measured against EmuTOS
   (lines, fills, flood fill, text underline, GDOS fonts).
+
+4.2 SDK (libraries for ported programs)
+
+- cflib: the library's built-in images (check boxes, radio buttons,
+  alert icons) were stored in 68000 byte order and therefore drawn
+  wrongly. Every program using cflib was affected; it showed in QED
+  (GitHub #21).
+
+4.3 Included programs
+
+- HypView: no longer crashes when opened a second time as an accessory
+  (GitHub #22).
+- HypView: shows the black-and-white pictures of .HYP files (e.g. the
+  QED.HYP logo) correctly.
+- HypView: the toolbar icons were drawn for NVDI's palette. The port now
+  adapts them to the standard TOS palette, so they show the intended
+  colours as closely as that palette allows (GitHub #23). The operating
+  system is unchanged; it draws colour icons like EmuTOS.
+- CoreMark: keeps its result on the screen until you press a key
+  (GitHub #12). The desktop does not wait after a console program, like
+  EmuTOS.
 
 Earlier releases: see https://github.com/tuxie01/NewTOS/releases
 

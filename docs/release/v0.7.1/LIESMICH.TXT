@@ -123,38 +123,49 @@ die laufen in dieser Version noch NICHT.
 4. Neu in 0.7.1
 ---------------
 
-- Kopieren und Verschieben zwischen Laufwerken verliert keine Daten
-  mehr (siehe Kasten oben).
-- Speichern: Ein einzelner Kartenfehler laesst nicht mehr jedes spaetere
-  Speichern bis zum Neustart scheitern. Das Programm bekommt einen
-  Fehlercode, und sobald die Karte wieder antwortet, geht das Speichern
-  wieder. Groessere Dateien kommen beim Schliessen auf die Karte (wie bei
-  EmuTOS), mit viel weniger Schreibzugriffen; Speichern und Kopieren
-  sind dadurch schneller.
-- HypView als Accessory stuerzt beim zweiten Oeffnen nicht mehr ab
-  (GitHub #22).
-- QED: Checkboxen, Radiobuttons und die Alert-Icons werden richtig
-  gezeichnet (GitHub #21); HypView zeigt die Schwarzweiss-Bilder der
-  .HYP-Dateien (z. B. das Logo in QED.HYP) richtig.
-- HypView: Die Icons der Werkzeugleiste zeigen die Farben, in denen
-  sie gezeichnet sind, so nah, wie es die Standardpalette von TOS
-  erlaubt (GitHub #23). Sie waren fuer eine andere Palette gezeichnet
-  (die von NVDI); der Bau von HypView passt sie jetzt an die
-  TOS-Palette an. NewTOS selbst zeichnet Farb-Icons genau wie EmuTOS.
-- CoreMark laesst sein Ergebnis stehen, bis du eine Taste drueckst
-  (GitHub #12). Der Desktop selbst wartet nach einem Textprogramm nicht,
-  genau wie bei EmuTOS.
-- Fenster-Rollbalken verhalten sich wie bei EmuTOS: Beim Ziehen des
-  Schiebers erscheint ein Umriss statt Streifen, gehaltene Taste auf
+4.1 Betriebssystem (NewTOS)
+
+- GEMDOS: Kopieren und Verschieben zwischen Laufwerken verliert keine
+  Daten mehr (siehe Kasten oben).
+- GEMDOS und SD-Karte: Ein einzelner Kartenfehler laesst nicht mehr
+  jedes spaetere Speichern bis zum Neustart scheitern. Das Programm
+  bekommt einen Fehlercode, und sobald die Karte wieder antwortet, geht
+  das Speichern wieder. Groessere Dateien kommen beim Schliessen auf die
+  Karte (wie bei EmuTOS), mit viel weniger Schreibzugriffen; Speichern
+  und Kopieren sind dadurch schneller.
+- AES: Fenster-Rollbalken verhalten sich wie bei EmuTOS: Beim Ziehen
+  des Schiebers erscheint ein Umriss statt Streifen, gehaltene Taste auf
   einem Pfeil oder in der Leiste wiederholt (GitHub #2).
-- Der Fensterschatten hat die Rahmenfarbe (schwarz) wie bei EmuTOS
+- AES: Der Fensterschatten hat die Rahmenfarbe (schwarz) wie bei EmuTOS
   statt einer grauen Linie (GitHub #7).
-- Menues: Ein schneller Klick auf einen Menueeintrag geht nicht mehr
+- AES: Ein schneller Klick auf einen Menueeintrag geht nicht mehr
   verloren. Im Desktop wirkt ein Menueklick nach der Doppelklickzeit
   (etwa 0,2 s), wie bei EmuTOS.
-- Dateiauswahl: Die Titelleiste zeigt die Dateimaske (z. B. *.*).
-- Viele kleinere Zeichenkorrekturen im VDI, gemessen an EmuTOS (Linien,
+- AES: Die Titelleiste der Dateiauswahl zeigt die Dateimaske (z. B. *.*).
+- VDI: Viele kleinere Zeichenkorrekturen, gemessen an EmuTOS (Linien,
   Fuellungen, Flutfuellung, Unterstreichung, GDOS-Fonts).
+
+4.2 SDK (Bibliotheken fuer portierte Programme)
+
+- cflib: Die eingebauten Bilder der Bibliothek (Checkboxen,
+  Radiobuttons, Alert-Icons) lagen in der Byte-Reihenfolge des 68000
+  vor und wurden deshalb falsch gezeichnet. Betroffen waren alle
+  Programme mit cflib, aufgefallen in QED (GitHub #21).
+
+4.3 Mitgelieferte Programme
+
+- HypView: stuerzt als Accessory beim zweiten Oeffnen nicht mehr ab
+  (GitHub #22).
+- HypView: zeigt die Schwarzweiss-Bilder der .HYP-Dateien (z. B. das
+  Logo in QED.HYP) richtig.
+- HypView: Die Icons der Werkzeugleiste waren fuer die Palette von NVDI
+  gezeichnet. Bei der Portierung werden sie jetzt an die Standardpalette
+  von TOS angepasst und zeigen die gemeinten Farben, so nah es diese
+  Palette erlaubt (GitHub #23). Das Betriebssystem ist unveraendert, es
+  zeichnet Farb-Icons wie EmuTOS.
+- CoreMark: laesst sein Ergebnis stehen, bis du eine Taste drueckst
+  (GitHub #12). Der Desktop wartet nach einem Textprogramm nicht, wie
+  bei EmuTOS.
 
 Fruehere Versionen: siehe https://github.com/tuxie01/NewTOS/releases
 
