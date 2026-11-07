@@ -1,0 +1,17 @@
+measurement-2026-11-07-a141-test -- test of 857cf10d + 899d7c4d (TASK/A141 B2): HypView icon recolouring NVDI -> TOS palette.
+Tester, 2026-11-07, main tree at HEAD 899d7c4d (clean at start). QEMU raspi4b + Hatari oracle only; no Pi, no card, no product code touched.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1). Manifests: runs/*/card.img.manifest; optional_missing none (all).
+kernel (cargo xtask build --board rpi4 --release, HEAD): ff324da4eac40cfa87571989984eeddbef498f2e5bd3a627199694f0871e82fd
+  (developer's run: 07308974...; the kernel sources are identical fdeeeead..HEAD, difference not chased -- build path/timestamp class)
+RESULTS
+ 1 build-hypview.sh twice: hyp_view.rsc 1d1186e8...7c60 both times and = developer's; hyp_view-recoloured.rsc 41ab67ee...; HYP_VIEW.NAP e65d873c... both;
+   recolour log identical to developer's analysis/recolour-cicons.log (diff empty): 96 targets, 8 unchanged, 75 tied; 252 -> 7, 250 -> 17.
+ 2 cargo xtask test: 2241 passed, 0 failed, 1 ignored (runs/xtask-test-full.txt); both rsc_recolour_tests ok.
+   Red: scratch copy (rsync of the tree without target/.git, references symlinked) with `lut.append(cands[0])` -> `lut.append(n)` (identity):
+   hypview_rsc_8plane_icons_take_the_nearest_tos_colour FAILED "register 252 -> 252 is not a nearest colour", palette test ok. Copy deleted; tree untouched.
+ 3 git diff --stat fdeeeead..HEAD -- kernel tos-api tos-types programs: empty.
+ 4 runs/newtos-hypview (method/newtos-hypview.sh, TEST.HYP = cflib.hyp): shots/hypview.png sha256 f564c0e4...a918e8 = byte-identical to developer's.
+   runs/icprobe-emutos + runs/icprobe-newtos (tosdump/probes/run-icprobe.sh, 7 trees): runs/icprobe-compare.txt: cases 59, differing 0. (BIN gzipped)
+ 5 runs/newtos-hypview-qed (QED.HYP): page with the black/white qed logo picture and links renders; runs/boot-desktop (menu Desk/File/View/Options, green
+   desktop, no drive icons since the card has only NEWDESK.INF); runs/boot-qed (QED.NAP autorun: menu bar qed/Datei/.../Shell, no window). panic-lines 0 in all.
+   QED.NAP = existing sdk/apps/qed/build (not rebuilt). method/boot-shot.sh is this run's script.
