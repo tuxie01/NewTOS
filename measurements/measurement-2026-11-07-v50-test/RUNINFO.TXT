@@ -1,0 +1,109 @@
+V50 tester acceptance -- TASK/V50.md, run 2026-11-07 (independent of the developer's run
+measurements/measurement-2026-11-07-v50/). Worktree branch v50, base ce5e79c2 (V49 head), change 3255df27 (head abe8dae1 adds
+only run + ticket). No card, no Pi, no push, no product-code change.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (31 manifests)
+QEMU 11.0.2; raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot) and virt (headless);
+one QEMU at a time, each ended by its script (PID); ps showed no QEMU of mine after every step.
+Method: git archive trees of both commits in the session scratchpad (references/ linked); the developer's accept.sh read and reused
+(method/accept.sh = his script with outputs here, helpers called from measurements/measurement-2026-11-07-v50/method/; the
+pikernels phase, which leaves QEMUs running, removed and not run). Own: method/mutants.py, method/vdprobe-x50.c (+ x50-cases.c,
+build-x50.sh, run-x50.sh, run-x50-both.sh, x50-stats.py), method/run-all.sh, method/aes-bin-diff.py (copy of the developer's).
+Kernels (rpi4 --release kernel8.img): base 35b1d793..., chg e07cbdbf..., base+prof 37ac5065..., chg+prof 6ea946d0... -- all equal to
+the developer's values and to the four files in measurement-2026-11-07-v50/pi-kernels/ (analysis/kernels.sha256,
+analysis/pi-kernels-sha256-checked.txt). "nachher" rebuilt from 3255df27 byte-equal.
+
+RESULTS
+ 1 PASS  ADR-036 by reading and by disassembly (analysis/asm-instructions.txt): llvm-objdump of the release kernel over
+         raster_expand::mono..expand: SIMD mnemonics are bit, bsl, cmtst, dup, eor, ext, ld1, st1, mov, ldp/stp/ldr/str q only;
+         no f*, no sq*/uq*, no mla. Registers named: v0..v14 only. Source: Replace uses v0-v3 (masks/pixels), v4-v7 (lane bits),
+         v8 fg, v9 bg, v10 (dup scratch) and saves/restores q0-q10 (stp q0-q9 + str/ldr q10); the rmw kernels use v0-v3, v4-v7, v8,
+         v10, v11-v14 and save/restore q0-q8, q10-q14 (v9 unused): equal to the lists. Restores sit before the asm! ends, then
+         `.arch armv8-a+nofp+nosimd`. No read past the last needed unit: per row one unit is loaded in the prologue (the row
+         has >= 1 pixel), a further unit only while fewer bits are held than min(pixels left, 16); the guard-page host test
+         plus my mutant T5 (refill when nb == needed) -> SIGBUS at the guard page. The FP-context argument is V49's, unchanged
+         (same leaf asm blocks, same trap path); not re-derived here.
+ 2 PASS  host tests: tos-api/tests/raster_kernel_expand.rs 11 passed (analysis/expand-tests.txt). cargo xtask test in the worktree:
+         2279 passed / 0 failed / 1 ignored (analysis/cargo-xtask-test-chg.txt, rc 0) = the developer's claim; base 2268 not re-run
+         (the change adds exactly the one 11-test file to tos-api/tests). The scalar references read: glyph_reference =
+         the removed draw_glyph_sized loop, mono_reference = the removed blit_mono loop incl. the MD_ERASE (bg, fg) swap and
+         "word past the raster = clear" (checked against `git show 3255df27` of vdi_backend.rs).
+         My own 12 mutants (method/mutants.py, analysis/mutants.txt), each one edit, file restored from a copy (sha256 equal
+         before/after): 11 RED (Word Xor eor->bit 5 fail; MD_ERASE swap removed 1; rmw restore of q8,q10 dropped 1; Replace restore
+         of q10 dropped 1; refill one unit too many SIGBUS; Byte Replace fg/bg swapped 3; start-bit shift dropped 5; mono start
+         bit +1 3; Replace 2-pixel tail test on bit 0 5; mono short-raster check off by one word 1; skipped word advances 60 bytes
+         5). ONE SURVIVED (T10: glyph() guard `(x1 - x) as usize >= cell_w` weakened to `>`): see FINDINGS.
+ 3 PASS  fallback cases, reading + real run: the adapters refuse (return false, store untouched, host-tested) and the backend
+         then runs the old loops, which are the removed code verbatim (diff of 3255df27). Reachability: glyph -- short glyph /
+         source in the screen rows: no real caller (text.rs blit_cell passes exactly h*bpr bytes of a kernel buffer, graf.rs and
+         object.rs pass font tables of form_height rows); box outside the cell cannot happen (cell.clamp_to). mono -- negative
+         source origin and short raster ARE reachable from vrt_cpyfm (PTSIN/MFDB from the program; words = fd_h*wdwidth) and
+         not from the AES (blit_plane_kernel sizes the raster as stride*(src_y+h)); raster in the screen rows: contrived (the
+         MFDB goes through bind with the program's rights). Real run: extra cases Va..Vc (negative column, negative row, fd_h
+         too short) in all four modes; with a deliberately broken NEON Replace (probe-x50-mutant) Va1/Vb1/Vc1 stay equal to the
+         base (they take the scalar loop) while Vd1/Ve1/Vf1 (odd raster address, clip window, columns past fd_w: not refused)
+         differ -- so the refused ones draw the old pixels through the old path, the others go through the kernel.
+ 4 PASS  builds both boards, fresh target per build (analysis/builds-rc.txt, warnings.txt): rpi4 and qemu-virt, base / chg /
+         base+raster-prof / chg+raster-prof, all rc 0 (build and clippy): rustc tos-api 64 / kernel 93, clippy tos-api 73 /
+         kernel 121 everywhere: delta 0; the one hit in the touched files is kernel/src/lib.rs:9:9 (the missing_docs note), as on
+         the base. Feature-off check (analysis/feature-off-check.txt): chg with its two raster-prof hook lines blanked (same line
+         count) builds to the same kernel8.img sha256 e07cbdbf... as chg: byte-identical, no Location differences at all.
+         Boots: qemu-virt headless, each tree's own fresh release build, 100 s (runs/boot-virt-*): base and change "[desk] desktop
+         up (0 drives)", 0 exception/panic lines. raspi4b serial=on: 31 BOOT-SERIAL.txt, 0 exception/panic lines in all; 27 reach
+         "desktop up"; the 4 boot+console runs (bc*) stop in APITEST.NCP in AUTO (waits on Cconin), by design, as in V49.
+ 5 PASS  base == change byte for byte, tables (cargo xtask tosdump --tree, runs/tab-*, analysis/tables-bin-compare.txt):
+           vdi-v18-t2 VDI.BIN identical d61803b2fd94beb3 (vs oracle 2 of 32 differ on both sides: V35 cases)
+           vdi-all    VDI.BIN identical e91b865b92b5dbf2 (vs oracle 0 of 182)
+           aes-r2 / r3 / r4: tosdiff base vs change with the table 0 of 78 / 39 / 181 cases differ (analysis/aes-bin-diff.txt).
+             Raw AES.BIN: same size, exactly one byte differs per case (78 / 39 / 181; cmp -l: all at the same record offset, all
+             0x4a -> 0x5a), i.e. the address cell the table compares as an address; nothing else. Cause checked: chg vs
+             chg+raster-prof (kernel image +8192 B) moves the same byte 0x5a -> 0x7a (+0x20 = 2 x 0x10), r3, 39/39
+             (runs/tab-chgprof-r3, analysis/aes-addr-causality.log): proportional to the image size (+4096 B = +0x10 in that
+             byte). The developer's "+0x1000" is a different unit of the same cell; what I verified is the proportionality.
+           vs oracle: r2 78/78, r3 39/39 differ on both sides (address words, as in the siblings), r4 no reference.
+         vdprobe (tosdump/probes/run-vdprobe.sh, probe/; includes T14*, T31*, ZB/ZC/ZD/ZG): VDPROBE.BIN base == change (cmp exit 0,
+         sha256 c2825bd2... in analysis/vdprobe-bin-sha256.txt; the BINs themselves deleted afterwards, 25 MB each), LOG
+         identical, vdprobe-compare 909 cases 0 differ; change run twice equal. shprobe 12/12, shprobe-desk 2/2, desktop + IKBD
+         injector 11/11 at 640x480 and 11/11 at 1920x1080, boot screen + AUTO console 6/6 at 640x480 and 6/6 at 1920x1080
+         (no timing frame this time): PNG byte for byte (analysis/shots-compare.txt, analysis/gui-inputs.txt). Viewed by me:
+         runs/gui/desk480-chg/shots/02-02-dialog.png (About dialog, grey 3D panel, centred lines, OK button, file names
+         LONGNM03.TXT.. legible with page icons at the right) and runs/gui/desk1080-chg/shots/07-07-icon-drag-held.png (menu
+         bar, two desktop icons with labels "Hard disk"/"Trash", C:\ window with 15 icons and 12-char labels LONGNM01.TXT.. crisp,
+         dotted drag frame): glyphs complete, no smear at the cell edges.
+ 6 PASS  text-effects / vrt_cpyfm extra (method/vdprobe-x50.c = the current vdprobe.c plus x50(), tosdump/probes/vdprobe.c
+         untouched; probe-x50/): 176 added cases after the standard 909 (1085 total), window 220x70 / 220x50 over a two-colour
+         backdrop:
+           Y (88): vst_effects 0,1(bold),2(light),4(skew),8(underline),16(outline),1|8,4|8,16|1,31,2|4 x write modes replace /
+             transparent / xor / rev-transparent x heights default and 26 (scaled/effect cell path), v_gtext at odd x = 31.
+           Z (8): rotation 900 with bold, and v_justified with bold+underline, in the four modes.
+           W (56): vrt_cpyfm 1-plane memory form -> screen, source columns 0,1,7,15,16,17,31 x destination x 23 (odd) / 40 x
+             the four modes incl. MD_ERASE (mode 4; fg 1, bg 6), 17x9 block.
+           V (24): the refused cases (see 3) x four modes, plus odd raster address, clip window, columns past fd_w.
+         base vs change: VDPROBE.BIN byte-identical (cmp exit 0, sha256 7942172d... ), LOG identical, vdprobe-compare 1085 cases 0
+         differ. The probe is sensitive: probe-x50-mutant (kernel with the Replace bsl fg/bg swapped, built from a scratch tree)
+         differs from the base in 453 of 1085 cases: 412 of the standard 909 (the text part: T13..T31, ZA..ZG, T1xx, TX*) and 41 of the
+         176 x50 cases -- exactly the mode-1 (Replace) ones: Y 22, Z 2, W 14, V 3 (Vd1, Ve1, Vf1); the Transparent/XOR/MD_ERASE
+         cases do not change under that mutant, as expected (probe-x50-mutant/compare-base-mut.txt) -- so the cases reach the NEON
+         path. analysis/x50-stats-chg.txt: every case draws (Y 3..4 colours, Z 3..4, W 2..3, V 2..4; the mode-4 W/V cases paint
+         the bg pen already present in the backdrop, hence "few pixels outside the two most common colours" there).
+         Superseded first x50 run (probe-x50-first): same 176 case names, but its Z1x v_justified call used the wrong opcode
+         (10 instead of 11/10) and drew nothing; fixed and re-run; first run base == change as well (cmp exit 0).
+ 7 PASS  the four Pi kernels in measurements/measurement-2026-11-07-v50/pi-kernels/: sha256 equal to RUNINFO v50 (analysis/
+         pi-kernels-sha256-checked.txt); my fresh builds of 3255df27 / ce5e79c2 (+/- raster-prof) have the same four sha256
+         (analysis/kernels.sha256). Not booted by me (the developer's pi-boot is not part of this run, the pikernels phase leaks
+         QEMUs); the same ELF/images chg and base booted here as raspi4b serial=on runs (kernel builds are the same bytes).
+
+FINDINGS
+  F1 (test gap, harmless): my mutant T10 (glyph() accepting a box one column wider than the cell) survives the 11 host tests. The
+     boundary is unreachable from the backend (the box is cell.clamp_to inside the cell), so no pixel can change; the "box outside
+     the cell" refusal test only uses boxes far outside. Suggest one boundary case (x1 - x == cell_w) in glyph_refuses_*.
+  F2 (cosmetic): the developer's "+0x1000" for the AES.BIN address cell is the cell seen in another unit; the cell moves
+     proportionally to the kernel image size (+4096 B -> byte +0x10, +8192 B -> +0x20, measured).
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime gain (ADR-036 point 5, Fbench via the four kernels), cache behaviour of the Non-Cacheable FB with NEON
+  stores/loads (dc civac class), HDMI -- not QEMU-reproducible, for the user's HW test. A runtime check that the EL0 V
+  registers survive a kernel call is in no test (the host test checks the save/restore lists in the source; I also compared them
+  against the registers named in the disassembly). slprobe not run (known non-deterministic frames). Oracle side not rerun
+  (base == change). Base `cargo xtask test` (2268) not re-run. The standard raster-prof table was not driven (not the
+  scope; V49 covers it; the add_area pixel count is only compiled with the feature).

@@ -1,0 +1,11 @@
+=== phase trees 20:38:59
+tree base = ce5e79c229b56045941852f2a62bef774e7762bc
+tree chg = 3255df27d7477087fc6e5363d04149f9015ef385
+=== done trees 20:39:16
+=== phase builds 20:39:16
+37ac5065fe6751520c870601ce04121d91a8389fe5ad78c37ccb0fdca6e72266  base-prof-rpi4-release.img
+35b1d793d15c9ca1f29da50b3260e816a9531f5f56ae2e533827d03e8204b20a  base-rpi4-release.img
+6ea946d09d04a29e17ace8a28fd19388a5f315e2a873b0e0287df9ceceedf96a  chg-prof-rpi4-release.img
+e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f  chg-rpi4-release.img
+739609f6ca623e99c16d073b60448e26c81382dd32782662946b3ec529c46612  fix-rpi4-release.img
+=== done builds 20:41:24
