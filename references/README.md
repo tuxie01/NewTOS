@@ -18,6 +18,7 @@ references/
 ├── emutos/                   # EmuTOS upstream checkout (Track A primary)
 ├── freemint/                 # FreeMiNT checkout (Track A secondary)
 ├── xgdos/                    # XGDOS, upstream of TASK/PORT12 (not a TOS reference)
+├── tos4x/                    # Atari's TOS 4 sources, parked: see below, not a source for now
 ├── datasheets/               # BCM2711 ARM Peripherals datasheet (PDF)
 ├── sd-spec/                  # SD Simplified Specifications (PDF, see below)
 │   └── archive/              #   superseded editions kept for old citations
@@ -113,6 +114,17 @@ FreeMiNT @ f906416 — sys/ssystem.c:s_system(), sys/cookie.c:get_cookie()
 - **Pin:** commit **`f6c5aeb7`** (cloned 2026-11-06), GPL-2.0-only.
 - **Role:** upstream of a port candidate, not a TOS reference. Read-only here: builds
   work on a copy, patches live in `sdk/overlays/xgdos/`.
+
+---
+
+## tos4x (parked)
+
+- **Location:** `references/tos4x/` (a clone of https://github.com/mikrosk/tos4x), user 2026-11-07.
+- **Pin:** commit **`4bad523b`** (cloned 2026-11-07). No licence file seen in the tree.
+- **Content:** by its README the TOS 4 and MultiTOS source history from Atari, which builds byte-exact ROMs.
+- **Role: none yet.** Not a source under the Source Analysis Protocol. NewTOS is a clean-room
+  reimplementation with EmuTOS as its specification, so whether anyone may read this tree for NewTOS work is
+  the user's decision. Until then no code, spec or worker brief draws on it.
 
 ---
 
