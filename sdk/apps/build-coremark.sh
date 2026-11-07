@@ -40,12 +40,12 @@
 #   in the old built-in desktop's launch_native and was removed with it
 #   (DESK43 U3), so the promise was wrong since then. So the port
 #   waits itself: portable_fini() in sdk/overlays/coremark/newtos/core_portme.c
-#   prints "Press any key to exit." and waits for a key after the timed region,
-#   but only when the current directory is not the root. A desktop launch
-#   from C:\COREMARK\ therefore waits; a run from C:\AUTO\ (which starts in the
-#   root) does not, so measurement images that boot both programs from AUTO
-#   still reach the desktop (TASK/DESK70). `.NTP` would open the desktop's
-#   parameter dialog first, for a command tail CoreMark does not read.
+#   prints "Press any key to exit." and always waits for a key after the timed
+#   region (TASK/DESK70). So neither program belongs in C:\AUTO\, where it
+#   would stop the boot; a run without keyboard starts CORE.NCP with a #Z
+#   autorun line in C:\NEWDESK.INF and reads the serial log. `.NTP` would open
+#   the desktop's parameter dialog first, for a command tail CoreMark does not
+#   read.
 #
 # FLAGS
 #   The NewTOS freestanding set shared with the other build-*.sh, plus -O2 and

@@ -1,0 +1,6 @@
+45 dumps in 90.3 s (interval 2.0 s); stop: none x0 NOT matched
+# screen first_s last_s sha1(ppm)
+  0    0.057    0.057 ed26c2d3aad9
+  1    2.058   14.087 834e2d22e5fa
+  2   16.093   38.142 7da9cf152f6a
+  3   40.146   88.267 db211c9abdbe

@@ -80,7 +80,7 @@ image_sha256 <sha256 of the image file>
 size_mib 64
 created 2026-10-26T20:35:13Z
 host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
-switch SD_COREMARK_AUTO=1                       (one line per SD_* variable set)
+switch SD_SYSINFO_AUTO=1                        (one line per SD_* variable set)
 optional_missing none                           (or one line per missing part)
 metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
 file <sha256> <bytes> C:\Apps\TERADESK\cicons.rsc  (one line per file, C: and D:)
@@ -180,13 +180,15 @@ debug kernel runs the TASK/MEM11 pointer assertion
 lines start with `[MXPROBE]`, the last one is `MXPROBE: PASS` or `FAIL`;
 `SD_MXPROBE_AUTO=0` leaves it out. Besides it only `\AUTO\READ.ME` is there,
 saying what the folder is for (the `HELLO.NCP` copy that used to auto-run at
-boot was dropped on 2026-09-30). Eight more environment switches copy a
+boot was dropped on 2026-09-30). Seven more environment switches copy a
 program into `\AUTO\` on request (`grep -o 'SD_[A-Z0-9_]*_AUTO'
 tools/make-sd-image.sh`): `SD_SCRFLIP_AUTO=1`, `SD_SYSINFO_AUTO=1`,
 `SD_CLOCKTEST_AUTO=1`, `SD_SETJMPTST_AUTO=1`, `SD_MATHTST_AUTO=1`,
-`SD_COREMARK_AUTO=1`, `SD_FPPEXEC_AUTO=1`, `SD_LDGTEST_AUTO=1`. Every one of
+`SD_FPPEXEC_AUTO=1`, `SD_LDGTEST_AUTO=1`. Every one of
 them names a program that ends by itself — a program that waits for a key
-would stop the boot from there.
+would stop the boot from there. CoreMark waits for a key after its result
+(TASK/DESK70), so it has no such switch since 2026-11-07; a run without a
+keyboard starts it with `#Z 00 C:\COREMARK\CORE.NCP@` (see `#Z` below).
 
 **Copying with `mtools` instead.** The quick start's `mcopy -i sd.img@@1M`
 assumes its own image (partition at sector 2048). `make-sd-image.sh` puts

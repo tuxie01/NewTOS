@@ -33,10 +33,21 @@ Punkt 1 ist gemessen (`7d700cf3`, `docs/audits/2026-11-07-desk70-tos-exit.md`): 
 
 Umgesetzt (Developer, Quittung [DESK70-STATUS-DONE.MD](DESK70-STATUS-DONE.MD)):
 
-- `portable_fini` in `sdk/overlays/coremark/newtos/core_portme.c` wartet nach dem letzten Ergebnis auf eine Taste (`Press any key to exit.`, `Crawcin`), ausserhalb der Zeitmessung. Es wartet nur, wenn das aktuelle Verzeichnis nicht die Wurzel ist (`Dgetpath`). Ein AUTO-Programm startet in der Wurzel des Bootlaufwerks (EmuTOS `bios/bios.c:685-695`, `bdos/proc.c:396-410`; `docs/api/gemdos/process/_run-ownership-curdir.md` 4.2, 6.5). Der Desktop setzt vor dem Start das Programmverzeichnis oder das des obersten Fensters (`desk/desksupp.c:880-915`). Geaendert ist nur `core_portme.c` (CoreMark-Regeln).
+- `portable_fini` in `sdk/overlays/coremark/newtos/core_portme.c` wartet nach dem letzten Ergebnis immer auf eine Taste (`Press any key to exit.`, `Crawcin`), ausserhalb der Zeitmessung. Geaendert ist nur `core_portme.c` (CoreMark-Regeln). Der erste Bau (`729bab3b`) wartete nur, wenn das aktuelle Verzeichnis nicht die Wurzel war (`Dgetpath`), damit CORE/COREVAL aus `C:\AUTO` weiter durchliefen; das hat der Anwender verworfen (siehe unten).
 - Vier Textstellen aus dem Audit richtiggestellt (`sdk/apps/build-coremark.sh`, `docs/sdk/06-image-and-testing.md`, `docs/sdk/00-quickstart.md`, `docs/benchmarks/coremark.md`), dazu der CoreMark-Kommentar in `tools/make-sd-image.sh`, der nach der Aenderung falsch geworden waere.
-- QEMU raspi4b, `measurements/measurement-2026-11-07-desk70-build/RUNINFO.TXT`: CORE.NCP und COREVAL.NCP aus `C:\AUTO` laufen ohne Halt durch bis `desktop up`; vom Desktop gestartet steht das Ergebnis 53 s bis zur Taste, danach ist der Desktop pixelgleich mit dem Bild vor dem Klick.
+- QEMU raspi4b, erster Bau `measurements/measurement-2026-11-07-desk70-build/RUNINFO.TXT`: vom Desktop gestartet steht das Ergebnis 53 s bis zur Taste, danach ist der Desktop pixelgleich mit dem Bild vor dem Klick. (Der AUTO-Teil dieses Laufs gilt nicht mehr.)
 
-Offen: Tester-Abnahme; echte Pi (Testszenario); die Antwort auf #12 (Anwender); was der Test nicht unterscheidet, steht im Kommentar (Kopie in der Wurzel wartet nicht, Start aus EmuCON in einem Unterordner wartet).
+## Stand 2026-11-07 (Anwenderentscheidung: immer warten)
+
+Anwender 2026-11-07: CoreMark wartet nach dem Ergebnis immer auf eine Taste, ohne Verzeichnistest, ohne Bauschalter, ohne Variante. AUTO ist fuer Treiber; CoreMark ist ein Programm, das vom Desktop startet. Ein Messlauf startet es per `#Z`-Zeile in `NEWDESK.INF`, liest das Ergebnis von der seriellen Leitung und beendet QEMU.
+
+Umgesetzt (Developer, Quittung ergaenzt):
+
+- `portable_fini`: `Dgetpath`-Test entfernt, Aufforderung und `Crawcin` bleiben.
+- `tools/make-sd-image.sh`: Schalter `SD_COREMARK_AUTO` entfernt. Er haette jeden damit gebauten Bootvorgang angehalten; kein lebendes Skript nutzte ihn, nur vergangene, unveraenderliche Laufverzeichnisse. Ersatz fuer Messlaeufe ist die `#Z`-Zeile (`#Z 00 C:\COREMARK\CORE.NCP@`), derselbe Weg wie `tools/xtask/src/tosdump.rs` und `tosdump/probes/run-akprobe.sh`; kein neues Werkzeug.
+- Texte angepasst: `sdk/apps/build-coremark.sh`, `docs/benchmarks/coremark.md`, `docs/sdk/06-image-and-testing.md` (Schalterliste, Manifest-Beispiel), Kommentar in `tools/make-sd-image.sh`. `docs/sdk/00-quickstart.md` sagt nichts ueber AUTO oder die Wurzel und bleibt.
+- QEMU raspi4b, `measurements/measurement-2026-11-07-desk70-build2/RUNINFO.TXT`: `#Z`-Start von `C:\COREMARK\CORE.NCP`, Ergebnis und Aufforderung stehen 15,6 s bis zur eingespeisten Taste, danach `desktop up`; ohne Eingabe steht der vollstaendige Bericht vor der Aufforderung auf der seriellen Leitung, der Schirm bleibt 48 s bis zum Ende von QEMU stehen.
+
+Offen: Tester-Abnahme; echte Pi (Testszenario); die Antwort auf #12 (Anwender).
 
 [Gemeinsame Regeln](README.md) gelten.

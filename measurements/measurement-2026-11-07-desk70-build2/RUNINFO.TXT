@@ -1,0 +1,76 @@
+DESK70 build 2 -- CoreMark always waits for a key after its result; a #Z autorun run shows it (GitHub #12)
+=========================================================================================================
+
+Date      2026-11-07
+Who       Developer agent (Opus). No hardware, no card, no flash, no push.
+Ticket    TASK/DESK70.md. User decision 2026-11-07: CoreMark always waits for a key after its result -- no directory
+          test, no build switch, no variant. AUTO is for drivers; CoreMark is an app started from the desktop. A
+          measurement run starts it with a #Z autorun line in NEWDESK.INF, reads the result from the serial line and
+          ends QEMU, so the wait does not hurt.
+Basis     measurements/measurement-2026-11-07-desk70/RUNINFO.TXT (neither EmuTOS' nor NewTOS' desktop waits after a text
+          program ends); the first build measurements/measurement-2026-11-07-desk70-build/RUNINFO.TXT (wait only when the
+          current directory is not the root), now superseded.
+NewTOS    main @ 60a9f39a75bb7d10c7340d41db1140091afdfd21 plus the uncommitted change of this run in
+          sdk/overlays/coremark/newtos/core_portme.c (portable_fini). The kernel is untouched by the change; both kernels
+          were built from a scratch `git clone` of 60a9f39a, never in the repository tree.
+QEMU      qemu-system-aarch64 11.0.2, -M raspi4b, -append serial=on
+Host      host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of z.img.manifest)
+
+WHAT CHANGED (product)
+  portable_fini() in sdk/overlays/coremark/newtos/core_portme.c: after the existing fflush(stdout) it prints
+  "Press any key to exit." and waits in Crawcin, always. The Dgetpath test of the first build is gone. This is after
+  stop_time() and after the last result line, so it is outside the timed region. Only core_portme.c changed
+  (CoreMark run rules); build-coremark.sh's MD5 check of the six frozen files passed (build/build-coremark.log).
+  tools/make-sd-image.sh: the switch SD_COREMARK_AUTO (copied CORE.NCP/COREVAL.NCP into C:\AUTO) is removed -- with
+  the wait it would stop every boot built with it, and no live script used it (only past, immutable run dirs).
+
+BINARIES  sdk/apps/build-coremark.sh (binaries.sha256; build log build/build-coremark.log, 0 warnings, 6/6 MD5 ok)
+  CORE.NCP     5727171f7a4158d59b5850348ddfb679935ae315b357cfb95fd3bf54e1bf22f5
+  COREVAL.NCP  6a4c57bca5c1623864f4ef74ec01ed1042f16342c8cdd855d265ee007e5a0223
+
+KERNELS   method/build-kernels.sh (kernels-cards.sha256), release rpi4, SOURCE_DATE_EPOCH=1792152000
+  kernel8-plain.img  0cb9fef84fa21eb86be4bf3c0398d7558c972a6e9f589459c959350b8783efb5  unchanged 60a9f39a
+  kernel8-zkey.img   7565081cc2f8f1f31751321b45b1748cf90822ab523f185fa8b914b6455009ae  + scratch-only IKBD injector:
+                     measurements/measurement-2026-11-07-desk70/method/build-inj.sh + mk-injector.py, called from there
+                     unchanged, script method/z-key.actions; host_env.rs restored and cmp-checked after the build.
+
+CARD      method/cards.sh -> tools/mkcard.sh (64 MiB FAT16, label DESK70Z), manifest z.img.manifest
+  z.img  2c1c30779d21c3384d8193378deea3a2b514760594b75c34d41ea44bf9de8e03
+         C:\COREMARK\CORE.NCP, C:\COREMARK\COREVAL.NCP (where tools/make-sd-image.sh installs them), no AUTO folder;
+         C:\NEWDESK.INF = method/NEWDESK.INF: the INF of the first build plus "#Z 00 C:\COREMARK\CORE.NCP@" after
+         "#R 02" (the same #Z mechanism as tools/xtask/src/tosdump.rs and tosdump/probes/run-*.sh; 00 = character mode).
+  optional_missing, verbatim:
+    z.img.manifest  optional_missing none
+  Both runs printed clone-after-run 2c1c3077... = the base image: no run wrote to its card.
+
+OBSERVATION  method/qemu-shots.py (copied unchanged from the first build): QMP screendump at a fixed interval, distinct
+  screens kept (screendumps/<run>/screen-NNN.png, serial/<run>/screens.txt), serial stamped with host-monotonic seconds
+  (serial/<run>/serial-stamped.log).
+
+RUNS
+  z-key    injector kernel, z.img, interval 1 s, stop 3 s after the 1st "desktop up" (200 s limit)
+           15.163 sh_ldapp: starting C:\COREMARK\CORE.NCP, sh_nextapp=2, sh_isgem=0   (the #Z autorun, before the desktop)
+           15.238 injector armed (the first pump while CORE.NCP runs)
+           39.637 Correct operation validated / CoreMark 1.0 : 4952.723998 ... / 39.637 Press any key to exit.
+           screen-005 (40.3 s - 54.3 s): the full report plus "Press any key to exit." stands for 15.6 s, no input
+           55.238 [d70] step 0 (RETURN at +8000 ticks) -> 55.238 [launch] returned (program Pterm'd),
+                  'C:\COREMARK\CORE.NCP' exited with rc=0 -> sh_ldapp: starting desktop NEWDESK -> 55.458 desktop up
+           screen-007 (56.3 s on): the desktop, window C:\COREMARK\ with CORE.NCP and COREVAL.NCP (viewed).
+           (step 1, the key-release byte, reached the input queue at +8010 ticks after the desktop had started.)
+  z-nokey  plain kernel, z.img, NO input at all, interval 2 s, 90 s, no stop condition (the measurement workflow:
+           read the result off the serial line, then end QEMU -- here qemu-shots.py's QMP quit)
+           15.092 sh_ldapp: starting C:\COREMARK\CORE.NCP ... 38.461 Correct operation validated /
+                  CoreMark 1.0 : 5203.405866 ... / Press any key to exit.
+           screen-003 (40.1 s - 88.3 s): report plus prompt, unchanged for 48 s until QEMU was ended; no "desktop up"
+           in the serial log -- the program waits, the boot does not reach the desktop without a key.
+  The two scores differ (4952 / 5203 it/s); QEMU on a shared host, not a performance measurement.
+  Result: CORE.NCP waits after its result in every start; a key returns to the desktop; started by #Z without input,
+  the complete report is on the serial line before the wait.
+
+NOT MEASURED HERE
+  Real Pi 4 (user/tester; the change is in the program, not in the kernel). COREVAL.NCP (same code path, same build
+  script). A desktop double-click (measured for the same code path, the wait, in the first build and the tester run
+  measurements/measurement-2026-11-07-desk70-test/RUNINFO.TXT; that wait is now unconditional).
+
+CLEANUP
+  Scratch clone, kernels, card and per-run clones deleted after the run.

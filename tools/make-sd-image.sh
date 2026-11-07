@@ -512,26 +512,18 @@ fi
 # both in measurements/measurement-2026-11-07-desk70/RUNINFO.TXT). CoreMark
 # holds it itself since DESK70: its porting layer (portable_fini in
 # sdk/overlays/coremark/newtos/core_portme.c, the one file the run rules let
-# us change) waits for a key after the timed region when its current
-# directory is not the root -- i.e. after a desktop launch from C:\COREMARK\.
+# us change) always waits for a key after the timed region.
 #
-# NOT in \AUTO\ by default: an AUTO run finishes before the AES starts and the
-# desktop then paints over the result. From \AUTO\ the program starts in the
-# root and does NOT wait for a key, so an image built with SD_COREMARK_AUTO=1
-# still boots through to the desktop. Set SD_COREMARK_AUTO=1 to place it there
-# anyway — that is the only way to drive it under QEMU raspi4b, which emulates
-# the SD controller but no keyboard/mouse, so nothing can be double-clicked; the
-# report then has to be read off the serial log.
+# Never in \AUTO\: a program there that waits for a key stops the boot. A
+# measurement run without keyboard (QEMU raspi4b emulates the SD controller but
+# no keyboard/mouse) starts it with a `#Z 00 C:\COREMARK\CORE.NCP@` autorun
+# line in C:\NEWDESK.INF, reads the report off the serial log and ends QEMU
+# (TASK/DESK70, measurements/measurement-2026-11-07-desk70-build2/RUNINFO.TXT).
 CM_DIR="$ROOT/sdk/apps/coremark/build"
 mkdir -p "$V/COREMARK"
 cp "$CM_DIR/CORE.NCP"    "$V/COREMARK/CORE.NCP"
 cp "$CM_DIR/COREVAL.NCP" "$V/COREMARK/COREVAL.NCP"
 echo "installed C:\\COREMARK\\{CORE,COREVAL}.NCP (EEMBC CoreMark 1.0)"
-if [ "${SD_COREMARK_AUTO:-0}" = "1" ]; then
-  cp "$CM_DIR/CORE.NCP"    "$V/AUTO/CORE.NCP"
-  cp "$CM_DIR/COREVAL.NCP" "$V/AUTO/COREVAL.NCP"
-  echo "  + \\AUTO\\{CORE,COREVAL}.NCP (both run at boot; ~1 min extra)"
-fi
 
 # QED (Atari GEM editor) — the first ported GEM application, compiled from unchanged upstream sources plus patch files
 # for NewTOS/AArch64 as **native LP64** (the app-ABI pivot: apps match the
