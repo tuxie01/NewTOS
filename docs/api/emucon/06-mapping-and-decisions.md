@@ -109,7 +109,7 @@ Befund, keine Entscheidung:
   eigenes `.NCP`-Programm (`BENCH.NCP`, Kernel-unabhaengig, kein EmuCON-Befehl) /
   im Kernel lassen und ueber einen anderen Weg erreichbar machen?
 * **`ver`** (`kernel/src/shell.rs:125@VERSION_STRING`, `VERSION_STRING` + „ - clean-room TOS for AArch64",
-  heute „NewTOS 0.7 - clean-room TOS for AArch64"; seit REL07 aus der einen Versionsquelle) hat
+  heute „NewTOS 0.7.1 - clean-room TOS for AArch64"; seit REL07 aus der einen Versionsquelle) hat
   in EmuCON **kein** Gegenstueck; `version` zeigt `0.30` (GEMDOS, 4.19).
   Frage: `ver` als zusaetzlicher Befehl? Was zeigt das Banner als
   `<version>` (**D9**)?
@@ -225,7 +225,7 @@ EmuCON zeigt `version[]` (EmuTOS-Versionstext, `cmdmain.c:93`,
 `version.mk:25-40`; `version.mk:40` setzt `VERSION` aus dem Datum). Frage: was
 steht bei NewTOS dort — NewTOS-Version (seit REL07 eine Quelle: die
 Workspace-Version der Wurzel-`Cargo.toml`, als Text
-`kernel/src/initinfo.rs:114@VERSION_STRING`, heute „NewTOS 0.7"), der EmuCON2-Name? Der Satzbau `Welcome to EmuCON2 version <v>`
+`kernel/src/initinfo.rs:114@VERSION_STRING`, heute „NewTOS 0.7.1"), der EmuCON2-Name? Der Satzbau `Welcome to EmuCON2 version <v>`
 bleibt, wenn der Name EmuCON2 bleibt.
 
 ### D10 — Frueh-Konsole (Esc auf dem Startbildschirm)
