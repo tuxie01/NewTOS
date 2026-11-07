@@ -1,0 +1,2830 @@
+/*
+ * vdprobe.c -- VDI drawing compared pixel for pixel (TASK/V18 part 1: the
+ * TOOL32 candidates K1-K8, K10, K11).  A permanent probe of the tosdump tree
+ * like sbprobe.c: the drawing primitives leave the parameter arrays empty, so
+ * DUMPVDI cannot see what they draw; this probe draws each case on a cleared
+ * screen and reads the affected rectangle back with vro_cpyfm (opcode 109,
+ * S_ONLY, screen -> a 16-plane device-form memory MFDB), the copy AES bb_save
+ * makes.  The instrument itself is measured by tosdump/cases/
+ * vdi-raster-screen.tsv against EMUTOS-1a7484ab-RASTER-screen-falcontc.
+ *
+ * Same C source on both sides (m68k EmuTOS on Hatari profile falcontc =
+ * 640x480 16-bit truecolor, AArch64 NewTOS = the Falcon truecolor workstation
+ * of ADR-024).  All VDI and AES calls go through the tosdump ABI backends
+ * (abi/m68k_trap.c, abi/newtos_svc.c); no gemlib.  The one width-dependent
+ * thing, the MFDB pointer in CONTRL[7..], is packed as tosdump/core/
+ * runner_rast.c packs it (pointer n at CONTRL[7 + n * sizeof(void *) / 2]),
+ * and the MFDB is the native struct of each side (pointer, then five WORDs),
+ * which is what tos-api/src/vdi/raster.rs Mfdb::read reads for an LP64 caller.
+ * Built by `make -C tosdump vdprobe-m68k` (VDPROBE.PRG) and
+ * `make -C tosdump vdprobe-newtos` (VDPROBE.NAP, build-vdprobe-newtos.sh);
+ * run by tosdump/probes/run-vdprobe.sh; compared by
+ * tosdump/probes/vdprobe-compare.py.
+ *
+ * Output, in the current directory:
+ *   VDPROBE.BIN  "VDPR" + version WORD, then per case: 'C', case number
+ *                (WORD), 8-byte name, x, y, w, h (WORDs), then w*h screen
+ *                words, row by row.  Every WORD big-endian on both sides.
+ *   VDPROBE.LOG  one line per case (name, what it draws) plus the WORD
+ *                results of v_get_pixel cases; last line "END".
+ *
+ * Every case starts from the same state: v_clrwk, the attribute defaults the
+ * dumper's reset uses (tosdump/core/runner.c td_reset_vdi), clipping off.
+ *
+ * TASK/V18 part 2 appends cases T* (function t2, after k17): text, escapes and
+ * the raster rider (K13-K16, K18, K19; underline/glyphs with clipping off,
+ * the local PTSIN copy, overlapping copies).  Text cases restore the text
+ * attributes themselves (treset); reset() sets none.
+ *
+ * TASK/V30 appends cases TV* (function tv, after t18): the text paths with
+ * clipping off that T* leaves out.
+ *
+ * TASK/V33 appends cases TX* (function tx, after tv): the font chain beyond T13.
+ *
+ * TASK/V41 appends cases Y* (function ty, after tx: the TY series of the V44 acceptance) and Z* (function
+ * tz): text effects x writing modes x fonts, scaled, rotated, clipped, skew masks and row counts.
+ */
+#include <osbind.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "abi.h"
+
+#define VERSION 1
+
+/* ---- parameter arrays ------------------------------------------------ */
+static int16_t contrl[16];
+static int16_t intin[300];
+static int16_t ptsin[2 * 1100];
+static int16_t intout[128];
+static int16_t ptsout[256];
+static int16_t handle;
+static int16_t work_pts[12];
+
+static int16_t aes_control[5];
+static int16_t aes_global[15];
+static int16_t aes_int_in[16];
+static int16_t aes_int_out[8];
+static void *aes_addr_in[2];
+static void *aes_addr_out[2];
+
+static int16_t aes(int16_t op, int16_t nin, int16_t nout, int16_t nain)
+{
+	aes_control[0] = op;
+	aes_control[1] = nin;
+	aes_control[2] = nout;
+	aes_control[3] = nain;
+	aes_control[4] = 0;
+	td_abi_aes(aes_control, aes_global, aes_int_in, aes_int_out,
+	           aes_addr_in, aes_addr_out);
+	return aes_int_out[0];
+}
+
+static void vdi(int16_t op, int16_t sub, int16_t npts, int16_t nint)
+{
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = op;
+	contrl[1] = npts;
+	contrl[3] = nint;
+	contrl[5] = sub;
+	contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+}
+
+static void i1(int16_t op, int16_t a) { intin[0] = a; vdi(op, 0, 0, 1); }
+static void i2(int16_t op, int16_t a, int16_t b) { intin[0] = a; intin[1] = b; vdi(op, 0, 0, 2); }
+static void p1(int16_t op, int16_t x, int16_t y) { ptsin[0] = x; ptsin[1] = y; vdi(op, 0, 1, 0); }
+
+/* ---- output ------------------------------------------------------------ */
+static char logbuf[131072];
+static int loglen;
+static long binfh = -1;
+
+static void emit(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	if (loglen < (int)sizeof(logbuf) - 200)
+		loglen += vsnprintf(logbuf + loglen, sizeof(logbuf) - loglen, fmt, ap);
+	va_end(ap);
+}
+
+static void put16(uint8_t *p, int v)
+{
+	p[0] = (uint8_t)((unsigned)v >> 8);
+	p[1] = (uint8_t)v;
+}
+
+/* ---- the read-back ----------------------------------------------------- */
+typedef struct {
+	void *fd_addr;
+	int16_t fd_w, fd_h, fd_wdwidth, fd_stand, fd_nplanes, fd_r1, fd_r2, fd_r3;
+} MFDB;
+
+#define RB_MAXW 640
+#define RB_MAXH 480
+static uint16_t rbuf[RB_MAXW * RB_MAXH];
+static uint8_t wbuf[RB_MAXW * 2];
+static MFDB scr_mfdb, mem_mfdb;
+
+static void set_mfdb_ptr(int n, void *p)
+{
+	const int nptrints = (int)(sizeof(void *) / sizeof(int16_t));
+
+	memcpy(&contrl[7 + n * nptrints], &p, sizeof p);
+}
+
+static int caseno;
+
+/* read the rectangle (x,y,w,h) and append it to VDPROBE.BIN */
+static void grab(const char *name, int x, int y, int w, int h)
+{
+	uint8_t hd[19];
+	int r, c;
+
+	memset(&scr_mfdb, 0, sizeof scr_mfdb);
+	memset(&mem_mfdb, 0, sizeof mem_mfdb);
+	mem_mfdb.fd_addr = rbuf;
+	mem_mfdb.fd_w = (int16_t)w;
+	mem_mfdb.fd_h = (int16_t)h;
+	mem_mfdb.fd_wdwidth = (int16_t)((w + 15) / 16);
+	mem_mfdb.fd_stand = 0;
+	mem_mfdb.fd_nplanes = 16;
+	memset(rbuf, 0x5A, sizeof rbuf);	/* a word no case draws */
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109;
+	contrl[1] = 4;
+	contrl[3] = 1;
+	contrl[6] = handle;
+	set_mfdb_ptr(0, &scr_mfdb);
+	set_mfdb_ptr(1, &mem_mfdb);
+	intin[0] = 3;				/* S_ONLY */
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	ptsin[2] = (int16_t)(x + w - 1); ptsin[3] = (int16_t)(y + h - 1);
+	ptsin[4] = 0; ptsin[5] = 0;
+	ptsin[6] = (int16_t)(w - 1); ptsin[7] = (int16_t)(h - 1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+
+	hd[0] = 'C';
+	put16(hd + 1, caseno);
+	memset(hd + 3, 0, 8);
+	memcpy(hd + 3, name, strlen(name) < 8 ? strlen(name) : 8);
+	put16(hd + 11, x); put16(hd + 13, y); put16(hd + 15, w); put16(hd + 17, h);
+	if (binfh >= 0)
+		Fwrite((short)binfh, 19L, hd);
+	for (r = 0; r < h; r++) {
+		const uint16_t *row = rbuf + (long)r * mem_mfdb.fd_wdwidth * 16;
+		for (c = 0; c < w; c++)
+			put16(wbuf + 2 * c, row[c]);
+		if (binfh >= 0)
+			Fwrite((short)binfh, (long)(2 * w), wbuf);
+	}
+}
+
+/* ---- per-case state -------------------------------------------------- */
+static void reset(void)
+{
+	vdi(3, 0, 0, 0);			/* v_clrwk */
+	i1(32, 1);				/* vswr_mode replace */
+	i1(15, 1);				/* vsl_type solid */
+	p1(16, work_pts[4], 0);			/* vsl_width default */
+	i1(17, 1);				/* vsl_color 1 */
+	i2(108, 0, 0);				/* vsl_ends squared */
+	i1(113, (int16_t)0xFFFF);		/* vsl_udsty */
+	i1(18, 1);				/* vsm_type 1 */
+	p1(19, 0, work_pts[9]);			/* vsm_height default */
+	i1(20, 1);				/* vsm_color 1 */
+	i1(23, 1);				/* vsf_interior solid */
+	i1(24, 1);				/* vsf_style 1 */
+	i1(25, 1);				/* vsf_color 1 */
+	i1(104, 1);				/* vsf_perimeter on */
+	i1(129, 0);				/* vs_clip off */
+}
+
+static void begin(const char *name, const char *what)
+{
+	caseno++;
+	reset();
+	emit("%02d %-8s %s\n", caseno, name, what);
+}
+
+static void clip(int on, int x1, int y1, int x2, int y2)
+{
+	intin[0] = (int16_t)on;
+	ptsin[0] = (int16_t)x1; ptsin[1] = (int16_t)y1;
+	ptsin[2] = (int16_t)x2; ptsin[3] = (int16_t)y2;
+	vdi(129, 0, 2, 1);
+}
+
+static void line2(int x1, int y1, int x2, int y2)
+{
+	ptsin[0] = (int16_t)x1; ptsin[1] = (int16_t)y1;
+	ptsin[2] = (int16_t)x2; ptsin[3] = (int16_t)y2;
+	vdi(6, 0, 2, 0);
+}
+
+static void pline(int n, const int16_t *xy)
+{
+	int i;
+
+	for (i = 0; i < 2 * n; i++)
+		ptsin[i] = xy[i];
+	vdi(6, 0, (int16_t)n, 0);
+}
+
+static void fillarea(int n, const int16_t *xy)
+{
+	int i;
+
+	for (i = 0; i < 2 * n; i++)
+		ptsin[i] = xy[i];
+	vdi(9, 0, (int16_t)n, 0);
+}
+
+static void recfl(int x1, int y1, int x2, int y2)
+{
+	ptsin[0] = (int16_t)x1; ptsin[1] = (int16_t)y1;
+	ptsin[2] = (int16_t)x2; ptsin[3] = (int16_t)y2;
+	vdi(114, 0, 2, 0);			/* vr_recfl */
+}
+
+static void bar(int x1, int y1, int x2, int y2)
+{
+	ptsin[0] = (int16_t)x1; ptsin[1] = (int16_t)y1;
+	ptsin[2] = (int16_t)x2; ptsin[3] = (int16_t)y2;
+	vdi(11, 1, 2, 0);			/* v_bar */
+}
+
+static void contour(int x, int y, int col)
+{
+	intin[0] = (int16_t)col;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	vdi(103, 0, 1, 1);
+}
+
+static void udpat(int n, const uint16_t *w)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		intin[i] = (int16_t)w[i];
+	vdi(112, 0, 0, (int16_t)n);
+}
+
+static int16_t getpix(int x, int y)
+{
+	intout[0] = intout[1] = 0x7777;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	vdi(105, 0, 1, 0);
+	return intout[1];
+}
+
+/* ---- K3: the line fan ------------------------------------------------ */
+static const int8_t fanbase[][2] = {
+	{22, 1}, {22, 3}, {22, 7}, {22, 11}, {21, 8}, {20, 13}, {19, 5}, {17, 16},
+	{15, 4}, {13, 6}, {9, 2}, {22, 21}, {7, 3}, {5, 2}, {3, 1}, {2, 1},
+};
+
+/* 128 lines, one per 48x48 cell, 13 cells a row: cell k at
+ * (48*(k%13), 48*(k/13)), line from the cell centre (24,24) to centre +
+ * (dx,dy); rev = draw from the far end */
+static void fan(int rev)
+{
+	int k = 0, b, s;
+
+	for (b = 0; b < 16; b++)
+		for (s = 0; s < 8; s++) {
+			int a = fanbase[b][0], c = fanbase[b][1];
+			int dx = (s & 4) ? c : a, dy = (s & 4) ? a : c;
+			int cx = 48 * (k % 13) + 24, cy = 48 * (k / 13) + 24;
+
+			if (s & 1) dx = -dx;
+			if (s & 2) dy = -dy;
+			if (rev)
+				line2(cx + dx, cy + dy, cx, cy);
+			else
+				line2(cx, cy, cx + dx, cy + dy);
+			k++;
+		}
+}
+
+/* ---- the cases --------------------------------------------------------- */
+static int16_t pts[2 * 1100];
+
+static void k_calibration(void)
+{
+	int i;
+
+	begin("CAL", "pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched");
+	for (i = 0; i < 16; i++) {
+		i1(25, (int16_t)i);
+		recfl(8 * i, 0, 8 * i + 7, 7);
+	}
+	grab("CAL", 0, 0, 136, 8);
+}
+
+static void k1(void)
+{
+	static const int16_t a[] = { 20, 20, 20, 40, 40, 40 };
+	static const int16_t b[] = { 20, 20, 40, 20, 40, 40, 60, 40 };
+	static const int16_t c[] = { 20, 40, 20, 20, 40, 20 };
+	static const int16_t d[] = { 20, 20, 40, 20, 40, 40, 20, 40, 20, 20 };
+	static const int16_t e[] = { 20, 20, 40, 30, 60, 20 };
+	static const int16_t f[] = { 20, 20, 20, 40 };
+
+	begin("K1A", "XOR polyline: vertical segment first (20,20)-(20,40)-(40,40)");
+	i1(32, 3); pline(3, a); grab("K1A", 10, 10, 60, 40);
+	begin("K1B", "XOR polyline: vertical in the middle (20,20)-(40,20)-(40,40)-(60,40)");
+	i1(32, 3); pline(4, b); grab("K1B", 10, 10, 60, 40);
+	begin("K1C", "XOR polyline: vertical upward first (20,40)-(20,20)-(40,20)");
+	i1(32, 3); pline(3, c); grab("K1C", 10, 10, 60, 40);
+	begin("K1D", "XOR closed square, 5 points");
+	i1(32, 3); pline(5, d); grab("K1D", 10, 10, 60, 40);
+	begin("K1E", "XOR polyline, two diagonals (control)");
+	i1(32, 3); pline(3, e); grab("K1E", 10, 10, 60, 40);
+	begin("K1F", "XOR single vertical line (last segment, control)");
+	i1(32, 3); pline(2, f); grab("K1F", 10, 10, 60, 40);
+	begin("K1G", "XOR vertical non-last, dashed (vsl_type 3)");
+	i1(32, 3); i1(15, 3); pline(3, a); grab("K1G", 10, 10, 60, 40);
+}
+
+static void k2(void)
+{
+	static const int16_t ends[][4] = {
+		{ 0, 5, 79, 47 }, { 5, 0, 47, 79 }, { 0, 60, 120, 40 }, { 10, 127, 70, 0 },
+		{ 0, 0, 127, 127 }, { 0, 31, 127, 33 }, { 127, 90, 3, 100 }, { 100, 127, 120, 0 },
+		{ 1, 50, 25, 61 }, { 33, 2, 59, 25 },
+	};
+	int i;
+
+	begin("K2A", "clip on (30,30)-(90,90), 10 lines crossing it, solid");
+	clip(1, 30, 30, 90, 90);
+	for (i = 0; i < 10; i++) line2(ends[i][0], ends[i][1], ends[i][2], ends[i][3]);
+	grab("K2A", 0, 0, 128, 128);
+	begin("K2B", "the same lines, clip on, dash-dot (vsl_type 4)");
+	clip(1, 30, 30, 90, 90); i1(15, 4);
+	for (i = 0; i < 10; i++) line2(ends[i][0], ends[i][1], ends[i][2], ends[i][3]);
+	grab("K2B", 0, 0, 128, 128);
+	begin("K2C", "the same lines, clip on, user style 0xF39C (vsl_type 7)");
+	clip(1, 30, 30, 90, 90); i1(15, 7); i1(113, (int16_t)0xF39C);
+	for (i = 0; i < 10; i++) line2(ends[i][0], ends[i][1], ends[i][2], ends[i][3]);
+	grab("K2C", 0, 0, 128, 128);
+	begin("K2D", "clip on (30,30)-(90,90), vertical dashed (60,5)-(60,120) and (70,120)-(70,5), horizontal dashed (5,50)-(120,50)");
+	clip(1, 30, 30, 90, 90); i1(15, 4);
+	line2(60, 5, 60, 120); line2(70, 120, 70, 5); line2(5, 50, 120, 50);
+	grab("K2D", 0, 0, 128, 128);
+	begin("K2E", "clip OFF: diagonal (600,100)-(680,104) past the right edge");
+	line2(600, 100, 680, 104);
+	grab("K2E", 0, 96, 640, 14);
+	begin("K2F", "clip OFF: horizontal (600,120)-(700,120) past the right edge");
+	line2(600, 120, 700, 120);
+	grab("K2F", 0, 118, 640, 5);
+	begin("K2G", "clip OFF: diagonal (-20,140)-(40,150) past the left edge");
+	line2(-20, 140, 40, 150);
+	grab("K2G", 0, 136, 640, 18);
+	begin("K2H", "clip OFF: horizontal (-30,170)-(20,170) past the left edge");
+	line2(-30, 170, 20, 170);
+	grab("K2H", 0, 168, 640, 4);
+	begin("K2I", "clip ON (0,0)-(639,479): diagonal (600,200)-(680,204) and horizontal (600,210)-(700,210)");
+	clip(1, 0, 0, 639, 479);
+	line2(600, 200, 680, 204); line2(600, 210, 700, 210);
+	grab("K2I", 0, 196, 640, 18);
+}
+
+static void k3(void)
+{
+	begin("K3A", "128-line fan, solid, from the cell centre");
+	fan(0); grab("K3A", 0, 0, 624, 480);
+	begin("K3B", "128-line fan, solid, from the far end");
+	fan(1); grab("K3B", 0, 0, 624, 480);
+	begin("K3C", "128-line fan, dash-dot-dot (vsl_type 6), from the centre");
+	i1(15, 6); fan(0); grab("K3C", 0, 0, 624, 480);
+	begin("K3D", "128-line fan, user style 0xF39C, from the far end");
+	i1(15, 7); i1(113, (int16_t)0xF39C); fan(1); grab("K3D", 0, 0, 624, 480);
+}
+
+static void k4(void)
+{
+	static const int16_t one[] = { 50, 50 };
+	static const int16_t two[] = { 50, 50, 90, 70 };
+	static const int16_t twov[] = { 50, 50, 50, 80 };
+	static const int16_t twoh[] = { 40, 60, 90, 60 };
+	static const int16_t three[] = { 50, 50, 90, 70, 60, 90 };
+
+	begin("K4A", "v_fillarea 1 point (50,50), perimeter on");
+	fillarea(1, one); grab("K4A", 30, 30, 80, 80);
+	begin("K4B", "v_fillarea 2 points (50,50)-(90,70), perimeter on");
+	fillarea(2, two); grab("K4B", 30, 30, 80, 80);
+	begin("K4C", "v_fillarea 2 points (50,50)-(90,70), perimeter off");
+	i1(104, 0); fillarea(2, two); grab("K4C", 30, 30, 80, 80);
+	begin("K4D", "v_fillarea 2 points vertical (50,50)-(50,80), perimeter off");
+	i1(104, 0); fillarea(2, twov); grab("K4D", 30, 30, 80, 80);
+	begin("K4E", "v_fillarea 2 points (50,50)-(90,70), XOR, perimeter on");
+	i1(32, 3); fillarea(2, two); grab("K4E", 30, 30, 80, 80);
+	begin("K4F", "v_fillarea 1 point, perimeter off");
+	i1(104, 0); fillarea(1, one); grab("K4F", 30, 30, 80, 80);
+	begin("K4G", "v_fillarea 2 points horizontal (40,60)-(90,60), perimeter on");
+	fillarea(2, twoh); grab("K4G", 30, 30, 80, 80);
+	begin("K4H", "v_fillarea 3 points (control), perimeter on, colour 2");
+	i1(25, 2); fillarea(3, three); grab("K4H", 30, 30, 80, 80);
+}
+
+static void k5(void)
+{
+	int i;
+
+	begin("K5A", "v_pmarker 1030 points: 0..1023 at (20,20), 1024..1029 at (40+10k,20); plus, height default");
+	i1(18, 2);
+	for (i = 0; i < 1024; i++) { ptsin[2 * i] = 20; ptsin[2 * i + 1] = 20; }
+	for (i = 0; i < 6; i++) { ptsin[2 * (1024 + i)] = (int16_t)(40 + 10 * i); ptsin[2 * (1024 + i) + 1] = 20; }
+	vdi(7, 0, 1030, 0);
+	emit("   K5A contrl[1] after the call %d\n", contrl[1]);
+	grab("K5A", 0, 0, 120, 40);
+	begin("K5B", "v_pmarker 1025 points: 0..1023 at (20,20), 1024 at (60,20)");
+	i1(18, 2);
+	for (i = 0; i < 1024; i++) { ptsin[2 * i] = 20; ptsin[2 * i + 1] = 20; }
+	ptsin[2048] = 60; ptsin[2049] = 20;
+	vdi(7, 0, 1025, 0);
+	grab("K5B", 0, 0, 120, 40);
+	begin("K5C", "v_pline 1030 points: 0..1022 at (20,60), 1023 (40,60), 1024.. (40,80),(80,80),...");
+	for (i = 0; i < 1023; i++) { ptsin[2 * i] = 20; ptsin[2 * i + 1] = 60; }
+	ptsin[2046] = 40; ptsin[2047] = 60;
+	for (i = 0; i < 6; i++) { ptsin[2 * (1024 + i)] = (int16_t)(40 + 20 * i); ptsin[2 * (1024 + i) + 1] = 80; }
+	vdi(6, 0, 1030, 0);
+	emit("   K5C contrl[1] after the call %d\n", contrl[1]);
+	grab("K5C", 0, 50, 160, 40);
+	begin("K5D", "v_fillarea 1030 points: 0..1021 (100,100), 1022 (140,100), 1023 (120,130), 1024.. (200+10k,200)");
+	for (i = 0; i < 1022; i++) { ptsin[2 * i] = 100; ptsin[2 * i + 1] = 100; }
+	ptsin[2044] = 140; ptsin[2045] = 100; ptsin[2046] = 120; ptsin[2047] = 130;
+	for (i = 0; i < 6; i++) { ptsin[2 * (1024 + i)] = (int16_t)(200 + 10 * i); ptsin[2 * (1024 + i) + 1] = (int16_t)(200 + 7 * i); }
+	vdi(9, 0, 1030, 0);
+	grab("K5D", 90, 90, 180, 170);
+}
+
+static void k6(void)
+{
+	static uint16_t a[16], big[256];
+	int i, p;
+
+	for (i = 0; i < 16; i++)
+		a[i] = (uint16_t)((0x8000u >> i) | (1u << i) | (i & 1 ? 0x0F00 : 0x0000));
+	begin("K6A", "vsf_udpat 16 words (plane 0 = A), FIS_USER, v_bar 20..83 x 20..51, colour 2");
+	udpat(16, a); i1(23, 4); i1(25, 2); bar(20, 20, 83, 51); grab("K6A", 16, 16, 72, 40);
+	begin("K6B", "vsf_udpat 256 words: plane 0 = A, planes 1..15 = 0xFFFF");
+	for (p = 0; p < 16; p++) for (i = 0; i < 16; i++) big[16 * p + i] = p ? 0xFFFF : a[i];
+	udpat(256, big); i1(23, 4); i1(25, 2); bar(20, 20, 83, 51); grab("K6B", 16, 16, 72, 40);
+	begin("K6C", "vsf_udpat 256 words: plane 0 = 0, planes 1..15 = A");
+	for (p = 0; p < 16; p++) for (i = 0; i < 16; i++) big[16 * p + i] = p ? a[i] : 0;
+	udpat(256, big); i1(23, 4); i1(25, 2); bar(20, 20, 83, 51); grab("K6C", 16, 16, 72, 40);
+	begin("K6D", "vsf_udpat 16 words A, then 64 words (4 planes, invalid here) of 0xFFFF");
+	udpat(16, a); for (i = 0; i < 64; i++) big[i] = 0xFFFF; udpat(64, big);
+	i1(23, 4); i1(25, 2); bar(20, 20, 83, 51); grab("K6D", 16, 16, 72, 40);
+	begin("K6E", "vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), transparent mode, colour 3, v_fillarea triangle");
+	for (p = 0; p < 16; p++) for (i = 0; i < 16; i++) big[16 * p + i] = p ? 0xFFFF : a[i];
+	udpat(256, big); i1(23, 4); i1(25, 3); i1(32, 2);
+	{ static const int16_t t[] = { 20, 20, 83, 30, 40, 51 }; fillarea(3, t); }
+	grab("K6E", 16, 16, 72, 40);
+	begin("K6F", "vsf_udpat 256 words (plane 0 = A, rest 0xFFFF), then style back to solid and to user again");
+	udpat(256, big); i1(23, 1); i1(23, 4); i1(25, 2); bar(20, 20, 83, 51); grab("K6F", 16, 16, 72, 40);
+}
+
+static void k8(void)
+{
+	static const int16_t box[] = { 20, 20, 120, 20, 120, 100, 20, 100, 20, 20 };
+	int i, n;
+
+	begin("K8A", "contourfill inside a black box, boundary colour 1, solid colour 2");
+	pline(5, box); i1(25, 2); contour(70, 60, 1); grab("K8A", 10, 10, 120, 100);
+	begin("K8B", "the same, INTIN[0] = -1 (seed colour)");
+	pline(5, box); i1(25, 2); contour(70, 60, -1); grab("K8B", 10, 10, 120, 100);
+	begin("K8C", "comb: box with 40 teeth from the top, pattern fill (style 2 index 5), boundary 1");
+	pline(5, box);
+	for (i = 0; i < 40; i++) line2(22 + 2 * i + (i > 20), 20, 22 + 2 * i + (i > 20), 80);
+	i1(23, 2); i1(24, 5); i1(25, 2); contour(70, 90, 1); grab("K8C", 10, 10, 120, 100);
+	begin("K8D", "spiral of lines, solid colour 3, seed -1");
+	{
+		static const int16_t sp[] = { 30, 30, 110, 30, 110, 95, 35, 95, 35, 40, 100, 40,
+		                              100, 85, 45, 85, 45, 50, 90, 50, 90, 75, 55, 75, 55, 60, 80, 60 };
+		pline(14, sp);
+	}
+	i1(25, 3); contour(25, 25, -1); grab("K8D", 10, 10, 120, 100);
+	begin("K8E", "dot lattice 600x120 (dots every 3 px), contourfill from below, solid colour 2, boundary 1");
+	n = 0;
+	for (i = 0; i < 200 * 40; i++) {
+		pts[2 * n] = (int16_t)(20 + 3 * (i % 200));
+		pts[2 * n + 1] = (int16_t)(200 + 3 * (i / 200));
+		if (++n == 1000) { int j; for (j = 0; j < 2 * n; j++) ptsin[j] = pts[j]; vdi(7, 0, (int16_t)n, 0); n = 0; }
+	}
+	if (n) { int j; for (j = 0; j < 2 * n; j++) ptsin[j] = pts[j]; vdi(7, 0, (int16_t)n, 0); }
+	i1(25, 2); contour(320, 340, 1); grab("K8E", 0, 190, 640, 160);
+	begin("K8F", "contourfill inside the box with clip (40,40)-(90,80)");
+	pline(5, box); i1(25, 2); clip(1, 40, 40, 90, 80); contour(70, 60, 1); grab("K8F", 10, 10, 120, 100);
+	begin("K8G", "contourfill with the seed on the boundary (20,60), boundary 1");
+	pline(5, box); i1(25, 2); contour(20, 60, 1); grab("K8G", 10, 10, 120, 100);
+	begin("K8H", "contourfill XOR mode, hatch (style 3 index 2), boundary 1");
+	pline(5, box); i1(23, 3); i1(24, 2); i1(25, 2); i1(32, 3); contour(70, 60, 1); grab("K8H", 10, 10, 120, 100);
+	begin("K8I", "contourfill pattern (style 2 index 2) with seed colour -1");
+	pline(5, box); i1(23, 2); i1(24, 2); i1(25, 2); contour(70, 60, -1); grab("K8I", 10, 10, 120, 100);
+	begin("K8J", "contourfill boundary colour 16 (> 15, 256 pens), solid colour 2");
+	pline(5, box); i1(25, 2); contour(70, 60, 16); grab("K8J", 10, 10, 120, 100);
+}
+
+static void k10(void)
+{
+	begin("K10", "v_get_pixel inside and outside, after painting (0,11) red, (639,10) green, (60,11) blue");
+	i1(25, 2); recfl(0, 11, 0, 11);
+	i1(25, 3); recfl(639, 10, 639, 10);
+	i1(25, 4); recfl(60, 11, 60, 11);
+	emit("   K10 (0,11)=%04x (639,10)=%04x (60,11)=%04x (5,5)=%04x\n",
+	     (uint16_t)getpix(0, 11), (uint16_t)getpix(639, 10), (uint16_t)getpix(60, 11), (uint16_t)getpix(5, 5));
+	emit("   K10 (640,10)=%04x (-1,11)=%04x (700,10)=%04x (-580,12)=%04x\n",
+	     (uint16_t)getpix(640, 10), (uint16_t)getpix(-1, 11), (uint16_t)getpix(700, 10), (uint16_t)getpix(-580, 12));
+	grab("K10", 0, 9, 640, 4);
+}
+
+static void k11(void)
+{
+	begin("K11A", "v_arc centre (100,100) r 20, 0..3600, line width 9, clip (121,0)-(300,200)");
+	p1(16, 9, 0); clip(1, 121, 0, 300, 200);
+	intin[0] = 0; intin[1] = 3600;
+	ptsin[0] = 100; ptsin[1] = 100; ptsin[2] = ptsin[3] = ptsin[4] = ptsin[5] = 0; ptsin[6] = 20; ptsin[7] = 0;
+	vdi(11, 2, 4, 2);
+	grab("K11A", 60, 60, 80, 80);
+	begin("K11B", "v_ellarc centre (100,100) 30x20, 0..1800, width 11, clip (0,121)-(300,200)");
+	p1(16, 11, 0); clip(1, 0, 121, 300, 200);
+	intin[0] = 0; intin[1] = 1800;
+	ptsin[0] = 100; ptsin[1] = 100; ptsin[2] = 30; ptsin[3] = 20;
+	vdi(11, 6, 2, 2);
+	grab("K11B", 50, 60, 100, 80);
+	begin("K11C", "v_arc as K11A but clip (115,0)-(300,200) (cuts the curve, control)");
+	p1(16, 9, 0); clip(1, 115, 0, 300, 200);
+	intin[0] = 0; intin[1] = 3600;
+	ptsin[0] = 100; ptsin[1] = 100; ptsin[2] = ptsin[3] = ptsin[4] = ptsin[5] = 0; ptsin[6] = 20; ptsin[7] = 0;
+	vdi(11, 2, 4, 2);
+	grab("K11C", 60, 60, 80, 80);
+	begin("K11D", "v_arc r 20 at (100,100), width 1, arrowed ends, 0..900, clip (121,0)-(300,200)");
+	i2(108, 1, 1); clip(1, 121, 0, 300, 200);
+	intin[0] = 0; intin[1] = 900;
+	ptsin[0] = 100; ptsin[1] = 100; ptsin[2] = ptsin[3] = ptsin[4] = ptsin[5] = 0; ptsin[6] = 20; ptsin[7] = 0;
+	vdi(11, 2, 4, 2);
+	grab("K11D", 60, 60, 80, 80);
+}
+
+/* ---- V19: memory -> memory below nine planes, plain op vs op | 0x10 ------
+ * (TASK/V19 acceptance, appended after K11 so cases 1..54 stay byte-identical.)
+ * The raster table (vdi-v18-raster.tsv) cannot set a fill pattern, so this
+ * probe sets a user-defined, non-solid one (vsf_udpat, interior 4) and then
+ * copies a rectangle between two memory forms of 1/2/4/8 planes with vro_cpyfm,
+ * once with the plain op and once with op | 0x10 (PAT_FLAG).  The destination
+ * form plus 32 guard words on both sides is written to VDPROBE.BIN as one
+ * record per copy (x = y = 0, w = number of words, h = 1; the words are the
+ * WORD values of the form, written big-endian).  EmuTOS strips PAT_FLAG for
+ * memory forms (vdi_raster.c setup_pattern, p_addr = NULL), so within a side the
+ * two records must be equal; across the sides every record must be equal. */
+#define PF_GUARD 32
+#define PF_WORDS (PF_GUARD + 256 + PF_GUARD)
+static uint16_t pf_src[PF_WORDS], pf_dst[PF_WORDS];
+
+static void pf_fill(uint16_t *buf, uint32_t seed)
+{
+	int i;
+
+	/* WORD values, not bytes: a planar form is a sequence of WORDs, in the
+	 * native byte order of each side (m68k big-endian, NewTOS aarch64
+	 * little-endian), pixel 0 = the WORD's most significant bit. */
+	for (i = 0; i < PF_WORDS; i++) {
+		seed = seed * 1103515245UL + 12345UL;
+		buf[i] = (uint16_t)(seed >> 16);
+	}
+	for (i = 0; i < PF_GUARD; i++)
+		buf[i] = buf[PF_WORDS - PF_GUARD + i] = 0xA5A5;
+}
+
+static void pf_record(const char *name, const uint16_t *buf)
+{
+	uint8_t hd[19];
+	int i;
+
+	memset(hd, 0, sizeof hd);
+	hd[0] = 'C';
+	put16(hd + 1, caseno);
+	memcpy(hd + 3, name, strlen(name) < 8 ? strlen(name) : 8);
+	put16(hd + 15, PF_WORDS); put16(hd + 17, 1);
+	if (binfh < 0)
+		return;
+	Fwrite((short)binfh, 19L, hd);
+	for (i = 0; i < PF_WORDS; i++) {
+		uint8_t w2[2];
+
+		put16(w2, buf[i]);		/* the WORD value, big-endian in the file */
+		Fwrite((short)binfh, 2L, w2);
+	}
+}
+
+static void pf_copy(const char *name, int planes, int geo, int op, int flag)
+{
+	MFDB src, dst;
+	int sx1, sy1, sx2, sy2, dx, dy;
+
+	begin(name, geo ? "pattern set, mem->mem op, shifted left" : "pattern set, mem->mem op, shifted right");
+	{
+		static const uint16_t pat[16] = {
+			0x8001, 0x4002, 0x2004, 0x1008, 0x0810, 0x0420, 0x0240, 0x0180,
+			0xF00F, 0x0FF0, 0xAAAA, 0x5555, 0xCCCC, 0x3333, 0xFF00, 0x00FF };
+		udpat(16, pat);
+		i1(23, 4);			/* vsf_interior user-defined */
+		i1(25, 2);
+	}
+	memset(&src, 0, sizeof src);
+	memset(&dst, 0, sizeof dst);
+	pf_fill(pf_src, 0x1234ABCDUL + (uint32_t)planes);
+	pf_fill(pf_dst, 0x9876FEDCUL + (uint32_t)planes);
+	src.fd_addr = pf_src + PF_GUARD;
+	dst.fd_addr = pf_dst + PF_GUARD;
+	src.fd_w = dst.fd_w = 64;
+	src.fd_h = dst.fd_h = 8;
+	src.fd_wdwidth = dst.fd_wdwidth = 4;
+	src.fd_stand = dst.fd_stand = 0;
+	src.fd_nplanes = dst.fd_nplanes = (int16_t)planes;
+	if (geo == 0) { sx1 = 3; sy1 = 1; sx2 = 50; sy2 = 6; dx = 11; dy = 2; }
+	else          { sx1 = 20; sy1 = 0; sx2 = 60; sy2 = 7; dx = 5; dy = 0; }
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109;
+	contrl[1] = 4;
+	contrl[3] = 1;
+	contrl[6] = handle;
+	set_mfdb_ptr(0, &src);
+	set_mfdb_ptr(1, &dst);
+	intin[0] = (int16_t)(op | (flag ? 0x10 : 0));
+	ptsin[0] = (int16_t)sx1; ptsin[1] = (int16_t)sy1;
+	ptsin[2] = (int16_t)sx2; ptsin[3] = (int16_t)sy2;
+	ptsin[4] = (int16_t)dx; ptsin[5] = (int16_t)dy;
+	ptsin[6] = (int16_t)(dx + sx2 - sx1); ptsin[7] = (int16_t)(dy + sy2 - sy1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	pf_record(name, pf_dst);
+}
+
+static void k12(void)
+{
+	static const uint8_t ops[] = { 0, 1, 3, 4, 6, 7, 10, 12, 15 };
+	static const uint8_t pl[] = { 1, 2, 4, 8 };
+	char nm[9];
+	int p, g, o, f;
+
+	for (p = 0; p < 4; p++)
+		for (g = 0; g < 2; g++)
+			for (o = 0; o < (int)sizeof ops; o++)
+				for (f = 0; f < 2; f++) {
+					nm[0] = 'P'; nm[1] = (char)('0' + pl[p]); nm[2] = (char)('a' + g);
+					nm[3] = "0123456789ABCDEF"[ops[o] >> 4]; nm[4] = "0123456789ABCDEF"[ops[o] & 15];
+					nm[5] = f ? 'f' : 'p'; nm[6] = 0;
+					pf_copy(nm, pl[p], g, ops[o], f);
+				}
+}
+
+/* ---- k13: memory forms whose fd_w does not match the row (TASK/V26) ------
+ * EmuTOS addresses a memory form by fd_wdwidth alone (vdi_raster.c setup_info,
+ * vro_cpyfm16 / vrt_cpyfm16 / the planar copy); fd_w and fd_h are never read, so a
+ * block wider than the form's row runs on into the next row.  Every block here
+ * stays inside the form's fd_h rows (EmuTOS must write nothing foreign); both
+ * forms are recorded whole with WK_GUARD guard words before and behind
+ * (0xA5A5), the destination as "<name>d", the source as "<name>s". */
+#define WK_GUARD 32
+#define WK_MAX 320
+static uint16_t wk_src[WK_GUARD + WK_MAX + WK_GUARD], wk_dst[WK_GUARD + WK_MAX + WK_GUARD];
+
+struct wk {
+	int opcode;			/* 109 vro_cpyfm, 121 vrt_cpyfm */
+	int mode;			/* write mode / logic op */
+	int sp, sw, sh, swd;		/* source planes, fd_w, fd_h, fd_wdwidth */
+	int dp, dw, dh, dwd;		/* destination */
+	int sx, sy, bw, bh, dx, dy;	/* block size, source and destination origin */
+};
+
+static void wk_fill(uint16_t *buf, int n, uint32_t seed)
+{
+	int i;
+
+	for (i = 0; i < WK_GUARD + n + WK_GUARD; i++) {
+		seed = seed * 1103515245UL + 12345UL;
+		buf[i] = (uint16_t)(seed >> 16);
+	}
+	for (i = 0; i < WK_GUARD; i++)
+		buf[i] = buf[WK_GUARD + n + i] = 0xA5A5;
+}
+
+static void wk_record(const char *name, char tag, const uint16_t *buf, int n)
+{
+	uint8_t hd[19];
+	int i, total = WK_GUARD + n + WK_GUARD;
+
+	caseno++;
+	memset(hd, 0, sizeof hd);
+	hd[0] = 'C';
+	put16(hd + 1, caseno);
+	memcpy(hd + 3, name, strlen(name) < 7 ? strlen(name) : 7);
+	hd[3 + (strlen(name) < 7 ? strlen(name) : 7)] = (uint8_t)tag;
+	put16(hd + 15, total); put16(hd + 17, 1);
+	if (binfh < 0)
+		return;
+	Fwrite((short)binfh, 19L, hd);
+	for (i = 0; i < total; i++) {
+		uint8_t w2[2];
+
+		put16(w2, buf[i]);
+		Fwrite((short)binfh, 2L, w2);
+	}
+}
+
+static void wk_run(const char *name, const char *what, const struct wk *c)
+{
+	MFDB src, dst;
+	int ns = c->swd * c->sp * c->sh, nd = c->dwd * c->dp * c->dh;
+
+	begin(name, what);
+	wk_fill(wk_src, ns, 0x31415926UL + (uint32_t)c->sp * 7UL + (uint32_t)c->swd);
+	wk_fill(wk_dst, nd, 0x27182818UL + (uint32_t)c->dp * 13UL + (uint32_t)c->dwd);
+	memset(&src, 0, sizeof src);
+	memset(&dst, 0, sizeof dst);
+	src.fd_addr = wk_src + WK_GUARD;
+	src.fd_w = (int16_t)c->sw; src.fd_h = (int16_t)c->sh; src.fd_wdwidth = (int16_t)c->swd;
+	src.fd_nplanes = (int16_t)c->sp;
+	dst.fd_addr = wk_dst + WK_GUARD;
+	dst.fd_w = (int16_t)c->dw; dst.fd_h = (int16_t)c->dh; dst.fd_wdwidth = (int16_t)c->dwd;
+	dst.fd_nplanes = (int16_t)c->dp;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = (int16_t)c->opcode;
+	contrl[1] = 4;
+	contrl[3] = (int16_t)(c->opcode == 121 ? 3 : 1);
+	contrl[6] = handle;
+	set_mfdb_ptr(0, &src);
+	set_mfdb_ptr(1, &dst);
+	intin[0] = (int16_t)c->mode;
+	intin[1] = 1;			/* vrt_cpyfm colours (ignored by vro_cpyfm) */
+	intin[2] = 0;
+	ptsin[0] = (int16_t)c->sx; ptsin[1] = (int16_t)c->sy;
+	ptsin[2] = (int16_t)(c->sx + c->bw - 1); ptsin[3] = (int16_t)(c->sy + c->bh - 1);
+	ptsin[4] = (int16_t)c->dx; ptsin[5] = (int16_t)c->dy;
+	ptsin[6] = (int16_t)(c->dx + c->bw - 1); ptsin[7] = (int16_t)(c->dy + c->bh - 1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	wk_record(name, 'd', wk_dst, nd);
+	wk_record(name, 's', wk_src, ns);
+}
+
+static void k13(void)
+{
+	static const uint8_t ops[2] = { 3, 6 };
+	static const uint8_t modes[2] = { 1, 3 };
+	static const int8_t vdx[2] = { 0, -4 }, vdy[2] = { 1, 2 };
+	char nm[9];
+	struct wk c;
+	int v, o, p;
+
+	/* a: 16 planes mem->mem, destination row 16 px, source 48 px wide; the block runs on
+	 * into the following rows; variant 1 starts left of the form (fd_h 5 keeps the end inside) */
+	for (v = 0; v < 2; v++)
+		for (o = 0; o < 2; o++) {
+			memset(&c, 0, sizeof c);
+			c.opcode = 109; c.mode = ops[o];
+			c.sp = 16; c.sw = 48; c.sh = 4; c.swd = 3;
+			c.dp = 16; c.dw = 40; c.dh = v ? 5 : 4; c.dwd = 1;
+			c.bw = 40; c.bh = 1; c.dx = vdx[v]; c.dy = vdy[v];
+			nm[0] = 'W'; nm[1] = 'a'; nm[2] = (char)('0' + v); nm[3] = (char)('0' + ops[o]); nm[4] = 0;
+			wk_run(nm, "16 planes mem->mem, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps", &c);
+		}
+	/* b: source fd_w 40, fd_wdwidth 1, block 40x1 from (0,1) into a 48x1 destination */
+	for (o = 0; o < 2; o++) {
+		memset(&c, 0, sizeof c);
+		c.opcode = 109; c.mode = ops[o];
+		c.sp = 16; c.sw = 40; c.sh = 4; c.swd = 1;
+		c.dp = 16; c.dw = 48; c.dh = 1; c.dwd = 3;
+		c.sy = 1; c.bw = 40; c.bh = 1;
+		nm[0] = 'W'; nm[1] = 'b'; nm[2] = (char)('0' + ops[o]); nm[3] = 0;
+		wk_run(nm, "16 planes mem->mem, source fd_w 40 fd_wdwidth 1, block 40x1 from (0,1)", &c);
+	}
+	/* c: destination fd_w 10, fd_wdwidth 1, block 16x1 (padding columns 10..15) */
+	for (o = 0; o < 2; o++) {
+		memset(&c, 0, sizeof c);
+		c.opcode = 109; c.mode = ops[o];
+		c.sp = 16; c.sw = 16; c.sh = 2; c.swd = 1;
+		c.dp = 16; c.dw = 10; c.dh = 2; c.dwd = 1;
+		c.bw = 16; c.bh = 1;
+		nm[0] = 'W'; nm[1] = 'c'; nm[2] = (char)('0' + ops[o]); nm[3] = 0;
+		wk_run(nm, "16 planes mem->mem, dest fd_w 10 fd_wdwidth 1, block 16x1", &c);
+	}
+	/* d: vrt_cpyfm 1 plane -> 16 plane memory as in a */
+	for (v = 0; v < 2; v++)
+		for (o = 0; o < 2; o++) {
+			memset(&c, 0, sizeof c);
+			c.opcode = 121; c.mode = modes[o];
+			c.sp = 1; c.sw = 48; c.sh = 4; c.swd = 3;
+			c.dp = 16; c.dw = 40; c.dh = v ? 5 : 4; c.dwd = 1;
+			c.bw = 40; c.bh = 1; c.dx = vdx[v]; c.dy = vdy[v];
+			nm[0] = 'W'; nm[1] = 'd'; nm[2] = (char)('0' + v); nm[3] = (char)('0' + modes[o]); nm[4] = 0;
+			wk_run(nm, "vrt_cpyfm 1 plane -> 16 plane memory, dest fd_w 40 fd_wdwidth 1, block 40x1 wraps", &c);
+		}
+	/* e: planar 1 and 4 planes mem->mem, destination fd_w 40, fd_wdwidth 2, fd_h 6 */
+	for (p = 0; p < 2; p++)
+		for (v = 0; v < 2; v++)
+			for (o = 0; o < 2; o++) {
+				int pl = p ? 4 : 1;
+
+				memset(&c, 0, sizeof c);
+				c.opcode = 109; c.mode = ops[o];
+				c.sp = pl; c.sw = 48; c.sh = 4; c.swd = 3;
+				c.dp = pl; c.dw = 40; c.dh = 6; c.dwd = 2;
+				c.bw = 40; c.bh = 1; c.dx = v ? 5 : 0; c.dy = v ? 2 : 1;
+				nm[0] = 'W'; nm[1] = 'e'; nm[2] = (char)('0' + pl); nm[3] = (char)('0' + v);
+				nm[4] = (char)('0' + ops[o]); nm[5] = 0;
+				wk_run(nm, "planar mem->mem, dest fd_w 40 fd_wdwidth 2 fd_h 6, block 40x1 wraps", &c);
+			}
+}
+
+/* K14 (TASK/V21 acceptance): the seed queue of v_contourfill overflows.  EmuTOS ends the whole fill when its
+ * 1024-entry queue is full (vdi/vdi_fill.c get_seed), leaving a partial fill.  Dots come from a fixed LCG so
+ * both sides draw the same field. */
+static uint32_t k14_seed;
+
+static int k14_rand(void)
+{
+	k14_seed = k14_seed * 1103515245UL + 12345UL;
+	return (int)((k14_seed >> 16) & 0x7fff);
+}
+
+/* dots on rows y0..y1 over the full width; pct = density in percent, or (step > 0) every step-th column (x % step == 1) */
+static void k14_dots(int y0, int y1, int pct, int step)
+{
+	int16_t pts[2000];
+	int n = 0, y, x, j;
+
+	k14_seed = 12345UL;
+	for (y = y0; y <= y1; y++)
+		for (x = 0; x < 640; x++) {
+			int dot = step ? (x % step == 1) : (k14_rand() % 100 < pct);
+			if (!dot)
+				continue;
+			pts[2 * n] = (int16_t)x;
+			pts[2 * n + 1] = (int16_t)y;
+			if (++n == 1000) {
+				for (j = 0; j < 2 * n; j++) ptsin[j] = pts[j];
+				vdi(7, 0, (int16_t)n, 0);
+				n = 0;
+			}
+		}
+	if (n) {
+		for (j = 0; j < 2 * n; j++) ptsin[j] = pts[j];
+		vdi(7, 0, (int16_t)n, 0);
+	}
+}
+
+static void k14(void)
+{
+	begin("K14A", "queue overflow: 25% random dots on rows 100..104, contourfill from (0,50), solid colour 2, boundary 1");
+	k14_dots(100, 104, 25, 0);
+	i1(25, 2); contour(0, 50, 1); grab("K14A", 0, 40, 640, 80);
+	begin("K14B", "queue overflow: 10% random dots on rows 100..139, contourfill from below (0,300), solid colour 2, boundary 1");
+	k14_dots(100, 139, 10, 0);
+	i1(25, 2); contour(0, 300, 1); grab("K14B", 0, 0, 640, 320);
+	begin("K14C", "control, no overflow: dot on every 2nd column of rows 100..299 (queue 321), contourfill from (0,50)");
+	k14_dots(100, 299, 0, 2);
+	i1(25, 2); contour(0, 50, 1); grab("K14C", 0, 40, 640, 280);
+}
+
+/* ---- k15: closed GDP curves that degenerate to two points (TASK/V22 acceptance) -----------------------------
+ * clc_arc drops duplicate points, so a tiny radius leaves 2 (or 1+1) points for polygon(); V22 removed the
+ * "at least 3 points" return, so these draw like EmuTOS.  Solid fill, colour 2; the window is (30,30)-(110,110). */
+static void gdp15(int sub, int npts, int nint, int xc, int yc, int a2, int a3, int a6, int ba, int ea)
+{
+	int i;
+
+	for (i = 0; i < 8; i++)
+		ptsin[i] = 0;
+	ptsin[0] = (int16_t)xc; ptsin[1] = (int16_t)yc;
+	ptsin[2] = (int16_t)a2; ptsin[3] = (int16_t)a3;
+	ptsin[4] = (int16_t)a2; ptsin[6] = (int16_t)a6;
+	intin[0] = (int16_t)ba; intin[1] = (int16_t)ea;
+	vdi(11, (int16_t)sub, (int16_t)npts, (int16_t)nint);
+}
+
+static void k15_solid(int perim, int mode)
+{
+	i1(23, 1);
+	i1(25, 2);
+	i1(104, perim);
+	if (mode)
+		i1(32, mode);
+}
+
+static void k15(void)
+{
+	/* v_circle: radius in ptsin[4] */
+	begin("K15A", "v_circle r=0 at (60,60), solid colour 2, perimeter on");
+	k15_solid(1, 0); gdp15(4, 3, 0, 60, 60, 0, 0, 0, 0, 0); grab("K15A", 30, 30, 80, 80);
+	begin("K15B", "v_circle r=1 at (60,60), solid colour 2, perimeter on");
+	k15_solid(1, 0); gdp15(4, 3, 0, 60, 60, 1, 0, 0, 0, 0); grab("K15B", 30, 30, 80, 80);
+	begin("K15C", "v_circle r=2 at (60,60), solid colour 2, perimeter on");
+	k15_solid(1, 0); gdp15(4, 3, 0, 60, 60, 2, 0, 0, 0, 0); grab("K15C", 30, 30, 80, 80);
+	begin("K15D", "v_circle r=0 at (60,60), solid colour 2, perimeter off");
+	k15_solid(0, 0); gdp15(4, 3, 0, 60, 60, 0, 0, 0, 0, 0); grab("K15D", 30, 30, 80, 80);
+	begin("K15E", "v_circle r=1 at (60,60), solid colour 2, perimeter off");
+	k15_solid(0, 0); gdp15(4, 3, 0, 60, 60, 1, 0, 0, 0, 0); grab("K15E", 30, 30, 80, 80);
+	/* v_ellipse: xr in ptsin[2], yr in ptsin[3] */
+	begin("K15F", "v_ellipse xr=0 yr=5 at (60,60), perimeter on");
+	k15_solid(1, 0); gdp15(5, 2, 0, 60, 60, 0, 5, 0, 0, 0); grab("K15F", 30, 30, 80, 80);
+	begin("K15G", "v_ellipse xr=5 yr=0 at (60,60), perimeter on");
+	k15_solid(1, 0); gdp15(5, 2, 0, 60, 60, 5, 0, 0, 0, 0); grab("K15G", 30, 30, 80, 80);
+	begin("K15H", "v_ellipse xr=0 yr=5 at (60,60), perimeter off");
+	k15_solid(0, 0); gdp15(5, 2, 0, 60, 60, 0, 5, 0, 0, 0); grab("K15H", 30, 30, 80, 80);
+	begin("K15I", "v_ellipse xr=0 yr=0 at (60,60), perimeter on, XOR");
+	k15_solid(1, 3); gdp15(5, 2, 0, 60, 60, 0, 0, 0, 0, 0); grab("K15I", 30, 30, 80, 80);
+	begin("K15J", "v_ellipse xr=1 yr=6 at (60,60), perimeter off");
+	k15_solid(0, 0); gdp15(5, 2, 0, 60, 60, 1, 6, 0, 0, 0); grab("K15J", 30, 30, 80, 80);
+	/* v_pieslice: radius in ptsin[6], angles in intin (tenths of a degree) */
+	begin("K15K", "v_pieslice r=0 at (60,60), 0..900, perimeter on");
+	k15_solid(1, 0); gdp15(3, 4, 2, 60, 60, 0, 0, 0, 0, 900); grab("K15K", 30, 30, 80, 80);
+	begin("K15L", "v_pieslice r=1 at (60,60), 0..1800, perimeter on");
+	k15_solid(1, 0); gdp15(3, 4, 2, 60, 60, 0, 0, 1, 0, 1800); grab("K15L", 30, 30, 80, 80);
+	begin("K15M", "v_pieslice r=2 at (60,60), 0..2700, perimeter off");
+	k15_solid(0, 0); gdp15(3, 4, 2, 60, 60, 0, 0, 2, 0, 2700); grab("K15M", 30, 30, 80, 80);
+	begin("K15N", "v_pieslice r=0 at (60,60), 0..0, perimeter on");
+	k15_solid(1, 0); gdp15(3, 4, 2, 60, 60, 0, 0, 0, 0, 0); grab("K15N", 30, 30, 80, 80);
+	/* v_ellpie: xr, yr in ptsin[2], [3] */
+	begin("K15O", "v_ellpie xr=0 yr=5 at (60,60), 0..900, perimeter on");
+	k15_solid(1, 0); gdp15(7, 2, 2, 60, 60, 0, 5, 0, 0, 900); grab("K15O", 30, 30, 80, 80);
+	begin("K15P", "v_ellpie xr=1 yr=0 at (60,60), 0..1800, perimeter off");
+	k15_solid(0, 0); gdp15(7, 2, 2, 60, 60, 1, 0, 0, 0, 1800); grab("K15P", 30, 30, 80, 80);
+	/* control: normal circle r=12 */
+	begin("K15Q", "v_circle r=12 at (60,60), control");
+	k15_solid(1, 0); gdp15(4, 3, 0, 60, 60, 12, 0, 0, 0, 0); grab("K15Q", 30, 30, 80, 80);
+}
+
+/* K16 (TASK/V24 acceptance): v_get_pixel at the wrap points of the frame buffer, more than the three K10 reads. */
+static void k16(void)
+{
+	begin("K16A", "v_get_pixel x outside 0..639 but inside the frame buffer (wraps to the next/previous row)");
+	i1(25, 2); recfl(0, 1, 0, 1);
+	i1(25, 3); recfl(639, 0, 639, 0);
+	i1(25, 4); recfl(639, 1, 639, 1);
+	i1(25, 5); recfl(0, 2, 0, 2);
+	i1(25, 6); recfl(0, 4, 0, 4);
+	i1(25, 7); recfl(1, 101, 1, 101);
+	i1(25, 8); recfl(0, 479, 0, 479);
+	emit("   K16A (640,0)=%04x (-1,1)=%04x (1279,0)=%04x (1280,0)=%04x\n",
+	     (uint16_t)getpix(640, 0), (uint16_t)getpix(-1, 1), (uint16_t)getpix(1279, 0), (uint16_t)getpix(1280, 0));
+	emit("   K16A (-640,5)=%04x (641,100)=%04x (640,478)=%04x (0,1)=%04x\n",
+	     (uint16_t)getpix(-640, 5), (uint16_t)getpix(641, 100), (uint16_t)getpix(640, 478), (uint16_t)getpix(0, 1));
+	grab("K16A", 0, 0, 16, 8);
+	begin("K16B", "v_get_pixel beyond the frame buffer (decision B: 0 in NewTOS; EmuTOS reads whatever lies there)");
+	emit("   K16B (640,479)=%04x (0,-1)=%04x (-1,0)=%04x (0,480)=%04x\n",
+	     (uint16_t)getpix(640, 479), (uint16_t)getpix(0, -1), (uint16_t)getpix(-1, 0), (uint16_t)getpix(0, 480));
+	grab("K16B", 0, 0, 16, 8);
+}
+
+/* ---- k17: curve vs clip, the early exit of gdp_curve (TASK/V25 acceptance) ---------------------------------
+ * EmuTOS vdi_gdp.c:395-402 quits when the clip excludes xc+-xrad / yc+-yrad; line width and arrow ends do not count.
+ * Centre (100,100); width/ends and clip per case; clip x1 < 0 = clip off. */
+static void c17(const char *nm, const char *what, int sub, int npts, int nint, int a2, int a3, int a6, int ba, int ea,
+		int w, int arr, int cx1, int cy1, int cx2, int cy2)
+{
+	begin(nm, what);
+	p1(16, (int16_t)w, 0);
+	if (arr)
+		i2(108, 1, 1);
+	if (cx1 >= 0)
+		clip(1, cx1, cy1, cx2, cy2);
+	gdp15(sub, npts, nint, 100, 100, a2, a3, a6, ba, ea);
+	grab(nm, 40, 50, 120, 100);
+}
+
+static void k17(void)
+{
+	c17("K17A", "v_arc r20 w9 clip x>=120 (touches xc+xrad: draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 120, 0, 300, 200);
+	c17("K17B", "v_arc r20 w9 clip y<=79 (above yc-yrad: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 0, 300, 79);
+	c17("K17C", "v_arc r20 w9 clip x<=79 (left of xc-xrad: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 0, 79, 200);
+	c17("K17D", "v_arc r20 w9 clip y>=121 (below yc+yrad: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 121, 300, 200);
+	c17("K17E", "v_arc r20 w9 clip y>=120 (touches: draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 120, 300, 200);
+	c17("K17F", "v_arc r20 w15 clip x>=121 (wide pen reaches in: quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 15, 0, 121, 0, 300, 200);
+	c17("K17G", "v_arc r20 0..900 w1 arrows clip x>=120 (touches: draws)", 2, 4, 2, 0, 0, 20, 0, 900, 1, 1, 120, 0, 300, 200);
+	c17("K17H", "v_ellarc 30x20 0..1800 w1 arrows clip x>=131 (quits)", 6, 2, 2, 30, 20, 0, 0, 1800, 1, 1, 131, 0, 300, 200);
+	c17("K17I", "v_ellarc 30x20 0..1800 w1 arrows clip x>=130 (touches: draws)", 6, 2, 2, 30, 20, 0, 0, 1800, 1, 1, 130, 0, 300, 200);
+	c17("K17J", "v_ellarc 30x20 0..1800 w11 clip y<=79 (quits)", 6, 2, 2, 30, 20, 0, 0, 1800, 11, 0, 0, 0, 300, 79);
+	c17("K17K", "v_ellarc 30x20 0..1800 w11 clip y<=80 (touches: draws)", 6, 2, 2, 30, 20, 0, 0, 1800, 11, 0, 0, 0, 300, 80);
+	c17("K17L", "v_ellarc 20x30 0..3600 w7 clip y>=131 (quits)", 6, 2, 2, 20, 30, 0, 0, 3600, 7, 0, 0, 131, 300, 200);
+	c17("K17M", "v_ellarc 20x30 0..3600 w7 clip y>=130 (touches: draws)", 6, 2, 2, 20, 30, 0, 0, 3600, 7, 0, 0, 130, 300, 200);
+	c17("K17N", "v_ellipse 30x20 filled clip x>=131 (quits)", 5, 2, 0, 30, 20, 0, 0, 0, 1, 0, 131, 0, 300, 200);
+	c17("K17O", "v_ellipse 30x20 filled clip x>=130 (touches: draws)", 5, 2, 0, 30, 20, 0, 0, 0, 1, 0, 130, 0, 300, 200);
+	c17("K17P", "v_circle r20 w9 clip x>=121 (quits)", 4, 3, 0, 20, 0, 0, 0, 0, 9, 0, 121, 0, 300, 200);
+	c17("K17Q", "v_pieslice r20 0..900 w9 clip x>=121 (quits)", 3, 4, 2, 0, 0, 20, 0, 900, 9, 0, 121, 0, 300, 200);
+	c17("K17R", "v_ellpie 30x20 0..1800 clip x>=131 (quits)", 7, 2, 2, 30, 20, 0, 0, 1800, 1, 0, 131, 0, 300, 200);
+	c17("K17S", "v_arc r20 w9 clip off (draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, -1, 0, 0, 0);
+	c17("K17T", "v_arc r20 w3 arrows clip x>=121 (quits)", 2, 4, 2, 0, 0, 20, 0, 3600, 3, 1, 121, 0, 300, 200);
+	c17("K17U", "v_arc r20 w9 clip (0,0)-(639,479) all in (draws)", 2, 4, 2, 0, 0, 20, 0, 3600, 9, 0, 0, 0, 639, 479);
+}
+
+
+/* ==== V18 part 2 (TASK/V18, docs/audits/2026-11-06-v18-t2-vdi-text.md): text, escapes, and the raster
+ * additions of the part-2 rider.  Case names start with 'T'; everything below is appended after k17, so
+ * the earlier cases keep their numbers and bytes.  reset() sets no text attribute, so every text case
+ * restores them itself (treset, the text part of tosdump/core/runner.c td_reset_vdi). */
+static int16_t bigin[4200];
+static int only_t19;
+
+static void treset(void)
+{
+	i1(21, 1);				/* vst_font 1 */
+	p1(12, 0, work_pts[1]);			/* vst_height DEF_CHHT */
+	i1(13, 0);				/* vst_rotation 0 */
+	i1(22, 1);				/* vst_color 1 */
+	i1(106, 0);				/* vst_effects none */
+	i2(39, 0, 0);				/* vst_alignment */
+}
+
+static void tbegin(const char *name, const char *what)
+{
+	begin(name, what);
+	treset();
+}
+
+static void gtext(int x, int y, const char *s)
+{
+	int i, n = (int)strlen(s);
+
+	for (i = 0; i < n; i++)
+		intin[i] = (int16_t)(uint8_t)s[i];
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	vdi(8, 0, 1, (int16_t)n);
+}
+
+/* v_gtext / v_justified with up to 4198 characters, 'A'..'Z' cycling (bigin, not intin[300]) */
+static void gtext_big(int x, int y, int n)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		bigin[i] = (int16_t)('A' + i % 26);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 8; contrl[1] = 1; contrl[3] = (int16_t)n; contrl[6] = handle;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	td_abi_vdi(contrl, bigin, ptsin, intout, ptsout);
+}
+
+/* as gtext_big, the last character replaced by `last` */
+static void gtext_big2(int x, int y, int n, int last)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		bigin[i] = (int16_t)('A' + i % 26);
+	bigin[n - 1] = (int16_t)last;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 8; contrl[1] = 1; contrl[3] = (int16_t)n; contrl[6] = handle;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y;
+	td_abi_vdi(contrl, bigin, ptsin, intout, ptsout);
+}
+
+static void justified_big(int x, int y, int len, int iw, int ic, int n)
+{
+	int i;
+
+	bigin[0] = (int16_t)iw; bigin[1] = (int16_t)ic;
+	for (i = 0; i < n; i++)
+		bigin[2 + i] = (int16_t)((i % 7 == 6) ? ' ' : 'A' + i % 26);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 11; contrl[1] = 2; contrl[3] = (int16_t)(n + 2); contrl[5] = 10; contrl[6] = handle;
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y; ptsin[2] = (int16_t)len; ptsin[3] = 0;
+	td_abi_vdi(contrl, bigin, ptsin, intout, ptsout);
+}
+
+static void justified(int x, int y, int len, int iw, int ic, const char *s)
+{
+	int i, n = (int)strlen(s);
+
+	intin[0] = (int16_t)iw; intin[1] = (int16_t)ic;
+	for (i = 0; i < n; i++)
+		intin[2 + i] = (int16_t)(uint8_t)s[i];
+	ptsin[0] = (int16_t)x; ptsin[1] = (int16_t)y; ptsin[2] = (int16_t)len; ptsin[3] = 0;
+	vdi(11, 10, 2, (int16_t)(n + 2));
+}
+
+static void logout(const char *tag, int nint, int npts)
+{
+	int i;
+
+	emit("   %s c2=%d c4=%d io", tag, contrl[2], contrl[4]);
+	for (i = 0; i < nint; i++)
+		emit(" %d", intout[i]);
+	emit(" po");
+	for (i = 0; i < 2 * npts; i++)
+		emit(" %d", ptsout[i]);
+	emit("\n");
+}
+
+/* ---- T19 (K19): the default font of a freshly opened workstation ------------------------------------- */
+static void t19(void)
+{
+	begin("T19A", "default font right after v_opnvwk: vqt_attributes, vqt_fontinfo (before any vst_*)");
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(10, 30, "Ag");
+	grab("T19A", 0, 0, 40, 40);
+}
+
+/* ---- T13 (K13): vst_load_fonts the way GDOS calls it -----------------------------------------------------
+ * GDOS hands the ROM VDI a font chain in CONTRL[10..11] and a scratch buffer in CONTRL[7..8] / offset
+ * CONTRL[9] (vdi_text.c:1292-1350).  The chain here is one font, id 7, built in memory as the EmuTOS
+ * Fonthead (include/fonthdr.h; m68k gcc packs it with 2-byte alignment, exactly that layout).  NewTOS
+ * defines no LP64 layout for these CONTRL slots and reads none of them (attributes.rs vst_load_fonts);
+ * the LP64 side passes the pointers in CONTRL[7..10] and [12..15], offset CONTRL[11]. */
+struct t13_fh {
+	int16_t font_id, point;
+	char name[32];
+	uint16_t first_ade, last_ade, top, ascent, half, descent, bottom, max_char_width, max_cell_width;
+	uint16_t left_offset, right_offset, thicken, ul_size, lighten, skew, flags;
+	const uint8_t *hor_table;
+	const uint16_t *off_table;
+	const uint16_t *dat_table;
+	uint16_t form_width, form_height;
+	struct t13_fh *next_font;
+	uint16_t reserved;
+};
+static struct t13_fh t13_font;
+static uint16_t t13_off[65];
+static uint16_t t13_dat[64 * 8 / 2];
+static uint16_t t13_scratch[2048];
+
+static void t13_build(void)
+{
+	uint8_t *d = (uint8_t *)t13_dat;
+	int c, r;
+
+	memset(&t13_font, 0, sizeof t13_font);
+	t13_font.font_id = 7;
+	t13_font.point = 12;
+	memcpy(t13_font.name, "AUDIT FONT SEVEN", 16);
+	t13_font.first_ade = 32; t13_font.last_ade = 95;
+	t13_font.top = 6; t13_font.ascent = 6; t13_font.half = 4; t13_font.descent = 1; t13_font.bottom = 1;
+	t13_font.max_char_width = 8; t13_font.max_cell_width = 8;
+	t13_font.left_offset = 1; t13_font.right_offset = 1; t13_font.thicken = 1; t13_font.ul_size = 1;
+	t13_font.lighten = 0x5555; t13_font.skew = 0x5555;
+	t13_font.flags = 4 | 8;			/* F_STDFORM | F_MONOSPACE */
+	for (c = 0; c <= 64; c++)
+		t13_off[c] = (uint16_t)(8 * c);
+	for (r = 0; r < 8; r++)
+		for (c = 0; c < 64; c++)
+			d[r * 64 + c] = (uint8_t)(((c * 29 + r * 53) ^ 0xA5) | 0x81);
+	t13_font.off_table = t13_off;
+	t13_font.dat_table = t13_dat;
+	t13_font.form_width = 64; t13_font.form_height = 8;
+}
+
+static void t13_load(void)
+{
+	void *scr = t13_scratch, *fp = &t13_font;
+
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 119; contrl[3] = 1; contrl[6] = handle;
+	intin[0] = 0;
+	if (sizeof(void *) == 4) {
+		memcpy(&contrl[7], &scr, 4);
+		contrl[9] = 2048;
+		memcpy(&contrl[10], &fp, 4);
+	} else {
+		memcpy(&contrl[7], &scr, sizeof scr);
+		contrl[11] = 2048;
+		memcpy(&contrl[12], &fp, sizeof fp);
+	}
+	intout[0] = 0x7777;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+}
+
+static void t13_name(int idx)
+{
+	char nm[33];
+	int i;
+
+	intin[0] = (int16_t)idx;
+	memset(intout, 0x77, 34 * 2);
+	vdi(130, 0, 0, 1);
+	for (i = 0; i < 32; i++) {
+		int ch = intout[1 + i] & 0xFF;
+		nm[i] = (char)((ch >= 32 && ch < 127) ? ch : '.');
+	}
+	nm[32] = 0;
+	emit("   vqt_name(%d) c4=%d id=%d name=[%s]\n", idx, contrl[4], intout[0], nm);
+}
+
+static void t13(void)
+{
+	t13_build();
+	tbegin("T13A", "vst_load_fonts with a GDOS-style chain (font id 7), then vst_font(7), v_gtext");
+	t13_load();
+	emit("   vst_load_fonts#1 c2=%d c4=%d io %d\n", contrl[2], contrl[4], intout[0]);
+	t13_name(1);
+	t13_name(2);
+	intin[0] = 0;
+	vdi(102, 0, 0, 1);			/* vq_extnd(0) */
+	emit("   vq_extnd(0) io[10]=%d\n", intout[10]);
+	i1(21, 7);
+	logout("vst_font(7)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(20, 60, "AB@_");
+	grab("T13A", 0, 30, 120, 50);
+	t13_load();
+	emit("   vst_load_fonts#2 c4=%d io %d\n", contrl[4], intout[0]);
+	intin[0] = 0;
+	vdi(120, 0, 0, 1);			/* vst_unload_fonts */
+	i1(21, 7);
+	logout("vst_font(7) after unload", 1, 0);
+	t13_name(2);
+	i1(21, 1);
+	treset();
+	begin("T13B", "after the unload: v_gtext in the system font (state restored?)");
+	treset();
+	gtext(20, 60, "AB@_");
+	grab("T13B", 0, 30, 120, 50);
+}
+
+/* ---- T14 (K14): exact-double text (dda_inc 0xFFFF) and the horizontal DDA ---------------------------- */
+static void t14(void)
+{
+	tbegin("T14A", "vst_height(26) = exact double, v_gtext 'AUDIT' at (10,60)");
+	p1(12, 0, 26);
+	logout("vst_height(26)", 0, 2);
+	gtext(10, 60, "AUDIT");
+	grab("T14A", 0, 20, 200, 60);
+	tbegin("T14B", "vst_height(26), v_gtext of 4100 chars at (10,200) (wraps the WORD x 1x)");
+	p1(12, 0, 26);
+	gtext_big(10, 200, 4100);
+	grab("T14B", 0, 160, 640, 60);
+	tbegin("T14C", "unscaled v_gtext of 4100 chars at (10,60)");
+	gtext_big(10, 60, 4100);
+	grab("T14C", 0, 40, 640, 30);
+	tbegin("T14D", "vst_height(20) (DDA 7/13 up), v_gtext 20 chars at x=-60 (leading chars clipped)");
+	p1(12, 0, 20);
+	gtext(-60, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14D", 0, 30, 400, 40);
+	tbegin("T14E", "vst_height(20), clip (100,0)-(639,479), v_gtext 20 chars at x=0");
+	p1(12, 0, 20);
+	clip(1, 100, 0, 639, 479);
+	gtext(0, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14E", 0, 30, 400, 40);
+	tbegin("T14F", "vst_height(20), v_gtext 20 chars at x=10 (nothing clipped, control)");
+	p1(12, 0, 20);
+	gtext(10, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14F", 0, 30, 400, 40);
+	tbegin("T14G", "vst_height(26), v_gtext 20 chars at x=-60 (exact double, leading chars clipped)");
+	p1(12, 0, 26);
+	gtext(-60, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14G", 0, 30, 640, 40);
+	tbegin("T14H", "vst_height(26), v_justified 4096 chars interchar, max_x -32768 (advance 8), at (10,200)");
+	p1(12, 0, 26);
+	justified_big(10, 200, -32768, 0, 1, 4096);
+	grab("T14H", 0, 170, 640, 40);
+	tbegin("T14I", "vst_height(20), v_justified 20 chars interchar len 400 at x=-60");
+	p1(12, 0, 20);
+	justified(-60, 60, 400, 0, 1, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14I", 0, 30, 400, 40);
+	tbegin("T14J", "vst_height(10) (DDA down), v_gtext 20 chars at x=-30 (leading chars clipped)");
+	p1(12, 0, 10);
+	gtext(-30, 60, "ABCDEFGHIJKLMNOPQRST");
+	grab("T14J", 0, 40, 300, 30);
+	/* K14 proper: with clipping off text_blt scales every character (check_clip returns 0 without CLIP,
+	 * vdi_textblit.c:132-133), so XDDA falls by DELX = 8 per char from 32767 (vdi_text.c:457,
+	 * vdi_textblit.c:723-733) and the 4096th char (index 4095) is scaled with seed 7: source column 7 is
+	 * not doubled.  The WORD x wraps after 4096 * 16 px, so char 4095 lands on the screen again, at
+	 * x0 - 16.  Char 14 has column 7 set in 13 of its 16 rows (bios/fnt_st_8x16.c).  T14L is the same
+	 * with 4095 chars (last char index 4094, seed 15: every column doubled). */
+	tbegin("T14K", "vst_height(26), clip off, 4096 chars at (26,200), char 4095 = 14 lands at x 10");
+	p1(12, 0, 26);
+	gtext_big2(26, 200, 4096, 14);
+	grab("T14K", 0, 160, 64, 50);
+	tbegin("T14L", "control: vst_height(26), clip off, 4095 chars at (42,200), char 4094 = 14 lands at x 10");
+	p1(12, 0, 26);
+	gtext_big2(42, 200, 4095, 14);
+	grab("T14L", 0, 160, 64, 50);
+	tbegin("T14M", "vst_height(26), clip on (0,0)-(639,479), 4096 chars at (26,200), char 4095 = 14");
+	p1(12, 0, 26);
+	clip(1, 0, 0, 639, 479);
+	gtext_big2(26, 200, 4096, 14);
+	grab("T14M", 0, 160, 64, 50);
+}
+
+/* ---- T15 (K15): vst_font after a scaled size; the scaled header's metrics ----------------------------- */
+static void t15(void)
+{
+	tbegin("T15A", "vst_height(20), vst_font(1), v_gtext");
+	p1(12, 0, 20);
+	logout("vst_height(20)", 0, 2);
+	i1(21, 1);
+	logout("vst_font(1)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(10, 60, "ABCDEF");
+	grab("T15A", 0, 30, 200, 40);
+	tbegin("T15B", "vst_point(18) (doubled 8x8), vst_font(1), v_gtext");
+	i1(107, 18);
+	logout("vst_point(18)", 1, 2);
+	i1(21, 1);
+	logout("vst_font(1)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	gtext(10, 60, "ABCDEF");
+	grab("T15B", 0, 30, 200, 40);
+	tbegin("T15C", "vst_point(18), vst_font(9) (no such face), v_gtext");
+	i1(107, 18);
+	i1(21, 9);
+	logout("vst_font(9)", 1, 0);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	gtext(10, 60, "ABCDEF");
+	grab("T15C", 0, 30, 200, 40);
+	tbegin("T15D", "vst_height(3) (below the 6x6 top), vst_font(1), v_gtext");
+	p1(12, 0, 3);
+	logout("vst_height(3)", 0, 2);
+	i1(21, 1);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	gtext(10, 60, "ABCDEF");
+	grab("T15D", 0, 30, 200, 40);
+	tbegin("T15E", "vst_point(11), vst_font(1): vqt_attributes / fontinfo");
+	i1(107, 11);
+	logout("vst_point(11)", 1, 2);
+	i1(21, 1);
+	vdi(38, 0, 0, 0);
+	logout("vqt_attributes", 6, 2);
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	gtext(10, 60, "ABCDEF");
+	grab("T15E", 0, 30, 200, 40);
+}
+
+/* ---- T16 (K16): v_justified at 900/1800/2700 ---------------------------------------------------------- */
+static void t16(void)
+{
+	static const int16_t ang[4] = { 0, 900, 1800, 2700 };
+	static const int8_t flg[3][2] = { { 0, 1 }, { 1, 0 }, { 1, 1 } };
+	char nm[9], what[160];
+	int a, f;
+
+	for (a = 0; a < 4; a++) {
+		for (f = 0; f < 3; f++) {
+			nm[0] = 'T'; nm[1] = '1'; nm[2] = '6'; nm[3] = (char)('0' + a); nm[4] = (char)('0' + f); nm[5] = 0;
+			snprintf(what, sizeof what, "v_justified chup %d interword %d interchar %d, 'AB CD EF' len 100 at (320,240)",
+				 ang[a], flg[f][0], flg[f][1]);
+			tbegin(nm, what);
+			i1(13, ang[a]);
+			justified(320, 240, 100, flg[f][0], flg[f][1], "AB CD EF");
+			grab(nm, 200, 120, 240, 240);
+		}
+		nm[0] = 'T'; nm[1] = '1'; nm[2] = '6'; nm[3] = (char)('0' + a); nm[4] = 'g'; nm[5] = 0;
+		snprintf(what, sizeof what, "control: v_gtext chup %d 'AB CD EF' at (320,240)", ang[a]);
+		tbegin(nm, what);
+		i1(13, ang[a]);
+		gtext(320, 240, "AB CD EF");
+		grab(nm, 200, 120, 240, 240);
+	}
+}
+
+/* ---- T18 (K18): escape 17 v_hardcopy -> Scrdmp (vdi_esc.c:260-263, bios/xbios.c:490-494) --------------- */
+#define T18_DUMPFLG 0x4EE
+static long t18_set5(void) { *(volatile int16_t *)(uintptr_t)T18_DUMPFLG = 5; return 0; }
+static long t18_get(void) { return *(volatile int16_t *)(uintptr_t)T18_DUMPFLG; }
+static long t18_restore(void) { *(volatile int16_t *)(uintptr_t)T18_DUMPFLG = -1; return 0; }
+
+static void t18(void)
+{
+	long before, a, b, c;
+
+	begin("T18A", "dumpflg ($4EE) around v_hardcopy (escape 17) and Scrdmp (XBIOS 20)");
+	before = Supexec(t18_get);
+	Supexec(t18_set5);
+	a = Supexec(t18_get);
+	vdi(5, 17, 0, 0);
+	b = Supexec(t18_get);
+	emit("   dumpflg boot=%ld set=%ld after v_hardcopy=%ld c2=%d c4=%d\n", before, a, b, contrl[2], contrl[4]);
+	Supexec(t18_set5);
+	Scrdmp();
+	c = Supexec(t18_get);
+	emit("   dumpflg after Scrdmp=%ld\n", c);
+	Supexec(t18_restore);
+	grab("T18A", 0, 0, 8, 8);
+}
+
+/* ---- TU (rider, V20): text underline with vs_clip(0) (vdi_text.c:519-534: abline without clip_line) ---- */
+static void tu(void)
+{
+	tbegin("TUA", "underline, clip off, v_gtext 'ABCDEFGH' at (600,100): runs past x 639");
+	i1(106, 8);
+	gtext(600, 100, "ABCDEFGH");
+	grab("TUA", 560, 80, 80, 40);
+	grab("TUAw", 0, 80, 80, 40);
+	tbegin("TUB", "underline, clip off, v_gtext 'ABCDEFGH' at (-30,150): starts left of x 0");
+	i1(106, 8);
+	gtext(-30, 150, "ABCDEFGH");
+	grab("TUB", 0, 130, 80, 40);
+	grab("TUBw", 600, 130, 40, 40);
+	tbegin("TUC", "underline, clip off, vst_height(26), 'ABCDEFGH' at (560,200)");
+	i1(106, 8);
+	p1(12, 0, 26);
+	gtext(560, 200, "ABCDEFGH");
+	grab("TUC", 520, 160, 120, 60);
+	grab("TUCw", 0, 160, 120, 60);
+	tbegin("TUD", "control: underline, clip on (0,0)-(639,479), 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	clip(1, 0, 0, 639, 479);
+	gtext(600, 100, "ABCDEFGH");
+	grab("TUD", 560, 80, 80, 40);
+	grab("TUDw", 0, 80, 80, 40);
+	tbegin("TUE", "underline+light, clip off, 'ABCDEFGH' at (600,300)");
+	i1(106, 8 | 2);
+	gtext(600, 300, "ABCDEFGH");
+	grab("TUE", 560, 280, 80, 40);
+	grab("TUEw", 0, 280, 80, 40);
+	tbegin("TUF", "control: underline, clip off, 'ABCDEFGH' at (100,100) (inside)");
+	i1(106, 8);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TUF", 80, 80, 120, 40);
+}
+
+/* ---- TP (rider, V23): handlers read GSX_ENTRY's local PTSIN copy (vdi_asm.S:79-104) ---------------------
+ * CONTRL[1] smaller than what the handler reads: EmuTOS sees the rest of an earlier call's copy, a
+ * handler reading the caller's PTSIN directly sees the caller's array. */
+static void tp(void)
+{
+	tbegin("TPA", "v_pline (100,100)-(200,150); vs_clip(1) CONTRL[1]=0, caller PTSIN 10,10,50,50; vr_recfl pen 2");
+	line2(100, 100, 200, 150);
+	intin[0] = 1;
+	ptsin[0] = 10; ptsin[1] = 10; ptsin[2] = 50; ptsin[3] = 50;
+	vdi(129, 0, 0, 1);
+	i1(25, 2);
+	recfl(0, 0, 299, 249);
+	grab("TPA", 0, 0, 300, 250);
+	tbegin("TPB", "as TPA with CONTRL[1]=1 (first corner copied, second not)");
+	line2(100, 100, 200, 150);
+	intin[0] = 1;
+	ptsin[0] = 10; ptsin[1] = 10; ptsin[2] = 50; ptsin[3] = 50;
+	vdi(129, 0, 1, 1);
+	i1(25, 2);
+	recfl(0, 0, 299, 249);
+	grab("TPB", 0, 0, 300, 250);
+	tbegin("TPC", "v_pline from (9,470); vsl_width CONTRL[1]=0, caller PTSIN[0]=3; line (20,300)-(200,300)");
+	line2(9, 470, 9, 470);
+	ptsin[0] = 3; ptsin[1] = 0;
+	vdi(16, 0, 0, 0);
+	logout("vsl_width", 0, 1);
+	line2(20, 300, 200, 300);
+	grab("TPC", 0, 280, 220, 40);
+	tbegin("TPD", "v_pline (0,26)-(0,26); vst_height CONTRL[1]=0, caller PTSIN[1]=13; v_gtext 'ABC'");
+	line2(0, 26, 0, 26);
+	ptsin[0] = 0; ptsin[1] = 13;
+	vdi(12, 0, 0, 0);
+	logout("vst_height", 0, 2);
+	gtext(20, 380, "ABC");
+	grab("TPD", 0, 340, 100, 50);
+	tbegin("TPE", "control: v_pline, then vs_clip(1) with CONTRL[1]=2 (10,10,50,50), vr_recfl pen 2");
+	line2(100, 100, 200, 150);
+	clip(1, 10, 10, 50, 50);
+	i1(25, 2);
+	recfl(0, 0, 299, 249);
+	grab("TPE", 0, 0, 300, 250);
+}
+
+/* ---- TR (rider, V26): copy direction of an overlapping 16/12-plane memory copy (vdi_raster.c:989-1002:
+ * src < dst start pointers -> bottom-up, right-to-left) and screen -> screen. */
+static uint16_t tr_buf[WK_GUARD + WK_MAX + WK_GUARD];
+
+static void tr_run(const char *name, const char *what, int planes, int wd, int h, int soff, int doff,
+		   int sx, int sy, int bw, int bh, int dx, int dy)
+{
+	MFDB src, dst;
+	int n = wd * 16 * h + 16;
+
+	begin(name, what);
+	wk_fill(tr_buf, n, 0x16180339UL + (uint32_t)soff * 5UL + (uint32_t)doff);
+	memset(&src, 0, sizeof src);
+	memset(&dst, 0, sizeof dst);
+	src.fd_addr = tr_buf + WK_GUARD + soff;
+	dst.fd_addr = tr_buf + WK_GUARD + doff;
+	src.fd_w = dst.fd_w = (int16_t)(16 * wd);
+	src.fd_h = dst.fd_h = (int16_t)h;
+	src.fd_wdwidth = dst.fd_wdwidth = (int16_t)wd;
+	src.fd_nplanes = dst.fd_nplanes = (int16_t)planes;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109; contrl[1] = 4; contrl[3] = 1; contrl[6] = handle;
+	set_mfdb_ptr(0, &src);
+	set_mfdb_ptr(1, &dst);
+	intin[0] = 3;
+	ptsin[0] = (int16_t)sx; ptsin[1] = (int16_t)sy;
+	ptsin[2] = (int16_t)(sx + bw - 1); ptsin[3] = (int16_t)(sy + bh - 1);
+	ptsin[4] = (int16_t)dx; ptsin[5] = (int16_t)dy;
+	ptsin[6] = (int16_t)(dx + bw - 1); ptsin[7] = (int16_t)(dy + bh - 1);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	wk_record(name, 'b', tr_buf, n);
+}
+
+static void tr_screen(const char *name, const char *what, int sx, int sy, int dx, int dy)
+{
+	MFDB s, d;
+	int i;
+
+	begin(name, what);
+	for (i = 0; i < 12; i++) {
+		i1(25, (int16_t)(1 + i % 15));
+		recfl(100 + 10 * i, 100, 109 + 10 * i, 219);
+	}
+	memset(&s, 0, sizeof s);
+	memset(&d, 0, sizeof d);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 109; contrl[1] = 4; contrl[3] = 1; contrl[6] = handle;
+	set_mfdb_ptr(0, &s);
+	set_mfdb_ptr(1, &d);
+	intin[0] = 3;
+	ptsin[0] = (int16_t)sx; ptsin[1] = (int16_t)sy;
+	ptsin[2] = (int16_t)(sx + 99); ptsin[3] = (int16_t)(sy + 79);
+	ptsin[4] = (int16_t)dx; ptsin[5] = (int16_t)dy;
+	ptsin[6] = (int16_t)(dx + 99); ptsin[7] = (int16_t)(dy + 79);
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	grab(name, 80, 80, 180, 160);
+}
+
+static void tr(void)
+{
+	tr_run("TRA", "16 planes, two MFDBs, dst fd_addr = src + 3 words, block 32x3 (0,0)->(0,0)", 16, 2, 4, 0, 3, 0, 0, 32, 3, 0, 0);
+	tr_run("TRB", "16 planes, two MFDBs, src fd_addr = dst + 3 words, block 32x3 (0,0)->(0,0)", 16, 2, 4, 3, 0, 0, 0, 32, 3, 0, 0);
+	tr_run("TRC", "16 planes, one MFDB, fd_wdwidth 1, block 24x1 (8,0)->(0,1) (src < dst, runs on into row 1/2)", 16, 1, 4, 0, 0, 8, 0, 24, 1, 0, 1);
+	tr_run("TRD", "16 planes, one MFDB, fd_wdwidth 1, block 24x1 (0,1)->(8,0) (src > dst)", 16, 1, 4, 0, 0, 0, 1, 24, 1, 8, 0);
+	tr_run("TRE", "control: 16 planes, one MFDB, in-form 20x2 (0,0)->(3,0)", 16, 2, 4, 0, 0, 0, 0, 20, 2, 3, 0);
+	tr_run("TRF", "control: 16 planes, one MFDB, in-form 20x2 (3,1)->(0,0)", 16, 2, 4, 0, 0, 3, 1, 20, 2, 0, 0);
+	tr_run("TRG", "12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,0)->(0,1)", 12, 2, 4, 0, 0, 0, 0, 32, 2, 0, 1);
+	tr_run("TRH", "12 planes, one MFDB, fd_wdwidth 2, 32x2 (0,1)->(0,0)", 12, 2, 4, 0, 0, 0, 1, 32, 2, 0, 0);
+	tr_run("TRI", "16 planes, two MFDBs, dst = src + 1 word, fd_wdwidth 1, block 16x4 (0,0)->(0,0)", 16, 1, 4, 0, 1, 0, 0, 16, 4, 0, 0);
+	tr_screen("TRJ", "screen->screen 100x80 (100,100)->(103,102), stripes", 100, 100, 103, 102);
+	tr_screen("TRK", "screen->screen 100x80 (103,102)->(100,100)", 103, 102, 100, 100);
+	tr_screen("TRL", "screen->screen 100x80 (110,100)->(100,110) (down-left)", 110, 100, 100, 110);
+	tr_screen("TRM", "screen->screen 100x80 (100,110)->(110,100) (up-right)", 100, 110, 110, 100);
+}
+
+/* TASK/V30: the underline and the glyphs of output_text with clipping off on the paths TU* and T14* leave
+ * out: rotated, the writing modes, effects, v_justified, the direct blit.  Every rectangle stays inside the
+ * frame buffer: EmuTOS writes foreign memory beyond it. */
+static const int16_t tv_pline[] = { 10, 10, 20, 10 };
+
+static void tv_two(const char *name, int x, int y, int w, int h, const char *wname, int wx, int wy, int ww, int wh)
+{
+	grab(name, x, y, w, h);
+	grab(wname, wx, wy, ww, wh);
+}
+
+static void tv(void)
+{
+	tbegin("TVA", "underline, rotation 900, clip off, 'ABCDEFGH' at (100,300) (inside)");
+	i1(106, 8);
+	i1(13, 900);
+	gtext(100, 300, "ABCDEFGH");
+	grab("TVA", 70, 200, 60, 120);
+	tbegin("TVB", "underline, rotation 900, clip off, 'ABCDEFGH' at (642,300): past x 639");
+	i1(106, 8);
+	i1(13, 900);
+	gtext(642, 300, "ABCDEFGH");
+	tv_two("TVB", 600, 200, 40, 120, "TVBw", 0, 200, 40, 120);
+	tbegin("TVC", "underline, rotation 1800, clip off, 'ABCDEFGH' at (20,200): left of x 0");
+	i1(106, 8);
+	i1(13, 1800);
+	gtext(20, 200, "ABCDEFGH");
+	tv_two("TVC", 0, 170, 60, 50, "TVCw", 590, 170, 50, 50);
+	tbegin("TVD", "underline, rotation 2700, clip off, 'ABCDEFGH' at (-2,200): left of x 0");
+	i1(106, 8);
+	i1(13, 2700);
+	gtext(-2, 200, "ABCDEFGH");
+	tv_two("TVD", 0, 180, 40, 80, "TVDw", 600, 180, 40, 80);
+	tbegin("TVE", "control: underline, rotation 900, clip on (90,280)-(120,295), 'ABCDEFGH' at (100,300)");
+	i1(106, 8);
+	i1(13, 900);
+	clip(1, 90, 280, 120, 295);
+	gtext(100, 300, "ABCDEFGH");
+	grab("TVE", 70, 200, 60, 120);
+	tbegin("TVF", "underline+light, vst_height(26), rotation 900, clip off, 'ABCDEFGH' at (200,300)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 900);
+	gtext(200, 300, "ABCDEFGH");
+	grab("TVF", 150, 100, 100, 220);
+	tbegin("TVG", "underline+light, vst_height(26), rotation 2700, clip off, 'ABCDEFGH' at (300,100)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 2700);
+	gtext(300, 100, "ABCDEFGH");
+	grab("TVG", 250, 80, 100, 220);
+	tbegin("TVH", "underline+light, vst_height(26), rotation 1800, clip off, 'ABCDEFGH' at (500,100)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 1800);
+	gtext(500, 100, "ABCDEFGH");
+	grab("TVH", 300, 40, 220, 100);
+	tbegin("TVI", "underline+light, vst_height(26), clip off, 'ABCDEFGH' at (100,300)");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	gtext(100, 300, "ABCDEFGH");
+	grab("TVI", 80, 260, 160, 60);
+	tbegin("TVJ", "underline, XOR, after a 2-point v_pline (LSTLIN TRUE), 'ABCDEFGH' at (100,100)");
+	i1(106, 8);
+	i1(32, 3);
+	pline(2, tv_pline);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVJ", 80, 80, 120, 40);
+	tbegin("TVK", "underline, XOR, after a 1-point v_pline (LSTLIN FALSE), 'ABCDEFGH' at (100,100)");
+	i1(106, 8);
+	i1(32, 3);
+	pline(1, tv_pline);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVK", 80, 80, 120, 40);
+	tbegin("TVL", "underline+outline, clip off, v_gtext 'ABCDEFGH' at (100,100)");
+	i1(106, 8 | 16);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVL", 80, 80, 130, 40);
+	tbegin("TVM", "underline, v_justified interword 'AB CD EF' at (100,100), length 200");
+	i1(106, 8);
+	justified(100, 100, 200, 1, 0, "AB CD EF");
+	grab("TVM", 80, 80, 240, 40);
+	tbegin("TVN", "underline+outline, v_justified interword 'AB CD EF' at (100,100), length 200");
+	i1(106, 8 | 16);
+	justified(100, 100, 200, 1, 0, "AB CD EF");
+	grab("TVN", 80, 80, 240, 40);
+	tbegin("TVO", "underline, v_justified h_align centre 'AB CD EF' at (300,100), length 200");
+	i1(106, 8);
+	i2(39, 1, 0);
+	justified(300, 100, 200, 1, 0, "AB CD EF");
+	grab("TVO", 150, 80, 320, 40);
+	tbegin("TVP", "underline, v_justified h_align right 'AB CD EF' at (300,100), length 200");
+	i1(106, 8);
+	i2(39, 2, 0);
+	justified(300, 100, 200, 1, 0, "AB CD EF");
+	grab("TVP", 80, 80, 320, 40);
+	tbegin("TVQ", "underline, v_justified interchar 'ABCDEFGH' at (100,100), length 10: the end before the start");
+	i1(106, 8);
+	justified(100, 100, 10, 0, 1, "ABCDEFGH");
+	grab("TVQ", 60, 80, 120, 40);
+	tbegin("TVR", "underline, transparent, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	i1(32, 2);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVR", 560, 80, 80, 40, "TVRw", 0, 80, 80, 40);
+	tbegin("TVS", "underline, XOR, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	i1(32, 3);
+	line2(10, 10, 20, 10);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVS", 560, 80, 80, 40, "TVSw", 0, 80, 80, 40);
+	tbegin("TVT", "underline, reverse transparent, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 8);
+	i1(32, 4);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVT", 560, 80, 80, 40, "TVTw", 0, 80, 80, 40);
+	tbegin("TVU", "bold+skew+outline, clip off, 'ABCDEFGH' at (600,100)");
+	i1(106, 1 | 4 | 16);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVU", 560, 80, 80, 40, "TVUw", 0, 80, 80, 40);
+	tbegin("TVV", "vst_height(20), clip off, 'ABCDEFGH' at (600,100)");
+	p1(12, 0, 20);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVV", 560, 60, 80, 60, "TVVw", 0, 60, 80, 60);
+	tbegin("TVW", "underline, h_align right, clip off, 'ABCDEFGH' at (20,150): left of x 0");
+	i1(106, 8);
+	i2(39, 2, 0);
+	gtext(20, 150, "ABCDEFGH");
+	tv_two("TVW", 0, 130, 80, 40, "TVWw", 560, 130, 80, 40);
+	tbegin("TVX", "vst_height(13), clip off, 'ABCDEFGH' at (100,100) (inside: the direct blit)");
+	p1(12, 0, 13);
+	gtext(100, 100, "ABCDEFGH");
+	grab("TVX", 80, 80, 120, 40);
+	tbegin("TVY", "vst_height(13), clip off, 'ABCDEFGH' at (600,100): the general path past x 639");
+	p1(12, 0, 13);
+	gtext(600, 100, "ABCDEFGH");
+	tv_two("TVY", 560, 80, 80, 40, "TVYw", 0, 80, 80, 40);
+	tbegin("TVZ", "vst_height(13), clip off, 4100 characters at (10,100): width wraps, the direct blit");
+	p1(12, 0, 13);
+	gtext_big(10, 100, 4100);
+	grab("TVZ", 0, 20, 640, 140);
+	tbegin("TWA", "underline+light, vst_height(26), rotation 900, v_justified interchar 'ABCDEFGH' at (200,300), length 201");
+	i1(106, 8 | 2);
+	p1(12, 0, 26);
+	i1(13, 900);
+	justified(200, 300, 201, 0, 1, "ABCDEFGH");
+	grab("TWA", 150, 90, 100, 230);
+}
+
+/* ---- TX (TASK/V33): the font chain beyond T13 ------------------------------------------------------------
+ * GDOS-style chains: several headers, sizes of a face, a loaded font with a built-in's id, fonts without
+ * F_STDFORM, unload, two workstations, proportional and F_HORZ_OFF fonts, a big cell, the pts_mode re-drive.
+ * The chain goes where t13_load puts it (D1); struct t13_fh is the caller's Fonthead on both sides (D3). */
+#define F_HORZ 2
+#define F_STD 4
+#define F_MONO 8
+static struct t13_fh tx_f[4];
+static uint16_t tx_off[300];
+static uint8_t tx_hor[600];
+static uint8_t tx_dat[70100];
+static uint16_t tx_align_dummy;		/* keeps tx_dat2 word-aligned on m68k */
+static uint8_t tx_dat2[8000];
+
+static void tx_pattern(uint8_t *d, int fw, int fh)
+{
+	int c, r;
+
+	for (r = 0; r < fh; r++)
+		for (c = 0; c < fw; c++)
+			d[(long)r * fw + c] = (uint8_t)(((c * 29 + r * 53) ^ 0xA5) | 0x81);
+}
+
+/* A header with the T13 defaults; id, point, top, bottom, cell, first, last, flags, tables, next. */
+static void tx_head(struct t13_fh *f, int id, int point, const char *name, int top, int bottom, int cell, int first, int last,
+		    int flags, const uint16_t *off, const void *dat, int fw, int fh, struct t13_fh *next)
+{
+	memset(f, 0, sizeof *f);
+	f->font_id = (int16_t)id;
+	f->point = (int16_t)point;
+	memcpy(f->name, name, strlen(name));
+	f->first_ade = (uint16_t)first; f->last_ade = (uint16_t)last;
+	f->top = (uint16_t)top; f->ascent = (uint16_t)top; f->half = (uint16_t)(top * 2 / 3);
+	f->descent = (uint16_t)(bottom ? bottom : 1); f->bottom = (uint16_t)bottom;
+	f->max_char_width = (uint16_t)cell; f->max_cell_width = (uint16_t)cell;
+	f->left_offset = 2; f->right_offset = 3; f->thicken = 1; f->ul_size = 1;
+	f->lighten = 0x5555; f->skew = 0x5555;
+	f->flags = (uint16_t)flags;
+	f->off_table = off;
+	f->dat_table = (const uint16_t *)dat;
+	f->form_width = (uint16_t)fw; f->form_height = (uint16_t)fh;
+	f->next_font = next;
+}
+
+static void tx_load(struct t13_fh *chain)
+{
+	void *scr = t13_scratch, *fp = chain;
+
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 119; contrl[3] = 1; contrl[6] = handle;
+	intin[0] = 0;
+	if (sizeof(void *) == 4) {
+		memcpy(&contrl[7], &scr, 4);
+		contrl[9] = 2048;
+		memcpy(&contrl[10], &fp, 4);
+	} else {
+		memcpy(&contrl[7], &scr, sizeof scr);
+		contrl[11] = 2048;
+		memcpy(&contrl[12], &fp, sizeof fp);
+	}
+	intout[0] = 0x7777;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	emit("   vst_load_fonts c2=%d c4=%d io %d\n", contrl[2], contrl[4], intout[0]);
+}
+
+static void tx_unload(void)
+{
+	intin[0] = 0;
+	vdi(120, 0, 0, 1);
+	emit("   vst_unload_fonts c2=%d c4=%d\n", contrl[2], contrl[4]);
+}
+
+static void tx_attr(const char *tag)
+{
+	vdi(38, 0, 0, 0);
+	logout(tag, 6, 2);
+}
+
+static void tx_font(int id)
+{
+	i1(21, (int16_t)id);
+	logout("vst_font", 1, 0);
+}
+
+static void tx_height(int h)
+{
+	p1(12, 0, (int16_t)h);
+	logout("vst_height", 0, 2);
+}
+
+static void tx_point(int p)
+{
+	i1(107, (int16_t)p);
+	logout("vst_point", 1, 2);
+}
+
+static void tx_width(int c)
+{
+	memset(ptsout, 0x77, 6 * 2);
+	i1(117, (int16_t)c);
+	logout("vqt_width", 1, 3);
+}
+
+static void tx_extent(const char *s)
+{
+	int i, n = (int)strlen(s);
+
+	for (i = 0; i < n; i++)
+		intin[i] = (int16_t)(uint8_t)s[i];
+	vdi(116, 0, 0, (int16_t)n);
+	logout("vqt_extent", 0, 4);
+}
+
+/* the proportional font: char c is 3 + (c % 6) wide, 12 rows, top 8, bottom 3 */
+static void tx_prop(int flags)
+{
+	int c, x = 0, fw;
+
+	for (c = 0; c < 64; c++) {
+		tx_off[c] = (uint16_t)x;
+		x += 3 + (c % 6);
+	}
+	tx_off[64] = (uint16_t)x;
+	fw = ((x + 15) / 16) * 2;
+	tx_pattern(tx_dat, fw, 12);
+	tx_head(&tx_f[0], 20, 12, "AUDIT PROPORTIONAL", 8, 3, 8, 32, 95, flags, tx_off, tx_dat, fw, 12, NULL);
+	for (c = 0; c < 128; c++)
+		tx_hor[c] = (uint8_t)(c % 4);
+	tx_f[0].hor_table = tx_hor;
+}
+
+static void tx_prop_begin(const char *name, const char *what)
+{
+	tbegin(name, what);
+	tx_prop(F_STD);
+	tx_load(&tx_f[0]);
+	i1(21, 20);
+	p1(12, 0, 8);
+}
+
+static void tx_end(void)
+{
+	i1(21, 1);
+	intin[0] = 0;
+	vdi(120, 0, 0, 1);
+	treset();
+}
+
+static void tx_swap_case(const char *name, int fw, int fh)
+{
+	long i, n = (long)fw * fh, first = -1, last = -1, cnt = 0;
+
+	begin(name, "no F_STDFORM: how many words of the data table does vst_load_fonts swap");
+	for (i = 0; i < 70100; i++)
+		tx_dat[i] = (uint8_t)(i * 7 + (i >> 8) + 1);
+	for (i = 0; i < 64; i++)
+		tx_off[i] = (uint16_t)(8 * i);
+	tx_head(&tx_f[0], 11, 12, "AUDIT SWAP", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, fw, fh, NULL);
+	tx_load(&tx_f[0]);
+	for (i = 0; i + 1 < 70100; i += 2) {
+		if (tx_dat[i] == (uint8_t)((i + 1) * 7 + ((i + 1) >> 8) + 1) && tx_dat[i + 1] == (uint8_t)(i * 7 + (i >> 8) + 1)) {
+			if (first < 0)
+				first = i;
+			last = i;
+			cnt++;
+		}
+	}
+	emit("   fw %d fh %d product %ld words swapped %ld first %ld last %ld flags %d\n", fw, fh, n, cnt, first, last, tx_f[0].flags);
+	tx_end();
+}
+
+static void tx_a(void)
+{
+	int i;
+
+	t13_build();
+	tbegin("TXA", "chain ids 7,7,8,7: count, vqt_name over it, vst_font on the middle face");
+	tx_f[3] = t13_font; tx_f[2] = t13_font; tx_f[1] = t13_font; tx_f[0] = t13_font;
+	tx_f[0].next_font = &tx_f[1]; tx_f[1].next_font = &tx_f[2]; tx_f[2].next_font = &tx_f[3];
+	tx_f[2].font_id = 8;
+	memcpy(tx_f[2].name, "AUDIT FONT EIGHT", 16);
+	tx_load(&tx_f[0]);
+	for (i = 0; i <= 6; i++)
+		t13_name(i);
+	tx_font(8);
+	tx_attr("attr");
+	tx_font(7);
+	tx_attr("attr");
+	tx_end();
+	tbegin("TXA2", "chain 7,7: count 1");
+	tx_f[1].next_font = NULL;
+	tx_load(&tx_f[0]);
+	t13_name(2);
+	t13_name(3);
+	tx_end();
+}
+
+static void tx_b(void)
+{
+	int c;
+
+	tbegin("TXB", "one face in two sizes (top 6 point 8, top 13 point 16): vst_height, vst_point, re-drive");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(8 * c);
+	tx_pattern(tx_dat, 64, 16);
+	tx_pattern(tx_dat2, 64, 8);
+	tx_head(&tx_f[1], 9, 16, "AUDIT SIZES", 13, 2, 8, 32, 95, F_STD | F_MONO, tx_off, tx_dat, 64, 16, NULL);
+	tx_head(&tx_f[0], 9, 8, "AUDIT SIZES", 6, 1, 8, 32, 95, F_STD | F_MONO, tx_off, tx_dat2, 64, 8, &tx_f[1]);
+	tx_load(&tx_f[0]);
+	tx_font(9);
+	tx_attr("attr");
+	tx_height(6); tx_height(13); tx_height(10); tx_height(26); tx_height(3); tx_height(0);
+	tx_point(8); tx_point(16); tx_point(12); tx_point(32); tx_point(20); tx_point(34); tx_point(4);
+	tx_point(32);
+	tx_font(9);
+	tx_attr("attr after re-drive by point");
+	gtext(20, 100, "AB@_");
+	grab("TXB", 0, 60, 140, 70);
+	tx_font(1);
+	tx_attr("attr system face, pts_mode");
+	tx_end();
+}
+
+static void tx_c(void)
+{
+	int c;
+
+	tbegin("TXC", "loaded font with id 1 (top 20): no new face, vst_font(1) stays built-in, vst_height(20) finds it");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(12 * c);
+	tx_pattern(tx_dat, 96, 24);
+	tx_head(&tx_f[0], 1, 14, "AUDIT ONE", 20, 3, 12, 32, 95, F_STD | F_MONO, tx_off, tx_dat, 96, 24, NULL);
+	tx_load(&tx_f[0]);
+	t13_name(1); t13_name(2);
+	tx_font(1);
+	tx_attr("attr");
+	tx_height(20);
+	tx_attr("attr");
+	gtext(20, 100, "AB@_");
+	grab("TXC", 0, 60, 120, 60);
+	tx_height(8);
+	tx_attr("attr");
+	tx_point(14);
+	tx_attr("attr");
+	tx_end();
+	tx_attr("attr after unload");
+}
+
+static void tx_d(void)
+{
+	int c;
+
+	tbegin("TXD", "no F_STDFORM, odd form_width 65: words swapped in the caller's table, flag set in its header");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(8 * c);
+	tx_pattern(tx_dat, 65, 8);
+	emit("   before d %d %d %d %d .. %d %d %d flags %d\n", tx_dat[0], tx_dat[1], tx_dat[2], tx_dat[3], tx_dat[518], tx_dat[519], tx_dat[520], F_MONO);
+	tx_head(&tx_f[0], 12, 12, "AUDIT SWAPPED", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, 65, 8, NULL);
+	tx_load(&tx_f[0]);
+	emit("   after  d %d %d %d %d .. %d %d %d flags %d\n", tx_dat[0], tx_dat[1], tx_dat[2], tx_dat[3], tx_dat[518], tx_dat[519], tx_dat[520], tx_f[0].flags);
+	tx_font(12);
+	p1(12, 0, 6);
+	gtext(20, 100, "AB@_");
+	grab("TXD", 0, 80, 120, 40);
+	tx_end();
+	tbegin("TXE", "two headers without F_STDFORM share one data table: the second swaps it back");
+	tx_pattern(tx_dat, 64, 8);
+	tx_head(&tx_f[1], 12, 14, "AUDIT SHARED", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, 64, 8, NULL);
+	tx_head(&tx_f[0], 12, 12, "AUDIT SHARED", 6, 1, 8, 32, 95, F_MONO, tx_off, tx_dat, 64, 8, &tx_f[1]);
+	tx_load(&tx_f[0]);
+	emit("   after  d %d %d flags %d %d\n", tx_dat[0], tx_dat[1], tx_f[0].flags, tx_f[1].flags);
+	tx_end();
+	tx_swap_case("TXF1", 255, 128);
+	tx_swap_case("TXF2", 256, 128);
+	tx_swap_case("TXF3", 400, 100);
+	tx_swap_case("TXF4", 512, 128);
+	tx_swap_case("TXF5", 700, 100);
+}
+
+static void tx_g(void)
+{
+	t13_build();
+	tbegin("TXG", "unload keeps cur_font: the glyphs stay; a second load works; unload without load");
+	tx_load(&t13_font);
+	tx_font(7);
+	tx_unload();
+	tx_attr("attr after unload");
+	gtext(20, 100, "AB@_");
+	grab("TXG", 0, 80, 120, 40);
+	t13_name(2);
+	tx_load(&t13_font);
+	t13_name(2);
+	tx_unload();
+	tx_unload();
+	tx_load(&t13_font);
+	tx_end();
+}
+
+/* R13: the guard per workstation, the ring global */
+static void tx_h(void)
+{
+	int16_t a = handle, b;
+	int i;
+
+	t13_build();
+	tbegin("TXH", "two workstations: open clears the ring, the guard stays, a load on B replaces, unload on B empties");
+	tx_load(&t13_font);
+	t13_name(2);
+	for (i = 0; i < 10; i++)
+		intin[i] = 1;
+	intin[10] = 2;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 100; contrl[3] = 11; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_opnvwk */
+	b = contrl[6];
+	t13_name(2);
+	tx_load(&t13_font);
+	t13_name(2);
+	handle = b;
+	tx_load(&t13_font);
+	t13_name(2);
+	handle = a;
+	t13_name(2);
+	handle = b;
+	tx_unload();
+	handle = a;
+	t13_name(2);
+	tx_load(&t13_font);
+	tx_unload();
+	tx_load(&t13_font);
+	t13_name(2);
+	handle = b;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 101; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_clsvwk */
+	handle = a;
+	t13_name(2);
+	tx_end();
+}
+
+static void tx_i(void)
+{
+	tx_prop_begin("TXI", "proportional font: v_gtext, vqt_width, vqt_extent, vqt_fontinfo");
+	tx_attr("attr");
+	vdi(131, 0, 0, 0);
+	logout("vqt_fontinfo", 2, 5);
+	tx_width('A'); tx_width(' '); tx_width(95); tx_width(31); tx_width(96); tx_width(-1);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXI", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIb", "proportional, bold: the width and the pen grow by thicken");
+	i1(106, 1);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIb", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIs", "proportional, skew");
+	i1(106, 4);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIs", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIo", "proportional, outline");
+	i1(106, 16);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIo", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXIu", "proportional, underline");
+	i1(106, 8);
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXIu", 0, 80, 200, 40);
+	tx_end();
+	tx_prop_begin("TXR1", "proportional, rotation 900");
+	i1(13, 900);
+	tx_extent("ABC @_");
+	gtext(100, 200, "ABC @_ HELLO");
+	grab("TXR1", 60, 60, 80, 160);
+	tx_end();
+	tx_prop_begin("TXR2", "proportional, rotation 1800");
+	i1(13, 1800);
+	gtext(300, 100, "ABC @_ HELLO");
+	grab("TXR2", 120, 70, 200, 50);
+	tx_end();
+	tx_prop_begin("TXR3", "proportional, rotation 2700");
+	i1(13, 2700);
+	gtext(100, 60, "ABC @_ HELLO");
+	grab("TXR3", 60, 40, 80, 160);
+	tx_end();
+	tx_prop_begin("TXS1", "proportional, exact double");
+	tx_height(16);
+	tx_extent("ABC @_");
+	tx_width('A');
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXS1", 0, 70, 300, 50);
+	tx_end();
+	tx_prop_begin("TXS2", "proportional, DDA up");
+	tx_height(12);
+	tx_extent("ABC @_");
+	tx_width('A');
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXS2", 0, 70, 300, 50);
+	tx_end();
+	tx_prop_begin("TXS3", "proportional, DDA down");
+	tx_height(5);
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXS3", 0, 70, 300, 50);
+	tx_end();
+	tx_prop_begin("TXJ", "proportional, v_justified interword + interchar");
+	justified(20, 100, 200, 1, 1, "ABC @_ HELLO");
+	grab("TXJ", 0, 80, 260, 40);
+	tx_end();
+	tx_prop_begin("TXO", "code below first_ade and above last_ade: '?'");
+	intin[0] = 10; intin[1] = 200; intin[2] = 65; intin[3] = -5;
+	ptsin[0] = 20; ptsin[1] = 100;
+	vdi(8, 0, 1, 4);
+	grab("TXO", 0, 80, 120, 40);
+	tx_end();
+	tx_prop_begin("TXM", "writing modes transparent, XOR, reverse transparent over a filled bar");
+	i1(32, 2);
+	gtext(20, 60, "ABC @_ HELLO");
+	i1(32, 3);
+	gtext(20, 80, "ABC @_ HELLO");
+	i1(32, 4);
+	gtext(20, 100, "ABC @_ HELLO");
+	i1(32, 1);
+	grab("TXM", 0, 40, 200, 80);
+	tx_end();
+	tx_prop_begin("TXC2", "alignment: right + centre, half + descent, clip across the run");
+	i2(39, 2, 1);
+	gtext(200, 60, "ABC @_ HELLO");
+	i2(39, 1, 4);
+	gtext(200, 90, "ABC @_ HELLO");
+	i2(39, 0, 0);
+	clip(1, 40, 100, 90, 125);
+	gtext(20, 120, "ABC @_ HELLO");
+	clip(0, 0, 0, 0, 0);
+	grab("TXC2", 0, 40, 300, 100);
+	tx_end();
+	tbegin("TXH2", "F_HORZ_OFF: the pen takes hor_table[k], vqt_width reads hor_table[k*2], [k*2+1]");
+	tx_prop(F_STD | F_HORZ);
+	tx_load(&tx_f[0]);
+	i1(21, 20);
+	p1(12, 0, 8);
+	tx_width('A'); tx_width('B'); tx_width('_');
+	tx_extent("ABC @_");
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXH2", 0, 80, 240, 40);
+	tx_end();
+}
+
+static void tx_k(void)
+{
+	int c;
+
+	tbegin("TXK", "a cell 40 x 40, not byte-aligned tables, unscaled and doubled");
+	for (c = 0; c <= 64; c++)
+		tx_off[c] = (uint16_t)(37 * c);
+	tx_pattern(tx_dat, 296, 40);
+	tx_head(&tx_f[0], 13, 30, "AUDIT BIG", 30, 9, 37, 32, 95, F_STD | F_MONO, tx_off, tx_dat, 296, 40, NULL);
+	tx_load(&tx_f[0]);
+	i1(21, 13);
+	tx_height(30);
+	gtext(20, 100, "AB");
+	grab("TXK", 0, 50, 120, 70);
+	tx_height(60);
+	gtext(20, 300, "AB");
+	grab("TXK2", 0, 200, 200, 130);
+	tx_end();
+	tbegin("TXL", "monospace 8x16, codes 0..255: EmuTOS' direct blit");
+	for (c = 0; c <= 256; c++)
+		tx_off[c] = (uint16_t)(8 * c);
+	tx_pattern(tx_dat, 256, 16);
+	tx_head(&tx_f[0], 14, 10, "AUDIT DIRECT", 13, 2, 8, 0, 255, F_STD | F_MONO, tx_off, tx_dat, 256, 16, NULL);
+	tx_load(&tx_f[0]);
+	i1(21, 14);
+	tx_height(13);
+	gtext(16, 100, "AB@_ abc");
+	i1(32, 2);
+	gtext(16, 130, "AB@_ abc");
+	i1(32, 1);
+	grab("TXL", 0, 80, 120, 60);
+	tx_end();
+}
+
+/* the re-drive on the built-in faces, no chain (vst_font was a stub in NewTOS before V33) */
+static void tx_m(void)
+{
+	tbegin("TXN", "system faces: vst_point(20), vst_font(1), vst_font(99); vst_height(20), vst_font(1)");
+	tx_point(20);
+	tx_font(1);
+	tx_attr("attr");
+	tx_font(99);
+	tx_attr("attr");
+	gtext(20, 100, "AB@_");
+	grab("TXN", 0, 60, 120, 60);
+	tx_height(20);
+	tx_font(1);
+	tx_attr("attr");
+	gtext(20, 200, "AB@_");
+	tx_height(3);
+	tx_font(1);
+	tx_attr("attr");
+	tx_height(11);
+	tx_font(1);
+	tx_attr("attr");
+	tx_point(9);
+	tx_font(1);
+	tx_attr("attr");
+	treset();
+}
+
+/* R8: `char` of the ROM's build, and a name of the full 32 characters without NUL */
+static void tx_p(void)
+{
+	int i;
+
+	t13_build();
+	tbegin("TXP", "vqt_name: a character above 127, a name of 32 characters without NUL");
+	memset(t13_font.name, 'N', sizeof t13_font.name);
+	t13_font.name[1] = (char)0xE4;
+	tx_load(&t13_font);
+	memset(intout, 0x77, 40 * 2);
+	intin[0] = 2;
+	vdi(130, 0, 0, 1);
+	emit("   vqt_name c4=%d io", contrl[4]);
+	for (i = 0; i < 36; i++)
+		emit(" %d", intout[i]);
+	emit("\n");
+	tx_end();
+}
+
+/* skew in the replace and the transparent mode: is the slanted box a matter of the font? */
+static void tx_q(void)
+{
+	tbegin("TXQ", "built-in 8x16, skew, replace");
+	p1(12, 0, 13);
+	i1(106, 4);
+	gtext(20, 100, "ABC @_ HELLO");
+	grab("TXQ", 0, 80, 200, 40);
+	tbegin("TXQ2", "built-in 8x16, skew, transparent");
+	p1(12, 0, 13);
+	i1(106, 4);
+	i1(32, 2);
+	gtext(20, 100, "ABC @_ HELLO");
+	i1(32, 1);
+	grab("TXQ2", 0, 80, 200, 40);
+	tx_prop_begin("TXQ3", "proportional, skew, transparent");
+	i1(106, 4);
+	i1(32, 2);
+	gtext(20, 100, "ABC @_ HELLO");
+	i1(32, 1);
+	grab("TXQ3", 0, 80, 200, 40);
+	tx_end();
+}
+
+/* A chain whose loader ended without unloading: font_ring[2] points into freed memory. EmuTOS reads the
+ * freed RAM (the fonts stay until it is reused); NewTOS ends the chain there and the reader goes on
+ * (docs/COMPATIBILITY.md "GDOS font chain"). A LOG difference on purpose. The child is this program,
+ * started with "TXZ <handle>", see main. */
+static void tx_z(void)
+{
+	char cmd[16];
+	long rc;
+
+	t13_build();
+	tbegin("TXZ", "a child loads a chain on our handle and ends without unloading; then we walk the ring");
+	snprintf(cmd + 1, sizeof cmd - 1, "TXZ %d", handle);
+	cmd[0] = (char)strlen(cmd + 1);
+	rc = Pexec(0, sizeof(void *) == 4 ? "VDPROBE.PRG" : "C:\\VDPROBE.NAP", cmd, "");
+	emit("   Pexec rc %ld\n", rc);
+	t13_name(2);
+	tx_font(7);
+	tx_attr("attr");
+	tx_load(&t13_font);
+	tx_unload();
+	t13_name(2);
+	tx_load(&t13_font);
+	t13_name(2);
+	tx_end();
+}
+
+static void tx(void)
+{
+	(void)tx_align_dummy;
+	tx_a();
+	tx_b();
+	tx_c();
+	tx_d();
+	tx_g();
+	tx_h();
+	tx_i();
+	tx_k();
+	tx_m();
+	tx_p();
+	tx_q();
+	tx_z();
+}
+
+/* ---- TY (TASK/V44 tester, kept for TASK/V41): cells around the 64 x 64 bound of the narrow rows --------------------------------
+ * loaded monospace font id 15, codes 'A','B', cell W x H, effects, exact double / DDA up, rotation. */
+static void ty_case(const char *tag, int W, int H, int eff, int scale, int rot)
+{
+	int fw = ((2 * W + 15) / 16) * 2, bottom = H / 4, top = H - 1 - bottom, sh, gw, gh, m, th;
+	char what[96];
+
+	tx_off[0] = 0; tx_off[1] = (uint16_t)W; tx_off[2] = (uint16_t)(2 * W);
+	tx_pattern(tx_dat, fw, H);
+	tx_head(&tx_f[0], 15, 12, "AUDIT TY", top, bottom, W, 65, 66, F_STD | F_MONO, tx_off, tx_dat, fw, H, NULL);
+	snprintf(what, sizeof what, "cell %dx%d eff %d scale %d rot %d", W, H, eff, scale, rot);
+	tbegin(tag, what);
+	tx_load(&tx_f[0]);
+	i1(21, 15);
+	th = scale == 1 ? top * 2 : scale == 2 ? top * 3 / 2 : top;
+	tx_height(th);
+	m = scale == 1 ? 2 : 1;
+	if (eff)
+		i1(106, (int16_t)eff);
+	if (rot)
+		i1(13, (int16_t)rot);
+	sh = th + 10;
+	if (rot) {
+		gtext(30, 60 + 2 * W * m, "AB");
+		gw = H * m + 60; gh = 2 * W * m + 80;
+	} else {
+		gtext(10, sh, "AB");
+		gw = 2 * W * m + 40; gh = H * m + sh + 20;
+	}
+	if (gw > 640) gw = 640;
+	if (gh > 480) gh = 480;
+	grab(tag, 0, 0, gw, gh);
+	tx_end();
+}
+
+static void ty(void)
+{
+	static const int fonts[][2] = { {63,16},{64,16},{65,16},{16,63},{16,64},{16,65},{31,16},{32,16},{33,16},{16,31},{16,32},{16,33},
+					{32,32},{33,33},{62,62} };
+	static const int effs[] = { 0, 1, 4, 16, 31 };
+	static const int dda[][2] = { {42,16},{43,16},{16,42},{16,43} };
+	char tag[9];
+	int i, e, s, n = 0;
+
+	for (i = 0; i < (int)(sizeof fonts / sizeof fonts[0]); i++)
+		for (e = 0; e < 5; e++)
+			for (s = 0; s < 2; s++) {
+				snprintf(tag, sizeof tag, "Y%03d", n++);
+				ty_case(tag, fonts[i][0], fonts[i][1], effs[e], s, 0);
+			}
+	for (i = 0; i < 4; i++)
+		for (e = 0; e < 5; e += 2) {
+			snprintf(tag, sizeof tag, "Y%03d", n++);
+			ty_case(tag, dda[i][0], dda[i][1], effs[e], 2, 0);
+		}
+	for (i = 0; i < 6; i++)
+		for (e = 0; e < 2; e++) {
+			snprintf(tag, sizeof tag, "Y%03d", n++);
+			ty_case(tag, fonts[i][0], fonts[i][1], effs[e], 0, 900);
+		}
+	emit("   TY cases %d\n", n);
+}
+
+/* ---- TZ (TASK/V41): text effects x writing modes x fonts on a coloured ground ---------------------------------
+ * The ground is pen 2, so a cell's background (pen 0) and what stays untouched show apart from the white screen. */
+static const int tz_eff[] = { 1, 4, 16, 1 | 4, 1 | 16, 4 | 16, 1 | 4 | 16, 4 | 8, 2, 2 | 4 };
+#define TZ_NEFF ((int)(sizeof tz_eff / sizeof tz_eff[0]))
+
+static void tz_ground(int x, int y, int w, int h)
+{
+	i1(25, 2);
+	recfl(x, y, x + w - 1, y + h - 1);
+	i1(25, 1);
+}
+
+/* font 0: 8x16, 1: 8x8, 2: 6x6, 3: the proportional loaded font */
+static void tz_font(const char *tag, const char *what, int font)
+{
+	if (font == 3) {
+		tx_prop_begin(tag, what);
+	} else {
+		tbegin(tag, what);
+		p1(12, 0, (int16_t)(font == 0 ? 13 : font == 1 ? 6 : 4));
+	}
+}
+
+static void tz_matrix(void)
+{
+	char tag[16], what[64];
+	int f, e, m, n = 0;
+
+	for (f = 0; f < 4; f++)
+		for (e = 0; e < TZ_NEFF; e++)
+			for (m = 1; m <= 4; m++) {
+				snprintf(tag, sizeof tag, "ZA%03d", n++);
+				snprintf(what, sizeof what, "font %d effects %d mode %d, ground pen 2", f, tz_eff[e], m);
+				tz_font(tag, what, f);
+				tz_ground(0, 80, 200, 40);
+				i1(106, (int16_t)tz_eff[e]);
+				i1(32, (int16_t)m);
+				gtext(20, 100, "ABC @_ HELLO");
+				i1(32, 1);
+				grab(tag, 0, 80, 200, 40);
+				if (f == 3)
+					tx_end();
+			}
+}
+
+/* the 8x16 font doubled (vst_height 26) and DDA-scaled (vst_height 20) */
+static void tz_scaled(void)
+{
+	static const int effs[] = { 1, 4, 16, 1 | 4 | 16 };
+	static const int hts[] = { 26, 20 };
+	char tag[16], what[64];
+	int s, e, m, n = 0;
+
+	for (s = 0; s < 2; s++)
+		for (e = 0; e < 4; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZB%03d", n++);
+				snprintf(what, sizeof what, "8x16 vst_height %d effects %d mode %d", hts[s], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, (int16_t)hts[s]);
+				tz_ground(0, 50, 300, 80);
+				i1(106, (int16_t)effs[e]);
+				i1(32, (int16_t)m);
+				gtext(20, 100, "ABC HELLO");
+				i1(32, 1);
+				grab(tag, 0, 50, 300, 80);
+			}
+}
+
+static void tz_rotated(void)
+{
+	static const int effs[] = { 1, 4, 16, 1 | 4 | 16 };
+	static const int rot[] = { 900, 1800, 2700 };
+	char tag[16], what[64];
+	int r, e, m, n = 0;
+
+	for (r = 0; r < 3; r++)
+		for (e = 0; e < 4; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZC%03d", n++);
+				snprintf(what, sizeof what, "8x16 rotation %d effects %d mode %d", rot[r], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, 13);
+				tz_ground(100, 50, 200, 200);
+				i1(106, (int16_t)effs[e]);
+				i1(13, (int16_t)rot[r]);
+				i1(32, (int16_t)m);
+				gtext(200, 150, "ABCDEF");
+				i1(32, 1);
+				grab(tag, 100, 50, 200, 200);
+			}
+}
+
+/* clipping on: a rectangle that cuts the run left, right, above, below */
+static void tz_clipped(void)
+{
+	static const int effs[] = { 1, 4, 16, 1 | 4 | 16 };
+	static const int cr[4][4] = { {40, 80, 199, 119}, {0, 80, 60, 119}, {0, 92, 199, 119}, {0, 80, 199, 96} };
+	char tag[16], what[64];
+	int c, e, m, n = 0;
+
+	for (c = 0; c < 4; c++)
+		for (e = 0; e < 4; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZD%03d", n++);
+				snprintf(what, sizeof what, "8x16 clip %d,%d,%d,%d effects %d mode %d", cr[c][0], cr[c][1], cr[c][2], cr[c][3], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, 13);
+				tz_ground(0, 80, 200, 40);
+				clip(1, cr[c][0], cr[c][1], cr[c][2], cr[c][3]);
+				i1(106, (int16_t)effs[e]);
+				i1(32, (int16_t)m);
+				gtext(20, 100, "ABC @_ HELLO");
+				i1(32, 1);
+				clip(0, 0, 0, 0, 0);
+				grab(tag, 0, 80, 200, 40);
+			}
+}
+
+/* loaded monospace font: the skew mask's phase and the row count, narrow and wide cells */
+static void tz_masks(void)
+{
+	static const int cells[][2] = { {8, 16}, {40, 16}, {8, 15}, {8, 17}, {40, 15}, {40, 17} };
+	static const int masks[] = { 0x5555, 0xAAAA, 0x8888, 0x1111, 0xFFFF, 0x0000, 0x1234 };
+	static const int effs[] = { 4, 1 | 4, 4 | 16 };
+	char tag[16], what[64];
+	int c, k, e, n = 0;
+
+	for (c = 0; c < 6; c++)
+		for (k = 0; k < 7; k++)
+			for (e = 0; e < 3; e++) {
+				int W = cells[c][0], H = cells[c][1];
+				int fw = ((2 * W + 15) / 16) * 2, bottom = H / 4, top = H - 1 - bottom;
+
+				if (k != 0 && c >= 2)
+					continue;		/* other masks only with 16 rows */
+				snprintf(tag, sizeof tag, "ZE%03d", n++);
+				snprintf(what, sizeof what, "cell %dx%d skew mask %04x effects %d", W, H, masks[k], effs[e]);
+				tbegin(tag, what);
+				tx_off[0] = 0; tx_off[1] = (uint16_t)W; tx_off[2] = (uint16_t)(2 * W);
+				tx_pattern(tx_dat, fw, H);
+				tx_head(&tx_f[0], 15, 12, "AUDIT TZ", top, bottom, W, 65, 66, F_STD | F_MONO, tx_off, tx_dat, fw, H, NULL);
+				tx_f[0].skew = (uint16_t)masks[k];
+				tx_load(&tx_f[0]);
+				i1(21, 15);
+				tx_height(top);
+				i1(106, (int16_t)effs[e]);
+				gtext(10, top + 10, "AB");
+				grab(tag, 0, 0, 2 * W + 40, H + 30);
+				tx_end();
+			}
+}
+
+/* every code of a built-in font: which glyphs reach the cell's last column (mono bold spills past it) */
+static void tz_charset(void)
+{
+	static const int effs[] = { 1, 4, 1 | 4 | 16 };
+	static const int hts[] = { 13, 6, 4 };
+	char tag[16], what[64], s[33];
+	int f, e, m, r, c, n = 0;
+
+	for (f = 0; f < 3; f++)
+		for (e = 0; e < 3; e++)
+			for (m = 1; m <= 2; m++) {
+				snprintf(tag, sizeof tag, "ZF%03d", n++);
+				snprintf(what, sizeof what, "vst_height %d effects %d mode %d, codes 1..255", hts[f], effs[e], m);
+				tbegin(tag, what);
+				p1(12, 0, (int16_t)hts[f]);
+				i1(106, (int16_t)effs[e]);
+				i1(32, (int16_t)m);
+				for (r = 0; r < 8; r++) {
+					for (c = 0; c < 32; c++)
+						s[c] = (char)(r == 0 && c == 0 ? ' ' : r * 32 + c);
+					s[32] = 0;
+					gtext(20, 30 + r * 24, s);
+				}
+				i1(32, 1);
+				grab(tag, 0, 0, 400, 230);
+			}
+}
+
+/* alignment, justification, the left screen edge, a DDA font partly clipped */
+static void tz_misc(void)
+{
+	static const int effs[] = { 4, 1 | 4 | 16 };
+	char tag[16], what[64];
+	int e, k, n = 0;
+
+	for (e = 0; e < 2; e++)
+		for (k = 0; k < 6; k++) {
+			snprintf(tag, sizeof tag, "ZG%03d", n++);
+			snprintf(what, sizeof what, "8x16 effects %d variant %d", effs[e], k);
+			tbegin(tag, what);
+			p1(12, 0, 13);
+			tz_ground(0, 60, 320, 80);
+			i1(106, (int16_t)effs[e]);
+			switch (k) {
+			case 0: i2(39, 1, 0); gtext(150, 100, "ABC @_ HELLO"); break;
+			case 1: i2(39, 2, 5); gtext(300, 80, "ABC @_ HELLO"); break;
+			case 2: justified(20, 100, 280, 1, 0, "AB CD EF"); break;
+			case 3: justified(20, 100, 280, 0, 1, "AB CD EF"); break;
+			case 4: gtext(0, 100, "ABC @_ HELLO"); break;
+			case 5: clip(1, 0, 0, 639, 479); gtext(0, 100, "ABC @_ HELLO"); clip(0, 0, 0, 0, 0); break;
+			}
+			grab(tag, 0, 60, 320, 80);
+		}
+	for (k = 0; k < 2; k++) {
+		snprintf(tag, sizeof tag, "ZG%03d", n++);
+		snprintf(what, sizeof what, "vst_height 20, clip from x 60, effects %d", k ? 4 : 0);
+		tbegin(tag, what);
+		p1(12, 0, 20);
+		clip(1, 60, 60, 319, 139);
+		i1(106, (int16_t)(k ? 4 : 0));
+		i1(32, 2);
+		gtext(4, 100, "ABCDEFGHIJKLM");
+		i1(32, 1);
+		clip(0, 0, 0, 0, 0);
+		grab(tag, 0, 60, 320, 80);
+	}
+}
+
+static void tz(void)
+{
+	tz_matrix();
+	tz_scaled();
+	tz_rotated();
+	tz_clipped();
+	tz_masks();
+	tz_charset();
+	tz_misc();
+}
+
+/* ---- T31 (TASK/V31, VDI-TEXT-007): a scaled run whose leading characters lie wholly outside the clip ----
+ * window.  text_blt skips scale() for them (check_clip < 0 -> goto upda_dst, vdi_textblit.c:1344-1346), so
+ * XDDA does not move (vdi_textblit.c:722-733); T14E is the v_gtext case, these are v_justified, the three
+ * right angles (the clip on the side the run starts from) and the scale-down DDA. */
+static void t31(void)
+{
+	tbegin("T31A", "vst_height(20), clip (100,0)-(639,479), v_justified interchar 14 chars len 300 at (0,60)");
+	p1(12, 0, 20);
+	clip(1, 100, 0, 639, 479);
+	justified(0, 60, 300, 0, 1, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31A", 0, 30, 400, 40);
+	tbegin("T31B", "vst_height(20), rotation 1800, clip (0,0)-(299,479), v_gtext 14 chars at (400,100)");
+	p1(12, 0, 20);
+	i1(13, 1800);
+	clip(1, 0, 0, 299, 479);
+	gtext(400, 100, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31B", 160, 60, 260, 70);
+	tbegin("T31C", "vst_height(20), rotation 900, clip (0,0)-(639,199), v_gtext 14 chars at (100,330)");
+	p1(12, 0, 20);
+	i1(13, 900);
+	clip(1, 0, 0, 639, 199);
+	gtext(100, 330, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31C", 60, 80, 80, 260);
+	tbegin("T31D", "vst_height(20), rotation 2700, clip (0,200)-(639,479), v_gtext 14 chars at (300,120)");
+	p1(12, 0, 20);
+	i1(13, 2700);
+	clip(1, 0, 200, 639, 479);
+	gtext(300, 120, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31D", 260, 100, 80, 260);
+	tbegin("T31E", "vst_height(10) (DDA down), clip (40,0)-(639,479), v_gtext 20 chars at (0,60)");
+	p1(12, 0, 10);
+	clip(1, 40, 0, 639, 479);
+	gtext(0, 60, "ABCDEFGHIJKLMNOPQRST");
+	clip(0, 0, 0, 0, 0);
+	grab("T31E", 0, 40, 300, 30);
+}
+
+static void t2(void)
+{
+	t19();
+	t13();
+	t14();
+	t15();
+	t16();
+	tu();
+	tp();
+	tr();
+	t18();
+	tv();
+	treset();
+	tx();
+	ty();
+	tz();
+	t31();
+}
+
+
+/* ---- k99 (V49 tester, extra case, not in vdprobe.c): the span-fill paths of the primitives (circle, ellipse,
+ * pie slice, elliptic pie, rounded filled box) with pattern/hatch/user fills in all four write modes, over a
+ * coloured background so Transparent/XOR/RevTransparent have something to act on. The window is 220x130 at
+ * (20,20), x not a multiple of 16. */
+static void k99_shape(int shape)
+{
+	switch (shape) {
+	case 0: gdp15(4, 3, 0, 110, 85, 45, 0, 0, 0, 0); break;		/* v_circle r45 */
+	case 1: gdp15(5, 2, 0, 125, 80, 70, 30, 0, 0, 0); break;	/* v_ellipse 70x30 */
+	case 2: gdp15(3, 4, 2, 100, 85, 0, 0, 55, 300, 2700); break;	/* v_pieslice r55 30..270 deg */
+	case 3: gdp15(7, 2, 2, 130, 90, 80, 38, 0, 200, 3100); break;	/* v_ellpie 80x38 */
+	default:
+		ptsin[0] = 37; ptsin[1] = 33; ptsin[2] = 231; ptsin[3] = 131;
+		vdi(11, 9, 2, 0);					/* v_rfbox */
+		break;
+	}
+}
+
+static void k99(void)
+{
+	static uint16_t u[16];
+	static const char *sn[5] = { "circle", "ellipse", "pieslice", "ellpie", "rfbox" };
+	static const int fis[5][3] = { { 2, 3, 1 }, { 2, 8, 0 }, { 3, 2, 1 }, { 3, 6, 0 }, { 4, 1, 1 } };
+	static const char *mn[4] = { "replace", "transp", "xor", "revtrans" };
+	char nm[9];
+	int s, f, m, i;
+
+	for (i = 0; i < 16; i++)
+		u[i] = (uint16_t)((0xA5C3u << (i & 7)) ^ (0x0F0Fu >> (i & 3)) ^ (i == 5 ? 0xFFFF : 0));
+	for (s = 0; s < 5; s++)
+		for (f = 0; f < 5; f++)
+			for (m = 0; m < 4; m++) {
+				nm[0] = 'X'; nm[1] = (char)('0' + s); nm[2] = (char)('0' + f); nm[3] = (char)('0' + m + 1);
+				nm[4] = 0;
+				begin(nm, "v49 extra: span fills");
+				emit("   %s interior %d style %d perimeter %d mode %s\n", sn[s], fis[f][0], fis[f][1], fis[f][2], mn[m]);
+				i1(23, 1); i1(25, 3); bar(20, 20, 239, 149);	/* solid colour-3 backdrop */
+				i1(23, 1); i1(25, 6); recfl(60, 40, 140, 100);	/* a second colour inside */
+				if (fis[f][0] == 4)
+					udpat(16, u);
+				i1(23, fis[f][0]); i1(24, fis[f][1]); i1(25, 2); i1(104, fis[f][2]); i1(32, m + 1);
+				k99_shape(s);
+				grab(nm, 20, 20, 220, 130);
+			}
+}
+
+int main(int argc, char **argv)
+{
+	int16_t ap_id;
+	int i;
+	uint8_t hd[6];
+
+	if (argc >= 3 && strcmp(argv[1], "TXZ") == 0) {	/* the child of tx_z */
+		handle = 0;
+		for (i = 0; argv[2][i]; i++)
+			handle = (int16_t)(handle * 10 + (argv[2][i] - '0'));
+		t13_build();
+		t13_load();
+		return 0;
+	}
+
+	ap_id = aes(10, 0, 1, 0);		/* appl_init */
+	if (ap_id < 0)
+		return 1;
+	aes(77, 0, 5, 0);			/* graf_handle */
+	handle = aes_int_out[0];
+	for (i = 0; i < 10; i++)
+		intin[i] = 1;
+	intin[10] = 2;
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 100; contrl[3] = 11; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_opnvwk */
+	handle = contrl[6];
+	for (i = 0; i < 12; i++)
+		work_pts[i] = ptsout[i];
+	emit("H00 handle %d xres %d yres %d planes? colours %d\n", handle, intout[0], intout[1], intout[13]);
+
+	aes_int_in[0] = 256;			/* graf_mouse M_OFF */
+	aes_addr_in[0] = 0;
+	aes(78, 1, 1, 1);
+
+	binfh = Fcreate("VDPROBE.BIN", 0);
+	memcpy(hd, "VDPR", 4);
+	put16(hd + 4, VERSION);
+	if (binfh >= 0)
+		Fwrite((short)binfh, 6L, hd);
+
+	{
+		/* VDPROBE.SEL with "T19" in the current directory: only the default-font case (K19 run on a
+		 * 640x240 screen, TASK/V18 part 2); absent, as in every other run, everything runs. */
+		char sel[4] = { 0, 0, 0, 0 };
+		long sf = Fopen("VDPROBE.SEL", 0);
+
+		if (sf >= 0) {
+			Fread((short)sf, 3L, sel);
+			Fclose((short)sf);
+		}
+		only_t19 = memcmp(sel, "T19", 3) == 0;
+	}
+	if (only_t19) {
+		k_calibration();
+		t19();
+		/* V32 acceptance: graf_handle's gl_wchar/gl_hchar/gl_wbox/gl_hbox on this screen (log line only,
+		 * no record, no case number; only in the T19 selection, so every other run is unchanged). */
+		aes(77, 0, 5, 0);
+		emit("T19B     graf_handle %d wchar %d hchar %d wbox %d hbox %d\n", aes_int_out[0], aes_int_out[1],
+		     aes_int_out[2], aes_int_out[3], aes_int_out[4]);
+		goto done;
+	}
+	k_calibration();
+	k1();
+	k2();
+	k3();
+	k4();
+	k5();
+	k6();
+	k8();
+	k10();
+	k11();
+	k12();
+	k13();
+	k14();
+	k15();
+	k16();
+	k17();
+	t2();
+	k99();
+
+done:
+	if (binfh >= 0)
+		Fclose((short)binfh);
+	reset();
+	aes_int_in[0] = 257;			/* graf_mouse M_ON */
+	aes(78, 1, 1, 1);
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 101; contrl[6] = handle;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);	/* v_clsvwk */
+	aes(19, 0, 1, 0);			/* appl_exit */
+	emit("END\n");
+	{
+		long fh = Fcreate("VDPROBE.LOG", 0);
+		if (fh >= 0) {
+			Fwrite((short)fh, (long)loglen, logbuf);
+			Fclose((short)fh);
+		}
+	}
+	return 0;
+}

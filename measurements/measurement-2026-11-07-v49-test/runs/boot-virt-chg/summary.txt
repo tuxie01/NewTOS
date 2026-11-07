@@ -1,0 +1,2 @@
+exception-panic-lines 0
+[desk] desktop up (0 drives)

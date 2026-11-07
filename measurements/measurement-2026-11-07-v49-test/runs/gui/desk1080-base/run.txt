@@ -1,0 +1,7 @@
+desk-inj run newtos (2026-11-07T18:44:20Z)
+kernel c1259c830a2371f22cd55d0c11e6b6c94d9ab34d90bd7233a01b26a0f127f2e0
+card 635df802c167bd150f01b521f64a01bc44de76fed84b18560445663dc8215e3b
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+qemu-extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+shots 11
+exception-panic-lines 0

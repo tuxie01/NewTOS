@@ -1,0 +1,17 @@
+build base rpi4 rc 0
+clippy base rpi4 rc 0
+build base qemu-virt rc 0
+clippy base qemu-virt rc 0
+build base rpi4 release rc 0
+build chg rpi4 rc 0
+clippy chg rpi4 rc 0
+build chg qemu-virt rc 0
+clippy chg qemu-virt rc 0
+build chg rpi4 release rc 0
+build chg+raster-prof rpi4 rc 0
+clippy chg+raster-prof rpi4 rc 0
+build chg+raster-prof qemu-virt rc 0
+clippy chg+raster-prof qemu-virt rc 0
+build chg+raster-prof rpi4 release rc 0
+BUILDSDONE
+build base+raster-prof rpi4 release rc 0

@@ -1,0 +1,5 @@
+Tester mutants of kernel/src/raster_kernel.rs (each edit by sed on the working file, file restored from a copy; sha1 before and after 7b03d1abf153507589a374401503c436caa1dbc1)
+M1 Xor combine eor -> bit : FAILED xor_twice_restores_the_store, a_full_screen_row_set..., every_phase_and_width..., every_height_row_phase...
+M2 drop `ldp q13, q14, [{save}, #192]` (rmw restore): FAILED every_v_register_used_is_saved_and_restored; test result: FAILED. 6 passed; 1 failed
+M3 Replace `bsl v2.16b, v8.16b, v9.16b` -> `v9, v8`: FAILED every_phase_and_width..., every_height_row_phase..., a_full_screen_row_set... (first: mode Replace pattern [ffff] area x0 y0 w9 h3: kernel 8c70920b, reference bd49a167)
+M4 no-op edit (add t,t,#0 after lsr): all 7 passed (equivalent mutant, control)
