@@ -1,0 +1,20 @@
+343c343
+<    vsl_width c2=1 c4=0 io po 3 0
+---
+>    vsl_width c2=1 c4=0 io po 9 0
+345c345
+<    vst_height c2=2 c4=0 io po 7 13 8 16
+---
+>    vst_height c2=2 c4=0 io po 14 27 16 32
+1586c1586
+<    vsl_width c2=1 c4=0 io po 1 0
+---
+>    vsl_width c2=1 c4=0 io po 7 0
+1589c1589
+<    vsl_width c2=1 c4=0 io po 1 0
+---
+>    vsl_width c2=1 c4=0 io po 5 0
+1591c1591
+<    vsl_width c2=1 c4=0 io po 1 0
+---
+>    vsl_width c2=1 c4=0 io po 9 0

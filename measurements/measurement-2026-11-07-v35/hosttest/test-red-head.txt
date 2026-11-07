@@ -1,0 +1,33 @@
+test cases_v35::v35_case_0050_vsl_width_reads_the_copy ... FAILED
+test cases_v35::v35_case_0054_vsm_height_reads_the_copy ... FAILED
+test cases_v35::v35_case_0052_vst_height_reads_the_copy ... ok
+test cases_v35::v35_probe_tph_handler_writes_land_in_the_copy ... ignored, TASK/V35 open point: handlers that write PTSIN in EmuTOS (arb_corner, arc/rbox points, arrows) do not write NewTOS' copy; not in the decided scope (copy only), lead/user decision pending
+test cases_v35::v35_case_0055_vsl_width_control ... ok
+test cases_v35::v35_probe_tpa_vs_clip_without_points_clips_to_the_copy ... FAILED
+test cases_v35::v35_negative_count_fills_the_copy ... FAILED
+test cases_v35::v35_probe_tpd_vst_height_reads_the_copy ... FAILED
+test cases_v35::v35_probe_tpb_vs_clip_one_point_keeps_the_second_corner ... FAILED
+test cases_v35::v35_probe_tpe_vs_clip_with_points_control ... ok
+test cases_v35::v35_probe_tpc_vsl_width_reads_the_copy ... FAILED
+test cases_v35::v35_probe_tpf_unknown_handle_still_fills_the_copy ... FAILED
+test cases_v35::v35_probe_tpg_the_copy_is_shared_by_workstations ... FAILED
+thread 'cases_v35::v35_case_0050_vsl_width_reads_the_copy' (4128642) panicked at tos-api/tests/vdi_reference/harness.rs:1121:9:
+thread 'cases_v35::v35_case_0054_vsm_height_reads_the_copy' (4128644) panicked at tos-api/tests/vdi_reference/harness.rs:1121:9:
+thread 'cases_v35::v35_probe_tpa_vs_clip_without_points_clips_to_the_copy' (4128647) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v35::v35_negative_count_fills_the_copy' (4128646) panicked at tos-api/tests/vdi_reference/cases_v35.rs:294:5:
+  left: [1, 0]
+ right: [7, 0]
+thread 'cases_v35::v35_probe_tpd_vst_height_reads_the_copy' (4128650) panicked at tos-api/tests/vdi_reference/cases_v35.rs:188:5:
+  left: [7, 13, 8, 16]
+ right: [14, 27, 16, 32]
+thread 'cases_v35::v35_probe_tpb_vs_clip_one_point_keeps_the_second_corner' (4128648) panicked at tos-api/tests/vdi_reference/cases_v30.rs:158:5:
+thread 'cases_v35::v35_probe_tpc_vsl_width_reads_the_copy' (4128649) panicked at tos-api/tests/vdi_reference/cases_v35.rs:176:5:
+  left: [3, 0]
+ right: [9, 0]
+thread 'cases_v35::v35_probe_tpf_unknown_handle_still_fills_the_copy' (4128652) panicked at tos-api/tests/vdi_reference/cases_v35.rs:223:5:
+  left: [1, 0]
+ right: [7, 0]
+thread 'cases_v35::v35_probe_tpg_the_copy_is_shared_by_workstations' (4128653) panicked at tos-api/tests/vdi_reference/cases_v35.rs:240:5:
+  left: [1, 0]
+ right: [5, 0]
+test result: FAILED. 3 passed; 9 failed; 1 ignored; 0 measured; 319 filtered out; finished in 0.03s

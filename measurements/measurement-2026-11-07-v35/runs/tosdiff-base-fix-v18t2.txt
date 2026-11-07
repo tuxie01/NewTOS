@@ -1,0 +1,10 @@
+VDI.BIN vs VDI.BIN -- area VDI, 32 cases from vdi-v18-t2.tsv
+
+case 50  opcode 16  rider vsl_width with CONTRL[1]=0 (EmuTOS: the stale 9)
+    ptsout[0]              VDI.BIN = 0x0001 (1)   VDI.BIN = 0x0009 (9)
+
+case 54  opcode 19  rider vsm_height with CONTRL[1]=0 (EmuTOS: the stale 30)
+    ptsout[0]              VDI.BIN = 0x000F (15)   VDI.BIN = 0x002D (45)
+    ptsout[1]              VDI.BIN = 0x000B (11)   VDI.BIN = 0x0021 (33)
+
+2 of 32 cases differ

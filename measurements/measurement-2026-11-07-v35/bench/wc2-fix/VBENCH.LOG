@@ -1,0 +1,5 @@
+A_vsf_color_0pairs calls=100000 ticks200=50
+B_vsl_width_1pair calls=100000 ticks200=51
+C_v_pline_2pairs calls=20000 ticks200=25
+D_v_pline_1024pairs calls=500 ticks200=29
+E_v_gtext_9chars calls=10000 ticks200=52

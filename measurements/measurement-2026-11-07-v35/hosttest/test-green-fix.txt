@@ -1,0 +1,14 @@
+test cases_v35::v35_case_0052_vst_height_reads_the_copy ... ok
+test cases_v35::v35_case_0054_vsm_height_reads_the_copy ... ok
+test cases_v35::v35_case_0050_vsl_width_reads_the_copy ... ok
+test cases_v35::v35_probe_tph_handler_writes_land_in_the_copy ... ignored, TASK/V35 open point: handlers that write PTSIN in EmuTOS (arb_corner, arc/rbox points, arrows) do not write NewTOS' copy; not in the decided scope (copy only), lead/user decision pending
+test cases_v35::v35_negative_count_fills_the_copy ... ok
+test cases_v35::v35_probe_tpa_vs_clip_without_points_clips_to_the_copy ... ok
+test cases_v35::v35_case_0055_vsl_width_control ... ok
+test cases_v35::v35_probe_tpd_vst_height_reads_the_copy ... ok
+test cases_v35::v35_probe_tpb_vs_clip_one_point_keeps_the_second_corner ... ok
+test cases_v35::v35_probe_tpe_vs_clip_with_points_control ... ok
+test cases_v35::v35_probe_tpc_vsl_width_reads_the_copy ... ok
+test cases_v35::v35_probe_tpf_unknown_handle_still_fills_the_copy ... ok
+test cases_v35::v35_probe_tpg_the_copy_is_shared_by_workstations ... ok
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 319 filtered out; finished in 0.03s

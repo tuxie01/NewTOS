@@ -1,0 +1,9 @@
+desk480-base vs desk480-fix: all shots identical
+desk1080-base vs desk1080-fix: all shots identical
+bc480-base vs bc480-fix: all shots identical
+bc1080-base vs bc1080-fix: 02-t018.png 
+bc1080b-base vs bc1080b-fix: 02-t018.png 
+bc1080-base vs bc1080b-base: all shots identical
+bc1080-fix vs bc1080b-fix: 02-t018.png 
+bc1080c-base vs bc1080c-fix: 02-t018.png 
+bc1080-base vs bc1080c-base: all shots identical
