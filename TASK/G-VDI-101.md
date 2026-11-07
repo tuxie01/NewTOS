@@ -8,6 +8,8 @@ Abhängigkeiten: Keine
 
 Nur v_clsvwk, Opcode 101. Die aktuelle Runde enthält keinen gemessenen Record für diese Funktion. Zuerst Eingang/Ausgang, Seiteneffekt, Referenz-Build-Verfügbarkeit und Reset aus der Spezifikation erheben; genau einen Normalfall entwerfen. Keine pauschale Funktionsimplementierung und keine Änderung der Sperrliste ohne Quellenbeleg.
 
+Nachtrag 2026-11-07: Der Fbench-Bericht (`docs/analysis/fbench-functions-2026-11-07.md`) bestätigt: kein Fall, nur als Lebenszyklus genutzt; Fbench ruft die Funktion (`VDI.VWK`).
+
 ## Abnahme
 
 Eine funktionsspezifische Fallskizze mit exakten Parametern, erwarteten Feldern/Pixeln und Rückbau des Zustands liegt vor. Wenn blockierend, zeigerabhängig oder auf TT nicht verfügbar: benötigte Voraussetzung konkret benennen; keinen unsicheren Lauf ausführen. Runner-Erweiterung, TT-/Pi-Aufnahme und etwaige Reparatur als getrennte Nachfolgetasks anlegen.
