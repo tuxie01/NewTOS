@@ -1,0 +1,4 @@
+1200 01-conflict
+1700 02-after-conflict-ok
+2400 03-later
+3200 04-end

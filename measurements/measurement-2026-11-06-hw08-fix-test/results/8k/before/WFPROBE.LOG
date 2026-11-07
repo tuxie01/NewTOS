@@ -1,0 +1,33 @@
+=== WFPROBE case n1: writes per Fwrite pattern, no fault
+C: partition at 63, FATs at 1 and 33, root at 65, data at 97
+pat total    10240 step    100: Fcreate=7 writes 1/1 Fwrite x103 last=40 writes 126/126 Fclose=0 writes 1/1
+pat total    10240 step    512: Fcreate=7 writes 1/1 Fwrite x20 last=512 writes 24/24 Fclose=0 writes 1/1
+pat total   102400 step    512: Fcreate=7 writes 1/1 Fwrite x200 last=512 writes 226/226 Fclose=0 writes 1/1
+pat total    10240 step   4096: Fcreate=7 writes 1/1 Fwrite x3 last=2048 writes 7/24 Fclose=0 writes 1/1
+pat total   102400 step   4096: Fcreate=7 writes 1/1 Fwrite x25 last=4096 writes 51/226 Fclose=0 writes 1/1
+pat total  1048576 step   4096: Fcreate=7 writes 1/1 Fwrite x256 last=4096 writes 512/2304 Fclose=0 writes 1/1
+pat total   102400 step   1024: Fcreate=7 writes 1/1 Fwrite x100 last=1024 writes 126/226 Fclose=0 writes 1/1
+pat total   102400 step  32768: Fcreate=7 writes 1/1 Fwrite x4 last=4096 writes 12/208 Fclose=0 writes 1/1
+pat total  1048576 step  32768: Fcreate=7 writes 1/1 Fwrite x32 last=32768 writes 96/2112 Fclose=0 writes 1/1
+pat total 10485760 step  32768: Fcreate=7 writes 1/1 Fwrite x320 last=32768 writes 970/21130 Fclose=0 writes 1/1
+pat total    10240 step  10240: Fcreate=7 writes 1/1 Fwrite x1 last=10240 writes 4/22 Fclose=0 writes 1/1
+pat total   102400 step 102400: Fcreate=7 writes 1/1 Fwrite x1 last=102400 writes 4/202 Fclose=0 writes 1/1
+pat total  1048576 step 1048576: Fcreate=7 writes 1/1 Fwrite x1 last=1048576 writes 3/2050 Fclose=0 writes 1/1
+pat total 10485760 step 10485760: Fcreate=7 writes 1/1 Fwrite x1 last=10485760 writes 13/20492 Fclose=0 writes 1/1
+overwrite 64 x 100 B, 1 KiB apart: last Fwrite=100 writes 64/64 Fclose=0 writes 0/0
+--- diag at the end (748 bytes)
+  SD diagnosis  up 0:00:20.363   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 2 timeouts 0 recover 2 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    cmd_done int 00018001 r1 00000000
+   bits   CTO=2
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.3
+           read_done 0.0 write_done 0.0
+  write   n 2337 sec 51582 failed 0 max 1844.5 ms
+   time   <1:1771 <4:207 <16:353 <64:3 <250:2 <500:0 <1000:0 more:1
+  read    n 106 sec 365 failed 0 max 25.7 ms
+   time   <1:103 <4:1 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   no failure since the boot
+  cache   writeback failed 0 retried 0 gave up 0 dirty 0; last code 0 of 0
+  bcache  dev r 106 w 2337 hit 15 miss 365 sectors
+END

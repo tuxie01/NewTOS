@@ -1,0 +1,21 @@
+=== WFPROBE case r1: FAT reads fail: Dfree
+C: partition at 63, FATs at 1 and 129, root at 257, data at 289
+arm fault 9: Ssystem=0
+Dfree under the fault=-11 free=0 total=0
+disarm: fired 1
+Dfree with the fault gone=0 free=32671 total=32672
+--- diag at the end (716 bytes)
+  SD diagnosis  up 0:00:15.151   Ctrl+Alt+F9: hide / show again
+  driver  4-bit multi errors 3 timeouts 0 recover 3 nonrecover 0 refused 0
+   boot    errors 2 timeouts 0 (base probe, in the counts above)
+   last    read_rdy int 00200000 r1 00000000
+   bits   CTO=2 DCRC=1
+   wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 read_done 0.0
+  write   n 1 sec 1 failed 0 max 0.6 ms
+   time   <1:1 <4:0 <16:0 <64:0 <250:0 <500:0 <1000:0 more:0
+  read    n 145 sec 404 failed 1 max 21.7 ms
+   time   <1:141 <4:2 <16:1 <64:1 <250:0 <500:0 <1000:0 more:0
+  first   0:00:15.128 read lba 192 n 1 read_rdy error 00200000
+  cache   writeback failed 0 retried 0 dirty 0; last code -11 of 1
+  bcache  dev r 145 w 1 hit 13 miss 404 sectors
+END

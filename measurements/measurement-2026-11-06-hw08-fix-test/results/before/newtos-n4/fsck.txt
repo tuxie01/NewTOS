@@ -1,0 +1,13 @@
+** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.Mfeuke/after.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+Warning: /EXIST.DAT has too many clusters allocated (logical=20000, physical=24576)
+Drop superfluous clusters?
+: no
+** Phase 3 - Checking for Orphan Clusters
+Warning: Found orphan cluster(s)
+Fix?
+: no
+Warning: Found 3 orphaned clusters
+Warning: 4 files, 65292 KiB free (32646 clusters)
+fsck_msdos exit 206

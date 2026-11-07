@@ -1,0 +1,7 @@
+=== WFPROBE case n3: a child ends without Fclose, no fault
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+Pexec child=7 writes 8/15
+after the child: Fsfirst=0 size=5281 writes 0/0
+after the child: Fopen=6 Fread=5281 same=1
+after the child: Dfree free=32668
+END

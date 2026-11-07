@@ -1,0 +1,18 @@
+=== WFPROBE case u5: busy 3500 ms, directory
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+save BASE.DAT       Fcreate=6 Fwrite=5281,0 Fclose=0
+arm: hdv_rw hook answers -10 on sectors 257..289 count 1
+save RESULTS.PDF    Fcreate=-10 Fwrite=0,0 Fclose=0
+disarm: fired 1
+save R1.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+save R2.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+save R3.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+save R4.FBP         Fcreate=6 Fwrite=5281,0 Fclose=0
+look BASE.DAT       Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look RESULTS.PDF    Fsfirst=-33 size=-1 want=37156 Fopen=-33 Fread=-1 same=0
+look R1.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look R2.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look R3.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+look R4.FBP         Fsfirst=0 size=5281 want=5281 Fopen=6 Fread=5281 same=1
+Dfree(C:)=0 free=32656 total=32672
+END

@@ -1,0 +1,17 @@
+kernel 45b357cbf1e8722a51dc01428439292edb846c3dc6e3475596c5b977b09f681a
+card before fbf5067950164ec037d9c1e22d28697001e481d32807657dd77bfe23f29304bc
+card after  fbf5067950164ec037d9c1e22d28697001e481d32807657dd77bfe23f29304bc
+C:\COPYME.TXT sha256 3eb5884e2d19f6e3   227500 bytes: 0000000 SOURCE-FROM-C-drive 0123456789abcdef0123456789abcdef
+C:\NEWDESK.INF sha256 6443262507e77522      150 bytes: #R 02
+#E 1B E0 00 00 60
+#M 00 00 FF FF C Hard disk@ @
+#T 
+fsck C: exit 0
+D:\COPYME.TXT sha256 13249f23f2bbc7a6       28 bytes: OLD-TARGET-ON-D-drive-longer
+D:\NEWDESK.INF sha256 6443262507e77522      150 bytes: #R 02
+#E 1B E0 00 00 60
+#M 00 00 FF FF C Hard disk@ @
+#T 
+fsck D: exit 0
+shots 1
+exception-panic-lines 0

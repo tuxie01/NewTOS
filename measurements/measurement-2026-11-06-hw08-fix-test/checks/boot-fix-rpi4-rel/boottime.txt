@@ -1,0 +1,3 @@
+desktop-up after 15 s (wall, incl. QEMU start)
+0
+[desk] desktop up (1 drives)

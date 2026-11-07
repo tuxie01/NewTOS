@@ -1,0 +1,33 @@
+command   cargo xtask tosdump aes tosdump/cases/aes-r2-wind.tsv --tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/t/base --out measurements/measurement-2026-11-06-hw08-fix-test/results/tables/r2-base --reference tosdump/reference/EMUTOS-1a7484ab-AES-r2wind.BIN --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/rg/xt-base
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/t/base (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    e575a0b31e116b143276103cabe58b4b8c13d84b
+dirty     0 path(s) in git status --porcelain
+harness commit 5fb5f5034fad732dd0512a8ee17f812491d6e76d
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/aes-r2-wind.tsv sha256 5419a70944ac78b82144936773c3e6e9a0a338202a1b91f9fd15f05679f31908
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (7 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (7 artifact dep-info files checked after the build)
+kernel8.img /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/t/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 dd4334faea113d8715987bc1cb7bba25d411525102a7ff777f2d0ab3065c280b
+kernel ELF  sha256 54c0f06ef8eeea141218e140bfe6e4418d717c8af9351116bd650943f1beb521 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/t/base/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPAES.NAP (tosdump/build-dumpaes-newtos.sh) in the measured tree …
+dumper build id e575
+DUMPAES.NAP sha256 516aac000d67d5dcff679d6fcb7859220873dac955d67c10eb25b612d8fcd138
+card.img.manifest: image_sha256 6d3e912915566df6e0ea593dd32a40e78a7902f22c0e7db33e9771e9296dbaf5
+card.img.manifest: optional_missing none
+card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/rg/xt-base/tosdump-58117/card.img sha256 6d3e912915566df6e0ea593dd32a40e78a7902f22c0e7db33e9771e9296dbaf5 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPAES.NAP, rc=0
+card after the run sha256 71d66588033aae587c625314c3e5a29ba37e1ce0134cbed22fee49e6cb33cd09
+AES.BIN 9392 bytes, sha256 26b51b118bfeaecf103539c5c9acce7efc32d20e1be32ce10d6793e54477f1d0
+AES.LOG 298 bytes, sha256 7c1dbe035654176944845bc301177aed6ce2746eceae9fc907f0b650f86e22f1
+tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+tosdiff --validate: exit 0 AES.BIN: area AES, 78 records of 120 bytes, build e575, case CRC AFB11C9F
+tosdiff EMUTOS-1a7484ab-AES-r2wind.BIN vs NEWTOS.BIN: exit 1, 78 of 78 cases differ
+total     35 s
+result    run complete (differences above are findings, not failures)

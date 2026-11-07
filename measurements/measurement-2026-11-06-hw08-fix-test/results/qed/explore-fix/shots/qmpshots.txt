@@ -1,0 +1,7 @@
+t0 = detection of '[inj] up:QED armed' on the serial file
+00 new planned 7.000s request 7.010s done 7.019s ok
+01 typed planned 14.780s request 14.790s done 14.798s ok
+02 fsel planned 17.860s request 17.870s done 17.878s ok
+03 name-typed planned 21.840s request 21.850s done 21.863s ok
+04 after-save planned 25.880s request 25.890s done 25.897s ok
+05 end planned 32.880s request 32.890s done 32.897s ok

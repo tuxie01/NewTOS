@@ -1,0 +1,6 @@
+wfprobe run, case n3, side emutos (2026-11-06T22:55:03Z)
+tree      5fb5f5034fad732dd0512a8ee17f812491d6e76d 0 dirty paths in kernel tos-api tos-types tosdump/probes
+test.img  4f2ecb560beaac7c63e38f621f96b081270a08bbecfe2c7128c8d24364eed701 (tools/mktestdisk.sh NEWDESK.INF=#R 02/#Z 01 D:\WFPROBE.NAP@)
+probe     WFPROBE.PRG e3f1bf32f4e9eafcb5daf127fd94168fd3ed52074159d2776bae87fab0155698 WFCASE=n3
+oracle    tools/hatari-oracle.sh disk (pinned ROM, tools/oracle/hatari.cfg)
+testpart  after  caf76c62ab292c1d3d37c830abf2a26c7c0b84ca0ffcccd5b9a7bd9819132add

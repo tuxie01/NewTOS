@@ -1,0 +1,28 @@
+bp fix rpi4 rc 0
+bp fix qemu-virt rc 0
+clippy-tos fix rpi4 rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) 
+clippy-kernel fix rpi4 rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+clippy-tos fix qemu-virt rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) 
+clippy-kernel fix qemu-virt rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+build fix rpi4 rel rc 0
+build fix rpi4 sd-fault rc 0
+build fix virt dev rc 0
+bp base rpi4 rc 0
+bp base qemu-virt rc 0
+clippy-tos base rpi4 rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) 
+clippy-kernel base rpi4 rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+clippy-tos base qemu-virt rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) 
+clippy-kernel base qemu-virt rc 0 warning: `tos-api` (lib) generated 73 warnings (run `cargo clippy --fix --lib -p tos-api -- ` to apply 4 suggestions) warning: `kernel` (lib) generated 121 warnings (run `cargo clippy --fix --lib -p kernel -- ` to apply 27 suggestions) 
+build base rpi4 rel rc 0
+build base rpi4 sd-fault rc 0
+build base virt dev rc 0
+dd4334faea113d8715987bc1cb7bba25d411525102a7ff777f2d0ab3065c280b  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/base-rpi4-rel.img
+20a70d2af2346cf33eb0904cf341880c18651e3d6a85c7bd0173f3cc6e32397c  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/base-rpi4-sdfault.img
+39ab2a6a2058ba2dd965a684216336ae71fe55ad6d075eff768475d1f78eb868  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/fix-cw-sdfault.img
+b1cdbc0482d338bd943d881f1732405c92692c2530148b92ff43bcbd4f88b0d1  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/fix-rpi4-rel.img
+b8213ae6193a44cda07cc96400031cab5b54a67896a348ad56a3999e416ce212  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/fix-rpi4-sdfault.img
+f6d877be829999fa4cddd88b9b661dc50f30a29c748c328bed14aea4c079c9bf  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/kernel-virt-sddiag.img
+a2352fe4d549b1a8a1cb56fa4153c317ba20eee7ab466dbc47fde320a8307a8b  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/kernel8-measure.img
+6163c2df82849f1a926fa9638e0f9d4abc87ea3680a1a5e8200407a7e82b96c8  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/kernel8-sdfault.img
+15d5eb8aeb4c09d1af48cda529d20c06ac57befb57eda840d390a71da95379e5  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/virt-sddiag.img
+ALLDONE

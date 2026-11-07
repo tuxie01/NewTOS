@@ -1,0 +1,15 @@
+armed fix kernel c91537b5668c876b21ffd877bb7adf3225ae7a488dddbb7da8f416ad00a5c6c7 script f60254fcd1a
+C: at LBA 63, 130977 sectors
+fsck C: exit 0
+qed.rsc    41378 30ac6bf24a28ce2c
+QT.TXT     1380 f77d67666c122209
+shots 6
+exception-panic-lines 0
+armed base kernel 7a0c75455e20187da760dea286c21952452a41cf39fa4a78a127561457b48ff2 script f60254fcd1
+C: at LBA 63, 130977 sectors
+fsck C: exit 0
+qed.rsc    41378 30ac6bf24a28ce2c
+QT.TXT     1380 f77d67666c122209
+shots 6
+exception-panic-lines 0
+QED-DONE

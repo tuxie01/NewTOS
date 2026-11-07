@@ -1,0 +1,213 @@
+qemu-system-aarch64: terminating on signal 15 from pid 70246 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-06T23:21:11Z)
+tree      5fb5f5034fad732dd0512a8ee17f812491d6e76d 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    dd4334faea113d8715987bc1cb7bba25d411525102a7ff777f2d0ab3065c280b /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/base-rpi4-rel.img
+card      128594583e70b2dffcbfb3c64dc0e1af3ea008cf0f34ab8b9ae4a322ea29a15d (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after 128594583e70b2dffcbfb3c64dc0e1af3ea008cf0f34ab8b9ae4a322ea29a15d (the booted clone)
+qemu-system-aarch64: terminating on signal 15 from pid 72491 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-06T23:21:54Z)
+tree      5fb5f5034fad732dd0512a8ee17f812491d6e76d 1 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    b1cdbc0482d338bd943d881f1732405c92692c2530148b92ff43bcbd4f88b0d1 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/k/fix-rpi4-rel.img
+card      c58209e91043c3b665c2bdf4cc49122c148e5f00bf8a7ddd4493cd49fb5b6e52 (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after c58209e91043c3b665c2bdf4cc49122c148e5f00bf8a7ddd4493cd49fb5b6e52 (the booted clone)
+qemu-system-aarch64: terminating on signal 15 from pid 72816 (<unknown process>)
+Z01 C: D: E: present=1
+Z02 C: Getbpb nz=1
+Z03 C: recsiz=512 clsiz=4 rdlen=32 fsiz=128 fatrec=129 datrec=289 numcl=32672
+Z04 D: Getbpb nz=1
+Z05 D: recsiz=512 clsiz=4 rdlen=32 fsiz=128 fatrec=129 datrec=289 numcl=32672
+A01 Fcreate C:\FS31A.LOG handle
+A02 Fwrite 6 ret=6
+A03 make D:\FS31V.DAT ret=0
+A04 slots c=2 d=2 same=1
+A05 Fdelete D:\FS31V.DAT ret=0
+A06 Fwrite 6 ret=6
+A07 Fclose ret=0
+A08 C:\FS31A.LOG len=12 "first second" Fclose=0
+A09 Fopen D:\FS31V.DAT ret=-33
+B01 Fwrite 6 ret=6
+B02 slots c=2 d=2 same=1
+B03 Fdelete D:\FS31V.DAT ret=0
+B04 Fclose ret=0
+B05 C:\FS31A.LOG len=6 "first " Fclose=0
+C01 slots c=2 d=2 same=1
+C02 Fread 4 ret=4
+C03 Fdelete D:\FS31V.DAT ret=0
+C04 Fread 16 ret=6 "456789"
+C05 Fclose ret=0
+D01 slots c=2 d=2 same=1
+D02 Fcreate over D:\FS31T.DAT handle
+D03 Fread 32 ret=12
+D04 Fwrite ret=12
+D05 Fclose source ret=0
+D06 Fclose target ret=0
+D07 C:\FS31S.DAT len=12 "source bytes" Fclose=0
+D08 D:\FS31T.DAT len=12 "source bytes" Fclose=0
+E01 Dcreate D:\FS31E ret=0
+E02 slots c=2 d=2 same=1
+E03 Ddelete D:\FS31E ret=0
+E04 Fwrite 6 ret=6
+E05 Fclose ret=0
+E06 C:\FS31A.LOG len=12 "first second" Fclose=0
+F01 Dcreate C:\FS31F ret=0
+F02 Dcreate D:\FS31F ret=0
+F03 start clusters same=1
+F04 slots c=2 d=2 same=1
+F05 Fdelete D:\FS31F\V.DAT ret=0
+F06 Fwrite 6 ret=6
+F07 Fclose ret=0
+F08 C:\FS31F\A.LOG len=12 "first second" Fclose=0
+G01 slots c=3 d=3 same=1
+G02 Pexec child Fdelete D:\FS31V.DAT (100 = E_OK, else -code) ret=100
+G03 Fopen D:\FS31V.DAT ret=-33
+G04 Fwrite 6 ret=6
+G05 Fclose ret=0
+G06 C:\FS31A.LOG len=12 "first second" Fclose=0
+H01 Pexec child Fdelete C:\FS31A.LOG (100 = E_OK, else -code) ret=36
+H02 Fclose ret=0
+H03 C:\FS31A.LOG len=5 "bytes" Fclose=0
+I01 Fdelete D:\FS31A.LOG ret=0
+I02 Fclose ret=-65
+I03 Fopen D:\FS31A.LOG ret=-33
+I04 free clusters on D: as before=1
+J01 slots c=3 d=3 same=1
+J02 Fdelete C:\FS31G.LOG ret=0
+J03 Fclose C: ret=-65
+J04 Fwrite 6 D: ret=6
+J05 Fclose D: ret=0
+J06 D:\FS31K.LOG len=12 "first second" Fclose=0
+K01 slots c=2 d=2 same=1
+K02 Frename D:\FS31F\M.DAT D:\FS31M.DAT ret=0
+K03 Fwrite 4 ret=4
+K04 Fclose ret=0
+K05 C:\FS31F\A.LOG len=9 "on c more" Fclose=0
+K06 D:\FS31M.DAT len=5 "moved" Fclose=0
+L01 Frename C:\FS31A.DAT D:\FS31B.DAT ret=-48
+L02 C:\FS31A.DAT len=1 "a" Fclose=0
+L03 Fopen D:\FS31B.DAT ret=-33
+M01 slots c=3 d=3 same=1
+M02 Fdatime set D: ret=0
+M03 Fclose ret=0
+M04 D: time=1234 date=5678
+M05 C: unchanged=1
+O01 Fsfirst C: ret=0 FS31C1.DAT
+O02 Fsfirst D: ret=0 FS31D1.DAT
+O03 Fsnext C: ret=0 FS31C2.DAT
+O04 Fsnext D: ret=0 FS31D2.DAT
+P01 Dsetpath C:\FS31F ret=0
+P02 Dgetpath C: "\FS31F"
+P03 Dgetpath D: ""
+P04 make D:FS31R.DAT ret=0
+P05 D:\FS31R.DAT len=9 "root of d" Fclose=0
+P06 Dsetpath D:\FS31F ret=0
+P07 make D:FS31I.DAT ret=0
+P08 D:\FS31F\FS31I.DAT len=11 "folder of d" Fclose=0
+P09 Fopen C:\FS31F\FS31I.DAT ret=-33
+P10 Dgetpath C: "\FS31F"
+P11 Dgetpath D: "\FS31F"
+P12 Ddelete C:\FS31F ret=0
+P13 Ddelete D:\FS31F ret=0
+qemu-system-aarch64: terminating on signal 15 from pid 72949 (<unknown process>)
+Z01 C: D: E: present=1
+Z02 C: Getbpb nz=1
+Z03 C: recsiz=512 clsiz=4 rdlen=32 fsiz=128 fatrec=129 datrec=289 numcl=32672
+Z04 D: Getbpb nz=1
+Z05 D: recsiz=512 clsiz=4 rdlen=32 fsiz=128 fatrec=129 datrec=289 numcl=32672
+A01 Fcreate C:\FS31A.LOG handle
+A02 Fwrite 6 ret=6
+A03 make D:\FS31V.DAT ret=0
+A04 slots c=2 d=2 same=1
+A05 Fdelete D:\FS31V.DAT ret=0
+A06 Fwrite 6 ret=6
+A07 Fclose ret=0
+A08 C:\FS31A.LOG len=12 "first second" Fclose=0
+A09 Fopen D:\FS31V.DAT ret=-33
+B01 Fwrite 6 ret=6
+B02 slots c=2 d=2 same=1
+B03 Fdelete D:\FS31V.DAT ret=0
+B04 Fclose ret=0
+B05 C:\FS31A.LOG len=6 "first " Fclose=0
+C01 slots c=2 d=2 same=1
+C02 Fread 4 ret=4
+C03 Fdelete D:\FS31V.DAT ret=0
+C04 Fread 16 ret=6 "456789"
+C05 Fclose ret=0
+D01 slots c=2 d=2 same=1
+D02 Fcreate over D:\FS31T.DAT handle
+D03 Fread 32 ret=12
+D04 Fwrite ret=12
+D05 Fclose source ret=0
+D06 Fclose target ret=0
+D07 C:\FS31S.DAT len=12 "source bytes" Fclose=0
+D08 D:\FS31T.DAT len=12 "source bytes" Fclose=0
+E01 Dcreate D:\FS31E ret=0
+E02 slots c=2 d=2 same=1
+E03 Ddelete D:\FS31E ret=0
+E04 Fwrite 6 ret=6
+E05 Fclose ret=0
+E06 C:\FS31A.LOG len=12 "first second" Fclose=0
+F01 Dcreate C:\FS31F ret=0
+F02 Dcreate D:\FS31F ret=0
+F03 start clusters same=1
+F04 slots c=2 d=2 same=1
+F05 Fdelete D:\FS31F\V.DAT ret=0
+F06 Fwrite 6 ret=6
+F07 Fclose ret=0
+F08 C:\FS31F\A.LOG len=12 "first second" Fclose=0
+G01 slots c=3 d=3 same=1
+G02 Pexec child Fdelete D:\FS31V.DAT (100 = E_OK, else -code) ret=100
+G03 Fopen D:\FS31V.DAT ret=-33
+G04 Fwrite 6 ret=6
+G05 Fclose ret=0
+G06 C:\FS31A.LOG len=12 "first second" Fclose=0
+H01 Pexec child Fdelete C:\FS31A.LOG (100 = E_OK, else -code) ret=36
+H02 Fclose ret=0
+H03 C:\FS31A.LOG len=5 "bytes" Fclose=0
+I01 Fdelete D:\FS31A.LOG ret=0
+I02 Fclose ret=-65
+I03 Fopen D:\FS31A.LOG ret=-33
+I04 free clusters on D: as before=1
+J01 slots c=3 d=3 same=1
+J02 Fdelete C:\FS31G.LOG ret=0
+J03 Fclose C: ret=-65
+J04 Fwrite 6 D: ret=6
+J05 Fclose D: ret=0
+J06 D:\FS31K.LOG len=12 "first second" Fclose=0
+K01 slots c=2 d=2 same=1
+K02 Frename D:\FS31F\M.DAT D:\FS31M.DAT ret=0
+K03 Fwrite 4 ret=4
+K04 Fclose ret=0
+K05 C:\FS31F\A.LOG len=9 "on c more" Fclose=0
+K06 D:\FS31M.DAT len=5 "moved" Fclose=0
+L01 Frename C:\FS31A.DAT D:\FS31B.DAT ret=-48
+L02 C:\FS31A.DAT len=1 "a" Fclose=0
+L03 Fopen D:\FS31B.DAT ret=-33
+M01 slots c=3 d=3 same=1
+M02 Fdatime set D: ret=0
+M03 Fclose ret=0
+M04 D: time=1234 date=5678
+M05 C: unchanged=1
+O01 Fsfirst C: ret=0 FS31C1.DAT
+O02 Fsfirst D: ret=0 FS31D1.DAT
+O03 Fsnext C: ret=0 FS31C2.DAT
+O04 Fsnext D: ret=0 FS31D2.DAT
+P01 Dsetpath C:\FS31F ret=0
+P02 Dgetpath C: "\FS31F"
+P03 Dgetpath D: ""
+P04 make D:FS31R.DAT ret=0
+P05 D:\FS31R.DAT len=9 "root of d" Fclose=0
+P06 Dsetpath D:\FS31F ret=0
+P07 make D:FS31I.DAT ret=0
+P08 D:\FS31F\FS31I.DAT len=11 "folder of d" Fclose=0
+P09 Fopen C:\FS31F\FS31I.DAT ret=-33
+P10 Dgetpath C: "\FS31F"
+P11 Dgetpath D: "\FS31F"
+P12 Ddelete C:\FS31F ret=0
+P13 Ddelete D:\FS31F ret=0
+R2-DONE

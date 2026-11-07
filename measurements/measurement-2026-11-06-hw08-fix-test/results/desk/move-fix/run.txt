@@ -1,0 +1,9 @@
+kernel a2f4036e0d5397e6787788d12aa3e5c307daf876211b9ce0b60fd9b6cfbeae5d
+card before fbf5067950164ec037d9c1e22d28697001e481d32807657dd77bfe23f29304bc
+card after  eee8fcb1caa901f4c39a330470b61da3f09cd4dfdb67a5bdcc2c8ca3c46c82d9
+C:\COPYME.TXT sha256  missing bytes: 
+fsck C: exit 0
+D:\COPYME.TXT sha256 3eb5884e2d19f6e3   227500 bytes: 0000000 SOURCE-FROM-C-drive 0123456789abcdef0123456789abcdef
+fsck D: exit 0
+shots 4
+exception-panic-lines 0

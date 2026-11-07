@@ -1,0 +1,23 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps countfree16 --up`
+deps countfree16 --up (kinds asm,direct,layer,table,vector): 3 functions besides countfree16
+depth	function	layer	reached over	newtos	class
+0	countfree16	bdos	-	tos-api/src/bdos/fs/fat.rs@count_free_clusters	mapped
+1	xgetfree	bdos	xgetfree -> countfree16 [direct]	tos-api/src/bdos/fs/drive.rs@dfree	mapped
+2	osif	bdos	osif -> xgetfree [table funcs[0x36]]	tos-api/src/bdos/fs/file.rs@resolve tos-api/src/gemdos/console.rs@device_read tos-api/src/gemdos/console.rs@device_write tos-api/src/gemdos/console.rs@redirect_to_file tos-api/src/gemdos/mod.rs@dispatch tos-api/src/gemdos/mod.rs@dispatch_inner tos-api/src/gemdos/mod.rs@media_change_relog tos-api/src/gemdos/mod.rs@restartable tos-api/src/gemdos/mod.rs@run_call	mapped
+3	enter	bdos	enter -> osif [asm jsr]	tos-api/src/gemdos/mod.rs@dispatch	mapped
+
+table edges inside the set (1):
+funcs[0x36]	osif -> xgetfree	bdos/bdosmain.c:248
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (4 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bdos         4      4 100.0%      0   0.0%      0   0.0%
+total        4      4 100.0%      0   0.0%      0   0.0%
+touched layers: bdos (the layers of countfree16; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

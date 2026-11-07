@@ -1,0 +1,8 @@
+kernel fe0909debfbeabe8462d45eb810383d4b4a21935a558272607a15b77f2b3706f
+app FBENCH.NAP fab4e7b49bfae8725990de26ae55e12f010b87da06e30accf4b64a8c5d715c2f
+card before c42d052b5b3bec29bb83a896e7d9edc1c36c70a3a9d87b689320e3afd958d67f
+card after  1651478e94c57f10ac87d3fd72727f7dc1d7420940c8d93076a06fb7b7f9ff17
+C: at LBA 63, 130977 sectors
+fsck C: exit 0
+shots 10
+exception-panic-lines 0

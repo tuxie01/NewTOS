@@ -1,0 +1,36 @@
+** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.iT70PC/after.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+Warning: /RESULTS.PDF has too many clusters allocated (logical=0, physical=6144)
+Drop superfluous clusters?
+: no
+Warning: /P1.FBP starts with cross-linked cluster (6)
+Truncate?
+: no
+Warning: /P1.FBP: Cluster chain starting at 6 is cross-linked at cluster 6
+Truncate?
+: no
+Warning: /P2.FBP starts with cross-linked cluster (6)
+Truncate?
+: no
+Warning: /P2.FBP: Cluster chain starting at 6 is cross-linked at cluster 6
+Truncate?
+: no
+Warning: /P3.FBP starts with cross-linked cluster (6)
+Truncate?
+: no
+Warning: /P3.FBP: Cluster chain starting at 6 is cross-linked at cluster 6
+Truncate?
+: no
+Warning: /R1.FBP starts with cross-linked cluster (6)
+Truncate?
+: no
+Warning: /R1.FBP: Cluster chain starting at 6 is cross-linked at cluster 6
+Truncate?
+: no
+Warning: size of /R1.FBP is 5281, should at most be 0
+Truncate?
+: no
+** Phase 3 - Checking for Orphan Clusters
+Warning: 10 files, 65312 KiB free (32656 clusters)
+fsck_msdos exit 206

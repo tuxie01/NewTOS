@@ -1,0 +1,22 @@
+=== WFPROBE case n2: a file written and not closed yet, no fault
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+Fcreate=6 writes 1/1
+Fwrite 5000=5000 writes 2/9
+open: Fsfirst=0 size=0 writes 0/0
+open: Dfree free=32668 (before the file 32671) writes 2/2
+open: Fattrib get=0 writes 0/0
+open: second handle Fopen=7 writes 0/0
+open: second handle Fseek end=5000
+open: second handle Fread=5000 same=1 writes 0/0
+open: Fdatime set=0 writes 0/0
+open: Fdatime get on the second handle=0 1234 5678 writes 0/0
+Fclose of the second handle=0 writes 2/2
+then: Fsfirst=0 size=5000 writes 0/0
+Fwrite 3000=3000 writes 2/5
+Fclose=0 writes 5/5
+closed: Fsfirst=0 size=8000 time 1234 date 5678 writes 0/0
+overwrite 50 B at 100: Fwrite=50 writes 0/0
+overwrite: second handle Fread=50 same=1 writes 0/0
+overwrite: Fclose of the second handle=0 writes 1/1
+overwrite: Fclose=0 writes 0/0
+END

@@ -1,0 +1,8 @@
+ Volume in drive : is NTFS31     
+ Volume Serial Number is 4E54-3332
+Directory for ::/
+
+NEWDESK  INF       150 2026-10-17  12:00 
+        1 file                  150 bytes
+                         66 910 208 bytes free
+

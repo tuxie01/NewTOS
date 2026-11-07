@@ -1,0 +1,7 @@
+=== WFPROBE case n4: power failure with files not closed, no fault
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+Fcreate NEW.DAT=6 Fwrite=5281
+EXIST.DAT overwrite=100
+EXIST.DAT extend=3000
+OLD.DAT overwrite=700
+WFPROBE power off

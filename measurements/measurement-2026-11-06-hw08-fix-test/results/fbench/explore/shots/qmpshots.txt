@@ -1,0 +1,11 @@
+t0 = detection of '[inj] up:FBENCH armed' on the serial file
+00 t300 planned 1.500s request 1.500s done 1.511s ok
+01 t1000 planned 5.000s request 5.010s done 5.018s ok
+02 t2000 planned 10.000s request 10.010s done 10.018s ok
+03 t3000 planned 15.000s request 15.003s done 15.011s ok
+04 t4500 planned 22.500s request 22.510s done 22.526s ok
+05 t6000 planned 30.000s request 30.010s done 30.022s ok
+06 t9000 planned 45.000s request 45.000s done 45.009s ok
+07 t12000 planned 60.000s request 60.000s done 60.009s ok
+08 t18000 planned 90.000s request 90.010s done 90.018s ok
+09 t24000 planned 120.000s request 120.010s done 120.020s ok

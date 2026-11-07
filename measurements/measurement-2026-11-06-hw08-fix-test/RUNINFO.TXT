@@ -1,0 +1,176 @@
+HW08 fix acceptance -- TASK/HW08.md, fix 16bfa004 (+ 08dcfed2 record-only, + 5fb5f503 docs) against base e575a0b3, by the tester. Date 2026-11-06/07.
+No product code touched, nothing committed, no card, no Pi, no /Volumes/* access, no push. Main tree clean (git status: only this run dir untracked); main HEAD 5fb5f503.
+Base: e575a0b3 is docs-only on top of bdfa6799 (git diff bdfa6799 e575a0b3: TASK/ only), so base = bdfa6799 code. Fix 16bfa004 is the code commit, 08dcfed2 adds only the record
+of the Pi kernel (TASK/ + measurements/), 5fb5f503 is docs.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing, verbatim, in EVERY manifest of this run (189 manifests: results/**/card.img.manifest, test.img.manifest, checks/**): optional_missing none
+(the manifest of every booted image is copied beside its run; every one carries the host_clang line above).
+
+TREES  fresh `git clone --no-checkout` of the main repo into the session scratchpad + `git checkout <hash>` (so .git exists and the build stamp names the commit), references/ linked:
+  fix = 16bfa004, base = e575a0b3. Red tree = copy of fix with tos-api/src replaced by the base's (diff -r against base empty) and 2 lines of the test file adapted (see 1).
+  Kernels: all in analysis/kernels.sha256. Images/trees/targets are scratch and deleted at the end.
+
+RESULTS (verdicts in the report; here the evidence)
+
+1  HOST TESTS
+   cargo xtask test (main tree, HEAD 5fb5f503): rc 0, 196 "test result" lines, passed 2239, failed 0, ignored 1 = developer's 2239/0/1 (checks/xtask-test.txt).
+   fs31_two_drives 17, gemdos_fs_device_error 6, hw08_sd_diag 5, hw08_writeback 17, proc04_fdelete_open 9, all ok in that run.
+   The test changes of the fix commit (hw08_sd_diag: tuple 4->3 and "gave up" gone; proc04_fdelete_open: Fattrib-set as the flushing call, Dfree counts the dirty FAT) read as consequences of
+   the change, none removes a check.
+   hw08_writeback against tos-api/src of the BASE: the file as committed DOES NOT COMPILE there (rustc E0308 twice, lines 330 and 337: cache::writeback_stats() is a 4-tuple on the base,
+   a 3-tuple on the fix) -- analysis/red-unadapted.txt is the compile error of the unadapted file (rc 101, 0 tests run). With the two destructurings adapted to the base's 4-tuple
+   (scratch copy only; method: sed on the two lines) the 17 tests run: 14 FAILED, 3 ok, rc 101 (analysis/red-adapted.txt;
+   the unadapted error text is in analysis/red-unadapted.txt). Developer: 13 of 16 red, "17th test added with its fix" => 14 of 17: same. The 3 green are the ones
+   the developer names (second handle reads the cache, Dfree counts a dirty FAT, Pterm closes).
+
+2  BUILD / CLIPPY / IDENTITY / BOOT
+   Both boards: cargo xtask build-programs --board rpi4|qemu-virt, cargo xtask build --board rpi4 --release (no features, and --features sd-fault, and crash-walk,sd-fault) and
+   --board qemu-virt (dev) in BOTH trees: all rc 0 (checks/build-*.log).
+   Clippy (cargo clippy -p tos-api; cargo clippy -p kernel --release --features board-<b>), both boards, both trees: tos-api 73 warnings, kernel 121 warnings, identical for fix and base on
+   both boards; the sorted warning lines of fix and base are identical (analysis/w-*.txt, cmp: same, 73 and 194 lines); delta 0; no clippy line names emmc*.rs, cache.rs, file.rs, fat.rs,
+   drive.rs or gemdos/mod.rs. (Developer's 74/196 count differs in what is counted, not in the delta.)
+   Feature off, byte identity: the fix legitimately changes the kernel, so fix-vs-base identity is not a meaningful test. What the tool gives and I ran: fix tree with
+   kernel/src/drivers/bcm2711/emmc_fault.rs (the feature-gated file the fix extends: modes Prg, ReadErr) replaced by the base's, rpi4 release no features, SOURCE_DATE_EPOCH fixed,
+   versus the unmodified fix: cmp -l 0 bytes differ (both 1752de26...). So the feature-gated additions add nothing to the feature-off kernel. (There is no xtask command for it for this
+   fix; TOOL13's identity is per-run, the HW08-run script feature-identity.sh was not re-run.)
+   Hash: kernel8.img rpi4 --release --features crash-walk,sd-fault from a fresh clone at 16bfa004, built at another path:
+   39ab2a6a2058ba2dd965a684216336ae71fe55ad6d075eff768475d1f78eb868 = the hash in measurements/measurement-2026-11-06-hw08-fix-kernel/RUNINFO.TXT, EXACT (cmp against its kernel8.img: 0 bytes).
+   That the build is path-independent is shown by that (the FS31 test saw otherwise; here the stamp was real because the clone has .git).
+   The other recorded hashes: measurement-...-hw08-fix/kernel8.img 626dde56... differs from mine in 16 bytes (cmp -l), the commit stamp bdfa6799 vs 16bfa004; the case kernel
+   08013cb2... (scratch of the developer, tree dirty at bdfa6799) differs from my sd-fault build b8213ae6... in 16 bytes, same cause. The b8213ae6 hash is the one the
+   hw08-fix-kernel RUNINFO names for 16bfa004. Explained, nothing chased further.
+   Boot: rpi4 release no features (fix) to "[desk] desktop up (1 drives)", 0 exception/panic lines (checks/boot-fix-rpi4-rel). qemu-virt dev headless via cargo xtask run --board qemu-virt
+   --headless to "[desk] desktop up (0 drives)", 0 exception/panic (checks/boot-fix-virt/serial.txt). Both boards boot to the desktop in the 14 timing boots too (item 8), 0 exceptions.
+   NOT done: qemu-virt base boot, qemu-virt with sd-diag/sd-fault, rpi4 --features selftest-emmc compile (the developer says compiled; not re-run).
+
+3  INJECTED FAULTS, ALL CASES, BEFORE / AFTER / EMUTOS
+   method/cases.sh -> method/run-all.sh (the developer's, unchanged) -> tosdump/probes/run-wfprobe.sh; one boot and one fresh clone of the test image per case; kernels: after = fix
+   sd-fault build (b8213ae6...), before = base sd-fault build (20a70d2a...), emutos = pinned oracle (Hatari). Cases: after a1-a5 b1-b5 d1 o1 n1-n4 p1-p4 r1 t1 t2 u1-u6 w1 (30), before the 25
+   without p*/r1 (those need fault modes 8/9 that exist only after the fix), emutos all 30. fsck_msdos -n after every case (run-wfprobe.sh does it; results/*/*/fsck.txt).
+   results/compare.txt (method/compare.py) vs the developer's compare.txt: all rows of the B and A columns (steps, Dfree) and the card + fsck lines of B and A for every case are
+   IDENTICAL (258 comparable rows, 0 differences; E columns are mine, the developer had E only for some). So the whole table of RUNINFO 5 is reproduced by an independent run, on kernels built
+   from fresh clones.
+   After, all 30 cases: qemu "done" (n4 "poweroff" by design), 0 exception/panic lines each. fsck clean in 28; not clean: a1 and b4 (see below).
+   Statement "one card fault no longer blocks later saves": b3 (FAT writes fail, then the card is good) Fcreate -10 only while the fault lasts, R1-R4 ok, RESULTS.PDF 37156 B, fsck clean, Dfree
+   32637 as expected; b5 no Fdelete needed; u2/u3/w1 (formerly driver dead): R1-R4 ok.
+   Where it does NOT hold in full, each one:
+   a1, b4  data sector refused (Fwrite -10 reported): fsck_msdos -n warns "too many clusters allocated (logical=0, physical=32768)" (b4 also P1..P3 4096 each), Dfree 32640 / 32634 vs 32656:
+           the clusters of the failed file stay allocated, the file is 0 B. Reported to the app (-10), so not "without a message"; but the file system is not clean and the space is lost until a
+           fsck. Developer names it ("Nicht erledigt"); EmuTOS cross-links there (worse). Confirmed measured.
+   u4, u5, p2  (busy 2.2 s / 3.5 s / prg 2.6 s): a save started while the card is still busy gets Fcreate -2 (R1 for u4/p2, R1+R2 for u5), reported; the next ones are ok. "R1-R4 ok" holds only after the
+           busy ends. The code is -2 (EDRVNR) for timeouts, -10 (EWRITF) for refusals/CRC: set by the dispatcher rule "first device error of the call"; it matches the developer's EmuTOS column only
+           where the oracle hook can model it (refusal = Rwabs error). A real EmuTOS SD timeout is a re-init + E_CHNG (bios/sd.c:192-201), not measurable on Hatari (no SD) and not measured by
+           me; so "-2 is the right code" is checked against NewTOS's own design (block_error_code), not against the oracle.
+   a2, a5, b3, b5, u6, p3  the error comes at Fclose (-10 / -2), Fwrite returns full: as EmuTOS (a2: E Fwrite 32768,4388 Fclose -10 = A). The data is on the card afterwards (RESULTS.PDF 37156).
+   Fclose that fails frees the handle (EmuTOS keeps it) -- developer's named deviation (a); not driven by me beyond what the cases show.
+   Dcreate gives no rollback of its entry when the write-back fails (developer: not done); not driven by me.
+   Power failure before Fclose: see 4 (n4). That is a loss window, without message by nature, wider than on EmuTOS.
+   No case showed data lost without a reported code except n4's silently lost, never-flushed partial sector (4).
+
+4  ORACLE QUESTIONS (n1, n2, n3, n4, r1; results/emutos|before|after, results/n4, results/8k, results/counts-8k.txt)
+   n2 (file written, not closed)            EmuTOS             before             after (mine)
+     Fcreate commands/sectors                1/1                1/1                1/1
+     Fwrite 5000 B                           2/9                5/12               2/9           = EmuTOS
+     Fsfirst size while open                 0                  0                  0
+     Dfree, dirty FAT counted                32668, writes 2/2  32668, 0/0         32668, writes 2/2  = EmuTOS
+     Fdatime set                             0/0                1/1                0/0           = EmuTOS
+     second handle, overwrite                sees it            sees it            sees it
+     second handle, growing file             Fread 5000         0                  0             <- NOT EmuTOS, pre-existing, developer names it (own ticket)
+     after the 2nd handle's Fclose Fsfirst   5000               0                  0             <- same cause, also not EmuTOS (my observation, not in the developer's table)
+     Fclose of 2nd handle writes             2/2                0/0                2/2
+   n3 (child ends without Fclose, Pterm)     EmuTOS 8/15, 5281 B on the card, Fread same=1; before 9/16; after 8/15, CHILD.DAT 5281 B = EmuTOS' count and result.
+   r1 (FAT reads fail)                        EmuTOS and after: Dfree -11 under the fault, 0 free/0 total; with the fault gone 0, free 32671 total 32672: identical on both.
+   n4 (power failure, results/n4/, files copied off the card, bytes compared):
+                                              EmuTOS        before         after
+     NEW.DAT (never closed)                   0 B           0 B            0 B
+     EXIST.DAT length                         20000         20000          20000
+     EXIST.DAT[100:200] (100 B overwritten)   on the card   on the card    LOST (X*100 absent)  <- the developer's "dirty in one of 8 buffers; EmuTOS evicted"
+     OLD.DAT[512:1024] (whole sector)         on the card   on the card    on the card
+     OLD.DAT[1024:1212] (tail 188 B)          lost          on the card    lost
+     fsck_msdos -n                            clean         3 orphans, too many clusters   clean
+     = the developer's n4 table, reproduced byte for byte. What is new after the fix: an overwritten partial sector inside an existing file is lost with the power until Fclose,
+     an eviction or a flushing call (up to 8 per list instead of 2) -- not announced to anyone. Everything that had an Fclose is on the card.
+   Command counts per pattern (8-KiB clusters, 16-sector, as the user's cards; method/run-8k.sh): results/counts-8k.txt is IDENTICAL to the developer's counts-8k.txt (diff: only the
+   developer's header line). After == EmuTOS in the "all" column for every one of the 15 rows (e.g. 4 KiB x 100 KiB: 29 = 29, before 53; 32 KiB x 10 MiB: 334 = 334, before 972; whole file
+   10 MiB: 15 = 15). The split between Fwrite and Fclose differs from EmuTOS in some rows (e.g. 10 MiB / 32 KiB: 320 + 13 after, 328 + 5 EmuTOS; 10 KiB / 100 B: 12 + 11 vs 18 + 5) -- the
+   totals agree, the drive of the evictions (8 buffers vs 2) differs. fsck after the 8k runs: NewTOS before/after clean; the EmuTOS run (killed without shutdown) shows 4 warnings (its own dirty state).
+   A note on healthy-card write counts: the driver report at the end of the healthy n1 run: before write n 2929, after n 1347 (QEMU, 2 KiB clusters).
+
+5  REAL PROGRAM PATHS (test image / card clones; QEMU raspi4b; scripted IKBD injector; every run: fsck_msdos -n of the booted clone's partition(s) and the files read back)
+   Desktop copy and move C: -> D: (results/desk; mkcard3.sh = FS31's mkcard2.sh with a 227500-byte C:\COPYME.TXT instead of 19 bytes, D:\COPYME.TXT 28 B, name conflict -> OK/replace;
+     gesture = FS31's mouse-copy.txt / mouse-move.txt (Ctrl at the drop = move); screendump viewed):
+       fix  copy: D:\COPYME.TXT 227500 B sha 3eb5884e2d19f6e3 (= the generated source, computed on the host), C: intact 227500 B same sha; fsck C: exit 0, D: exit 0.
+       fix  move: D:\COPYME.TXT 227500 B same sha, C:\COPYME.TXT gone (mdir), fsck both exit 0.
+       base copy and move: the same results.   (FS31 itself was in base: the cross-drive delete fix.)
+     Method note: my first pass reused one scratch dir for the four runs, so after-*.TXT of the later runs were stale (mcopy -n); mdir showed the right directory. Redone with a fresh scratch
+     per run; those are the results/desk dirs of this run.
+   NEWDESK.INF save (Options > Save desktop..., mouse via menu hover and click; results/inf): C:\NEWDESK.INF rewritten 150 -> 613 B, fix and base byte for byte equal (cmp), fsck C:/D: exit 0, 5 shots.
+   Fbench (the user's /Volumes/Daten/Development/fbench/FBENCH.NAP, sha fab4e7b49bfae872..., read only; results/fbench): ^A run all (about 100 s in QEMU), ^S + Return (MACHINE.FBP),
+     ^E + Return (FBENCH.TXT), File > Results report (PDF) + Return (the real file selector, shots viewed). fix: MACHINE.FBP 5297, FBENCH.TXT 7594, RESULTS.PDF 37096 (starts %PDF-1.4, ends
+     startxref 36698 / %%EOF; larger than the 32768-byte stdio buffer that was cut on the Pi); base: 5297 / 7594 / 37090, %%EOF; fsck C: exit 0 both, 0 exception lines. The contents differ run to
+     run (benchmark numbers), so no byte compare; sizes and %%EOF are the check. No "errors" alert in the final screendump.
+   QED (sdk/apps/qed/build/QED.NAP + qed.rsc beside it on C:, results/qed): ^N, typed 60 lines "abcdefghij klmnopqrst", ^S, name QT.TXT into the file selector, Return: QT.TXT 1380 B =
+     60 x "abcdefghij klmnopqrst\r\n" (compared on the host, True), sha f77d67666c122209 on fix AND base; fsck C: exit 0; 0 exceptions. (First attempts: without qed.rsc QED ends at once; without ^N
+     the keys have no window; both mine, fixed in the method, the dirs of those attempts removed.)
+   Program ends without Fclose: wfprobe n3 (a Pexec child, Pterm without Fclose) as in 4: file complete on the card, same command count as EmuTOS. NOT driven: a real app ending without
+     Fclose, an app killed by an exception with open files.
+   NOT driven: X-Shot, TeraDesk copy, desktop copy within one drive / folders / many files, QED on an existing large file, Fbench "Compare folder".
+
+6  REGRESSION (base e575a0b3 against fix 16bfa004; method/regress.sh, regress2.sh; results/tables, results/gui)
+   Tables, cargo xtask tosdump ... --tree <clone>: vdi-all (vs EMUTOS-1a7484ab-VDI-all-falcontc.BIN): VDI.BIN base vs fix differ in exactly 4 bytes, offsets 13-16 = the 8-character commit stamp
+     (e575a0b3 / 16bfa004, cmp -l); tosdiff vs the oracle 0 of 182 on both. AES r2, r3, r4: AES.BIN the same 4 stamp bytes only (no address-cell difference at all, the fix's kernel growth
+     does not move the dumper's addresses); tosdiff vs the oracle references r2 78/78 and r3 39/39 differ on BOTH base and fix (standing difference, FS31 test saw the same r2; not
+     looked into, out of scope); r4 has no reference.
+   shprobe: 12 shots, 12/12 PNG byte-identical base/fix; shprobe-desk 2/2 identical. Desktop + injector scene (V44's desk-mouse.txt / desk-NEWDESK.INF / desk-shots.txt, 40 files on C:): 640x480
+     11/11 identical, 1920x1080 11/11 identical, 0 exception lines; desk480 02-dialog and desk1080 04-window-drag viewed (desktop, About box, window, no garbling).
+   slprobe 155 shots, two runs per kernel (timing noise separated by same-kernel pairs): base run1 vs base run2 differ in 152, 044, 067, 098 (the same kernel!); fix run1 vs fix run2 differ
+     in 148; base run1 vs fix run1 148, 044, 067, 098; run2 vs run2 152; cross pairs 044/067/098 and 148/152. All differing frames are "held1" frames of the page-scroll gestures (V44 test's known
+     noise set: 044 067 071 094 098 121 125 148 152). Base alone already varies as much as base vs fix: no fix-specific difference found. (I did not open the differing PNGs; the evidence is
+     the same-kernel variation.)
+   Fdelete controls: proc04_fdelete_open 9/9 (host, in item 1). XDPROBE (FS31, tosdump/probes/run-xdprobe.sh): oracle vs fix: diff of XDPROBE.LOG EMPTY (96 lines), oracle vs base EMPTY, oracle
+     rerun vs oracle EMPTY; fsck_msdos -n exit 0 on C: (LBA 63) and D: (LBA 131103) after both newtos runs.
+   Wiring note: my first regress.sh left $SP empty in two kernel paths ("kernel not found", shprobe-desk and xdprobe newtos); regress2.sh redid exactly those two with the right path.
+   Tests that rely on an immediate write: none of the programs above did anything unusual -- every probe read its files back through GEMDOS (which sees the cache) and the card state was
+     read from the image after killing QEMU (no shutdown), which is the case where a late write would show: n3/n4/8k/desk/Fbench/QED all show their data except n4's unclosed overwrite.
+   NOT run: vdi-r3 / v18 / raster tables, 240-line resolution, boot-console AUTO scenes (not in the list of the task).
+
+7  RETEST SET (cargo xtask deps <fn> --up, checks/deps-*-up.txt)
+   flush --up 386 functions, ixwrite --up 335, countfree16 --up 4. Touched layer by the tool: bdos only; unmapped there: bdos_trap2 (bdos/rwa.S) in flush and ixwrite sets, 0 in countfree16.
+   Other layers of the flush set, unmapped: bios 8 (balloc_stram, bios_init, biosmain, blkdev_init, bus_init, panic, run_auto_program, screen_init_address; the developer named four "and the like"),
+   aes 6 (ap_tplay, ap_trecd, eralert, hctl_msg, iasync, w_redraw_desktop), include 15 (the dos_* wrappers), desk 166. The kernel driver (emmc.rs, emmc_xfer.rs, emmc_fault.rs) has no EmuTOS
+   counterpart in the graph by design; its verification is the injected cases (3), the host unit tests in emmc_xfer.rs/emmc.rs (kernel unit tests are not in cargo xtask test: the kernel cannot be
+   linked for the host) and item 8 -- the kernel's own #[cfg(test)] tests were NOT run by me.
+   Not covered by anything I ran: the desk layer (166 unmapped; only copy/move/INF-save driven), TeraDesk, HypView, X-Shot.
+
+8  DRIVER CHANGE OUTSIDE THE BRIEF (kernel/src/drivers/bcm2711/emmc.rs, emmc_xfer.rs; diff read in full, then measured)
+   What it does (read): (a) a data command that gets no answer (unanswered CMD24/25/17/18) now takes BOTH software resets (Phase::resets(status, data_cmd), DATA_CMD_ARMED set in command()
+   only for CMD_ISDATA commands, cleared on Command Complete); (b) after an error the recovery asks CMD13 (card_state) and sends CMD12 only when the card is in rcv/data; (c) the next data
+   command waits in wait_card_ready, but ONLY if CARD_NOT_READY was set by a recovery -- at most WRITE_BUSY_MS (1000 ms); (d) ILLEGAL_COMMAND in an R1 of a data command no longer counts as refusal.
+   Boot: init() runs once (kernel/src/lib.rs:420, idempotent, no re-init path; grep: no other caller than the selftest). Both new statics start false. During identification SDCARD.ready is false:
+     recover_inner then keeps the old `else if abort { abort_transaction }` branch; the only change at boot is for a failing data command during identification (ACMD51): both resets instead of
+     the CMD reset -- more thorough, never less. Measured: the [emmc] lines of the serial log of base and fix are identical in 3 compared rounds (rounds 0, 3, 6), "M1 during identification: 2
+     error(s), 0 timeout(s), 2 recovery(ies) CTO=2" on both = the QEMU baseline, unchanged by the fix.
+   Boot time, QEMU raspi4b, kernels alternating, same card, 7 rounds each (method/boottime.py, results/boottime): base min 15.14 median 15.17 max 15.18 s, fix min 15.14 median 15.18 max 15.19 s.
+     HONEST CAVEAT: the figure is dominated by a fixed boot-screen delay (every run 15.1-15.2 s), so it cannot resolve an SD-init difference of a few ms; what resolves it is the identical
+     emmc log and the identical recovery counters, not the wall clock.
+   Card without errors: the sd-diag line at the end of the healthy n1 run (about 1350 writes after / 2930 before): "errors 2 timeouts 0 recover 2 nonrecover 0 refused 0" on both = the two boot
+     recoveries only; wait_card_ready and the CMD13 path never ran (CARD_NOT_READY false). The only per-command cost on the healthy path is two relaxed atomic stores in command().
+   Media change: the driver has no card-detect and no re-init after boot (see above), a card swapped under a running system is not noticed by this driver before or after the fix; so there is
+     nothing for the new flags to go stale across. (Not verifiable in QEMU either: no hot-swap on this path; I did not try a QMP change-medium.)
+   Failure paths (QEMU injection, the developer's modes, reproduced in 3): t1, t2, d1 (transfer running: CMD13 rcv, CMD12 + resets): R1-R4 ok; u2-u6, w1 (formerly driver dead): R1-R4 ok after the
+     busy; p1-p4 (card in prg simulated): p1 one -2 then ok, p2 2.6 s -2,-2 then ok, p3 FAT: Fclose -2, file complete, p4 sustained (all four saves -2 while armed, R1-R4 ok). Worst case per access
+     with a card that stays in prg: wait_card_ready up to 1000 ms + the failed command: a dead/stuck card costs about WRITE_BUSY_MS (+100 ms RECOVERY_MS in w1) per access, bounded, no hang (w1 runs
+     to its end). That is the developer's "bei toter Karte kostet jeder Zugriff die Wartezeit".
+   Not verifiable here: whether the resets work on EMMC2 for a real card, a real card's reply to CMD13 in prg/tran, anything on silicon (HW checklist; the developer's Pi plan PI-RUN.TXT is the way).
+   One thing that could degrade, found while reading: ILLEGAL_COMMAND is now ignored for EVERY data command, not only the one that followed our own abort -- a command that is really illegal in
+     the card's state goes unanswered per the spec (SD Phys 4.6.1) and ends as a timeout instead of an early refusal; the outcome (error to the app) is the same, the delay is up to one command
+     timeout. Not measurable in QEMU; named, not measured.
+
+OUT-OF-SCOPE OBSERVATIONS
+  The healthy n1 run in QEMU reports "write ... max 1881 ms" (before) / "2002.9 ms" (after) for a single command although failed 0 and WRITE_BUSY_MS is 1000 ms: a host stall (APFS clone, 8 KiB test
+    disk) shows up as latency; same on both sides, not a failure, not chased.
+  AES r2/r3 vs the oracle references differ in all cases on base and fix alike (78/78, 39/39).
+
+METHOD (this run dir): method/builds.sh, cases.sh, run-all.sh, compare.py, counts.py, run-8k.sh, boot-board.sh, boottime.py, regress.sh, regress2.sh, desk-inj.sh, boot-console.sh (copied, unused),
+  desk-run3.sh / mkcard3.sh / desk-run4.sh (FS31's, adapted), arm-build.sh, arm-build2.sh, gen-fbench.py, gen-qed.py, gen-inf.py, app-run.sh, key/mouse/shot scripts. Scratch trees, targets and images in the
+  session scratchpad, deleted at the end (kernel hashes: analysis/kernels.sha256, run.txt of each run).

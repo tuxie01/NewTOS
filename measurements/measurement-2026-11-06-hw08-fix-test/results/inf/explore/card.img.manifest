@@ -1,0 +1,13 @@
+# NewTOS SD image manifest v1 -- written by measurements/measurement-2026-11-06-hw08-fix-test/method/mkcard3.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/dcx/card.img
+image_sha256 fbf5067950164ec037d9c1e22d28697001e481d32807657dd77bfe23f29304bc
+size_mib 256
+created 2026-11-07T00:01:25Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 3eb5884e2d19f6e3e8aeef21728a269d2b69ee9652ee36c35b38dabfce18cf77 227500 C:\COPYME.TXT
+file 6443262507e77522b765a23b536994e14efd1ff5f1985619ba95e04e1ad5e750 150 C:\NEWDESK.INF
+file 13249f23f2bbc7a612137b43d1fb3e62cbd324c565bca9596bbebad0067de137 28 D:\COPYME.TXT
+file 6443262507e77522b765a23b536994e14efd1ff5f1985619ba95e04e1ad5e750 150 D:\NEWDESK.INF

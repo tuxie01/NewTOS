@@ -1,0 +1,13 @@
+ Volume in drive : is NTCARD     
+ Volume Serial Number is C298-0820
+Directory for ::/
+
+CLIPBRD      <DIR>     2026-11-06   0:00 
+QT       TXT      1380 2026-11-06   0:02 
+SPOTLI~3     <DIR>     2026-11-07   0:54  .Spotlight-V100
+QED      NAP    544280 2026-10-17  11:00 
+qed      rsc     41378 2026-10-17  11:00 
+NEWDESK  INF        26 2026-10-17  11:00 
+        6 files             587 064 bytes
+                         66 306 048 bytes free
+

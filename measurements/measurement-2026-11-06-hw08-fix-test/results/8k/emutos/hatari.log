@@ -1,0 +1,65 @@
+INFO : Hatari v2.6.1, compiled on:  Aug 15 2025, 14:15:19
+INFO : IPF : capsimage library version release=5 revision=1
+INFO : Mounting IDE hard drive image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.0V3H4h/oracle/disk.img
+INFO : GEMDOS HDD emulation, D: <-> /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.0V3H4h/oracle/hd.
+ERROR: Microphone: SDL_OpenAudioDevice failed.
+INFO : NVRAM not found at '/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.0V3H4h/oracle/home/hatari.nvram'
+WARN : Bus Error reading at address $20fffff, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $fffffc21, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6c4710, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $5d1234, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $6d3148, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $400000, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+WARN : Bus Error reading at address $d003c3, PC=$e00d96 addr_e3=e00d96 op_e3=4a10
+INFO : Strange screen size 16x480 -> aspect corrected by 32x1!
+INFO : OS clock ticks / second: 100
+
+
+
+
+
+                                                         
+                                                         
+                                                         
+                                                         
+                                                         
+                    ________________________________________
+
+                    EmuTOS Version:     20260414 
+                    CPU-Typ:            M68030 
+                    Rechner:            Atari Falcon 
+                    ST-RAM:             4 MB 
+                    Alt-RAM:            16 MB 
+                    GEMDOS-Laufwerke:   CD 
+                    Boot-Zeit:          2026/11/07 00:24:08 
+                    ________________________________________
+
+                    Halte <Strg> = ohne AUTO/ACC
+                    Halte <Alt> = keine Harddisk
+                    DrUcke 'X' um von Laufwerk X: zu booten
+                    DrUcke <Esc> fUr die Textkonsole
+
+                       FUr Pause <Shift> gedrUckt halten    
+
+
+=== WFPROBE case n1: writes per Fwrite pattern, no fault
+C: partition at 0, FATs at 1 and 33, root at 65, data at 97
+pat total    10240 step    100: Fcreate=6 writes 1/1 Fwrite x103 last=40 writes 18/18 Fclose=0 writes 5/5
+pat total    10240 step    512: Fcreate=6 writes 1/1 Fwrite x20 last=512 writes 20/20 Fclose=0 writes 3/3
+pat total   102400 step    512: Fcreate=6 writes 1/1 Fwrite x200 last=512 writes 200/200 Fclose=0 writes 3/3
+pat total    10240 step   4096: Fcreate=6 writes 1/1 Fwrite x3 last=2048 writes 3/20 Fclose=0 writes 3/3
+pat total   102400 step   4096: Fcreate=6 writes 1/1 Fwrite x25 last=4096 writes 25/200 Fclose=0 writes 3/3
+pat total  1048576 step   4096: Fcreate=6 writes 1/1 Fwrite x256 last=4096 writes 256/2048 Fclose=0 writes 3/3
+pat total   102400 step   1024: Fcreate=6 writes 1/1 Fwrite x100 last=1024 writes 100/200 Fclose=0 writes 3/3
+pat total   102400 step  32768: Fcreate=6 writes 1/1 Fwrite x4 last=4096 writes 4/200 Fclose=0 writes 3/3
+pat total  1048576 step  32768: Fcreate=6 writes 1/1 Fwrite x32 last=32768 writes 32/2048 Fclose=0 writes 3/3
+pat total 10485760 step  32768: Fcreate=6 writes 1/1 Fwrite x320 last=32768 writes 328/20488 Fclose=0 writes 5/5
+pat total    10240 step  10240: Fcreate=6 writes 1/1 Fwrite x1 last=10240 writes 2/20 Fclose=0 writes 3/3
+pat total   102400 step 102400: Fcreate=6 writes 1/1 Fwrite x1 last=102400 writes 2/200 Fclose=0 writes 3/3
+pat total  1048576 step 1048576: Fcreate=6 writes 1/1 Fwrite x1 last=1048576 writes 1/2048 Fclose=0 writes 3/3
+pat total 10485760 step 10485760: Fcreate=6 writes 1/1 Fwrite x1 last=10485760 writes 9/20488 Fclose=0 writes 5/5
+overwrite 64 x 100 B, 1 KiB apart: last Fwrite=100 writes 62/62 Fclose=0 writes 2/2
+END
+log Fwrite done
+WFPROBE done

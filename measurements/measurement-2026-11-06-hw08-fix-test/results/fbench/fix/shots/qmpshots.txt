@@ -1,0 +1,10 @@
+t0 = detection of '[inj] up:FBENCH armed' on the serial file
+00 fsel-profile planned 153.000s request 153.001s done 153.011s ok
+01 after-profile planned 160.000s request 160.004s done 160.013s ok
+02 fsel-export planned 168.000s request 168.002s done 168.017s ok
+03 after-export planned 175.000s request 175.000s done 175.009s ok
+04 file-menu-open planned 181.015s request 181.025s done 181.034s ok
+05 item3-hover planned 182.680s request 182.690s done 182.698s ok
+06 fsel-pdf planned 186.240s request 186.250s done 186.266s ok
+07 after-pdf planned 195.740s request 195.750s done 195.759s ok
+08 end planned 208.240s request 208.241s done 208.249s ok

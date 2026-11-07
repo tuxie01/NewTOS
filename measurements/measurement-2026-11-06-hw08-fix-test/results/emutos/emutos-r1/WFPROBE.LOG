@@ -1,0 +1,7 @@
+=== WFPROBE case r1: FAT reads fail: Dfree
+C: partition at 0, FATs at 1 and 129, root at 257, data at 289
+arm: hdv_rw hook answers -11 on sectors 1..257 count 0
+Dfree under the fault=-11 free=0 total=0
+disarm: fired 1
+Dfree with the fault gone=0 free=32671 total=32672
+END

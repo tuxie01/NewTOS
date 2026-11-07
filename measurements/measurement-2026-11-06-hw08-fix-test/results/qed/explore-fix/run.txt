@@ -1,0 +1,10 @@
+kernel 8c5f10baeeb36cc63c49a0073b12957ca395281e9285e914f3f14af224a1e9fd
+app QED.NAP 274986f02cecb77c49a9ed523008473b25e16b672452cb641b1b08e0e73fd56f
+card before 0c92174cf25c765a0fdbba49a8ef388dd71c60e98cbb7ba28374b3c05f900a6a
+card after  8f96a7d17d75d32f4a2f7f453b3b37bf75a960a0809c907b2ecd9fbad7486631
+C: at LBA 63, 130977 sectors
+fsck C: exit 0
+qed.rsc    41378 30ac6bf24a28ce2c
+QT.TXT       69 241bef940a9036d7
+shots 6
+exception-panic-lines 0

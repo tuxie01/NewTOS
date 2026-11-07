@@ -1,0 +1,15 @@
+** /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/wf/wfprobe.uPKk8k/after.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+Warning: /OVER.DAT starts with free cluster
+Truncate?
+: no
+Warning: /OVER.DAT: Cluster chain starting at 3 ends with cluster marked free
+Truncate?
+: no
+Warning: size of /OVER.DAT is 1048576, should at most be 2048
+Truncate?
+: no
+** Phase 3 - Checking for Orphan Clusters
+Warning: 2 files, 65340 KiB free (32670 clusters)
+fsck_msdos exit 206

@@ -1,0 +1,12 @@
+ Volume in drive : is NTTESTDISK 
+ Volume Serial Number is 4E54-5444
+Directory for ::/
+
+NEWDESK  INF        30 2026-10-17  12:00 
+BASE     DAT      5281 2026-11-06   0:00 
+R2       FBP      5281 2026-11-06   0:00 
+R3       FBP      5281 2026-11-06   0:00 
+R4       FBP      5281 2026-11-06   0:00 
+        5 files              21 154 bytes
+                         66 885 632 bytes free
+

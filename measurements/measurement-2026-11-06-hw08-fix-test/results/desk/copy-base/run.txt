@@ -1,0 +1,9 @@
+kernel 2f0d51660d5c90df2cc1cf9e13791132578b36f564da3d28989c73914bf87cd0
+card before fbf5067950164ec037d9c1e22d28697001e481d32807657dd77bfe23f29304bc
+card after  606d2812e1c6ae881b2adc52d6d11aa0d3bb9350e4dff35c84ad6012cfca2d40
+C:\COPYME.TXT sha256 3eb5884e2d19f6e3   227500 bytes: 0000000 SOURCE-FROM-C-drive 0123456789abcdef0123456789abcdef
+fsck C: exit 0
+D:\COPYME.TXT sha256 3eb5884e2d19f6e3   227500 bytes: 0000000 SOURCE-FROM-C-drive 0123456789abcdef0123456789abcdef
+fsck D: exit 0
+shots 4
+exception-panic-lines 0

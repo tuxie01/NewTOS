@@ -1,0 +1,11 @@
+kernel c732b8de22799d2f708423066ac1502ac1b1a898b32f6e905a93353221b41108
+app FBENCH.NAP fab4e7b49bfae8725990de26ae55e12f010b87da06e30accf4b64a8c5d715c2f
+card before 4fbbce061e0405ada983128212272a912c007fbf155c8c7dff41b6f76ad5714b
+card after  6d51ca17df0db2199f2db8fb321aa502ec01f7313270ef7df2e8518508c526d9
+C: at LBA 63, 130977 sectors
+fsck C: exit 0
+FBENCH.TXT     7594 a59e1a44d9da9f78
+MACHINE.FBP     5297 4f28e86669add9f0
+RESULTS.PDF    37090 489fdd8deb2c31ae
+shots 9
+exception-panic-lines 0

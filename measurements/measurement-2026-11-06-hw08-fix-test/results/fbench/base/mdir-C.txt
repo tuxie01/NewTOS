@@ -1,0 +1,13 @@
+ Volume in drive : is NTCARD     
+ Volume Serial Number is 8A80-0817
+Directory for ::/
+
+MACHINE  FBP      5297 2026-11-06   0:02 
+FBENCH   TXT      7594 2026-11-06   0:03 
+SPOTLI~3     <DIR>     2026-11-07   0:45  .Spotlight-V100
+FBENCH   NAP    356312 2026-10-17  11:00 
+NEWDESK  INF        29 2026-10-17  11:00 
+RESULTS  PDF     37090 2026-11-06   0:03 
+        6 files             406 322 bytes
+                         66 488 320 bytes free
+

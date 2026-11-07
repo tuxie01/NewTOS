@@ -1,0 +1,10 @@
+ Volume in drive : is NTCARD     
+ Volume Serial Number is 3A83-080F
+Directory for ::/
+
+SPOTLI~3     <DIR>     2026-11-07   0:37  .Spotlight-V100
+FBENCH   NAP    356312 2026-10-17  11:00 
+NEWDESK  INF        29 2026-10-17  11:00 
+        3 files             356 341 bytes
+                         66 541 568 bytes free
+
