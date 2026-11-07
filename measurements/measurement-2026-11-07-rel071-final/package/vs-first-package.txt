@@ -1,0 +1,4 @@
+Files rel071/NewTOS-0.7.1/KARTE/APPS/HYPVIEW/hyp_view.rsc and rel071-b/NewTOS-0.7.1/KARTE/APPS/HYPVIEW/hyp_view.rsc differ
+Files rel071/NewTOS-0.7.1/KARTE/kernel8.img and rel071-b/NewTOS-0.7.1/KARTE/kernel8.img differ
+Files rel071/NewTOS-0.7.1/LIESMICH.TXT and rel071-b/NewTOS-0.7.1/LIESMICH.TXT differ
+Files rel071/NewTOS-0.7.1/README.TXT and rel071-b/NewTOS-0.7.1/README.TXT differ

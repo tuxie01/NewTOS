@@ -1,0 +1,39 @@
+measurement-2026-11-07-rel071-final -- REL071: the NewTOS 0.7.1 package for the user's Pi acceptance
+=====================================================================================================
+Lead, TASK/REL071, 2026-11-07 (host clock CET). HEAD 189401b2 (189401b2712aa7a88a2b97ba7ecd5e47ccee1b49),
+tree clean. No tag, no push, no GitHub, no SD card, no Pi.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+WHAT / WHY
+  Second package run of 0.7.1. The first one (measurements/measurement-2026-11-07-rel071-package/RUNINFO.TXT,
+  from 3e825c13) predates A141 B2 (HypView icons recoloured at build time, 857cf10d, tested
+  measurements/measurement-2026-11-07-a141-test/RUNINFO.TXT) and the release texts sorted by layer
+  (OS / SDK / included programs, 8822a1c1, user 2026-11-07). This ZIP is the one for the Pi acceptance.
+
+HOW
+  method/package.sh: one call of tools/release/package-release.sh (committed, sha256 in package/CHECKS.TXT),
+  KERNEL_FEATURES=crash-walk, previous release = the v0.7 GitHub asset NewTOS-0.7.zip,
+  sha256 a51913942d7c8f10427e5cf5e8ce001fc4514f744a98265457e5245a8ecbbbba.
+  NAMES_REMOVED none, NAMES_ADDED none (package/names.diff empty).
+
+RESULT
+  Run ended "done:", exit 0; every check PASS (package/CHECKS.TXT).
+  ZIP (scratch, not committed; unpacked folder NewTOS-0.7.1/ beside it):
+    /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/88778a96-021e-4f4b-a527-686b673e35f1/scratchpad/rel071-b/NewTOS-0.7.1.zip
+    sha256 4fa38e9cd3fe7b012fed7db84af480582d0d1de7a00267d3c10c1817fa4a3511
+    6632688 bytes, 70 entries
+  kernel8.img sha256 b0543dd4837cb3a5c260d393fe78cdea4172e6ab858d9730a90fd218565626b4 (crash-walk, no sd-fault)
+  hyp_view.rsc sha256 1d1186e81a951c56f819ff4e19c1305d3a7e46f7557545275bdba25f7b847c60, equal to the A141 test run.
+  Against the first package (package/vs-first-package.txt): exactly hyp_view.rsc, kernel8.img (build
+  revision in the image), README.TXT, LIESMICH.TXT differ; all other files equal.
+
+  pi-test/ beside the ZIP (NOT in the ZIP), copied unchanged from the first run, built from 3e825c13; kernel
+  sources unchanged since (git diff 3e825c13..189401b2 -- kernel tos-api tos-types is empty), only the build
+  revision shown differs:
+    kernel8-sd-fault.img  ccd73cc4d7ef6685c00eec04e05baafc4b9d181be7086755f2ecc492a8a59964  (crash-walk,sd-fault)
+    WFPROBE.NCP           cec531744b6eeea06bb82f2c6a5674bd4350da6d4d768ccb97400cd0cb6e6d63
+  The sd-fault check (release kernel answers -32, test kernel arms) is in the first run's sdfault/.
+
+OPEN
+  Pi acceptance by the user from this ZIP (TASK/REL071.md), then push / tag / release / issue answers only on
+  the user's go.

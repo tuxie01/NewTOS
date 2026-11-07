@@ -1,0 +1,56 @@
+path	sha256	bytes	source
+NewTOS-0.7.1/KARTE/start4.elf	77260733037721d20209325b01b1fbc167f0bef387c18888b07bd57e06e7ce26	2303680	previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware
+NewTOS-0.7.1/KARTE/fixup4.dat	80fde48a87ec7ee94e150680b754db53e9800887694e58299c65630c952b5fd9	5498	previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware
+NewTOS-0.7.1/KARTE/bcm2711-rpi-4-b.dtb	75761b73c284e26623e4d1624bff13e67bce2ae620880efd81d6571a3739fcfb	56407	previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware
+NewTOS-0.7.1/LICENCE.broadcom	c7283ff51f863d93a275c66e3b4cb08021a5dd4d8c1e7acc47d872fbe52d3d6b	1594	previous release NewTOS-0.7 (no source in this repository): Raspberry Pi firmware licence
+NewTOS-0.7.1/KARTE/config.txt	99736bd98554cd0358371a6e2397475f657b8f3b98ecc057bd616c570b1f89b0	2844	repo 189401b2 boot/rpi4/config.txt
+NewTOS-0.7.1/KARTE/kernel8.img	b0543dd4837cb3a5c260d393fe78cdea4172e6ab858d9730a90fd218565626b4	1550568	repo 189401b2 cargo xtask build --board rpi4 --release --features crash-walk
+NewTOS-0.7.1/KARTE/NEWDESK.INF	8ae4d27dcddf45ae364344f25014d5856523b3be482fc7c31732c4a045a0e9dc	675	previous release NewTOS-0.7 (no source in this repository): tester desktop configuration
+NewTOS-0.7.1/KARTE/TERADESK.INF	f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5	3058	repo 189401b2 tools/make-sd-image.sh (TERADESK.INF heredoc)
+NewTOS-0.7.1/KARTE/KEYBOARD.KBD	697066cb49277ab5cf98375d04bc9e9b76cbf4a679c04cdc23b4e46dafbde799	409	repo 189401b2 keyboards/german.kbd (= tools/mkkbd.py de)
+NewTOS-0.7.1/KARTE/GEMSYS/RSC/GEM.RSC	2d1b1b22e9779c151160063115d1e204ad2059d0cd56668d94597b3eca94f4de	5047	repo 189401b2 tos-api/src/aes/gem_fsel.nrsc (= tools/mkrsc.py convert references/emutos/aes/gem.rsc)
+NewTOS-0.7.1/KARTE/GEMSYS/RSC/qed.rsc	30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79	41378	repo 189401b2 sdk/apps/build-qed.sh
+NewTOS-0.7.1/KARTE/ACC/SYSACC.NAC	812ddd574dda3f854ad5d11274abf6741dea23c8231163a11b49dbdca85602d6	38688	repo 189401b2 sdk/build.sh sdk/examples/sysacc.c
+NewTOS-0.7.1/KARTE/APPS/DOOM/DOOM.NAP	86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132	790816	repo 189401b2 sdk/apps/build-doom.sh
+NewTOS-0.7.1/KARTE/APPS/DOOM/DOOM.NTP	86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132	790816	repo 189401b2 sdk/apps/build-doom.sh (same program as DOOM.NAP, .NTP = asks for parameters)
+NewTOS-0.7.1/KARTE/APPS/DOOM/DOOM1.WAD	1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771	4196020	previous release NewTOS-0.7 (no source in this repository): id Software shareware WAD
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ZVIEW.NAP	38444d741a1db7f68d62aa2e05e6a3d8555f41bd10ebefb4b2224004f62e4d9d	522592	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ZVIEW.RSC	7252fc16fb320c6a8dc778f1a226c5ce7d2763b351a0fb1c4f63c193b09a635b	21606	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ZVIEW.INF	dbc32da47a6516d52a0803f98c2fd163c44d09edc145d17bc4851c04e3ed7d72	328	previous release NewTOS-0.7 (no source in this repository): zView settings
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ZVIEW.HYP	90a11ec9d36f2fe2b88a2477a65bd61f13210a768fee0110dd402cc35385f14a	247856	repo 189401b2 sdk/zview/z-tools-04805b7.tar.xz zview/_dist/doc/zView.hyp
+NewTOS-0.7.1/KARTE/APPS/QED/QED.NAP	ed05b558094f364e8876541982a595d90dbcadc6b007c4409948a1a1d0e58a1e	544280	repo 189401b2 sdk/apps/build-qed.sh
+NewTOS-0.7.1/KARTE/APPS/QED/qed.rsc	30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79	41378	repo 189401b2 sdk/apps/build-qed.sh
+NewTOS-0.7.1/KARTE/APPS/QED/CONFIG.TXT	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	0	previous release NewTOS-0.7 (no source in this repository): empty file
+NewTOS-0.7.1/KARTE/APPS/QED/QED.HYP	dab1d3cbcb34379ff600bde885c68dfd53fc61e3db6005eddb5eb56c517e0d82	43102	previous release NewTOS-0.7 (no source in this repository): QED hypertext (FreeMiNT 1.19 distribution)
+NewTOS-0.7.1/KARTE/APPS/COREMARK/CORE.NCP	5727171f7a4158d59b5850348ddfb679935ae315b357cfb95fd3bf54e1bf22f5	158224	repo 189401b2 sdk/apps/build-coremark.sh
+NewTOS-0.7.1/KARTE/APPS/COREMARK/COREVAL.NCP	6a4c57bca5c1623864f4ef74ec01ed1042f16342c8cdd855d265ee007e5a0223	158224	repo 189401b2 sdk/apps/build-coremark.sh
+NewTOS-0.7.1/KARTE/APPS/TERADESK/DESKTOP.NAP	94b1439a395cac5c5e629ebde924f8d83a11cb042e2c426b00bf2d3c82b3dfc8	353312	repo 189401b2 sdk/apps/build-teradesk.sh
+NewTOS-0.7.1/KARTE/APPS/TERADESK/desktop.rsc	409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08	39278	repo 189401b2 sdk/apps/build-teradesk.sh
+NewTOS-0.7.1/KARTE/APPS/TERADESK/icons.rsc	8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75	13284	repo 189401b2 sdk/apps/build-teradesk.sh
+NewTOS-0.7.1/KARTE/APPS/TERADESK/cicons.rsc	ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241	63650	repo 189401b2 sdk/apps/build-teradesk.sh
+NewTOS-0.7.1/KARTE/APPS/TERADESK/TERADESK.INF	f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5	3058	repo 189401b2 tools/make-sd-image.sh (TERADESK.INF heredoc)
+NewTOS-0.7.1/KARTE/APPS/TERADESK/TERADESK.HYP	5fbd9faef249466af04d08ec5c763d1a34560d7a949adb848f938c33c855ab62	77176	previous release NewTOS-0.7 (no source in this repository): TeraDesk hypertext (FreeMiNT 1.19 distribution)
+NewTOS-0.7.1/KARTE/APPS/HYPVIEW/HYP_VIEW.NAP	e65d873cec7d1fc86d125b7bbec09e83a9e1476519d94879915dcab0da1207ef	280560	repo 189401b2 sdk/apps/build-hypview.sh
+NewTOS-0.7.1/KARTE/APPS/HYPVIEW/hyp_view.rsc	1d1186e81a951c56f819ff4e19c1305d3a7e46f7557545275bdba25f7b847c60	27747	repo 189401b2 sdk/apps/build-hypview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/BMP.NLD	9cd330a641b1bfc4bf4a15d65f94860253701843c9f1939c14a2ca06c9e370a6	90968	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/DEGAS.NLD	85b1068b1306ce517c5c62f16a98a6ed8ca8a8abf1626e6fe55e12c4eb1fd7f0	90824	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/EUREKA.NLD	b3df6064ea8882da0342a99f78e574984fb9b75028cbcbec8d6da85eb075d990	90984	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/GIF.NLD	01af8fe8f36dbf69c7a1f4ee5fc09fa20108b473d66ae3b5ef74e6eda1f9d745	104776	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/GODPAINT.NLD	95797cf5dbe8ffe513ca6d8a1535d3efc661f3e748a1bea5fdac1771237ba9e4	89488	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/IMG.NLD	0c458624711b330a39d1b77ea824a35f0fc0206a5490e174afcf4cb27e5350e3	94616	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/JPG.NLD	f5b658e41b6367297edefec0c8b6f6ef67ce216e4ec33b35a6f5684c8d214f7a	715128	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/NEO.NLD	0d7736b421ece699f9fdf1d4ae6ac43acd78427dec5668d7d2f25229f62e8e3c	89600	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/PNG.NLD	84ec831152d6ee633d6e4d24f124192af1f76bd2220d9b434465f13d68370400	408432	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/CODECS/TGA.NLD	327590af9b734803734d83eb20cc29623fb43614f928525bd6a23eae07471df1	90264	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ICONS/FILE.GOD	f1cc3a809aa25195ae486d56422d3772ab411574447e85667905f10a637561f3	2054	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ICONS/FOLDER.GOD	bda81600aedc7e5376f8ce4e5ced208a0e2e91853ba2aaea6209e17d8176e813	2054	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ICONS/IMAGE.GOD	cc139b6a3e35e1c895766534c06432f265d9ffe383b89b24d75c1b20a7ef0ca9	2054	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ICONS/PDF.GOD	de7c636f2a14193d1abbcf47a5b1b79acaecb371d549a44a25691e5017cc9a47	2054	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ICONS/PRG.GOD	71594ffeadf23678c68ec05e9767091522e95c3317d91d5ae9b889760f931f34	2054	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/KARTE/APPS/ZVIEW/ICONS/SMALL.GOD	75dd26b3c7403a8e4f1c964901a9d83c69c636848c5010b8952e385c2ef6c5d1	14342	repo 189401b2 sdk/zview/build-zview.sh
+NewTOS-0.7.1/README.TXT	03698add0e67df1f1fb14022d5755f4b3bcdc254cdc0828e0089f0b6bff52f39	9047	repo 189401b2 docs/release/v0.7.1/README.TXT
+NewTOS-0.7.1/LIESMICH.TXT	0011b943b093e780ec958cf2cf02adcd036891cb95651f8f34374a31e32f80e3	9843	repo 189401b2 docs/release/v0.7.1/LIESMICH.TXT
+NewTOS-0.7.1/TESTING.TXT	48adb87bbc132e4d5b72d1e1646ffb648fe61d213dc5f2f82134be3440d93033	1780	repo 189401b2 docs/release/v0.7.1/TESTING.TXT
+NewTOS-0.7.1/TESTANLEITUNG.TXT	e59d971b9085dfd5bd0e70d5c05af236ac2bd3455ebee3651953d60fbd950dc9	1944	repo 189401b2 docs/release/v0.7.1/TESTANLEITUNG.TXT
+NewTOS-0.7.1/FEEDBACK.TXT	a69483b8185e9a5ea211f0950840df38374ce41d4c93ae247682c4adade17f60	1039	repo 189401b2 docs/release/v0.7.1/FEEDBACK.TXT
+NewTOS-0.7.1/FEEDBACK-EN.TXT	380951f12c00f92bb8a37ddb84f0755a2f7ca7773a6953c7f26d2e3dbc50e07d	970	repo 189401b2 docs/release/v0.7.1/FEEDBACK-EN.TXT
