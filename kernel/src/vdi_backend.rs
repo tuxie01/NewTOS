@@ -1,9 +1,9 @@
 //! Software VDI rasterizer backend (Phase 12).
 //!
 //! Implements [`tos_api::vdi::backend::RasterBackend`] over the board's
-//! linear [`Framebuffer`]. Scalar CPU code, except the rectangle fills and the
-//! 1-bit expansions (glyph box, `blit_mono`): NEON, [`crate::raster_kernel`]
-//! (TASK/V49), [`crate::raster_expand`] (TASK/V50), ADR-036. The swappable
+//! linear [`Framebuffer`]. Scalar CPU code, except fills, 1-bit expansions and
+//! the screen copy: NEON, [`crate::raster_kernel`] (TASK/V49),
+//! [`crate::raster_expand`] (TASK/V50), [`crate::raster_copy`] (V51), ADR-036. The swappable
 //! boundary the VDI layer draws through — NEON / DMA / VideoCore-V3D work
 //! replaces parts of this impl without the VDI layer changing (`RasterBackend` docs).
 //!
@@ -28,7 +28,7 @@ use core::sync::atomic::{AtomicBool, AtomicU16, AtomicU32, Ordering};
 use tos_api::vdi::backend::{ClipRect, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
 use tos_api::vdi::line::LineTarget;
 
-use crate::{hal::framebuffer::{rgb, Framebuffer}, raster_expand, raster_kernel};
+use crate::{hal::framebuffer::{rgb, Framebuffer}, raster_copy, raster_expand, raster_kernel};
 
 /// Number of palette entries the VDI advertises as `DEV_TAB[13]`. The
 /// Falcon truecolor profile reports 256 (`vdi_control.c:206`,
@@ -807,8 +807,6 @@ impl RasterBackend for VdiScreen {
         let fb = active_fb();
         let scr_w = fb.width() as i32;
         let scr_h = fb.height() as i32;
-        let stride = fb.stride_px() as usize;
-        let base = fb.pixels();
         let (w, h) = (src.w as i32, src.h as i32);
         // The destination write is clipped; the source offset follows it.
         let dbox = ClipRect {
@@ -821,30 +819,25 @@ impl RasterBackend for VdiScreen {
             return;
         };
         #[cfg(feature = "raster-prof")] let _prof = crate::raster_prof::copy_rect(tx0, ty0, tx1, ty1);
-        // Choose copy direction so overlapping moves don't corrupt.
-        let down = dy as i32 > src.y as i32;
-        let right = dx as i32 > src.x as i32;
-        for ri in 0..=(ty1 - ty0) {
-            let ty = if down { ty1 - ri } else { ty0 + ri };
-            let sy = src.y as i32 + (ty - dy as i32);
-            if sy < 0 || sy >= scr_h {
-                continue;
-            }
-            for ci in 0..=(tx1 - tx0) {
-                let tx = if right { tx1 - ci } else { tx0 + ci };
-                let sx = src.x as i32 + (tx - dx as i32);
-                if sx < 0 || sx >= scr_w {
-                    continue;
-                }
-                // SAFETY: indices are within the framebuffer bounds.
-                unsafe {
-                    let sp = base.add(sy as usize * stride + sx as usize).read_volatile();
-                    let dp = base.add(ty as usize * stride + tx as usize);
-                    let val = raster_op(op, sp, dp.read_volatile());
-                    dp.write_volatile(val);
-                }
-            }
-        }
+        // The NEON copy (TASK/V51): the per-pixel loop it replaced chose the
+        // directions from the start points so overlapping moves don't
+        // corrupt, and skipped the pixels whose source lies off the screen;
+        // `raster_copy::copy_rect` does both the same way.
+        // SAFETY: the clamped box lies on the screen in the pixel store
+        // (`kernel_area`), `width <= stride_px`.
+        unsafe {
+            raster_copy::copy_rect(
+                kernel_surface(fb),
+                scr_w,
+                scr_h,
+                src.x as i32,
+                src.y as i32,
+                dx as i32,
+                dy as i32,
+                (tx0, ty0, tx1, ty1),
+                op,
+            )
+        };
         Self::clean(fb, tx0 as u32, ty0 as u32, tx1 as u32, ty1 as u32);
     }
 
@@ -961,38 +954,10 @@ impl RasterBackend for VdiScreen {
     }
 }
 
-/// The 16-entry BitBlt logic-op table, `D' = op(S, D)`, acting **literally
-/// on the packed pixel word** (`vro_cpyfm`, EmuTOS `vdi_raster.c:495-544` /
-/// `vro_cpyfm16:1008-1220`). Only the low nibble of `op` selects the
-/// operation (`PAT_FLAG` is stripped by the caller); the same chunky word
-/// semantics EmuTOS' truecolor `vro_cpyfm16` uses. Note the Atari planar
-/// names invert against a truecolor screen: `ALL_WHITE` (0) writes `0`
-/// (black), `ALL_BLACK` (15) writes `!0` (white) — the op acts on bits,
-/// not palette indices. Applied to the 32-bit store it is the same op on
-/// the 16-bit screen word, overlay bit included, because the store is a
-/// bitwise expansion of that word ([`word_to_device`]): `ALL_BLACK` yields
-/// `0xFF_FFFFFF` = `0xFFFF`, the cleared-screen word, as on a Falcon.
-#[inline]
-pub fn raster_op(op: u8, s: u32, d: u32) -> u32 {
-    match op & 0x0f {
-        0 => 0,             // BM_ALL_WHITE   D' = 0
-        1 => s & d,         // BM_S_AND_D     D' = S & D
-        2 => s & !d,        // BM_S_AND_NOTD  D' = S & ~D
-        3 => s,             // BM_S_ONLY      D' = S            (replace)
-        4 => !s & d,        // BM_NOTS_AND_D  D' = ~S & D
-        5 => d,             // BM_D_ONLY      D' = D            (no-op)
-        6 => s ^ d,         // BM_S_XOR_D     D' = S ^ D        (XOR)
-        7 => s | d,         // BM_S_OR_D      D' = S | D        (OR)
-        8 => !(s | d),      // BM_NOT_SORD    D' = ~(S | D)
-        9 => !(s ^ d),      // BM_NOT_SXORD   D' = ~(S ^ D)
-        10 => !d,           // BM_NOT_D       D' = ~D
-        11 => s | !d,       // BM_S_OR_NOTD   D' = S | ~D
-        12 => !s,           // BM_NOT_S       D' = ~S
-        13 => !s | d,       // BM_NOTS_OR_D   D' = ~S | D
-        14 => !(s & d),     // BM_NOT_SANDD   D' = ~(S & D)
-        _ => !0,            // BM_ALL_BLACK   D' = ~0
-    }
-}
+/// The 16-entry BitBlt logic-op table, `D' = op(S, D)` on the packed pixel
+/// word — defined beside the copy kernel since TASK/V51 (its host tests check
+/// the kernel against it), re-exported here for its callers.
+pub use crate::raster_copy::raster_op;
 
 /// The installed screen backend, handed to `tos-api` via the host.
 pub static VDI_SCREEN: VdiScreen = VdiScreen;
