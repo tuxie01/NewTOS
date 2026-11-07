@@ -1,0 +1,91 @@
+measurement-2026-11-07-wfprobe-paging -- the console pager of the interactive wfprobe build (TASK/HW08), QEMU raspi4b only.
+Developer, 2026-11-07. No card, no hardware.
+
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none   (every manifest of this run, 14 of them: scripted/*/card.img.manifest + test.img.manifest,
+                         paging/, interactive-before/, rejected-hold/ card.img.manifest + test.img.manifest)
+
+WHAT
+  tosdump/probes/wfprobe.c, interactive NewTOS build only (no WFCASE, no WFKEYS; the real Pi, started from EmuCON):
+  - a prompt "-- more: any key --" and Cnecin after each screenful (screen rows - 1 rows of output), the prompt
+    erased afterwards; lines longer than the width count as more rows (wrap at the last column, a line of exactly
+    the width plus CR LF counts two rows; with wrap off it takes one: paged early, never late);
+  - "WFPROBE done -- any key" and Cnecin before the exit;
+  - C:\WFPROBE.LOG unchanged: written from the same buffer, unpaged.
+
+ROW SOURCE
+  Ssystem(S_NEWTOS_SCRWIDTH 2013 / S_NEWTOS_SCRHEIGHT 2014) = Host::screen() width/height
+  (tos-api/src/gemdos/ssystem.rs:186@S_NEWTOS_SCRWIDTH, kernel/src/host_env.rs:289@screen ->
+  vdi_backend::dims() = active_fb, the same numbers the console's backend reports), and the console's own grid
+  rule: font 8x16 from 400 lines up, else 8x8, cols = width/8, rows = height/cell
+  (EmuTOS font_set_default, references/emutos/bios/font.c:72-88; NewTOS tos-api/src/vdi/escape.rs:208@con,
+  tos-api/src/vdi/escape.rs:178@cell, tos-api/src/vdi/font.rs:349@font_set_default). No Line-A on AArch64
+  (ADR-030), vq_chcells needs a VDI workstation (docs/api/emucon/06-mapping-and-decisions.md D4). No screen
+  (Ssystem ERROR): no paging. QEMU raspi4b here: 640x480 -> 30 rows x 80 columns; the Pi at 1920x1080: 67 x 240.
+
+WAITS AND THE FAULT
+  arm() sets "hold": from there to the end of the program the pager never waits. Reason: disarm() does not end a
+  fault's busy or programming time (kernel/src/drivers/bcm2711/emmc_fault.rs:86@arm stores no BUSY_UNTIL/PRG_UNTIL;
+  busy_until/prg_until run on), so R1..R4 after disarm, and the log write, still depend on the time since the fault
+  (cases u4/u5/p2 in the HW08 acceptance). Page breaks can fall only before arm(): menu, case header, layout,
+  BASE.DAT save, "diag after the baseline" (nothing armed, nothing pending); at 640x480 and 1920x1080 the first
+  page does not fill there for the interactive cases. If the screen ran full while holding, the run is shown once
+  more after the log is closed, paged, from the top of the page that was open at arm() (marker line
+  "--- the run once more, paged (no waits while a fault can be pending)").
+
+  Rejected first version (rejected-hold/): held lines were NOT drawn during the run and paged out afterwards.
+  Measured: that changes the measurement. R1 then came ~100 ms earlier after the 1200 ms busy fault, the driver
+  waited dat_inhibit 98.1 ms and one write fell into the <250 ms bucket; with the lines drawn as before
+  (interactive-before/, paging/) dat_inhibit 0.0 (compare.txt, last part). So the final version prints every line
+  inline exactly as before (same Cconws calls) and only re-shows afterwards.
+
+HOW
+  1. Builds (tosdump/build-wfprobe-newtos.sh; m68k: make -C tosdump wfprobe-m68k), before (HEAD ec3403aa) and after:
+     WFCASE=u2, a3, n1 and WFKEYS=ud: NAP byte-identical before/after
+       u2 27f1dd8df3ac400c8d9da076d0f735ce3f066d013324b2120c74c579812928c9
+       a3 e38b11f84b1b6736d76c4fde97709328af8055a288d6e411173b6ef175e2ecb7
+       n1 8f560b0641e207dbce49ae5774eb67644178e8c93e2fc36b48d1cf39dba161e2
+       WFKEYS=ud 4a0c8d875899a3332de87c317068f59f889444c9a56a497d317f0ecafa8ab7d2
+     m68k (EmuTOS side), WFCASE=u2, WFCASE=a3 and without WFCASE: preprocessed source (gcc -E -P, same -D) identical
+     before/after; the PRG differs in 5-6 bytes, the name of gcc's temporary object file in the symbol table
+     (/var/folders/.../ccXXXXXX.o), which also differs between two builds of the unchanged source.
+  2. Scripted runs, method/scripted-runs.sh: tosdump/probes/run-wfprobe.sh newtos u2 / a3, before from a git clone of
+     ec3403aa, after from the working tree, same kernel = the Pi kernel
+     measurements/measurement-2026-11-06-hw08-fix-kernel/kernel8.img (sha256
+     39ab2a6a2058ba2dd965a684216336ae71fe55ad6d075eff768475d1f78eb868, rpi4 --release --features crash-walk,sd-fault).
+     QEMU raspi4b, -append serial=on, per-run card from tools/mkcard.sh (MKCARD_TESTDISK), deleted after the run.
+  3. Interactive runs, method/paging-run.sh: the interactive build as C:\AUTO\WFPROBE.NCP on the test image
+     (tools/mktestdisk.sh ... AUTO/WFPROBE.NCP=...), D: behind it (tools/mkcard.sh MKCARD_TESTDISK): it runs
+     before the AES on the text console, as from EmuCON. Log on C:, case on D:. QEMU raspi4b has no keyboard:
+     a scratch kernel with a key injector in the blocking console read (method/apply-injector.py, applied to a git
+     clone of ec3403aa, never the shared tree; `cargo xtask build --board rpi4 --release --features sd-fault`;
+     kernel8.img sha256 f5253fa5520a250766992e5f106cbac61c200f953922eb1a692ce1cf02202417, scratch, not kept).
+     It feeds make+break of one key after 3 s in a Cnecin/Cconin wait: 'u' (case u2), 'd' (drive D:), then space.
+     Every feed is a "[wfp] key" line on the serial line. QMP screendump 1 s after each prompt on the serial line.
+       paging/             the final build, WFPROBE.NCP sha256 4593f1b8c3f8076b0f9e1715544f2310db0f09e21fe9693f43614ece7909dc93
+       interactive-before/ the same flow with the old interactive build (sha256 cec53174...6d63), no paging
+       rejected-hold/      the rejected first version (sha256 a30e85d3...2cfb)
+     Card shas before/after each run in <dir>/run.txt.
+  4. method/check-log.py: the log against the console text on the serial line; method/timeless.sh: a log or
+     serial file without clock stamps, decimal numbers (ms) and latency-histogram counts.
+
+RESULT
+  Scripted (compare.txt): probe sha equal before/after; WFPROBE.LOG and BOOT-SERIAL.txt equal without times
+  (method/timeless.sh), raw differences only in clock stamps, ms values and the latency histogram: before and after
+  are the same binary (sha equal), so these are run-to-run noise; test partition after the run equal (sha in run.txt), fsck.txt and dir.txt equal.
+  Interactive (paging/):
+  - serial order: keys 0/1 (menu) at hz_200 3620/4220, "[sdfault] armed mode 4" (arm), "armed mode 0" (disarm),
+    END, "log Fwrite done", then the first prompt and key 2 at 5136: no wait between arm and the log's Fclose;
+  - four page prompts + the final one, screendumps/prompt-01..05.png: 01 the run's last screen with the prompt,
+    02-04 the run once more page by page (at most 29 counted rows per page, the prompt in row 30, the last row
+    of the previous page stays on top; the 82-character menu lines count two rows, so pages end early), 05 "WFPROBE done -- any key";
+  - check-log.txt: no prompt text in the log; the run's first pass on the serial line == the log (92 lines);
+    the second, paged pass == the log;
+  - against interactive-before (compare.txt): equal without times except the read counters, which differ already in
+    "diag after the baseline", before arm(): the probe file is bigger (164312 vs 162944 bytes, 321 vs 319 sectors)
+    and is loaded before the run. Saves, looks, codes, fault counts, write counters and waits equal.
+  Not shown here: the real Pi with EmuCON (wrap on there, 1920x1080) and a real USB keyboard; Ctrl+Alt+F9 at a
+  prompt (the sd-diag box, see below).
+  Observed, not changed: the kernel's sd-diag box (first failure after boot) covers the top of the screen
+  (rejected-hold/screendumps/prompt-01.png) until the text scrolls it away; with wrap off (AUTO) lines over 80
+  characters are cut at the last column on screen, the log has them whole.

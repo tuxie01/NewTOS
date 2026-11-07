@@ -1,0 +1,68 @@
+scripted runs (WFCASE), before = clone of ec3403aa, after = working tree; kernel measurements/measurement-2026-11-06-hw08-fix-kernel/kernel8.img
+== u2
+before probe     WFPROBE.NAP 27f1dd8df3ac400c8d9da076d0f735ce3f066d013324b2120c74c579812928c9 WFCASE=u2
+before testpart  after  fd2daf03ac0bcccc8798b51faa4af8a0dc6b9e82c285622ccc469798dd2b5cfb
+after  probe     WFPROBE.NAP 27f1dd8df3ac400c8d9da076d0f735ce3f066d013324b2120c74c579812928c9 WFCASE=u2
+after  testpart  after  fd2daf03ac0bcccc8798b51faa4af8a0dc6b9e82c285622ccc469798dd2b5cfb
+WFPROBE.LOG: raw diff 17 lines; without times (method/timeless.sh): equal
+BOOT-SERIAL.txt: raw diff 21 lines; without times (method/timeless.sh): equal
+fsck.txt: equal (apart from the scratch image path in line 1)
+dir.txt: byte-equal
+== a3
+before probe     WFPROBE.NAP e38b11f84b1b6736d76c4fde97709328af8055a288d6e411173b6ef175e2ecb7 WFCASE=a3
+before testpart  after  9a75e2192ba54175a288b1e5d7d5b3d74895a5c3a3317846d5884d720ea186a8
+after  probe     WFPROBE.NAP e38b11f84b1b6736d76c4fde97709328af8055a288d6e411173b6ef175e2ecb7 WFCASE=a3
+after  testpart  after  9a75e2192ba54175a288b1e5d7d5b3d74895a5c3a3317846d5884d720ea186a8
+WFPROBE.LOG: raw diff 17 lines; without times (method/timeless.sh): equal
+BOOT-SERIAL.txt: raw diff 21 lines; without times (method/timeless.sh): equal
+fsck.txt: equal (apart from the scratch image path in line 1)
+dir.txt: byte-equal
+
+interactive build, measurement part: interactive-before (old source, no paging) vs paging (new source), injector kernel
+21c21
+<   read    n 20 sec 280 failed 0 max X ms
+---
+>   read    n 19 sec 282 failed 0 max X ms
+25c25
+<   bcache  dev r 20 w 8 hit 13 miss 280 sectors
+---
+>   bcache  dev r 19 w 8 hit 13 miss 282 sectors
+39c39
+<   read    n 20 sec 280 failed 0 max X ms
+---
+>   read    n 19 sec 282 failed 0 max X ms
+45c45
+<   bcache  dev r 20 w 9 hit 13 miss 280 sectors
+---
+>   bcache  dev r 19 w 9 hit 13 miss 282 sectors
+62c62
+<   read    n 24 sec 284 failed 0 max X ms
+---
+>   read    n 23 sec 286 failed 0 max X ms
+67c67
+<   bcache  dev r 24 w 37 hit 13 miss 284 sectors
+---
+>   bcache  dev r 23 w 37 hit 13 miss 286 sectors
+86c86
+<   read    n 151 sec 411 failed 0 max X ms
+---
+>   read    n 150 sec 413 failed 0 max X ms
+91c91
+<   bcache  dev r 151 w 37 hit 63 miss 411 sectors
+---
+>   bcache  dev r 150 w 37 hit 63 miss 413 sectors
+(only the read counters differ, already in 'diag after the baseline', before arm(): the program file is larger, 164312 vs 162944 bytes = 321 vs 319 sectors, loaded before the run)
+
+rejected-hold (first version: held lines not drawn during the run) vs interactive-before:
+58,59c58,59
+<    wait ms cmd_inhibit X dat_inhibit X cmd_done X read_rdy X write_rdy X
+<            read_done X write_done X
+---
+--
+82,83c82,83
+<    wait ms cmd_inhibit X dat_inhibit X cmd_done X read_rdy X write_rdy X
+<            read_done X write_done X
+---
+   2    wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0
+   2    wait ms cmd_inhibit 0.0 dat_inhibit 98.1 cmd_done 0.0 read_rdy 0.0
+   8    wait ms cmd_inhibit 0.0 dat_inhibit 0.0 cmd_done 0.0 read_rdy 0.0 write_rdy 0.0

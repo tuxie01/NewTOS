@@ -1,0 +1,5 @@
+kernel f5253fa5520a250766992e5f106cbac61c200f953922eb1a692ce1cf02202417
+ncp    cec531744b6eeea06bb82f2c6a5674bd4350da6d4d768ccb97400cd0cb6e6d63
+card   9671e0be701feda99cd0336dbf9af39a128a4b762e1d622bb0c0e117dd66aad8 (before the run)
+qemu   done, 0 screendumps
+card   e1db0a85b37724accf334a74d0a89e0dba8939def9267446873ee6fbaaab8e3e (after the run)

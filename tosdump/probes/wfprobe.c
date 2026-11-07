@@ -47,6 +47,15 @@
  * Output: D:\WFPROBE.LOG, created BEFORE the fault (an Fcreate may never
  * succeed again: that is what is measured), and every line also to the
  * console, so the serial log has it whatever happens to the disk.
+ *
+ * The interactive NewTOS build (no WFCASE, no WFKEYS: the real Pi, started
+ * from EmuCON) pages the console: a prompt and a key after each screenful,
+ * and a key at the end.  From arm() to the end of the run it never waits and
+ * writes the console as before, line by line (a fault's busy or programming
+ * time runs on past disarm(): a key, or fewer lines drawn, would change what
+ * the saves after it see); if the screen ran full there, the run is shown
+ * once more, paged, after the log is closed.  The log itself is not paged.
+ * Every other build writes the console exactly as before.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -139,6 +148,17 @@ static char back[37156 + 5281] __attribute__((aligned(2)));
 static char out[120000];
 static long olen;
 
+#if defined(__NEWTOS__) && !defined(WFCASE) && !defined(WFKEYS)
+#define WF_PAGED
+static int pg_hold;     /* set by arm(): no more waits until the end */
+static long pg_page_off, pg_hold_off;   /* offsets in out[] */
+static void page_before(const char *s, long n, long at);
+static void page_text(const char *s);
+#define CONWS(s) page_text(s)
+#else
+#define CONWS(s) Cconws(s)
+#endif
+
 static void emit(const char *fmt, ...)
 {
     va_list ap;
@@ -151,6 +171,9 @@ static void emit(const char *fmt, ...)
         return;
     if (n >= (int)sizeof line)
         n = sizeof line - 1;
+#ifdef WF_PAGED
+    page_before(line, n, olen);
+#endif
     if (olen + n < (long)sizeof out) {
         memcpy(out + olen, line, n);
         olen += n;
@@ -241,6 +264,10 @@ static void arm(const struct wfcase *c)
     unsigned long lo, hi;
     long r;
 
+#ifdef WF_PAGED
+    pg_hold = 1;
+    pg_hold_off = pg_page_off;
+#endif
     region_bounds(c->region, &lo, &hi);
     a[0] = (unsigned int)c->fault;
     a[1] = 0;
@@ -304,6 +331,138 @@ static void wcount(unsigned long *cmds, unsigned long *secs)
         }
     }
 }
+
+#ifdef WF_PAGED
+/* ---------------------------------------------------------------- pager */
+
+#define S_NEWTOS_SCRWIDTH  2013
+#define S_NEWTOS_SCRHEIGHT 2014
+#define PG_PROMPT "-- more: any key --"
+
+static long pg_rows, pg_cols;   /* the console's text grid; 0 = do not page */
+static long pg_used;            /* rows moved down since the last prompt */
+static long pg_col;             /* cursor column as counted */
+static int pg_full;             /* the screen ran full while holding */
+
+/* The console's rows and columns as the console computes them: the cell grid
+ * of the system font, 8x16 from 400 lines up, else 8x8, on the framebuffer
+ * (EmuTOS font_set_default, bios/font.c:72-88; NewTOS the same rule in
+ * tos-api/src/vdi/escape.rs:208@con, cell tos-api/src/vdi/escape.rs:178@cell).
+ * The framebuffer's size comes from Ssystem S_NEWTOS_SCRWIDTH/SCRHEIGHT
+ * (docs/api/gemdos/154-ssystem.md; tos-api/src/gemdos/ssystem.rs:186-187,
+ * Host::screen() = the same width and height the console reads, kernel
+ * vdi_backend::dims()).  There is no Line-A to read v_cel_mx/v_cel_my from
+ * (ADR-030), and vq_chcells needs a VDI workstation.  No screen: no paging. */
+static void page_init(void)
+{
+    long w = ssystem(S_NEWTOS_SCRWIDTH, 0, 0);
+    long h = ssystem(S_NEWTOS_SCRHEIGHT, 0, 0);
+
+    if (w <= 0 || h <= 0)
+        return;
+    pg_cols = w / 8;
+    pg_rows = h / (h >= 400 ? 16 : 8);
+    if (pg_cols < 1 || pg_rows < 2)
+        pg_rows = 0;
+}
+
+/* Rows `s` moves the cursor down from column *col, and the column after it.
+ * A character in the last column wraps at once (EmuTOS next_cell with wrap
+ * on, docs/api/bios/_vt52.md 7.1): a line of exactly the width plus CR LF
+ * takes two rows.  With wrap off it takes one: counted high, paged early.
+ * A bare LF (the menu has one) is counted as CR LF. */
+static long page_rows(const char *s, long n, long *col)
+{
+    long adv = 0, c = *col, i;
+
+    for (i = 0; i < n; i++) {
+        if (s[i] == '\r') {
+            c = 0;
+        } else if (s[i] == '\n') {
+            adv++;
+            c = 0;
+        } else if (++c == pg_cols) {
+            adv++;
+            c = 0;
+        }
+    }
+    *col = c;
+    return adv;
+}
+
+static void page_break(void)
+{
+    static char blank[sizeof PG_PROMPT + 2];
+    long i;
+
+    Cconws(PG_PROMPT);
+    Cnecin();
+    blank[0] = '\r';
+    for (i = 1; i < (long)sizeof PG_PROMPT; i++)
+        blank[i] = ' ';
+    blank[i++] = '\r';
+    blank[i] = 0;
+    Cconws(blank);
+    pg_used = 0;
+}
+
+/* Before `s` (n bytes, the text emit() prints next; it starts at out[at])
+ * goes to the console: a line that starts in column 0 and does not fit on the
+ * page waits for a key first.  While holding it never waits, it only notes
+ * that the screen ran full. */
+static void page_before(const char *s, long n, long at)
+{
+    long col = pg_col;
+    long adv = page_rows(s, n, &col);
+
+    if (pg_rows && pg_col == 0 && pg_used > 0 && pg_used + adv > pg_rows - 1) {
+        if (pg_hold) {
+            pg_full = 1;
+        } else {
+            page_break();
+            pg_page_off = at;
+        }
+    }
+    pg_used += adv;
+    pg_col = col;
+}
+
+static void page_text(const char *s)
+{
+    page_before(s, (long)strlen(s), olen);
+    Cconws(s);
+}
+
+/* The run is over and the log closed.  If the screen ran full while holding,
+ * the run once more from the top of the page that was open at arm(), paged,
+ * from out[] (the log's text). */
+static void page_release(void)
+{
+    long i = pg_hold_off;
+
+    pg_hold = 0;
+    if (!pg_full)
+        return;
+    pg_full = 0;
+    page_break();
+    page_text("--- the run once more, paged (no waits while a fault can be pending)\r\n");
+    while (i < olen) {
+        long e = i, k;
+
+        while (e < olen && out[e] != '\n')
+            e++;
+        k = e - i;
+        if (k > (long)sizeof line - 3)
+            k = sizeof line - 3;
+        memcpy(line, out + i, k);
+        line[k] = '\r';
+        line[k + 1] = '\n';
+        line[k + 2] = 0;
+        page_text(line);
+        i = e + 1;
+    }
+}
+#endif
 #else /* m68k: the hdv_rw hook */
 static long (*old_rw)(void);
 static volatile long h_left, h_on, h_lo, h_hi, h_code, h_fired, h_reads;
@@ -815,6 +974,9 @@ int main(int argc, char **argv)
 #else
     loghandle = Fcreate("C:\\WFPROBE.LOG", 0);
 #endif
+#ifdef WF_PAGED
+    page_init();
+#endif
 #else
     newvec = (long)wf_hook;
     Supexec(install);
@@ -881,11 +1043,19 @@ int main(int argc, char **argv)
 #endif
     if (loghandle >= 0) {
         r = Fwrite((short)loghandle, olen, out);
-        Cconws("log Fwrite done\r\n");
+        CONWS("log Fwrite done\r\n");
         (void)r;
         r = Fclose((short)loghandle);
         (void)r;
     }
+#ifdef WF_PAGED
+    /* A desktop launch keeps the last page on the screen too. */
+    page_release();
+    CONWS("WFPROBE done -- any key");
+    Cnecin();
+    Cconws("\r\n");
+#else
     Cconws("WFPROBE done\r\n");
+#endif
     return 0;
 }

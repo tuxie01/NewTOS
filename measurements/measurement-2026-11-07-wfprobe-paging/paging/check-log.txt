@@ -1,0 +1,5 @@
+prompts on the serial line: 4 | prompt text in the log: 0
+log lines: 92 | pass 1 lines: 92 | pass 2 lines: 92
+marker line present: True
+pass 1 == log: True
+pass 2 == tail of the log: True
