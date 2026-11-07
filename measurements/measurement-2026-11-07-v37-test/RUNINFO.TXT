@@ -1,0 +1,45 @@
+V37 acceptance (tester) -- TASK/V37.md (fix 2bf28d71: the horizontal v_justified aligned against max_x, delh with h_align and the skew additives d1/d2). Date 2026-11-07.
+No product code touched, no card, no Pi, no push. Main tree HEAD 2bf28d71 clean at start (the V50 worker's worktree under .claude/worktrees was not touched; its QEMUs seen in ps were not mine and not killed).
+Built/measured in git-archive trees of the session scratchpad (references/ linked): base = f9525a3d (before the fix), fix = 2bf28d71 (the product change is tos-api/src/vdi/text.rs only). Trees t/ (builds, red test) and t2/ (tosdump --tree, desktop kernels).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 21 card.img.manifest files in this run)
+optional_missing, verbatim, in ALL 21 manifests: optional_missing none
+QEMU raspi4b (-append serial=on, APFS clone per boot, own socket per run) and virt (xtask --headless, own ELF); one QEMU of mine at a time, each ended by PID/own-path pkill. Oracle EmuTOS 1a7484ab, tools/hatari-oracle.sh falcontc.
+
+KERNELS  rpi4 release kernel8.img: base def6e3dbddc265f5..., fix d0f31276e07fb09a... (sizes equal); qemu-virt release ELF: base bce4fe8d2ea7acc9..., fix 885b50b710d6ca75...
+         armed desktop kernels (tools/inject-arm.py desktop=V34 mouse file): base 72c210a1f171349276f8..., fix 8605d1080b67d915c467... = the developer's hashes exactly.
+         Probe BINs (gitignored): e1 2a6329dc6a2ae6c9, n-base 5ea7c8ae47737e26 (= developer's n-head), n-fix1 = n-fix2 c7b004e6ade7fe75.
+
+RESULTS
+ 1 PASS  cargo xtask test, main tree, fix: rc 0, 2291 passed / 0 failed / 6 ignored (198 "test result" lines; analysis/cargo-xtask-test-fix.txt) = the developer's number.
+         The base total was not measured by me (developer/brief: 2280/0/2; +11 passed, +4 ignored = cases_v37).
+         cases_v37 (15 tests): fix 11 ok + 4 ignored with the V41 reason (analysis/green-v37-fix.txt); with --include-ignored the 4 ZG fail (green-v37-fix-all.txt) = V41, as stated.
+         The same two test files copied into the base archive tree (product code f9525a3d): 1 ok (T3700-T3705 control), 10 FAILED, 4 ignored (red-v37-base.txt); with --include-ignored 14 FAILED / 1 ok (red-v37-base-all.txt).
+         Right reason: every red test fails at cases_v37.rs:104 "the grab differs from the oracle (hash, non-white words)", mostly with equal word counts (e.g. T3728 289/289, T3706 288/288 = a pure shift), TVO 350 vs 441 words.
+ 2 PASS  both boards fresh builds (target removed before each), rc 0 (analysis/builds-rc.txt): rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121 on base AND fix, both boards (delta 0);
+         cargo clippy -p tos-api --test vdi_reference on the fix: rc 0, 0 hits for cases_v37. rpi4 (serial=on) reached "[desk] desktop up (1 drives)" in all 4 desktop runs, 0 exception/panic lines;
+         qemu-virt headless, own ELF, 100 s: base and fix "[desk] desktop up (0 drives)", 0 exception/panic (runs/virt-base, runs/virt-fix).
+ 3 PASS  oracle, probe vdprobe (tosdump/probes/run-vdprobe.sh, probe incl. t37, the same probe BIN source on both kernels; probe/):
+         e1 vs n-fix1: 954 cases, 333 differ; TVO, TVP and all 42 T37 (T3700-T3741) EQUAL; shift analysis over all 44 (method/shift.py): [0] everywhere.
+         n-base vs n-fix1: exactly 40 cases differ = TVO TVP ZG002 ZG003 ZG008 ZG009 T3706-T3729 T3731-T3738 T3740 T3741 (the developer's list), the other 914 byte-identical. e1 vs n-base: 369 differ.
+         ZG002/003/008/009 still differ from the oracle (500/1024/604/1296 words) = V41. n-fix1 == n-fix2 (BIN and LOG). LOG diff e1 vs fix: only lines 583-585 (inside case 436 TXZ, a font-chain probe: V33, intentional per the developer) and TPH line 1591 (V52); both also differ on the base.
+         Shift check on the base, own run: T3706 (h_align 1, 6x6) -100, T3712 (h_align 2) -200, T3714/T3717 (h_align 2 + outline, + outline+underline) -198, T3728/T3729 (8x16 skew, h_align 0) -1, T3731 -101, TVO -100, TVP -200;
+         = delh of vdi_text.c:354-364 for max_x 200 (200/2 = 100, 200 - 2*outline = 198, outline 1 -> 99) and d1 = left_offset 1 (:333-335, :369); shift-e1-n-base.txt is byte-identical to the developer's shift-e1-n-head.txt.
+         Only 8 of 44 cases have shift 0 on the base = the delh-0 cases (T3700-T3705, T3730, T3739). TPH etc. as the V35 run.
+ 4 PASS  tables (cargo xtask tosdump --tree, runs/tab-*): vdi-v18-t2 base 0/32, fix 0/32; vdi-all base 0/182, fix 0/182 (vs the pinned oracle BINs); VDI.BIN and AES.BIN base == fix BYTE-IDENTICAL for all 5 tables
+         (analysis/cmp-bins.txt; both archive trees, so even the build id equals); tosdiff base vs fix: v18t2 0/32, all 0/182, aes-r2-wind 0/78, aes-r3-wind-state 0/39, aes-r4-subfunctions 0/181, address check 0 bad cells.
+         Desktop + IKBD injector (11 shots): 11/11 identical base vs fix at 640x480 and 11/11 at 1920x1080; boot screen + APITEST console 6/6 (6, 10, 18, 24, 32, 45 s) identical at 640x480 and 6/6 at 1920x1080
+         (the "18 s timing" case of V35/V49 did not occur this run); 0 exception/panic lines in all 8 runs, 495 injector [inj] feed lines in each of the 4 desktop runs. Viewed: desk480-fix window-drag frame (desktop, window, icons, rubber band, menu bar sane),
+         bc1080-fix 18 s (APITEST console to BC07, left margin/pitch/glyphs regular). The rest compared by hash only.
+         First gui attempt of mine was invalid and discarded (not in the run dir): the copied scratch tree carried a stale target/ with an xtask baked to the other path, so the "armed" desktop kernel equalled the plain release kernel and no [inj] line appeared;
+         fixed by deleting t2/*/target; the rerun's kernels equal the developer's armed-kernel hashes.
+ 5 PASS  Caller claim read in sdk/apps/qed/src/ausgabe.c: output_text (:551) reaches v_justified (:618, inside if (vdiattr) :614) only after the proportional return (:564), the italic+bitmap return (:578) and the bold+vector return (:595) -- i.e. with vdiattr != 0 and
+         either no HL_ITALIC or (italic, vector, not bold, not proportional); sdk/apps/qed/src/global.c:562 vst_alignment(TA_LEFT, TA_TOP) is the only alignment call for the screen (prn_out.c:158 TA_LEFT/TA_ASCENT is the printer handle).
+         vdi_text.c:354-356: h_align 0 -> delh 0; skew additive (:333-340, :369-389) only under F_SKEW, which QED sets only with HL_ITALIC; with a bitmap font italic never reaches v_justified, so delh = 0 and the changed start x - delh equals the old one.
+         Outline start (underline at x - outline) is unchanged. Only a vector font (GDOS; NewTOS has none, gl_gdos false) could bring skew here. Read only, not run (no card program started).
+ 6 PASS  Spec cites of docs/api/vdi/output/_gdp.md against references/emutos/vdi/vdi_text.c (nl -ba): :1288 output_text(vwk, cnt, str, max_x, &just); :305-306 if (width < 0) calc_width; :333-340 d1/d2 under F_SKEW; :344-352 outline (OUTLINE_THICKNESS);
+         :354-364 delh (0 / width/2 - outline / width - outline*2); :366-390 per v_align additive (d1; half*d2/top; ascent*d2/top; none; descent*d1/bottom; d1+d2); :410 DESTX = point->x - delh - outline; :412 startx = DESTX;
+         :1222-1233 interchar clamp; :476-492 justified apply loop -- all as cited. "max_x 0 is not negative, delh = 0 - 2*outline" follows from :305 and :362. No mismatch. cargo xtask doc-check docs/api/vdi/output/_gdp.md TASK/V37.md: 0 failures.
+
+NOT DRIVEN / OPEN
+  Real Pi4 / HDMI / USB (QEMU-TCG; nothing hardware-touching changed); qemu-virt interactive (only headless boot to "desktop up"); the base total of cargo xtask test (taken from the brief); no card program (QED, TeraDesk) started -- item 5 is a source reading;
+  ZG002/003/008/009 stay red against the oracle by design (V41); proportional/loaded fonts with h_align not probed (as the developer noted); screendumps compared by hash, only two viewed.

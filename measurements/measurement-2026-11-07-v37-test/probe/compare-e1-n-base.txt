@@ -1,0 +1,957 @@
+pens EmuTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+pens NewTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+01 CAL   EQUAL  (136x8 at 0,0)
+02 K1A   EQUAL  (60x40 at 10,10)
+03 K1B   EQUAL  (60x40 at 10,10)
+04 K1C   EQUAL  (60x40 at 10,10)
+05 K1D   EQUAL  (60x40 at 10,10)
+06 K1E   EQUAL  (60x40 at 10,10)
+07 K1F   EQUAL  (60x40 at 10,10)
+08 K1G   EQUAL  (60x40 at 10,10)
+09 K2A   EQUAL  (128x128 at 0,0)
+10 K2B   EQUAL  (128x128 at 0,0)
+11 K2C   EQUAL  (128x128 at 0,0)
+12 K2D   EQUAL  (128x128 at 0,0)
+13 K2E   EQUAL  (640x14 at 0,96)
+14 K2F   EQUAL  (640x5 at 0,118)
+15 K2G   EQUAL  (640x18 at 0,136)
+16 K2H   EQUAL  (640x4 at 0,168)
+17 K2I   EQUAL  (640x18 at 0,196)
+18 K3A   EQUAL  (624x480 at 0,0)
+19 K3B   EQUAL  (624x480 at 0,0)
+20 K3C   EQUAL  (624x480 at 0,0)
+21 K3D   EQUAL  (624x480 at 0,0)
+22 K4A   EQUAL  (80x80 at 30,30)
+23 K4B   EQUAL  (80x80 at 30,30)
+24 K4C   EQUAL  (80x80 at 30,30)
+25 K4D   EQUAL  (80x80 at 30,30)
+26 K4E   EQUAL  (80x80 at 30,30)
+27 K4F   EQUAL  (80x80 at 30,30)
+28 K4G   EQUAL  (80x80 at 30,30)
+29 K4H   EQUAL  (80x80 at 30,30)
+30 K5A   EQUAL  (120x40 at 0,0)
+31 K5B   EQUAL  (120x40 at 0,0)
+32 K5C   EQUAL  (160x40 at 0,50)
+33 K5D   DIFF   593 px raw, 593 px by pen (180x170 at 90,90): (101,101) E=ffff N=0000, (102,101) E=ffff N=0000, (103,101) E=ffff N=0000, (104,101) E=ffff N=0000, (105,101) E=ffff N=0000, (106,101) E=ffff N=0000
+34 K6A   EQUAL  (72x40 at 16,16)
+35 K6B   EQUAL  (72x40 at 16,16)
+36 K6C   EQUAL  (72x40 at 16,16)
+37 K6D   EQUAL  (72x40 at 16,16)
+38 K6E   EQUAL  (72x40 at 16,16)
+39 K6F   EQUAL  (72x40 at 16,16)
+40 K8A   EQUAL  (120x100 at 10,10)
+41 K8B   EQUAL  (120x100 at 10,10)
+42 K8C   EQUAL  (120x100 at 10,10)
+43 K8D   EQUAL  (120x100 at 10,10)
+44 K8E   EQUAL  (640x160 at 0,190)
+45 K8F   EQUAL  (120x100 at 10,10)
+46 K8G   EQUAL  (120x100 at 10,10)
+47 K8H   EQUAL  (120x100 at 10,10)
+48 K8I   EQUAL  (120x100 at 10,10)
+49 K8J   EQUAL  (120x100 at 10,10)
+50 K10   EQUAL  (640x4 at 0,9)
+51 K11A  EQUAL  (80x80 at 60,60)
+52 K11B  EQUAL  (100x80 at 50,60)
+53 K11C  EQUAL  (80x80 at 60,60)
+54 K11D  EQUAL  (80x80 at 60,60)
+55 P1a00p EQUAL  (320x1 at 0,0)
+56 P1a00f EQUAL  (320x1 at 0,0)
+57 P1a01p EQUAL  (320x1 at 0,0)
+58 P1a01f EQUAL  (320x1 at 0,0)
+59 P1a03p EQUAL  (320x1 at 0,0)
+60 P1a03f EQUAL  (320x1 at 0,0)
+61 P1a04p EQUAL  (320x1 at 0,0)
+62 P1a04f EQUAL  (320x1 at 0,0)
+63 P1a06p EQUAL  (320x1 at 0,0)
+64 P1a06f EQUAL  (320x1 at 0,0)
+65 P1a07p EQUAL  (320x1 at 0,0)
+66 P1a07f EQUAL  (320x1 at 0,0)
+67 P1a0Ap EQUAL  (320x1 at 0,0)
+68 P1a0Af EQUAL  (320x1 at 0,0)
+69 P1a0Cp EQUAL  (320x1 at 0,0)
+70 P1a0Cf EQUAL  (320x1 at 0,0)
+71 P1a0Fp EQUAL  (320x1 at 0,0)
+72 P1a0Ff EQUAL  (320x1 at 0,0)
+73 P1b00p EQUAL  (320x1 at 0,0)
+74 P1b00f EQUAL  (320x1 at 0,0)
+75 P1b01p EQUAL  (320x1 at 0,0)
+76 P1b01f EQUAL  (320x1 at 0,0)
+77 P1b03p EQUAL  (320x1 at 0,0)
+78 P1b03f EQUAL  (320x1 at 0,0)
+79 P1b04p EQUAL  (320x1 at 0,0)
+80 P1b04f EQUAL  (320x1 at 0,0)
+81 P1b06p EQUAL  (320x1 at 0,0)
+82 P1b06f EQUAL  (320x1 at 0,0)
+83 P1b07p EQUAL  (320x1 at 0,0)
+84 P1b07f EQUAL  (320x1 at 0,0)
+85 P1b0Ap EQUAL  (320x1 at 0,0)
+86 P1b0Af EQUAL  (320x1 at 0,0)
+87 P1b0Cp EQUAL  (320x1 at 0,0)
+88 P1b0Cf EQUAL  (320x1 at 0,0)
+89 P1b0Fp EQUAL  (320x1 at 0,0)
+90 P1b0Ff EQUAL  (320x1 at 0,0)
+91 P2a00p EQUAL  (320x1 at 0,0)
+92 P2a00f EQUAL  (320x1 at 0,0)
+93 P2a01p EQUAL  (320x1 at 0,0)
+94 P2a01f EQUAL  (320x1 at 0,0)
+95 P2a03p EQUAL  (320x1 at 0,0)
+96 P2a03f EQUAL  (320x1 at 0,0)
+97 P2a04p EQUAL  (320x1 at 0,0)
+98 P2a04f EQUAL  (320x1 at 0,0)
+99 P2a06p EQUAL  (320x1 at 0,0)
+100 P2a06f EQUAL  (320x1 at 0,0)
+101 P2a07p EQUAL  (320x1 at 0,0)
+102 P2a07f EQUAL  (320x1 at 0,0)
+103 P2a0Ap EQUAL  (320x1 at 0,0)
+104 P2a0Af EQUAL  (320x1 at 0,0)
+105 P2a0Cp EQUAL  (320x1 at 0,0)
+106 P2a0Cf EQUAL  (320x1 at 0,0)
+107 P2a0Fp EQUAL  (320x1 at 0,0)
+108 P2a0Ff EQUAL  (320x1 at 0,0)
+109 P2b00p EQUAL  (320x1 at 0,0)
+110 P2b00f EQUAL  (320x1 at 0,0)
+111 P2b01p EQUAL  (320x1 at 0,0)
+112 P2b01f EQUAL  (320x1 at 0,0)
+113 P2b03p EQUAL  (320x1 at 0,0)
+114 P2b03f EQUAL  (320x1 at 0,0)
+115 P2b04p EQUAL  (320x1 at 0,0)
+116 P2b04f EQUAL  (320x1 at 0,0)
+117 P2b06p EQUAL  (320x1 at 0,0)
+118 P2b06f EQUAL  (320x1 at 0,0)
+119 P2b07p EQUAL  (320x1 at 0,0)
+120 P2b07f EQUAL  (320x1 at 0,0)
+121 P2b0Ap EQUAL  (320x1 at 0,0)
+122 P2b0Af EQUAL  (320x1 at 0,0)
+123 P2b0Cp EQUAL  (320x1 at 0,0)
+124 P2b0Cf EQUAL  (320x1 at 0,0)
+125 P2b0Fp EQUAL  (320x1 at 0,0)
+126 P2b0Ff EQUAL  (320x1 at 0,0)
+127 P4a00p EQUAL  (320x1 at 0,0)
+128 P4a00f EQUAL  (320x1 at 0,0)
+129 P4a01p EQUAL  (320x1 at 0,0)
+130 P4a01f EQUAL  (320x1 at 0,0)
+131 P4a03p EQUAL  (320x1 at 0,0)
+132 P4a03f EQUAL  (320x1 at 0,0)
+133 P4a04p EQUAL  (320x1 at 0,0)
+134 P4a04f EQUAL  (320x1 at 0,0)
+135 P4a06p EQUAL  (320x1 at 0,0)
+136 P4a06f EQUAL  (320x1 at 0,0)
+137 P4a07p EQUAL  (320x1 at 0,0)
+138 P4a07f EQUAL  (320x1 at 0,0)
+139 P4a0Ap EQUAL  (320x1 at 0,0)
+140 P4a0Af EQUAL  (320x1 at 0,0)
+141 P4a0Cp EQUAL  (320x1 at 0,0)
+142 P4a0Cf EQUAL  (320x1 at 0,0)
+143 P4a0Fp EQUAL  (320x1 at 0,0)
+144 P4a0Ff EQUAL  (320x1 at 0,0)
+145 P4b00p EQUAL  (320x1 at 0,0)
+146 P4b00f EQUAL  (320x1 at 0,0)
+147 P4b01p EQUAL  (320x1 at 0,0)
+148 P4b01f EQUAL  (320x1 at 0,0)
+149 P4b03p EQUAL  (320x1 at 0,0)
+150 P4b03f EQUAL  (320x1 at 0,0)
+151 P4b04p EQUAL  (320x1 at 0,0)
+152 P4b04f EQUAL  (320x1 at 0,0)
+153 P4b06p EQUAL  (320x1 at 0,0)
+154 P4b06f EQUAL  (320x1 at 0,0)
+155 P4b07p EQUAL  (320x1 at 0,0)
+156 P4b07f EQUAL  (320x1 at 0,0)
+157 P4b0Ap EQUAL  (320x1 at 0,0)
+158 P4b0Af EQUAL  (320x1 at 0,0)
+159 P4b0Cp EQUAL  (320x1 at 0,0)
+160 P4b0Cf EQUAL  (320x1 at 0,0)
+161 P4b0Fp EQUAL  (320x1 at 0,0)
+162 P4b0Ff EQUAL  (320x1 at 0,0)
+163 P8a00p EQUAL  (320x1 at 0,0)
+164 P8a00f EQUAL  (320x1 at 0,0)
+165 P8a01p EQUAL  (320x1 at 0,0)
+166 P8a01f EQUAL  (320x1 at 0,0)
+167 P8a03p EQUAL  (320x1 at 0,0)
+168 P8a03f EQUAL  (320x1 at 0,0)
+169 P8a04p EQUAL  (320x1 at 0,0)
+170 P8a04f EQUAL  (320x1 at 0,0)
+171 P8a06p EQUAL  (320x1 at 0,0)
+172 P8a06f EQUAL  (320x1 at 0,0)
+173 P8a07p EQUAL  (320x1 at 0,0)
+174 P8a07f EQUAL  (320x1 at 0,0)
+175 P8a0Ap EQUAL  (320x1 at 0,0)
+176 P8a0Af EQUAL  (320x1 at 0,0)
+177 P8a0Cp EQUAL  (320x1 at 0,0)
+178 P8a0Cf EQUAL  (320x1 at 0,0)
+179 P8a0Fp EQUAL  (320x1 at 0,0)
+180 P8a0Ff EQUAL  (320x1 at 0,0)
+181 P8b00p EQUAL  (320x1 at 0,0)
+182 P8b00f EQUAL  (320x1 at 0,0)
+183 P8b01p EQUAL  (320x1 at 0,0)
+184 P8b01f EQUAL  (320x1 at 0,0)
+185 P8b03p EQUAL  (320x1 at 0,0)
+186 P8b03f EQUAL  (320x1 at 0,0)
+187 P8b04p EQUAL  (320x1 at 0,0)
+188 P8b04f EQUAL  (320x1 at 0,0)
+189 P8b06p EQUAL  (320x1 at 0,0)
+190 P8b06f EQUAL  (320x1 at 0,0)
+191 P8b07p EQUAL  (320x1 at 0,0)
+192 P8b07f EQUAL  (320x1 at 0,0)
+193 P8b0Ap EQUAL  (320x1 at 0,0)
+194 P8b0Af EQUAL  (320x1 at 0,0)
+195 P8b0Cp EQUAL  (320x1 at 0,0)
+196 P8b0Cf EQUAL  (320x1 at 0,0)
+197 P8b0Fp EQUAL  (320x1 at 0,0)
+198 P8b0Ff EQUAL  (320x1 at 0,0)
+200 Wa03d EQUAL  (128x1 at 0,0)
+201 Wa03s EQUAL  (256x1 at 0,0)
+203 Wa06d EQUAL  (128x1 at 0,0)
+204 Wa06s EQUAL  (256x1 at 0,0)
+206 Wa13d EQUAL  (144x1 at 0,0)
+207 Wa13s EQUAL  (256x1 at 0,0)
+209 Wa16d EQUAL  (144x1 at 0,0)
+210 Wa16s EQUAL  (256x1 at 0,0)
+212 Wb3d  EQUAL  (112x1 at 0,0)
+213 Wb3s  EQUAL  (128x1 at 0,0)
+215 Wb6d  EQUAL  (112x1 at 0,0)
+216 Wb6s  EQUAL  (128x1 at 0,0)
+218 Wc3d  EQUAL  (96x1 at 0,0)
+219 Wc3s  EQUAL  (96x1 at 0,0)
+221 Wc6d  EQUAL  (96x1 at 0,0)
+222 Wc6s  EQUAL  (96x1 at 0,0)
+224 Wd01d EQUAL  (128x1 at 0,0)
+225 Wd01s EQUAL  (76x1 at 0,0)
+227 Wd03d EQUAL  (128x1 at 0,0)
+228 Wd03s EQUAL  (76x1 at 0,0)
+230 Wd11d EQUAL  (144x1 at 0,0)
+231 Wd11s EQUAL  (76x1 at 0,0)
+233 Wd13d EQUAL  (144x1 at 0,0)
+234 Wd13s EQUAL  (76x1 at 0,0)
+236 We103d EQUAL  (76x1 at 0,0)
+237 We103s EQUAL  (76x1 at 0,0)
+239 We106d EQUAL  (76x1 at 0,0)
+240 We106s EQUAL  (76x1 at 0,0)
+242 We113d EQUAL  (76x1 at 0,0)
+243 We113s EQUAL  (76x1 at 0,0)
+245 We116d EQUAL  (76x1 at 0,0)
+246 We116s EQUAL  (76x1 at 0,0)
+248 We403d EQUAL  (112x1 at 0,0)
+249 We403s EQUAL  (112x1 at 0,0)
+251 We406d EQUAL  (112x1 at 0,0)
+252 We406s EQUAL  (112x1 at 0,0)
+254 We413d EQUAL  (112x1 at 0,0)
+255 We413s EQUAL  (112x1 at 0,0)
+257 We416d EQUAL  (112x1 at 0,0)
+258 We416s EQUAL  (112x1 at 0,0)
+259 K14A  EQUAL  (640x80 at 0,40)
+260 K14B  EQUAL  (640x320 at 0,0)
+261 K14C  EQUAL  (640x280 at 0,40)
+262 K15A  EQUAL  (80x80 at 30,30)
+263 K15B  EQUAL  (80x80 at 30,30)
+264 K15C  EQUAL  (80x80 at 30,30)
+265 K15D  EQUAL  (80x80 at 30,30)
+266 K15E  EQUAL  (80x80 at 30,30)
+267 K15F  EQUAL  (80x80 at 30,30)
+268 K15G  EQUAL  (80x80 at 30,30)
+269 K15H  EQUAL  (80x80 at 30,30)
+270 K15I  EQUAL  (80x80 at 30,30)
+271 K15J  EQUAL  (80x80 at 30,30)
+272 K15K  EQUAL  (80x80 at 30,30)
+273 K15L  EQUAL  (80x80 at 30,30)
+274 K15M  EQUAL  (80x80 at 30,30)
+275 K15N  EQUAL  (80x80 at 30,30)
+276 K15O  EQUAL  (80x80 at 30,30)
+277 K15P  EQUAL  (80x80 at 30,30)
+278 K15Q  EQUAL  (80x80 at 30,30)
+279 K16A  EQUAL  (16x8 at 0,0)
+280 K16B  EQUAL  (16x8 at 0,0)
+281 K17A  EQUAL  (120x100 at 40,50)
+282 K17B  EQUAL  (120x100 at 40,50)
+283 K17C  EQUAL  (120x100 at 40,50)
+284 K17D  EQUAL  (120x100 at 40,50)
+285 K17E  EQUAL  (120x100 at 40,50)
+286 K17F  EQUAL  (120x100 at 40,50)
+287 K17G  EQUAL  (120x100 at 40,50)
+288 K17H  EQUAL  (120x100 at 40,50)
+289 K17I  EQUAL  (120x100 at 40,50)
+290 K17J  EQUAL  (120x100 at 40,50)
+291 K17K  EQUAL  (120x100 at 40,50)
+292 K17L  EQUAL  (120x100 at 40,50)
+293 K17M  EQUAL  (120x100 at 40,50)
+294 K17N  EQUAL  (120x100 at 40,50)
+295 K17O  EQUAL  (120x100 at 40,50)
+296 K17P  EQUAL  (120x100 at 40,50)
+297 K17Q  EQUAL  (120x100 at 40,50)
+298 K17R  EQUAL  (120x100 at 40,50)
+299 K17S  EQUAL  (120x100 at 40,50)
+300 K17T  EQUAL  (120x100 at 40,50)
+301 K17U  EQUAL  (120x100 at 40,50)
+302 T19A  EQUAL  (40x40 at 0,0)
+303 T13A  EQUAL  (120x50 at 0,30)
+304 T13B  EQUAL  (120x50 at 0,30)
+305 T14A  EQUAL  (200x60 at 0,20)
+306 T14B  EQUAL  (640x60 at 0,160)
+307 T14C  EQUAL  (640x30 at 0,40)
+308 T14D  EQUAL  (400x40 at 0,30)
+309 T14E  EQUAL  (400x40 at 0,30)
+310 T14F  EQUAL  (400x40 at 0,30)
+311 T14G  EQUAL  (640x40 at 0,30)
+312 T14H  EQUAL  (640x40 at 0,170)
+313 T14I  EQUAL  (400x40 at 0,30)
+314 T14J  EQUAL  (300x30 at 0,40)
+315 T14K  EQUAL  (64x50 at 0,160)
+316 T14L  EQUAL  (64x50 at 0,160)
+317 T14M  EQUAL  (64x50 at 0,160)
+318 T15A  EQUAL  (200x40 at 0,30)
+319 T15B  EQUAL  (200x40 at 0,30)
+320 T15C  EQUAL  (200x40 at 0,30)
+321 T15D  EQUAL  (200x40 at 0,30)
+322 T15E  EQUAL  (200x40 at 0,30)
+323 T1600 EQUAL  (240x240 at 200,120)
+324 T1601 EQUAL  (240x240 at 200,120)
+325 T1602 EQUAL  (240x240 at 200,120)
+326 T160g EQUAL  (240x240 at 200,120)
+327 T1610 EQUAL  (240x240 at 200,120)
+328 T1611 EQUAL  (240x240 at 200,120)
+329 T1612 EQUAL  (240x240 at 200,120)
+330 T161g EQUAL  (240x240 at 200,120)
+331 T1620 EQUAL  (240x240 at 200,120)
+332 T1621 EQUAL  (240x240 at 200,120)
+333 T1622 EQUAL  (240x240 at 200,120)
+334 T162g EQUAL  (240x240 at 200,120)
+335 T1630 EQUAL  (240x240 at 200,120)
+336 T1631 EQUAL  (240x240 at 200,120)
+337 T1632 EQUAL  (240x240 at 200,120)
+338 T163g EQUAL  (240x240 at 200,120)
+339 TUA   EQUAL  (80x40 at 560,80)
+339 TUAw  EQUAL  (80x40 at 0,80)
+340 TUB   EQUAL  (80x40 at 0,130)
+340 TUBw  EQUAL  (40x40 at 600,130)
+341 TUC   EQUAL  (120x60 at 520,160)
+341 TUCw  EQUAL  (120x60 at 0,160)
+342 TUD   EQUAL  (80x40 at 560,80)
+342 TUDw  EQUAL  (80x40 at 0,80)
+343 TUE   DIFF   53 px raw, 53 px by pen (80x40 at 560,280): (601,296) E=0000 N=ffdf, (603,296) E=0000 N=ffdf, (607,296) E=0000 N=ffdf, (609,296) E=0000 N=ffdf, (613,296) E=0000 N=ffdf, (615,296) E=0000 N=ffdf
+343 TUEw  DIFF   7 px raw, 7 px by pen (80x40 at 0,280): (2,298) E=0000 N=ffdf, (6,298) E=0000 N=ffdf, (3,299) E=0000 N=ffdf, (5,299) E=0000 N=ffdf, (0,300) E=0000 N=ffdf, (2,300) E=0000 N=ffdf
+344 TUF   EQUAL  (120x40 at 80,80)
+345 TPA   EQUAL  (300x250 at 0,0)
+346 TPB   EQUAL  (300x250 at 0,0)
+347 TPC   EQUAL  (220x40 at 0,280)
+348 TPD   EQUAL  (100x50 at 0,340)
+349 TPE   EQUAL  (300x250 at 0,0)
+351 TRAb  EQUAL  (208x1 at 0,0)
+353 TRBb  EQUAL  (208x1 at 0,0)
+355 TRCb  EQUAL  (144x1 at 0,0)
+357 TRDb  EQUAL  (144x1 at 0,0)
+359 TREb  EQUAL  (208x1 at 0,0)
+361 TRFb  EQUAL  (208x1 at 0,0)
+363 TRGb  EQUAL  (208x1 at 0,0)
+365 TRHb  EQUAL  (208x1 at 0,0)
+367 TRIb  EQUAL  (144x1 at 0,0)
+368 TRJ   EQUAL  (180x160 at 80,80)
+369 TRK   EQUAL  (180x160 at 80,80)
+370 TRL   EQUAL  (180x160 at 80,80)
+371 TRM   EQUAL  (180x160 at 80,80)
+372 T18A  EQUAL  (8x8 at 0,0)
+373 TVA   EQUAL  (60x120 at 70,200)
+374 TVB   EQUAL  (40x120 at 600,200)
+374 TVBw  EQUAL  (40x120 at 0,200)
+375 TVC   EQUAL  (60x50 at 0,170)
+375 TVCw  EQUAL  (50x50 at 590,170)
+376 TVD   EQUAL  (40x80 at 0,180)
+376 TVDw  EQUAL  (40x80 at 600,180)
+377 TVE   EQUAL  (60x120 at 70,200)
+378 TVF   DIFF   784 px raw, 784 px by pen (100x220 at 150,100): (177,175) E=0000 N=ffdf, (179,175) E=0000 N=ffdf, (181,175) E=0000 N=ffdf, (183,175) E=0000 N=ffdf, (185,175) E=0000 N=ffdf, (187,175) E=0000 N=ffdf
+379 TVG   DIFF   784 px raw, 784 px by pen (100x220 at 250,80): (300,102) E=0000 N=ffdf, (302,102) E=0000 N=ffdf, (304,102) E=0000 N=ffdf, (306,102) E=0000 N=ffdf, (308,102) E=0000 N=ffdf, (310,102) E=0000 N=ffdf
+380 TVH   DIFF   784 px raw, 784 px by pen (220x100 at 300,40): (376,100) E=0000 N=ffdf, (378,100) E=0000 N=ffdf, (384,100) E=0000 N=ffdf, (386,100) E=0000 N=ffdf, (394,100) E=0000 N=ffdf, (396,100) E=0000 N=ffdf
+381 TVI   DIFF   784 px raw, 784 px by pen (160x60 at 80,260): (107,277) E=0000 N=ffdf, (109,277) E=0000 N=ffdf, (119,277) E=0000 N=ffdf, (121,277) E=0000 N=ffdf, (123,277) E=0000 N=ffdf, (125,277) E=0000 N=ffdf
+382 TVJ   EQUAL  (120x40 at 80,80)
+383 TVK   DIFF   1 px raw, 1 px by pen (120x40 at 80,80): (148,101) E=ffff N=0000
+384 TVL   EQUAL  (130x40 at 80,80)
+385 TVM   EQUAL  (240x40 at 80,80)
+386 TVN   EQUAL  (240x40 at 80,80)
+387 TVO   DIFF   442 px raw, 273 px by pen (320x40 at 150,80): (200,96) E=ffdf N=ffff, (201,96) E=0000 N=ffff, (202,96) E=0000 N=ffff, (203,96) E=0000 N=ffff, (204,96) E=ffdf N=ffff, (205,96) E=ffdf N=ffff
+388 TVP   DIFF   659 px raw, 423 px by pen (320x40 at 80,80): (100,96) E=ffdf N=ffff, (101,96) E=0000 N=ffff, (102,96) E=0000 N=ffff, (103,96) E=0000 N=ffff, (104,96) E=ffdf N=ffff, (105,96) E=ffdf N=ffff
+389 TVQ   EQUAL  (120x40 at 60,80)
+390 TVR   EQUAL  (80x40 at 560,80)
+390 TVRw  EQUAL  (80x40 at 0,80)
+391 TVS   EQUAL  (80x40 at 560,80)
+391 TVSw  EQUAL  (80x40 at 0,80)
+392 TVT   EQUAL  (80x40 at 560,80)
+392 TVTw  EQUAL  (80x40 at 0,80)
+393 TVU   DIFF   44 px raw, 32 px by pen (80x40 at 560,80): (599,95) E=ffff N=ffdf, (600,95) E=ffff N=ffdf, (601,95) E=ffff N=ffdf, (607,95) E=0000 N=ffdf, (608,95) E=0000 N=ffdf, (615,95) E=0000 N=ffdf
+393 TVUw  DIFF   40 px raw, 20 px by pen (80x40 at 0,80): (0,96) E=0000 N=ffdf, (1,96) E=0000 N=ffdf, (7,96) E=0000 N=ffdf, (8,96) E=0000 N=ffdf, (9,96) E=0000 N=ffdf, (15,96) E=0000 N=ffdf
+394 TVV   EQUAL  (80x60 at 560,60)
+394 TVVw  EQUAL  (80x60 at 0,60)
+395 TVW   EQUAL  (80x40 at 0,130)
+395 TVWw  EQUAL  (80x40 at 560,130)
+396 TVX   EQUAL  (120x40 at 80,80)
+397 TVY   EQUAL  (80x40 at 560,80)
+397 TVYw  EQUAL  (80x40 at 0,80)
+398 TVZ   DIFF   844 px raw, 423 px by pen (640x140 at 0,20): (514,35) E=ffff N=ffdf, (515,35) E=ffff N=ffdf, (516,35) E=ffff N=ffdf, (517,35) E=ffff N=ffdf, (518,35) E=ffff N=ffdf, (519,35) E=ffff N=ffdf
+399 TWA   DIFF   784 px raw, 784 px by pen (100x230 at 150,90): (177,102) E=0000 N=ffdf, (179,102) E=0000 N=ffdf, (181,102) E=0000 N=ffdf, (183,102) E=0000 N=ffdf, (185,102) E=0000 N=ffdf, (187,102) E=0000 N=ffdf
+402 TXB   EQUAL  (140x70 at 0,60)
+403 TXC   EQUAL  (120x60 at 0,60)
+404 TXD   EQUAL  (120x40 at 0,80)
+411 TXG   EQUAL  (120x40 at 0,80)
+413 TXI   EQUAL  (200x40 at 0,80)
+414 TXIb  EQUAL  (200x40 at 0,80)
+415 TXIs  DIFF   288 px raw, 226 px by pen (200x40 at 0,80): (18,92) E=ffff N=ffdf, (19,92) E=ffff N=ffdf, (20,92) E=ffff N=ffdf, (21,92) E=ffff N=ffdf, (22,92) E=ffff N=ffdf, (23,92) E=ffff N=ffdf
+416 TXIo  EQUAL  (200x40 at 0,80)
+417 TXIu  EQUAL  (200x40 at 0,80)
+418 TXR1  EQUAL  (80x160 at 60,60)
+419 TXR2  EQUAL  (200x50 at 120,70)
+420 TXR3  EQUAL  (80x160 at 60,40)
+421 TXS1  EQUAL  (300x50 at 0,70)
+422 TXS2  EQUAL  (300x50 at 0,70)
+423 TXS3  EQUAL  (300x50 at 0,70)
+424 TXJ   EQUAL  (260x40 at 0,80)
+425 TXO   EQUAL  (120x40 at 0,80)
+426 TXM   EQUAL  (200x80 at 0,40)
+427 TXC2  EQUAL  (300x100 at 0,40)
+428 TXH2  EQUAL  (240x40 at 0,80)
+429 TXK   EQUAL  (120x70 at 0,50)
+429 TXK2  EQUAL  (200x130 at 0,200)
+430 TXL   EQUAL  (120x60 at 0,80)
+431 TXN   EQUAL  (120x60 at 0,60)
+433 TXQ   DIFF   278 px raw, 150 px by pen (200x40 at 0,80): (19,87) E=ffff N=ffdf, (20,87) E=ffff N=ffdf, (21,87) E=ffff N=ffdf, (22,87) E=ffff N=ffdf, (23,87) E=ffff N=ffdf, (24,87) E=ffff N=ffdf
+434 TXQ2  EQUAL  (200x40 at 0,80)
+435 TXQ3  EQUAL  (200x40 at 0,80)
+437 Y000  EQUAL  (166x57 at 0,0)
+438 Y001  EQUAL  (292x84 at 0,0)
+439 Y002  DIFF   16 px raw, 8 px by pen (166x57 at 0,0): (136,10) E=0000 N=ffff, (136,11) E=0000 N=ffff, (136,12) E=ffdf N=ffff, (136,13) E=0000 N=ffff, (136,14) E=ffdf N=ffff, (136,15) E=ffdf N=ffff
+440 Y003  DIFF   64 px raw, 32 px by pen (292x84 at 0,0): (262,9) E=0000 N=ffff, (263,9) E=0000 N=ffff, (262,10) E=0000 N=ffff, (263,10) E=0000 N=ffff, (262,11) E=0000 N=ffff, (263,11) E=0000 N=ffff
+441 Y004  DIFF   121 px raw, 33 px by pen (166x57 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+442 Y005  DIFF   511 px raw, 139 px by pen (292x84 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+443 Y006  DIFF   1 px raw, 1 px by pen (166x57 at 0,0): (138,26) E=0000 N=ffdf
+444 Y007  EQUAL  (292x84 at 0,0)
+445 Y008  DIFF   441 px raw, 337 px by pen (166x57 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+446 Y009  DIFF   1385 px raw, 979 px by pen (292x84 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+447 Y010  EQUAL  (168x57 at 0,0)
+448 Y011  EQUAL  (296x84 at 0,0)
+449 Y012  DIFF   16 px raw, 16 px by pen (168x57 at 0,0): (138,10) E=0000 N=ffff, (138,11) E=0000 N=ffff, (138,12) E=0000 N=ffff, (138,13) E=0000 N=ffff, (138,14) E=0000 N=ffff, (138,15) E=0000 N=ffff
+450 Y013  DIFF   64 px raw, 64 px by pen (296x84 at 0,0): (266,9) E=0000 N=ffff, (267,9) E=0000 N=ffff, (266,10) E=0000 N=ffff, (267,10) E=0000 N=ffff, (266,11) E=0000 N=ffff, (267,11) E=0000 N=ffff
+451 Y014  DIFF   121 px raw, 33 px by pen (168x57 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+452 Y015  DIFF   523 px raw, 151 px by pen (296x84 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+453 Y016  EQUAL  (168x57 at 0,0)
+454 Y017  EQUAL  (296x84 at 0,0)
+455 Y018  DIFF   448 px raw, 344 px by pen (168x57 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+456 Y019  DIFF   1392 px raw, 988 px by pen (296x84 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+457 Y020  EQUAL  (170x57 at 0,0)
+458 Y021  EQUAL  (300x84 at 0,0)
+459 Y022  DIFF   16 px raw, 8 px by pen (170x57 at 0,0): (140,10) E=0000 N=ffff, (140,11) E=ffdf N=ffff, (140,12) E=ffdf N=ffff, (140,13) E=0000 N=ffff, (140,14) E=ffdf N=ffff, (140,15) E=0000 N=ffff
+460 Y023  DIFF   64 px raw, 32 px by pen (300x84 at 0,0): (270,9) E=0000 N=ffff, (271,9) E=0000 N=ffff, (270,10) E=0000 N=ffff, (271,10) E=0000 N=ffff, (270,11) E=ffdf N=ffff, (271,11) E=ffdf N=ffff
+461 Y024  DIFF   127 px raw, 39 px by pen (170x57 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+462 Y025  DIFF   544 px raw, 172 px by pen (300x84 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+463 Y026  EQUAL  (170x57 at 0,0)
+464 Y027  EQUAL  (300x84 at 0,0)
+465 Y028  DIFF   440 px raw, 336 px by pen (170x57 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+466 Y029  DIFF   1396 px raw, 991 px by pen (300x84 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+467 Y030  EQUAL  (72x140 at 0,0)
+468 Y031  EQUAL  (104x250 at 0,0)
+469 Y032  DIFF   63 px raw, 63 px by pen (72x140 at 0,0): (42,10) E=0000 N=ffff, (42,11) E=0000 N=ffff, (42,12) E=0000 N=ffff, (42,13) E=0000 N=ffff, (42,14) E=0000 N=ffff, (42,15) E=0000 N=ffff
+470 Y033  DIFF   252 px raw, 252 px by pen (104x250 at 0,0): (74,9) E=0000 N=ffff, (75,9) E=0000 N=ffff, (74,10) E=0000 N=ffff, (75,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (75,11) E=0000 N=ffff
+471 Y034  DIFF   2281 px raw, 615 px by pen (72x140 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+472 Y035  DIFF   7196 px raw, 2690 px by pen (104x250 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+473 Y036  EQUAL  (72x140 at 0,0)
+474 Y037  EQUAL  (104x250 at 0,0)
+475 Y038  DIFF   2056 px raw, 496 px by pen (72x140 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+476 Y039  DIFF   5835 px raw, 1494 px by pen (104x250 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+477 Y040  EQUAL  (72x141 at 0,0)
+478 Y041  EQUAL  (104x252 at 0,0)
+479 Y042  DIFF   64 px raw, 64 px by pen (72x141 at 0,0): (42,10) E=0000 N=ffff, (42,11) E=0000 N=ffff, (42,12) E=0000 N=ffff, (42,13) E=0000 N=ffff, (42,14) E=0000 N=ffff, (42,15) E=0000 N=ffff
+480 Y043  DIFF   256 px raw, 256 px by pen (104x252 at 0,0): (74,9) E=0000 N=ffff, (75,9) E=0000 N=ffff, (74,10) E=0000 N=ffff, (75,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (75,11) E=0000 N=ffff
+481 Y044  DIFF   2421 px raw, 668 px by pen (72x141 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+482 Y045  DIFF   7331 px raw, 2699 px by pen (104x252 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+483 Y046  EQUAL  (72x141 at 0,0)
+484 Y047  EQUAL  (104x252 at 0,0)
+485 Y048  DIFF   2101 px raw, 509 px by pen (72x141 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+486 Y049  DIFF   5979 px raw, 1513 px by pen (104x252 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+487 Y050  EQUAL  (72x143 at 0,0)
+488 Y051  EQUAL  (104x256 at 0,0)
+489 Y052  DIFF   65 px raw, 65 px by pen (72x143 at 0,0): (42,10) E=0000 N=ffff, (42,11) E=0000 N=ffff, (42,12) E=0000 N=ffff, (42,13) E=0000 N=ffff, (42,14) E=0000 N=ffff, (42,15) E=0000 N=ffff
+490 Y053  DIFF   260 px raw, 260 px by pen (104x256 at 0,0): (74,9) E=0000 N=ffff, (75,9) E=0000 N=ffff, (74,10) E=0000 N=ffff, (75,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (75,11) E=0000 N=ffff
+491 Y054  DIFF   2417 px raw, 637 px by pen (72x143 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+492 Y055  DIFF   7502 px raw, 2742 px by pen (104x256 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+493 Y056  EQUAL  (72x143 at 0,0)
+494 Y057  EQUAL  (104x256 at 0,0)
+495 Y058  DIFF   2135 px raw, 510 px by pen (72x143 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+496 Y059  DIFF   6129 px raw, 1534 px by pen (104x256 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+497 Y060  EQUAL  (102x57 at 0,0)
+498 Y061  EQUAL  (164x84 at 0,0)
+499 Y062  DIFF   16 px raw, 8 px by pen (102x57 at 0,0): (72,10) E=0000 N=ffff, (72,11) E=0000 N=ffff, (72,12) E=ffdf N=ffff, (72,13) E=0000 N=ffff, (72,14) E=ffdf N=ffff, (72,15) E=ffdf N=ffff
+500 Y063  DIFF   64 px raw, 32 px by pen (164x84 at 0,0): (134,9) E=0000 N=ffff, (135,9) E=0000 N=ffff, (134,10) E=0000 N=ffff, (135,10) E=0000 N=ffff, (134,11) E=0000 N=ffff, (135,11) E=0000 N=ffff
+501 Y064  DIFF   117 px raw, 29 px by pen (102x57 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+502 Y065  DIFF   498 px raw, 126 px by pen (164x84 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+503 Y066  EQUAL  (102x57 at 0,0)
+504 Y067  EQUAL  (164x84 at 0,0)
+505 Y068  DIFF   303 px raw, 199 px by pen (102x57 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+506 Y069  DIFF   970 px raw, 564 px by pen (164x84 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+507 Y070  EQUAL  (104x57 at 0,0)
+508 Y071  EQUAL  (168x84 at 0,0)
+509 Y072  DIFF   16 px raw, 16 px by pen (104x57 at 0,0): (74,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (74,12) E=0000 N=ffff, (74,13) E=0000 N=ffff, (74,14) E=0000 N=ffff, (74,15) E=0000 N=ffff
+510 Y073  DIFF   64 px raw, 64 px by pen (168x84 at 0,0): (138,9) E=0000 N=ffff, (139,9) E=0000 N=ffff, (138,10) E=0000 N=ffff, (139,10) E=0000 N=ffff, (138,11) E=0000 N=ffff, (139,11) E=0000 N=ffff
+511 Y074  DIFF   120 px raw, 32 px by pen (104x57 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+512 Y075  DIFF   512 px raw, 140 px by pen (168x84 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+513 Y076  EQUAL  (104x57 at 0,0)
+514 Y077  EQUAL  (168x84 at 0,0)
+515 Y078  DIFF   310 px raw, 206 px by pen (104x57 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+516 Y079  DIFF   979 px raw, 575 px by pen (168x84 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+517 Y080  EQUAL  (106x57 at 0,0)
+518 Y081  EQUAL  (172x84 at 0,0)
+519 Y082  DIFF   16 px raw, 8 px by pen (106x57 at 0,0): (76,10) E=0000 N=ffff, (76,11) E=ffdf N=ffff, (76,12) E=0000 N=ffff, (76,13) E=ffdf N=ffff, (76,14) E=ffdf N=ffff, (76,15) E=0000 N=ffff
+520 Y083  DIFF   64 px raw, 32 px by pen (172x84 at 0,0): (142,9) E=0000 N=ffff, (143,9) E=0000 N=ffff, (142,10) E=0000 N=ffff, (143,10) E=0000 N=ffff, (142,11) E=ffdf N=ffff, (143,11) E=ffdf N=ffff
+521 Y084  DIFF   125 px raw, 37 px by pen (106x57 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+522 Y085  DIFF   536 px raw, 164 px by pen (172x84 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+523 Y086  EQUAL  (106x57 at 0,0)
+524 Y087  EQUAL  (172x84 at 0,0)
+525 Y088  DIFF   303 px raw, 199 px by pen (106x57 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+526 Y089  DIFF   983 px raw, 578 px by pen (172x84 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+527 Y090  EQUAL  (72x84 at 0,0)
+528 Y091  EQUAL  (104x138 at 0,0)
+529 Y092  DIFF   31 px raw, 31 px by pen (72x84 at 0,0): (42,10) E=0000 N=ffff, (42,11) E=0000 N=ffff, (42,12) E=0000 N=ffff, (42,13) E=0000 N=ffff, (42,14) E=0000 N=ffff, (42,15) E=0000 N=ffff
+530 Y093  DIFF   124 px raw, 124 px by pen (104x138 at 0,0): (74,9) E=0000 N=ffff, (75,9) E=0000 N=ffff, (74,10) E=0000 N=ffff, (75,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (75,11) E=0000 N=ffff
+531 Y094  DIFF   493 px raw, 133 px by pen (72x84 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+532 Y095  DIFF   2730 px raw, 1313 px by pen (104x138 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+533 Y096  EQUAL  (72x84 at 0,0)
+534 Y097  EQUAL  (104x138 at 0,0)
+535 Y098  DIFF   613 px raw, 239 px by pen (72x84 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+536 Y099  DIFF   2179 px raw, 830 px by pen (104x138 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+537 Y100  EQUAL  (72x85 at 0,0)
+538 Y101  EQUAL  (104x140 at 0,0)
+539 Y102  DIFF   32 px raw, 32 px by pen (72x85 at 0,0): (42,10) E=0000 N=ffff, (42,11) E=0000 N=ffff, (42,12) E=0000 N=ffff, (42,13) E=0000 N=ffff, (42,14) E=0000 N=ffff, (42,15) E=0000 N=ffff
+540 Y103  DIFF   128 px raw, 128 px by pen (104x140 at 0,0): (74,9) E=0000 N=ffff, (75,9) E=0000 N=ffff, (74,10) E=0000 N=ffff, (75,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (75,11) E=0000 N=ffff
+541 Y104  DIFF   566 px raw, 168 px by pen (72x85 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+542 Y105  DIFF   2904 px raw, 1390 px by pen (104x140 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+543 Y106  EQUAL  (72x85 at 0,0)
+544 Y107  EQUAL  (104x140 at 0,0)
+545 Y108  DIFF   641 px raw, 240 px by pen (72x85 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+546 Y109  DIFF   2259 px raw, 849 px by pen (104x140 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+547 Y110  EQUAL  (72x87 at 0,0)
+548 Y111  EQUAL  (104x144 at 0,0)
+549 Y112  DIFF   33 px raw, 33 px by pen (72x87 at 0,0): (42,10) E=0000 N=ffff, (42,11) E=0000 N=ffff, (42,12) E=0000 N=ffff, (42,13) E=0000 N=ffff, (42,14) E=0000 N=ffff, (42,15) E=0000 N=ffff
+550 Y113  DIFF   132 px raw, 132 px by pen (104x144 at 0,0): (74,9) E=0000 N=ffff, (75,9) E=0000 N=ffff, (74,10) E=0000 N=ffff, (75,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (75,11) E=0000 N=ffff
+551 Y114  DIFF   570 px raw, 161 px by pen (72x87 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+552 Y115  DIFF   3085 px raw, 1471 px by pen (104x144 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+553 Y116  EQUAL  (72x87 at 0,0)
+554 Y117  EQUAL  (104x144 at 0,0)
+555 Y118  DIFF   673 px raw, 246 px by pen (72x87 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+556 Y119  DIFF   2361 px raw, 886 px by pen (104x144 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+557 Y120  EQUAL  (104x85 at 0,0)
+558 Y121  EQUAL  (168x140 at 0,0)
+559 Y122  DIFF   32 px raw, 32 px by pen (104x85 at 0,0): (74,10) E=0000 N=ffff, (74,11) E=0000 N=ffff, (74,12) E=0000 N=ffff, (74,13) E=0000 N=ffff, (74,14) E=0000 N=ffff, (74,15) E=0000 N=ffff
+560 Y123  DIFF   128 px raw, 128 px by pen (168x140 at 0,0): (138,9) E=0000 N=ffff, (139,9) E=0000 N=ffff, (138,10) E=0000 N=ffff, (139,10) E=0000 N=ffff, (138,11) E=0000 N=ffff, (139,11) E=0000 N=ffff
+561 Y124  DIFF   538 px raw, 146 px by pen (104x85 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+562 Y125  DIFF   4030 px raw, 2520 px by pen (168x140 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+563 Y126  EQUAL  (104x85 at 0,0)
+564 Y127  EQUAL  (168x140 at 0,0)
+565 Y128  DIFF   755 px raw, 354 px by pen (104x85 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+566 Y129  DIFF   2942 px raw, 1532 px by pen (168x140 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+567 Y130  EQUAL  (106x87 at 0,0)
+568 Y131  EQUAL  (172x144 at 0,0)
+569 Y132  DIFF   33 px raw, 17 px by pen (106x87 at 0,0): (76,10) E=0000 N=ffff, (76,11) E=ffdf N=ffff, (76,12) E=0000 N=ffff, (76,13) E=ffdf N=ffff, (76,14) E=ffdf N=ffff, (76,15) E=0000 N=ffff
+570 Y133  DIFF   132 px raw, 68 px by pen (172x144 at 0,0): (142,9) E=0000 N=ffff, (143,9) E=0000 N=ffff, (142,10) E=0000 N=ffff, (143,10) E=0000 N=ffff, (142,11) E=ffdf N=ffff, (143,11) E=ffdf N=ffff
+571 Y134  DIFF   652 px raw, 235 px by pen (106x87 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+572 Y135  DIFF   4362 px raw, 2748 px by pen (172x144 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+573 Y136  EQUAL  (106x87 at 0,0)
+574 Y137  EQUAL  (172x144 at 0,0)
+575 Y138  DIFF   797 px raw, 368 px by pen (106x87 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+576 Y139  DIFF   3120 px raw, 1645 px by pen (172x144 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+577 Y140  EQUAL  (164x138 at 0,0)
+578 Y141  EQUAL  (288x246 at 0,0)
+579 Y142  DIFF   62 px raw, 31 px by pen (164x138 at 0,0): (134,10) E=0000 N=ffff, (134,11) E=ffdf N=ffff, (134,12) E=0000 N=ffff, (134,13) E=0000 N=ffff, (134,14) E=ffdf N=ffff, (134,15) E=0000 N=ffff
+580 Y143  DIFF   248 px raw, 124 px by pen (288x246 at 0,0): (258,9) E=0000 N=ffff, (259,9) E=0000 N=ffff, (258,10) E=0000 N=ffff, (259,10) E=0000 N=ffff, (258,11) E=ffdf N=ffff, (259,11) E=ffdf N=ffff
+581 Y144  DIFF   3575 px raw, 1941 px by pen (164x138 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+582 Y145  DIFF   15844 px raw, 11462 px by pen (288x246 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+583 Y146  EQUAL  (164x138 at 0,0)
+584 Y147  DIFF   1 px raw, 1 px by pen (288x246 at 0,0): (215,133) E=0000 N=ffdf
+585 Y148  DIFF   2900 px raw, 1371 px by pen (164x138 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+586 Y149  DIFF   9958 px raw, 5742 px by pen (288x246 at 0,0): (5,8) E=ffff N=ffdf, (6,8) E=ffff N=ffdf, (7,8) E=ffff N=ffdf, (8,8) E=ffff N=ffdf, (9,8) E=ffff N=ffdf, (10,8) E=ffff N=ffdf
+587 Y150  EQUAL  (124x62 at 0,0)
+588 Y151  DIFF   225 px raw, 93 px by pen (124x62 at 0,0): (7,10) E=ffff N=ffdf, (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf
+589 Y152  DIFF   556 px raw, 421 px by pen (124x62 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+590 Y153  EQUAL  (126x62 at 0,0)
+591 Y154  DIFF   221 px raw, 89 px by pen (126x62 at 0,0): (7,10) E=ffff N=ffdf, (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf
+592 Y155  DIFF   572 px raw, 437 px by pen (126x62 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+593 Y156  EQUAL  (72x118 at 0,0)
+594 Y157  DIFF   1833 px raw, 771 px by pen (72x118 at 0,0): (7,10) E=ffff N=ffdf, (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf
+595 Y158  DIFF   1709 px raw, 692 px by pen (72x118 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+596 Y159  EQUAL  (72x121 at 0,0)
+597 Y160  DIFF   1904 px raw, 802 px by pen (72x121 at 0,0): (7,10) E=ffff N=ffdf, (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf
+598 Y161  DIFF   1732 px raw, 667 px by pen (72x121 at 0,0): (6,9) E=ffff N=ffdf, (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf
+599 Y162  EQUAL  (76x206 at 0,0)
+600 Y163  DIFF   394 px raw, 394 px by pen (76x206 at 0,0): (21,61) E=ffdf N=0000, (24,61) E=ffdf N=0000, (31,61) E=ffdf N=0000, (34,61) E=ffdf N=0000, (20,63) E=0000 N=ffdf, (23,63) E=ffdf N=0000
+601 Y164  EQUAL  (76x208 at 0,0)
+602 Y165  DIFF   398 px raw, 398 px by pen (76x208 at 0,0): (21,62) E=0000 N=ffdf, (24,62) E=0000 N=ffdf, (29,62) E=0000 N=ffdf, (32,62) E=0000 N=ffdf, (21,63) E=ffdf N=0000, (23,63) E=0000 N=ffdf
+603 Y166  EQUAL  (76x210 at 0,0)
+604 Y167  DIFF   416 px raw, 416 px by pen (76x210 at 0,0): (20,61) E=ffdf N=0000, (21,61) E=ffdf N=0000, (23,61) E=ffdf N=0000, (25,61) E=ffdf N=0000, (28,61) E=ffdf N=0000, (30,61) E=ffdf N=0000
+605 Y168  EQUAL  (123x112 at 0,0)
+606 Y169  DIFF   322 px raw, 322 px by pen (123x112 at 0,0): (0,62) E=0000 N=ffdf, (5,62) E=0000 N=ffdf, (8,62) E=0000 N=ffdf, (13,62) E=0000 N=ffdf, (16,62) E=0000 N=ffdf, (21,62) E=0000 N=ffdf
+607 Y170  EQUAL  (124x112 at 0,0)
+608 Y171  DIFF   329 px raw, 329 px by pen (124x112 at 0,0): (0,62) E=0000 N=ffdf, (5,62) E=0000 N=ffdf, (8,62) E=0000 N=ffdf, (13,62) E=0000 N=ffdf, (16,62) E=0000 N=ffdf, (21,62) E=0000 N=ffdf
+609 Y172  EQUAL  (125x112 at 0,0)
+610 Y173  DIFF   327 px raw, 327 px by pen (125x112 at 0,0): (4,62) E=0000 N=ffdf, (7,62) E=0000 N=ffdf, (12,62) E=0000 N=ffdf, (15,62) E=0000 N=ffdf, (20,62) E=0000 N=ffdf, (23,62) E=0000 N=ffdf
+611 ZA000 DIFF   16 px raw, 16 px by pen (200x40 at 0,80): (116,87) E=ffdf N=f800, (116,88) E=ffdf N=f800, (116,89) E=ffdf N=f800, (116,90) E=ffdf N=f800, (116,91) E=ffdf N=f800, (116,92) E=ffdf N=f800
+612 ZA001 EQUAL  (200x40 at 0,80)
+613 ZA002 EQUAL  (200x40 at 0,80)
+614 ZA003 DIFF   26 px raw, 26 px by pen (200x40 at 0,80): (116,87) E=0000 N=f800, (116,88) E=0000 N=f800, (116,89) E=0000 N=f800, (116,90) E=0000 N=f800, (52,91) E=0000 N=f800, (116,91) E=0000 N=f800
+615 ZA004 DIFF   278 px raw, 278 px by pen (200x40 at 0,80): (19,87) E=f800 N=ffdf, (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf
+616 ZA005 EQUAL  (200x40 at 0,80)
+617 ZA006 EQUAL  (200x40 at 0,80)
+618 ZA007 DIFF   180 px raw, 180 px by pen (200x40 at 0,80): (19,87) E=f800 N=0000, (20,87) E=f800 N=0000, (21,87) E=f800 N=0000, (22,87) E=f800 N=0000, (23,87) E=f800 N=0000, (24,87) E=f800 N=0000
+619 ZA008 EQUAL  (200x40 at 0,80)
+620 ZA009 EQUAL  (200x40 at 0,80)
+621 ZA010 EQUAL  (200x40 at 0,80)
+622 ZA011 EQUAL  (200x40 at 0,80)
+623 ZA012 DIFF   385 px raw, 385 px by pen (200x40 at 0,80): (19,87) E=f800 N=ffdf, (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf
+624 ZA013 EQUAL  (200x40 at 0,80)
+625 ZA014 EQUAL  (200x40 at 0,80)
+626 ZA015 DIFF   224 px raw, 224 px by pen (200x40 at 0,80): (19,87) E=f800 N=0000, (20,87) E=f800 N=0000, (21,87) E=f800 N=0000, (22,87) E=f800 N=0000, (23,87) E=f800 N=0000, (24,87) E=f800 N=0000
+627 ZA016 DIFF   18 px raw, 18 px by pen (200x40 at 0,80): (139,86) E=ffdf N=f800, (139,87) E=ffdf N=f800, (139,88) E=ffdf N=f800, (139,89) E=ffdf N=f800, (139,90) E=ffdf N=f800, (139,91) E=ffdf N=f800
+628 ZA017 EQUAL  (200x40 at 0,80)
+629 ZA018 EQUAL  (200x40 at 0,80)
+630 ZA019 DIFF   32 px raw, 32 px by pen (200x40 at 0,80): (139,86) E=0000 N=f800, (139,87) E=0000 N=f800, (139,88) E=0000 N=f800, (139,89) E=0000 N=f800, (59,90) E=0000 N=f800, (139,90) E=0000 N=f800
+631 ZA020 DIFF   326 px raw, 326 px by pen (200x40 at 0,80): (18,86) E=f800 N=ffdf, (19,86) E=f800 N=ffdf, (20,86) E=f800 N=ffdf, (21,86) E=f800 N=ffdf, (22,86) E=f800 N=ffdf, (23,86) E=f800 N=ffdf
+632 ZA021 DIFF   5 px raw, 5 px by pen (200x40 at 0,80): (63,91) E=f800 N=0000, (62,93) E=f800 N=0000, (61,95) E=f800 N=0000, (60,97) E=f800 N=0000, (69,99) E=f800 N=0000
+633 ZA022 DIFF   5 px raw, 5 px by pen (200x40 at 0,80): (63,91) E=f800 N=07ff, (62,93) E=f800 N=07ff, (61,95) E=f800 N=07ff, (60,97) E=f800 N=07ff, (69,99) E=f800 N=07ff
+634 ZA023 DIFF   348 px raw, 348 px by pen (200x40 at 0,80): (18,86) E=f800 N=0000, (19,86) E=f800 N=0000, (20,86) E=f800 N=0000, (21,86) E=f800 N=0000, (22,86) E=f800 N=0000, (23,86) E=f800 N=0000
+635 ZA024 DIFF   346 px raw, 346 px by pen (200x40 at 0,80): (18,86) E=f800 N=ffdf, (19,86) E=f800 N=ffdf, (20,86) E=f800 N=ffdf, (21,86) E=f800 N=ffdf, (22,86) E=f800 N=ffdf, (23,86) E=f800 N=ffdf
+636 ZA025 DIFF   4 px raw, 4 px by pen (200x40 at 0,80): (63,91) E=f800 N=0000, (62,93) E=f800 N=0000, (61,95) E=f800 N=0000, (60,97) E=f800 N=0000
+637 ZA026 DIFF   5 px raw, 5 px by pen (200x40 at 0,80): (63,91) E=f800 N=07ff, (62,93) E=f800 N=07ff, (61,95) E=f800 N=07ff, (60,97) E=f800 N=07ff, (69,99) E=07ff N=f800
+638 ZA027 DIFF   345 px raw, 345 px by pen (200x40 at 0,80): (18,86) E=f800 N=0000, (19,86) E=f800 N=0000, (20,86) E=f800 N=0000, (21,86) E=f800 N=0000, (22,86) E=f800 N=0000, (23,86) E=f800 N=0000
+639 ZA028 DIFF   278 px raw, 278 px by pen (200x40 at 0,80): (19,87) E=f800 N=ffdf, (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf
+640 ZA029 EQUAL  (200x40 at 0,80)
+641 ZA030 EQUAL  (200x40 at 0,80)
+642 ZA031 DIFF   180 px raw, 180 px by pen (200x40 at 0,80): (19,87) E=f800 N=0000, (20,87) E=f800 N=0000, (21,87) E=f800 N=0000, (22,87) E=f800 N=0000, (23,87) E=f800 N=0000, (24,87) E=f800 N=0000
+643 ZA032 DIFF   215 px raw, 215 px by pen (200x40 at 0,80): (23,89) E=0000 N=ffdf, (29,89) E=0000 N=ffdf, (31,89) E=0000 N=ffdf, (33,89) E=0000 N=ffdf, (39,89) E=0000 N=ffdf, (41,89) E=0000 N=ffdf
+644 ZA033 DIFF   215 px raw, 215 px by pen (200x40 at 0,80): (23,89) E=0000 N=f800, (29,89) E=0000 N=f800, (31,89) E=0000 N=f800, (33,89) E=0000 N=f800, (39,89) E=0000 N=f800, (41,89) E=0000 N=f800
+645 ZA034 DIFF   215 px raw, 215 px by pen (200x40 at 0,80): (23,89) E=07ff N=f800, (29,89) E=07ff N=f800, (31,89) E=07ff N=f800, (33,89) E=07ff N=f800, (39,89) E=07ff N=f800, (41,89) E=07ff N=f800
+646 ZA035 DIFF   215 px raw, 215 px by pen (200x40 at 0,80): (23,89) E=f800 N=0000, (29,89) E=f800 N=0000, (31,89) E=f800 N=0000, (33,89) E=f800 N=0000, (39,89) E=f800 N=0000, (41,89) E=f800 N=0000
+647 ZA036 DIFF   421 px raw, 421 px by pen (200x40 at 0,80): (19,87) E=f800 N=ffdf, (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf
+648 ZA037 DIFF   215 px raw, 215 px by pen (200x40 at 0,80): (30,89) E=0000 N=f800, (36,89) E=0000 N=f800, (38,89) E=0000 N=f800, (44,89) E=0000 N=f800, (46,89) E=0000 N=f800, (60,89) E=0000 N=f800
+649 ZA038 DIFF   215 px raw, 215 px by pen (200x40 at 0,80): (30,89) E=07ff N=f800, (36,89) E=07ff N=f800, (38,89) E=07ff N=f800, (44,89) E=07ff N=f800, (46,89) E=07ff N=f800, (60,89) E=07ff N=f800
+650 ZA039 DIFF   181 px raw, 181 px by pen (200x40 at 0,80): (19,87) E=f800 N=0000, (20,87) E=f800 N=0000, (21,87) E=f800 N=0000, (22,87) E=f800 N=0000, (23,87) E=f800 N=0000, (24,87) E=f800 N=0000
+651 ZA040 DIFF   8 px raw, 8 px by pen (200x40 at 0,80): (116,94) E=ffdf N=f800, (116,95) E=ffdf N=f800, (116,96) E=ffdf N=f800, (116,97) E=ffdf N=f800, (116,98) E=ffdf N=f800, (116,99) E=ffdf N=f800
+652 ZA041 EQUAL  (200x40 at 0,80)
+653 ZA042 EQUAL  (200x40 at 0,80)
+654 ZA043 DIFF   9 px raw, 9 px by pen (200x40 at 0,80): (116,94) E=0000 N=f800, (116,95) E=0000 N=f800, (116,96) E=0000 N=f800, (116,97) E=0000 N=f800, (116,98) E=0000 N=f800, (116,99) E=0000 N=f800
+655 ZA044 DIFF   68 px raw, 68 px by pen (200x40 at 0,80): (19,94) E=f800 N=ffdf, (20,94) E=f800 N=ffdf, (21,94) E=f800 N=ffdf, (22,94) E=f800 N=ffdf, (27,94) E=0000 N=ffdf, (35,94) E=0000 N=ffdf
+656 ZA045 EQUAL  (200x40 at 0,80)
+657 ZA046 EQUAL  (200x40 at 0,80)
+658 ZA047 DIFF   145 px raw, 145 px by pen (200x40 at 0,80): (19,94) E=f800 N=0000, (20,94) E=f800 N=0000, (21,94) E=f800 N=0000, (22,94) E=f800 N=0000, (27,94) E=f800 N=0000, (32,94) E=0000 N=f800
+659 ZA048 EQUAL  (200x40 at 0,80)
+660 ZA049 EQUAL  (200x40 at 0,80)
+661 ZA050 EQUAL  (200x40 at 0,80)
+662 ZA051 EQUAL  (200x40 at 0,80)
+663 ZA052 DIFF   111 px raw, 111 px by pen (200x40 at 0,80): (19,94) E=f800 N=ffdf, (20,94) E=f800 N=ffdf, (21,94) E=f800 N=ffdf, (22,94) E=f800 N=ffdf, (27,94) E=0000 N=ffdf, (28,94) E=0000 N=ffdf
+664 ZA053 EQUAL  (200x40 at 0,80)
+665 ZA054 EQUAL  (200x40 at 0,80)
+666 ZA055 DIFF   240 px raw, 240 px by pen (200x40 at 0,80): (19,94) E=f800 N=0000, (20,94) E=f800 N=0000, (21,94) E=f800 N=0000, (22,94) E=f800 N=0000, (27,94) E=f800 N=0000, (28,94) E=f800 N=0000
+667 ZA056 DIFF   10 px raw, 10 px by pen (200x40 at 0,80): (139,93) E=ffdf N=f800, (139,94) E=ffdf N=f800, (139,95) E=ffdf N=f800, (139,96) E=ffdf N=f800, (139,97) E=ffdf N=f800, (139,98) E=ffdf N=f800
+668 ZA057 EQUAL  (200x40 at 0,80)
+669 ZA058 EQUAL  (200x40 at 0,80)
+670 ZA059 DIFF   13 px raw, 13 px by pen (200x40 at 0,80): (139,93) E=0000 N=f800, (139,94) E=0000 N=f800, (139,95) E=0000 N=f800, (139,96) E=0000 N=f800, (139,97) E=0000 N=f800, (139,98) E=0000 N=f800
+671 ZA060 DIFF   91 px raw, 91 px by pen (200x40 at 0,80): (18,93) E=f800 N=ffdf, (19,93) E=f800 N=ffdf, (20,93) E=f800 N=ffdf, (21,93) E=f800 N=ffdf, (28,93) E=0000 N=ffdf, (38,93) E=0000 N=ffdf
+672 ZA061 EQUAL  (200x40 at 0,80)
+673 ZA062 EQUAL  (200x40 at 0,80)
+674 ZA063 DIFF   148 px raw, 148 px by pen (200x40 at 0,80): (18,93) E=f800 N=0000, (19,93) E=f800 N=0000, (20,93) E=f800 N=0000, (21,93) E=f800 N=0000, (28,93) E=f800 N=0000, (33,93) E=0000 N=f800
+675 ZA064 DIFF   122 px raw, 122 px by pen (200x40 at 0,80): (18,93) E=f800 N=ffdf, (19,93) E=f800 N=ffdf, (20,93) E=f800 N=ffdf, (21,93) E=f800 N=ffdf, (28,93) E=0000 N=ffdf, (29,93) E=0000 N=ffdf
+676 ZA065 EQUAL  (200x40 at 0,80)
+677 ZA066 EQUAL  (200x40 at 0,80)
+678 ZA067 DIFF   197 px raw, 197 px by pen (200x40 at 0,80): (18,93) E=f800 N=0000, (19,93) E=f800 N=0000, (20,93) E=f800 N=0000, (21,93) E=f800 N=0000, (28,93) E=f800 N=0000, (29,93) E=f800 N=0000
+679 ZA068 DIFF   68 px raw, 68 px by pen (200x40 at 0,80): (19,94) E=f800 N=ffdf, (20,94) E=f800 N=ffdf, (21,94) E=f800 N=ffdf, (22,94) E=f800 N=ffdf, (27,94) E=0000 N=ffdf, (35,94) E=0000 N=ffdf
+680 ZA069 EQUAL  (200x40 at 0,80)
+681 ZA070 EQUAL  (200x40 at 0,80)
+682 ZA071 DIFF   145 px raw, 145 px by pen (200x40 at 0,80): (19,94) E=f800 N=0000, (20,94) E=f800 N=0000, (21,94) E=f800 N=0000, (22,94) E=f800 N=0000, (27,94) E=f800 N=0000, (32,94) E=0000 N=f800
+683 ZA072 DIFF   117 px raw, 117 px by pen (200x40 at 0,80): (23,94) E=0000 N=ffdf, (29,94) E=0000 N=ffdf, (31,94) E=0000 N=ffdf, (33,94) E=0000 N=ffdf, (39,94) E=0000 N=ffdf, (41,94) E=0000 N=ffdf
+684 ZA073 DIFF   117 px raw, 117 px by pen (200x40 at 0,80): (23,94) E=0000 N=f800, (29,94) E=0000 N=f800, (31,94) E=0000 N=f800, (33,94) E=0000 N=f800, (39,94) E=0000 N=f800, (41,94) E=0000 N=f800
+685 ZA074 DIFF   117 px raw, 117 px by pen (200x40 at 0,80): (23,94) E=07ff N=f800, (29,94) E=07ff N=f800, (31,94) E=07ff N=f800, (33,94) E=07ff N=f800, (39,94) E=07ff N=f800, (41,94) E=07ff N=f800
+686 ZA075 DIFF   117 px raw, 117 px by pen (200x40 at 0,80): (23,94) E=f800 N=0000, (29,94) E=f800 N=0000, (31,94) E=f800 N=0000, (33,94) E=f800 N=0000, (39,94) E=f800 N=0000, (41,94) E=f800 N=0000
+687 ZA076 DIFF   170 px raw, 170 px by pen (200x40 at 0,80): (19,94) E=f800 N=ffdf, (20,94) E=f800 N=ffdf, (21,94) E=f800 N=ffdf, (22,94) E=f800 N=ffdf, (26,94) E=0000 N=ffdf, (27,94) E=0000 N=ffdf
+688 ZA077 DIFF   119 px raw, 119 px by pen (200x40 at 0,80): (26,94) E=0000 N=f800, (32,94) E=0000 N=f800, (34,94) E=0000 N=f800, (36,94) E=0000 N=f800, (42,94) E=0000 N=f800, (44,94) E=0000 N=f800
+689 ZA078 DIFF   119 px raw, 119 px by pen (200x40 at 0,80): (26,94) E=07ff N=f800, (32,94) E=07ff N=f800, (34,94) E=07ff N=f800, (36,94) E=07ff N=f800, (42,94) E=07ff N=f800, (44,94) E=07ff N=f800
+690 ZA079 DIFF   153 px raw, 153 px by pen (200x40 at 0,80): (19,94) E=f800 N=0000, (20,94) E=f800 N=0000, (21,94) E=f800 N=0000, (22,94) E=f800 N=0000, (26,94) E=f800 N=0000, (27,94) E=f800 N=0000
+691 ZA080 DIFF   6 px raw, 6 px by pen (200x40 at 0,80): (92,96) E=ffdf N=f800, (92,97) E=ffdf N=f800, (92,98) E=ffdf N=f800, (92,99) E=ffdf N=f800, (92,100) E=ffdf N=f800, (92,101) E=ffdf N=f800
+692 ZA081 EQUAL  (200x40 at 0,80)
+693 ZA082 EQUAL  (200x40 at 0,80)
+694 ZA083 DIFF   32 px raw, 32 px by pen (200x40 at 0,80): (26,96) E=0000 N=f800, (62,96) E=0000 N=f800, (68,96) E=0000 N=f800, (92,96) E=0000 N=f800, (26,97) E=0000 N=f800, (32,97) E=0000 N=f800
+695 ZA084 DIFF   30 px raw, 30 px by pen (200x40 at 0,80): (20,96) E=f800 N=ffdf, (21,96) E=f800 N=ffdf, (26,96) E=0000 N=ffdf, (32,96) E=0000 N=ffdf, (38,96) E=0000 N=ffdf, (39,96) E=0000 N=ffdf
+696 ZA085 EQUAL  (200x40 at 0,80)
+697 ZA086 EQUAL  (200x40 at 0,80)
+698 ZA087 DIFF   55 px raw, 55 px by pen (200x40 at 0,80): (20,96) E=f800 N=0000, (21,96) E=f800 N=0000, (26,96) E=f800 N=0000, (29,96) E=0000 N=f800, (30,96) E=0000 N=f800, (32,96) E=f800 N=0000
+699 ZA088 EQUAL  (200x40 at 0,80)
+700 ZA089 EQUAL  (200x40 at 0,80)
+701 ZA090 EQUAL  (200x40 at 0,80)
+702 ZA091 EQUAL  (200x40 at 0,80)
+703 ZA092 DIFF   42 px raw, 42 px by pen (200x40 at 0,80): (20,96) E=f800 N=ffdf, (21,96) E=f800 N=ffdf, (26,96) E=0000 N=ffdf, (27,96) E=0000 N=ffdf, (32,96) E=0000 N=ffdf, (33,96) E=0000 N=ffdf
+704 ZA093 EQUAL  (200x40 at 0,80)
+705 ZA094 EQUAL  (200x40 at 0,80)
+706 ZA095 DIFF   109 px raw, 109 px by pen (200x40 at 0,80): (20,96) E=f800 N=0000, (21,96) E=f800 N=0000, (26,96) E=f800 N=0000, (27,96) E=f800 N=0000, (29,96) E=0000 N=f800, (30,96) E=0000 N=f800
+707 ZA096 DIFF   8 px raw, 8 px by pen (200x40 at 0,80): (115,95) E=ffdf N=f800, (115,96) E=ffdf N=f800, (115,97) E=ffdf N=f800, (115,98) E=ffdf N=f800, (115,99) E=ffdf N=f800, (115,100) E=ffdf N=f800
+708 ZA097 EQUAL  (200x40 at 0,80)
+709 ZA098 EQUAL  (200x40 at 0,80)
+710 ZA099 DIFF   48 px raw, 48 px by pen (200x40 at 0,80): (27,95) E=0000 N=f800, (75,95) E=0000 N=f800, (83,95) E=0000 N=f800, (115,95) E=0000 N=f800, (27,96) E=0000 N=f800, (35,96) E=0000 N=f800
+711 ZA100 DIFF   65 px raw, 65 px by pen (200x40 at 0,80): (19,95) E=f800 N=ffdf, (20,95) E=f800 N=ffdf, (21,95) E=f800 N=ffdf, (27,95) E=0000 N=ffdf, (35,95) E=0000 N=ffdf, (43,95) E=0000 N=ffdf
+712 ZA101 EQUAL  (200x40 at 0,80)
+713 ZA102 EQUAL  (200x40 at 0,80)
+714 ZA103 DIFF   116 px raw, 116 px by pen (200x40 at 0,80): (19,95) E=f800 N=0000, (20,95) E=f800 N=0000, (21,95) E=f800 N=0000, (27,95) E=f800 N=0000, (30,95) E=0000 N=f800, (31,95) E=0000 N=f800
+715 ZA104 DIFF   80 px raw, 80 px by pen (200x40 at 0,80): (19,95) E=f800 N=ffdf, (20,95) E=f800 N=ffdf, (21,95) E=f800 N=ffdf, (27,95) E=0000 N=ffdf, (28,95) E=0000 N=ffdf, (35,95) E=0000 N=ffdf
+716 ZA105 EQUAL  (200x40 at 0,80)
+717 ZA106 EQUAL  (200x40 at 0,80)
+718 ZA107 DIFF   148 px raw, 148 px by pen (200x40 at 0,80): (19,95) E=f800 N=0000, (20,95) E=f800 N=0000, (21,95) E=f800 N=0000, (27,95) E=f800 N=0000, (28,95) E=f800 N=0000, (30,95) E=0000 N=f800
+719 ZA108 DIFF   30 px raw, 30 px by pen (200x40 at 0,80): (20,96) E=f800 N=ffdf, (21,96) E=f800 N=ffdf, (26,96) E=0000 N=ffdf, (32,96) E=0000 N=ffdf, (38,96) E=0000 N=ffdf, (39,96) E=0000 N=ffdf
+720 ZA109 EQUAL  (200x40 at 0,80)
+721 ZA110 EQUAL  (200x40 at 0,80)
+722 ZA111 DIFF   55 px raw, 55 px by pen (200x40 at 0,80): (20,96) E=f800 N=0000, (21,96) E=f800 N=0000, (26,96) E=f800 N=0000, (29,96) E=0000 N=f800, (30,96) E=0000 N=f800, (32,96) E=f800 N=0000
+723 ZA112 DIFF   66 px raw, 66 px by pen (200x40 at 0,80): (21,96) E=0000 N=ffdf, (23,96) E=0000 N=ffdf, (27,96) E=0000 N=ffdf, (29,96) E=0000 N=ffdf, (33,96) E=0000 N=ffdf, (35,96) E=0000 N=ffdf
+724 ZA113 DIFF   66 px raw, 66 px by pen (200x40 at 0,80): (21,96) E=0000 N=f800, (23,96) E=0000 N=f800, (27,96) E=0000 N=f800, (29,96) E=0000 N=f800, (33,96) E=0000 N=f800, (35,96) E=0000 N=f800
+725 ZA114 DIFF   66 px raw, 66 px by pen (200x40 at 0,80): (21,96) E=07ff N=f800, (23,96) E=07ff N=f800, (27,96) E=07ff N=f800, (29,96) E=07ff N=f800, (33,96) E=07ff N=f800, (35,96) E=07ff N=f800
+726 ZA115 DIFF   66 px raw, 66 px by pen (200x40 at 0,80): (21,96) E=f800 N=0000, (23,96) E=f800 N=0000, (27,96) E=f800 N=0000, (29,96) E=f800 N=0000, (33,96) E=f800 N=0000, (35,96) E=f800 N=0000
+727 ZA116 DIFF   82 px raw, 82 px by pen (200x40 at 0,80): (20,96) E=f800 N=ffdf, (21,96) E=f800 N=ffdf, (25,96) E=0000 N=ffdf, (26,96) E=0000 N=ffdf, (29,96) E=0000 N=ffdf, (31,96) E=0000 N=ffdf
+728 ZA117 DIFF   58 px raw, 58 px by pen (200x40 at 0,80): (25,96) E=0000 N=f800, (29,96) E=0000 N=f800, (31,96) E=0000 N=f800, (37,96) E=0000 N=f800, (39,96) E=0000 N=f800, (49,96) E=0000 N=f800
+729 ZA118 DIFF   58 px raw, 58 px by pen (200x40 at 0,80): (25,96) E=07ff N=f800, (29,96) E=07ff N=f800, (31,96) E=07ff N=f800, (37,96) E=07ff N=f800, (39,96) E=07ff N=f800, (49,96) E=07ff N=f800
+730 ZA119 DIFF   75 px raw, 75 px by pen (200x40 at 0,80): (20,96) E=f800 N=0000, (21,96) E=f800 N=0000, (25,96) E=f800 N=0000, (26,96) E=f800 N=0000, (30,96) E=0000 N=f800, (31,96) E=f800 N=0000
+731 ZA120 EQUAL  (200x40 at 0,80)
+732 ZA121 EQUAL  (200x40 at 0,80)
+733 ZA122 EQUAL  (200x40 at 0,80)
+734 ZA123 EQUAL  (200x40 at 0,80)
+735 ZA124 DIFF   288 px raw, 288 px by pen (200x40 at 0,80): (18,92) E=f800 N=ffdf, (19,92) E=f800 N=ffdf, (20,92) E=f800 N=ffdf, (21,92) E=f800 N=ffdf, (22,92) E=f800 N=ffdf, (23,92) E=f800 N=ffdf
+736 ZA125 EQUAL  (200x40 at 0,80)
+737 ZA126 EQUAL  (200x40 at 0,80)
+738 ZA127 DIFF   157 px raw, 157 px by pen (200x40 at 0,80): (18,92) E=f800 N=0000, (19,92) E=f800 N=0000, (20,92) E=f800 N=0000, (21,92) E=f800 N=0000, (22,92) E=f800 N=0000, (23,92) E=f800 N=0000
+739 ZA128 EQUAL  (200x40 at 0,80)
+740 ZA129 EQUAL  (200x40 at 0,80)
+741 ZA130 EQUAL  (200x40 at 0,80)
+742 ZA131 EQUAL  (200x40 at 0,80)
+743 ZA132 DIFF   356 px raw, 356 px by pen (200x40 at 0,80): (18,92) E=f800 N=ffdf, (19,92) E=f800 N=ffdf, (20,92) E=f800 N=ffdf, (21,92) E=f800 N=ffdf, (22,92) E=f800 N=ffdf, (23,92) E=f800 N=ffdf
+744 ZA133 EQUAL  (200x40 at 0,80)
+745 ZA134 EQUAL  (200x40 at 0,80)
+746 ZA135 DIFF   261 px raw, 261 px by pen (200x40 at 0,80): (18,92) E=f800 N=0000, (19,92) E=f800 N=0000, (20,92) E=f800 N=0000, (21,92) E=f800 N=0000, (22,92) E=f800 N=0000, (23,92) E=f800 N=0000
+747 ZA136 EQUAL  (200x40 at 0,80)
+748 ZA137 EQUAL  (200x40 at 0,80)
+749 ZA138 EQUAL  (200x40 at 0,80)
+750 ZA139 EQUAL  (200x40 at 0,80)
+751 ZA140 DIFF   329 px raw, 329 px by pen (200x40 at 0,80): (17,91) E=f800 N=ffdf, (18,91) E=f800 N=ffdf, (19,91) E=f800 N=ffdf, (20,91) E=f800 N=ffdf, (21,91) E=f800 N=ffdf, (22,91) E=f800 N=ffdf
+752 ZA141 DIFF   13 px raw, 13 px by pen (200x40 at 0,80): (89,92) E=f800 N=0000, (96,92) E=f800 N=0000, (103,92) E=f800 N=0000, (73,94) E=f800 N=0000, (82,94) E=f800 N=0000, (47,96) E=f800 N=0000
+753 ZA142 DIFF   51 px raw, 51 px by pen (200x40 at 0,80): (30,92) E=07ff N=f800, (49,92) E=07ff N=f800, (61,92) E=07ff N=f800, (69,92) E=07ff N=f800, (74,92) E=07ff N=f800, (89,92) E=f800 N=07ff
+754 ZA143 DIFF   292 px raw, 292 px by pen (200x40 at 0,80): (17,91) E=f800 N=0000, (18,91) E=f800 N=0000, (19,91) E=f800 N=0000, (20,91) E=f800 N=0000, (21,91) E=f800 N=0000, (22,91) E=f800 N=0000
+755 ZA144 DIFF   281 px raw, 281 px by pen (200x40 at 0,80): (17,91) E=f800 N=ffdf, (18,91) E=f800 N=ffdf, (19,91) E=f800 N=ffdf, (20,91) E=f800 N=ffdf, (21,91) E=f800 N=ffdf, (22,91) E=f800 N=ffdf
+756 ZA145 DIFF   13 px raw, 13 px by pen (200x40 at 0,80): (98,92) E=f800 N=0000, (106,92) E=f800 N=0000, (114,92) E=f800 N=0000, (80,94) E=f800 N=0000, (90,94) E=f800 N=0000, (50,96) E=f800 N=0000
+757 ZA146 DIFF   51 px raw, 51 px by pen (200x40 at 0,80): (31,92) E=07ff N=f800, (52,92) E=07ff N=f800, (66,92) E=07ff N=f800, (75,92) E=07ff N=f800, (81,92) E=07ff N=f800, (98,92) E=f800 N=07ff
+758 ZA147 DIFF   295 px raw, 295 px by pen (200x40 at 0,80): (17,91) E=f800 N=0000, (18,91) E=f800 N=0000, (19,91) E=f800 N=0000, (20,91) E=f800 N=0000, (21,91) E=f800 N=0000, (22,91) E=f800 N=0000
+759 ZA148 DIFF   282 px raw, 282 px by pen (200x40 at 0,80): (18,92) E=f800 N=ffdf, (19,92) E=f800 N=ffdf, (20,92) E=f800 N=ffdf, (21,92) E=f800 N=ffdf, (22,92) E=f800 N=ffdf, (23,92) E=f800 N=ffdf
+760 ZA149 EQUAL  (200x40 at 0,80)
+761 ZA150 EQUAL  (200x40 at 0,80)
+762 ZA151 DIFF   157 px raw, 157 px by pen (200x40 at 0,80): (18,92) E=f800 N=0000, (19,92) E=f800 N=0000, (20,92) E=f800 N=0000, (21,92) E=f800 N=0000, (22,92) E=f800 N=0000, (23,92) E=f800 N=0000
+763 ZA152 DIFF   258 px raw, 258 px by pen (200x40 at 0,80): (23,92) E=0000 N=ffdf, (25,92) E=0000 N=ffdf, (27,92) E=0000 N=ffdf, (29,92) E=0000 N=ffdf, (31,92) E=0000 N=ffdf, (34,92) E=0000 N=ffdf
+764 ZA153 DIFF   258 px raw, 258 px by pen (200x40 at 0,80): (23,92) E=0000 N=f800, (25,92) E=0000 N=f800, (27,92) E=0000 N=f800, (29,92) E=0000 N=f800, (31,92) E=0000 N=f800, (34,92) E=0000 N=f800
+765 ZA154 DIFF   258 px raw, 258 px by pen (200x40 at 0,80): (23,92) E=07ff N=f800, (25,92) E=07ff N=f800, (27,92) E=07ff N=f800, (29,92) E=07ff N=f800, (31,92) E=07ff N=f800, (34,92) E=07ff N=f800
+766 ZA155 DIFF   258 px raw, 258 px by pen (200x40 at 0,80): (23,92) E=f800 N=0000, (25,92) E=f800 N=0000, (27,92) E=f800 N=0000, (29,92) E=f800 N=0000, (31,92) E=f800 N=0000, (34,92) E=f800 N=0000
+767 ZA156 DIFF   431 px raw, 431 px by pen (200x40 at 0,80): (18,92) E=f800 N=ffdf, (19,92) E=f800 N=ffdf, (20,92) E=f800 N=ffdf, (21,92) E=f800 N=ffdf, (22,92) E=f800 N=ffdf, (23,92) E=f800 N=ffdf
+768 ZA157 DIFF   250 px raw, 250 px by pen (200x40 at 0,80): (27,92) E=0000 N=f800, (29,92) E=0000 N=f800, (31,92) E=0000 N=f800, (33,92) E=0000 N=f800, (35,92) E=0000 N=f800, (38,92) E=0000 N=f800
+769 ZA158 DIFF   250 px raw, 250 px by pen (200x40 at 0,80): (27,92) E=07ff N=f800, (29,92) E=07ff N=f800, (31,92) E=07ff N=f800, (33,92) E=07ff N=f800, (35,92) E=07ff N=f800, (38,92) E=07ff N=f800
+770 ZA159 DIFF   174 px raw, 174 px by pen (200x40 at 0,80): (18,92) E=f800 N=0000, (19,92) E=f800 N=0000, (20,92) E=f800 N=0000, (21,92) E=f800 N=0000, (22,92) E=f800 N=0000, (23,92) E=f800 N=0000
+771 ZB000 DIFF   64 px raw, 64 px by pen (300x80 at 0,50): (164,73) E=ffdf N=f800, (165,73) E=ffdf N=f800, (164,74) E=ffdf N=f800, (165,74) E=ffdf N=f800, (164,75) E=ffdf N=f800, (165,75) E=ffdf N=f800
+772 ZB001 EQUAL  (300x80 at 0,50)
+773 ZB002 DIFF   1023 px raw, 1023 px by pen (300x80 at 0,50): (18,73) E=f800 N=ffdf, (19,73) E=f800 N=ffdf, (20,73) E=f800 N=ffdf, (21,73) E=f800 N=ffdf, (22,73) E=f800 N=ffdf, (23,73) E=f800 N=ffdf
+774 ZB003 EQUAL  (300x80 at 0,50)
+775 ZB004 EQUAL  (300x80 at 0,50)
+776 ZB005 EQUAL  (300x80 at 0,50)
+777 ZB006 DIFF   873 px raw, 873 px by pen (300x80 at 0,50): (17,72) E=f800 N=ffdf, (18,72) E=f800 N=ffdf, (19,72) E=f800 N=ffdf, (20,72) E=f800 N=ffdf, (21,72) E=f800 N=ffdf, (22,72) E=f800 N=ffdf
+778 ZB007 EQUAL  (300x80 at 0,50)
+779 ZB008 DIFF   50 px raw, 50 px by pen (300x80 at 0,50): (131,80) E=ffdf N=f800, (132,80) E=ffdf N=f800, (131,81) E=ffdf N=f800, (132,81) E=ffdf N=f800, (131,82) E=ffdf N=f800, (132,82) E=ffdf N=f800
+780 ZB009 DIFF   24 px raw, 24 px by pen (300x80 at 0,50): (32,86) E=0000 N=f800, (32,87) E=0000 N=f800, (32,88) E=0000 N=f800, (32,89) E=0000 N=f800, (32,90) E=0000 N=f800, (32,91) E=0000 N=f800
+781 ZB010 DIFF   605 px raw, 605 px by pen (300x80 at 0,50): (18,80) E=f800 N=ffdf, (19,80) E=f800 N=ffdf, (20,80) E=f800 N=ffdf, (21,80) E=f800 N=ffdf, (22,80) E=f800 N=ffdf, (23,80) E=f800 N=ffdf
+782 ZB011 EQUAL  (300x80 at 0,50)
+783 ZB012 EQUAL  (300x80 at 0,50)
+784 ZB013 EQUAL  (300x80 at 0,50)
+785 ZB014 DIFF   573 px raw, 573 px by pen (300x80 at 0,50): (17,79) E=f800 N=ffdf, (18,79) E=f800 N=ffdf, (19,79) E=f800 N=ffdf, (20,79) E=f800 N=ffdf, (21,79) E=f800 N=ffdf, (22,79) E=f800 N=ffdf
+786 ZB015 DIFF   54 px raw, 54 px by pen (300x80 at 0,50): (40,85) E=0000 N=f800, (39,86) E=f800 N=0000, (40,86) E=0000 N=f800, (39,87) E=f800 N=0000, (40,87) E=0000 N=f800, (38,88) E=f800 N=0000
+787 ZC000 DIFF   206 px raw, 206 px by pen (200x200 at 100,50): (189,103) E=ffdf N=0000, (190,103) E=ffdf N=0000, (193,104) E=ffdf N=0000, (194,104) E=ffdf N=0000, (191,107) E=ffdf N=0000, (192,107) E=ffdf N=0000
+788 ZC001 DIFF   190 px raw, 190 px by pen (200x200 at 100,50): (189,103) E=f800 N=0000, (190,103) E=f800 N=0000, (193,104) E=f800 N=0000, (194,104) E=f800 N=0000, (191,107) E=f800 N=0000, (192,107) E=f800 N=0000
+789 ZC002 DIFF   448 px raw, 448 px by pen (200x200 at 100,50): (187,96) E=f800 N=ffdf, (188,96) E=f800 N=ffdf, (189,96) E=f800 N=ffdf, (190,96) E=f800 N=ffdf, (191,96) E=f800 N=ffdf, (192,96) E=f800 N=ffdf
+790 ZC003 DIFF   75 px raw, 75 px by pen (200x200 at 100,50): (189,98) E=f800 N=0000, (189,99) E=f800 N=0000, (190,99) E=f800 N=0000, (189,100) E=f800 N=0000, (190,100) E=f800 N=0000, (189,101) E=f800 N=0000
+791 ZC004 EQUAL  (200x200 at 100,50)
+792 ZC005 EQUAL  (200x200 at 100,50)
+793 ZC006 DIFF   828 px raw, 828 px by pen (200x200 at 100,50): (186,85) E=f800 N=ffdf, (187,85) E=f800 N=ffdf, (188,85) E=f800 N=ffdf, (189,85) E=f800 N=ffdf, (190,85) E=f800 N=ffdf, (191,85) E=f800 N=ffdf
+794 ZC007 DIFF   316 px raw, 316 px by pen (200x200 at 100,50): (188,86) E=f800 N=0000, (189,86) E=f800 N=0000, (190,86) E=f800 N=0000, (188,87) E=f800 N=0000, (190,87) E=f800 N=0000, (191,87) E=f800 N=0000
+795 ZC008 DIFF   206 px raw, 206 px by pen (200x200 at 100,50): (201,148) E=ffdf N=f800, (201,149) E=ffdf N=f800, (157,150) E=ffdf N=0000, (160,150) E=0000 N=ffdf, (161,150) E=ffdf N=0000, (168,150) E=0000 N=ffdf
+796 ZC009 DIFF   190 px raw, 190 px by pen (200x200 at 100,50): (157,150) E=f800 N=0000, (160,150) E=0000 N=f800, (161,150) E=f800 N=0000, (168,150) E=0000 N=f800, (171,150) E=f800 N=0000, (176,150) E=0000 N=f800
+797 ZC010 DIFF   263 px raw, 263 px by pen (200x200 at 100,50): (146,148) E=f800 N=ffdf, (147,148) E=f800 N=ffdf, (148,148) E=f800 N=ffdf, (149,148) E=f800 N=ffdf, (150,148) E=f800 N=ffdf, (151,148) E=f800 N=ffdf
+798 ZC011 EQUAL  (200x200 at 100,50)
+799 ZC012 EQUAL  (200x200 at 100,50)
+800 ZC013 EQUAL  (200x200 at 100,50)
+801 ZC014 DIFF   426 px raw, 426 px by pen (200x200 at 100,50): (135,147) E=f800 N=ffdf, (136,147) E=f800 N=ffdf, (137,147) E=f800 N=ffdf, (138,147) E=f800 N=ffdf, (139,147) E=f800 N=ffdf, (140,147) E=f800 N=ffdf
+802 ZC015 DIFF   386 px raw, 386 px by pen (200x200 at 100,50): (146,149) E=f800 N=0000, (147,149) E=f800 N=0000, (148,149) E=f800 N=0000, (149,149) E=f800 N=0000, (150,149) E=f800 N=0000, (152,149) E=f800 N=0000
+803 ZC016 DIFF   16 px raw, 16 px by pen (200x200 at 100,50): (198,198) E=ffdf N=f800, (199,198) E=ffdf N=f800, (200,198) E=ffdf N=f800, (201,198) E=ffdf N=f800, (202,198) E=ffdf N=f800, (203,198) E=ffdf N=f800
+804 ZC017 EQUAL  (200x200 at 100,50)
+805 ZC018 DIFF   522 px raw, 522 px by pen (200x200 at 100,50): (198,149) E=f800 N=ffdf, (199,149) E=f800 N=ffdf, (200,149) E=f800 N=ffdf, (201,149) E=f800 N=ffdf, (202,149) E=f800 N=ffdf, (203,149) E=f800 N=ffdf
+806 ZC019 DIFF   73 px raw, 73 px by pen (200x200 at 100,50): (200,151) E=f800 N=0000, (200,152) E=f800 N=0000, (201,152) E=f800 N=0000, (202,152) E=f800 N=0000, (201,153) E=f800 N=0000, (202,153) E=f800 N=0000
+807 ZC020 EQUAL  (200x200 at 100,50)
+808 ZC021 EQUAL  (200x200 at 100,50)
+809 ZC022 DIFF   697 px raw, 697 px by pen (200x200 at 100,50): (197,148) E=f800 N=ffdf, (198,148) E=f800 N=ffdf, (199,148) E=f800 N=ffdf, (200,148) E=f800 N=ffdf, (201,148) E=f800 N=ffdf, (202,148) E=f800 N=ffdf
+810 ZC023 DIFF   94 px raw, 94 px by pen (200x200 at 100,50): (199,150) E=f800 N=0000, (200,150) E=f800 N=0000, (201,150) E=f800 N=0000, (199,151) E=f800 N=0000, (201,151) E=f800 N=0000, (202,151) E=f800 N=0000
+811 ZD000 DIFF   16 px raw, 16 px by pen (200x40 at 0,80): (116,87) E=ffdf N=f800, (116,88) E=ffdf N=f800, (116,89) E=ffdf N=f800, (116,90) E=ffdf N=f800, (116,91) E=ffdf N=f800, (116,92) E=ffdf N=f800
+812 ZD001 EQUAL  (200x40 at 0,80)
+813 ZD002 DIFF   216 px raw, 216 px by pen (200x40 at 0,80): (40,87) E=f800 N=ffdf, (41,87) E=f800 N=ffdf, (42,87) E=f800 N=ffdf, (43,87) E=f800 N=ffdf, (44,87) E=f800 N=ffdf, (45,87) E=f800 N=ffdf
+814 ZD003 DIFF   29 px raw, 29 px by pen (200x40 at 0,80): (44,89) E=f800 N=0000, (45,89) E=f800 N=0000, (46,89) E=f800 N=0000, (42,90) E=f800 N=0000, (43,90) E=f800 N=0000, (44,90) E=f800 N=0000
+815 ZD004 EQUAL  (200x40 at 0,80)
+816 ZD005 EQUAL  (200x40 at 0,80)
+817 ZD006 DIFF   326 px raw, 326 px by pen (200x40 at 0,80): (40,86) E=f800 N=ffdf, (41,86) E=f800 N=ffdf, (42,86) E=f800 N=ffdf, (43,86) E=f800 N=ffdf, (44,86) E=f800 N=ffdf, (45,86) E=f800 N=ffdf
+818 ZD007 DIFF   108 px raw, 108 px by pen (200x40 at 0,80): (40,88) E=f800 N=0000, (41,88) E=f800 N=0000, (42,88) E=f800 N=0000, (43,88) E=f800 N=0000, (47,88) E=f800 N=0000, (54,88) E=0000 N=f800
+819 ZD008 EQUAL  (200x40 at 0,80)
+820 ZD009 EQUAL  (200x40 at 0,80)
+821 ZD010 DIFF   212 px raw, 212 px by pen (200x40 at 0,80): (19,87) E=f800 N=ffdf, (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf
+822 ZD011 DIFF   13 px raw, 13 px by pen (200x40 at 0,80): (61,89) E=0000 N=f800, (62,89) E=0000 N=f800, (61,90) E=0000 N=f800, (62,90) E=0000 N=f800, (62,91) E=0000 N=f800, (63,91) E=0000 N=f800
+823 ZD012 EQUAL  (200x40 at 0,80)
+824 ZD013 EQUAL  (200x40 at 0,80)
+825 ZD014 DIFF   213 px raw, 213 px by pen (200x40 at 0,80): (18,86) E=f800 N=ffdf, (19,86) E=f800 N=ffdf, (20,86) E=f800 N=ffdf, (21,86) E=f800 N=ffdf, (22,86) E=f800 N=ffdf, (23,86) E=f800 N=ffdf
+826 ZD015 DIFF   17 px raw, 17 px by pen (200x40 at 0,80): (67,88) E=0000 N=f800, (65,89) E=0000 N=f800, (66,89) E=0000 N=f800, (67,89) E=0000 N=f800, (64,90) E=0000 N=f800, (65,90) E=0000 N=f800
+827 ZD016 DIFF   11 px raw, 11 px by pen (200x40 at 0,80): (116,92) E=ffdf N=f800, (116,93) E=ffdf N=f800, (116,94) E=ffdf N=f800, (116,95) E=ffdf N=f800, (116,96) E=ffdf N=f800, (116,97) E=ffdf N=f800
+828 ZD017 EQUAL  (200x40 at 0,80)
+829 ZD018 DIFF   134 px raw, 134 px by pen (200x40 at 0,80): (19,92) E=f800 N=ffdf, (20,92) E=f800 N=ffdf, (21,92) E=f800 N=ffdf, (22,92) E=f800 N=ffdf, (23,92) E=f800 N=ffdf, (29,92) E=0000 N=ffdf
+830 ZD019 EQUAL  (200x40 at 0,80)
+831 ZD020 EQUAL  (200x40 at 0,80)
+832 ZD021 EQUAL  (200x40 at 0,80)
+833 ZD022 DIFF   174 px raw, 174 px by pen (200x40 at 0,80): (18,92) E=f800 N=ffdf, (19,92) E=f800 N=ffdf, (20,92) E=f800 N=ffdf, (21,92) E=f800 N=ffdf, (22,92) E=f800 N=ffdf, (28,92) E=0000 N=ffdf
+834 ZD023 DIFF   3 px raw, 3 px by pen (200x40 at 0,80): (62,93) E=f800 N=0000, (61,95) E=f800 N=0000, (60,97) E=f800 N=0000
+835 ZD024 DIFF   10 px raw, 10 px by pen (200x40 at 0,80): (116,87) E=ffdf N=f800, (116,88) E=ffdf N=f800, (116,89) E=ffdf N=f800, (116,90) E=ffdf N=f800, (116,91) E=ffdf N=f800, (116,92) E=ffdf N=f800
+836 ZD025 EQUAL  (200x40 at 0,80)
+837 ZD026 DIFF   112 px raw, 112 px by pen (200x40 at 0,80): (19,87) E=f800 N=ffdf, (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (123,87) E=ffdf N=f800
+838 ZD027 EQUAL  (200x40 at 0,80)
+839 ZD028 EQUAL  (200x40 at 0,80)
+840 ZD029 EQUAL  (200x40 at 0,80)
+841 ZD030 DIFF   126 px raw, 126 px by pen (200x40 at 0,80): (18,86) E=f800 N=ffdf, (19,86) E=f800 N=ffdf, (20,86) E=f800 N=ffdf, (21,86) E=f800 N=ffdf, (22,86) E=f800 N=ffdf, (146,86) E=ffdf N=f800
+842 ZD031 EQUAL  (200x40 at 0,80)
+843 ZE000 DIFF   139 px raw, 41 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+844 ZE001 DIFF   174 px raw, 71 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+845 ZE002 DIFF   147 px raw, 41 px by pen (56x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+846 ZE003 DIFF   118 px raw, 30 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+847 ZE004 DIFF   152 px raw, 62 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+848 ZE005 DIFF   134 px raw, 30 px by pen (56x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+849 ZE006 DIFF   60 px raw, 12 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (17,10) E=0000 N=ffdf, (29,10) E=ffdf N=ffff, (30,10) E=ffdf N=ffff
+850 ZE007 DIFF   98 px raw, 34 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (17,10) E=0000 N=ffdf, (18,10) E=0000 N=ffdf, (28,10) E=0000 N=ffdf
+851 ZE008 DIFF   66 px raw, 10 px by pen (56x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (17,9) E=0000 N=ffdf, (18,9) E=0000 N=ffdf
+852 ZE009 DIFF   75 px raw, 19 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (17,10) E=0000 N=ffdf, (19,10) E=0000 N=ffdf
+853 ZE010 DIFF   111 px raw, 39 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (17,10) E=0000 N=ffdf, (18,10) E=0000 N=ffdf
+854 ZE011 DIFF   80 px raw, 20 px by pen (56x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (17,9) E=0000 N=ffdf, (18,9) E=0000 N=ffdf
+855 ZE012 DIFF   243 px raw, 47 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+856 ZE013 DIFF   275 px raw, 86 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+857 ZE014 DIFF   287 px raw, 64 px by pen (56x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+858 ZE015 EQUAL  (56x46 at 0,0)
+859 ZE016 DIFF   32 px raw, 16 px by pen (56x46 at 0,0): (24,10) E=0000 N=ffdf, (29,10) E=ffdf N=ffff, (24,11) E=0000 N=ffdf, (29,11) E=ffdf N=ffff, (24,12) E=0000 N=ffdf, (29,12) E=ffdf N=ffff
+860 ZE017 EQUAL  (56x46 at 0,0)
+861 ZE018 DIFF   97 px raw, 23 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (18,10) E=0000 N=ffdf
+862 ZE019 DIFF   133 px raw, 46 px by pen (56x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (16,10) E=0000 N=ffdf
+863 ZE020 DIFF   106 px raw, 27 px by pen (56x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (17,9) E=0000 N=ffdf
+864 ZE021 DIFF   122 px raw, 34 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+865 ZE022 DIFF   154 px raw, 63 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+866 ZE023 DIFF   136 px raw, 32 px by pen (120x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+867 ZE024 DIFF   697 px raw, 599 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+868 ZE025 DIFF   407 px raw, 303 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+869 ZE026 DIFF   781 px raw, 667 px by pen (120x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+870 ZE027 DIFF   674 px raw, 616 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffdf N=0000, (14,10) E=ffdf N=0000
+871 ZE028 DIFF   492 px raw, 429 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffdf N=0000, (13,10) E=ffdf N=0000
+872 ZE029 DIFF   740 px raw, 678 px by pen (120x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffdf N=0000, (12,9) E=ffdf N=0000
+873 ZE030 DIFF   669 px raw, 632 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (12,10) E=ffdf N=0000, (14,10) E=ffdf N=0000, (17,10) E=ffdf N=0000
+874 ZE031 DIFF   503 px raw, 463 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (12,10) E=ffdf N=0000, (13,10) E=ffdf N=0000, (14,10) E=ffdf N=0000
+875 ZE032 DIFF   729 px raw, 686 px by pen (120x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffdf N=0000, (12,9) E=ffdf N=0000
+876 ZE033 DIFF   827 px raw, 638 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+877 ZE034 DIFF   642 px raw, 465 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+878 ZE035 DIFF   892 px raw, 664 px by pen (120x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+879 ZE036 DIFF   637 px raw, 637 px by pen (120x46 at 0,0): (8,10) E=ffdf N=0000, (10,10) E=ffdf N=0000, (13,10) E=ffdf N=0000, (15,10) E=ffdf N=0000, (16,10) E=ffdf N=0000, (18,10) E=ffdf N=0000
+880 ZE037 DIFF   492 px raw, 485 px by pen (120x46 at 0,0): (8,10) E=ffdf N=0000, (9,10) E=ffdf N=0000, (10,10) E=ffdf N=0000, (11,10) E=ffdf N=0000, (13,10) E=ffdf N=0000, (14,10) E=ffdf N=0000
+881 ZE038 DIFF   679 px raw, 679 px by pen (120x46 at 0,0): (7,9) E=ffdf N=0000, (8,9) E=ffdf N=0000, (9,9) E=ffdf N=0000, (10,9) E=ffdf N=0000, (11,9) E=ffdf N=0000, (12,9) E=ffdf N=0000
+882 ZE039 DIFF   698 px raw, 649 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffdf N=0000
+883 ZE040 DIFF   516 px raw, 465 px by pen (120x46 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffdf N=0000
+884 ZE041 DIFF   750 px raw, 696 px by pen (120x46 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffdf N=0000
+885 ZE042 DIFF   107 px raw, 27 px by pen (56x45 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+886 ZE043 DIFF   141 px raw, 56 px by pen (56x45 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+887 ZE044 DIFF   124 px raw, 30 px by pen (56x45 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+888 ZE045 DIFF   139 px raw, 38 px by pen (56x47 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+889 ZE046 DIFF   175 px raw, 71 px by pen (56x47 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+890 ZE047 DIFF   155 px raw, 38 px by pen (56x47 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+891 ZE048 DIFF   126 px raw, 36 px by pen (120x45 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+892 ZE049 DIFF   160 px raw, 63 px by pen (120x45 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+893 ZE050 DIFF   135 px raw, 37 px by pen (120x45 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+894 ZE051 DIFF   156 px raw, 45 px by pen (120x47 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+895 ZE052 DIFF   194 px raw, 78 px by pen (120x47 at 0,0): (8,10) E=ffff N=ffdf, (9,10) E=ffff N=ffdf, (10,10) E=ffff N=ffdf, (11,10) E=ffff N=ffdf, (12,10) E=ffff N=ffdf, (13,10) E=ffff N=ffdf
+896 ZE053 DIFF   165 px raw, 45 px by pen (120x47 at 0,0): (7,9) E=ffff N=ffdf, (8,9) E=ffff N=ffdf, (9,9) E=ffff N=ffdf, (10,9) E=ffff N=ffdf, (11,9) E=ffff N=ffdf, (12,9) E=ffff N=ffdf
+897 ZF000 DIFF   128 px raw, 11 px by pen (400x230 at 0,0): (276,17) E=ffdf N=ffff, (276,18) E=ffdf N=ffff, (276,19) E=ffdf N=ffff, (276,20) E=ffdf N=ffff, (276,21) E=ffdf N=ffff, (276,22) E=ffdf N=ffff
+898 ZF001 DIFF   51 px raw, 51 px by pen (400x230 at 0,0): (268,17) E=0000 N=ffff, (268,18) E=0000 N=ffff, (92,19) E=0000 N=ffff, (92,20) E=0000 N=ffff, (92,21) E=0000 N=ffff, (116,21) E=0000 N=ffff
+899 ZF002 DIFF   5659 px raw, 4635 px by pen (400x230 at 0,0): (19,17) E=ffff N=ffdf, (20,17) E=ffff N=ffdf, (21,17) E=ffff N=ffdf, (22,17) E=ffff N=ffdf, (23,17) E=ffff N=ffdf, (24,17) E=ffff N=ffdf
+900 ZF003 EQUAL  (400x230 at 0,0)
+901 ZF004 DIFF   6796 px raw, 5510 px by pen (400x230 at 0,0): (18,16) E=ffff N=ffdf, (19,16) E=ffff N=ffdf, (20,16) E=ffff N=ffdf, (21,16) E=ffff N=ffdf, (22,16) E=ffff N=ffdf, (23,16) E=ffff N=ffdf
+902 ZF005 DIFF   257 px raw, 257 px by pen (400x230 at 0,0): (336,16) E=0000 N=ffff, (335,17) E=ffff N=0000, (336,17) E=0000 N=ffff, (115,18) E=0000 N=ffff, (174,18) E=ffff N=0000, (334,18) E=ffff N=0000
+903 ZF006 DIFF   64 px raw, 9 px by pen (400x230 at 0,0): (276,24) E=ffdf N=ffff, (276,25) E=ffdf N=ffff, (276,26) E=ffdf N=ffff, (276,27) E=ffdf N=ffff, (276,28) E=ffdf N=ffff, (276,29) E=ffdf N=ffff
+904 ZF007 DIFF   48 px raw, 48 px by pen (400x230 at 0,0): (84,24) E=0000 N=ffff, (92,24) E=0000 N=ffff, (268,24) E=0000 N=ffff, (84,25) E=0000 N=ffff, (100,25) E=0000 N=ffff, (268,25) E=0000 N=ffff
+905 ZF008 DIFF   1260 px raw, 1004 px by pen (400x230 at 0,0): (19,24) E=ffff N=ffdf, (20,24) E=ffff N=ffdf, (21,24) E=ffff N=ffdf, (22,24) E=ffff N=ffdf, (35,24) E=0000 N=ffdf, (43,24) E=0000 N=ffdf
+906 ZF009 EQUAL  (400x230 at 0,0)
+907 ZF010 DIFF   2694 px raw, 2301 px by pen (400x230 at 0,0): (18,23) E=ffff N=ffdf, (19,23) E=ffff N=ffdf, (20,23) E=ffff N=ffdf, (21,23) E=ffff N=ffdf, (38,23) E=0000 N=ffdf, (39,23) E=0000 N=ffdf
+908 ZF011 DIFF   212 px raw, 212 px by pen (400x230 at 0,0): (102,23) E=0000 N=ffff, (112,23) E=0000 N=ffff, (332,23) E=0000 N=ffff, (71,24) E=ffff N=0000, (91,24) E=ffff N=0000, (101,24) E=ffff N=0000
+909 ZF012 DIFF   48 px raw, 5 px by pen (400x230 at 0,0): (212,26) E=ffdf N=ffff, (212,27) E=ffdf N=ffff, (212,28) E=ffdf N=ffff, (212,29) E=ffdf N=ffff, (212,30) E=ffdf N=ffff, (212,31) E=ffdf N=ffff
+910 ZF013 DIFF   48 px raw, 48 px by pen (400x230 at 0,0): (74,26) E=0000 N=ffff, (110,26) E=0000 N=ffff, (206,26) E=0000 N=ffff, (80,27) E=0000 N=ffff, (110,27) E=0000 N=ffff, (80,28) E=0000 N=ffff
+911 ZF014 DIFF   780 px raw, 684 px by pen (400x230 at 0,0): (20,26) E=ffff N=ffdf, (21,26) E=ffff N=ffdf, (44,26) E=0000 N=ffdf, (56,26) E=0000 N=ffdf, (62,26) E=0000 N=ffdf, (63,26) E=0000 N=ffdf
+912 ZF015 EQUAL  (400x230 at 0,0)
+913 ZF016 DIFF   1830 px raw, 1578 px by pen (400x230 at 0,0): (19,25) E=ffff N=ffdf, (20,25) E=ffff N=ffdf, (21,25) E=ffff N=ffdf, (35,25) E=0000 N=ffdf, (43,25) E=0000 N=ffdf, (51,25) E=0000 N=ffdf
+914 ZF017 DIFF   129 px raw, 129 px by pen (400x230 at 0,0): (94,25) E=0000 N=ffff, (142,25) E=0000 N=ffff, (270,25) E=0000 N=ffff, (93,26) E=ffff N=0000, (102,26) E=0000 N=ffff, (141,26) E=ffff N=0000
+915 ZG000 DIFF   278 px raw, 278 px by pen (320x80 at 0,60): (97,87) E=f800 N=ffdf, (98,87) E=f800 N=ffdf, (99,87) E=f800 N=ffdf, (100,87) E=f800 N=ffdf, (101,87) E=f800 N=ffdf, (102,87) E=f800 N=ffdf
+916 ZG001 DIFF   278 px raw, 278 px by pen (320x80 at 0,60): (188,80) E=f800 N=ffdf, (189,80) E=f800 N=ffdf, (190,80) E=f800 N=ffdf, (191,80) E=f800 N=ffdf, (192,80) E=f800 N=ffdf, (193,80) E=f800 N=ffdf
+917 ZG002 DIFF   514 px raw, 514 px by pen (320x80 at 0,60): (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf, (25,87) E=f800 N=ffdf
+918 ZG003 DIFF   994 px raw, 994 px by pen (320x80 at 0,60): (20,87) E=f800 N=ffdf, (21,87) E=f800 N=ffdf, (22,87) E=f800 N=ffdf, (23,87) E=f800 N=ffdf, (24,87) E=f800 N=ffdf, (25,87) E=f800 N=ffdf
+919 ZG004 DIFF   263 px raw, 263 px by pen (320x80 at 0,60): (0,87) E=f800 N=ffdf, (1,87) E=f800 N=ffdf, (2,87) E=f800 N=ffdf, (3,87) E=f800 N=ffdf, (4,87) E=f800 N=ffdf, (5,87) E=f800 N=ffdf
+920 ZG005 DIFF   278 px raw, 278 px by pen (320x80 at 0,60): (0,87) E=f800 N=ffdf, (1,87) E=f800 N=ffdf, (2,87) E=f800 N=ffdf, (3,87) E=f800 N=ffdf, (4,87) E=f800 N=ffdf, (5,87) E=f800 N=ffdf
+921 ZG006 DIFF   346 px raw, 346 px by pen (320x80 at 0,60): (85,86) E=f800 N=ffdf, (86,86) E=f800 N=ffdf, (87,86) E=f800 N=ffdf, (88,86) E=f800 N=ffdf, (89,86) E=f800 N=ffdf, (90,86) E=f800 N=ffdf
+922 ZG007 DIFF   346 px raw, 346 px by pen (320x80 at 0,60): (165,79) E=f800 N=ffdf, (166,79) E=f800 N=ffdf, (167,79) E=f800 N=ffdf, (168,79) E=f800 N=ffdf, (169,79) E=f800 N=ffdf, (170,79) E=f800 N=ffdf
+923 ZG008 DIFF   720 px raw, 720 px by pen (320x80 at 0,60): (19,86) E=f800 N=ffdf, (20,86) E=f800 N=ffdf, (21,86) E=f800 N=ffdf, (22,86) E=f800 N=ffdf, (23,86) E=f800 N=ffdf, (24,86) E=f800 N=ffdf
+924 ZG009 DIFF   1398 px raw, 1398 px by pen (320x80 at 0,60): (19,86) E=f800 N=ffdf, (20,86) E=f800 N=ffdf, (21,86) E=f800 N=ffdf, (22,86) E=f800 N=ffdf, (23,86) E=f800 N=ffdf, (24,86) E=f800 N=ffdf
+925 ZG010 DIFF   316 px raw, 316 px by pen (320x80 at 0,60): (0,86) E=f800 N=ffdf, (1,86) E=f800 N=ffdf, (2,86) E=f800 N=ffdf, (3,86) E=f800 N=ffdf, (4,86) E=f800 N=ffdf, (5,86) E=f800 N=ffdf
+926 ZG011 DIFF   316 px raw, 316 px by pen (320x80 at 0,60): (0,86) E=f800 N=ffdf, (1,86) E=f800 N=ffdf, (2,86) E=f800 N=ffdf, (3,86) E=f800 N=ffdf, (4,86) E=f800 N=ffdf, (5,86) E=f800 N=ffdf
+927 ZG012 EQUAL  (320x80 at 0,60)
+928 ZG013 DIFF   98 px raw, 98 px by pen (320x80 at 0,60): (63,83) E=ffff N=0000, (64,83) E=ffff N=0000, (65,83) E=ffff N=0000, (66,83) E=ffff N=0000, (67,83) E=ffff N=0000, (68,83) E=ffff N=0000
+929 T31A  EQUAL  (400x40 at 0,30)
+930 T31B  EQUAL  (260x70 at 160,60)
+931 T31C  EQUAL  (80x260 at 60,80)
+932 T31D  EQUAL  (80x260 at 260,100)
+933 T31E  EQUAL  (300x30 at 0,40)
+934 TPF   EQUAL  (220x40 at 0,280)
+935 TPG   EQUAL  (220x40 at 0,280)
+936 TPH   DIFF   1086 px raw, 1086 px by pen (220x40 at 0,280): (20,296) E=ffff N=0000, (21,296) E=ffff N=0000, (22,296) E=ffff N=0000, (23,296) E=ffff N=0000, (24,296) E=ffff N=0000, (25,296) E=ffff N=0000
+937 T3700 EQUAL  (520x64 at 60,60)
+938 T3701 EQUAL  (520x64 at 60,60)
+939 T3702 EQUAL  (520x64 at 60,60)
+940 T3703 EQUAL  (520x64 at 60,60)
+941 T3704 EQUAL  (520x64 at 60,60)
+942 T3705 EQUAL  (520x64 at 60,60)
+943 T3706 DIFF   393 px raw, 132 px by pen (520x64 at 60,60): (200,96) E=ffdf N=ffff, (201,96) E=0000 N=ffff, (202,96) E=0000 N=ffff, (203,96) E=0000 N=ffff, (204,96) E=ffdf N=ffff, (205,96) E=ffdf N=ffff
+944 T3707 DIFF   152 px raw, 152 px by pen (520x64 at 60,60): (204,96) E=0000 N=ffff, (205,96) E=0000 N=ffff, (206,96) E=0000 N=ffff, (209,96) E=0000 N=ffff, (210,96) E=0000 N=ffff, (211,96) E=0000 N=ffff
+945 T3708 DIFF   696 px raw, 298 px by pen (520x64 at 60,60): (200,95) E=ffdf N=ffff, (201,95) E=0000 N=ffff, (202,95) E=0000 N=ffff, (203,95) E=0000 N=ffff, (204,95) E=0000 N=ffff, (205,95) E=0000 N=ffff
+946 T3709 DIFF   533 px raw, 332 px by pen (520x64 at 60,60): (200,96) E=ffdf N=ffff, (201,96) E=0000 N=ffff, (202,96) E=0000 N=ffff, (203,96) E=0000 N=ffff, (204,96) E=ffdf N=ffff, (205,96) E=ffdf N=ffff
+947 T3710 DIFF   352 px raw, 352 px by pen (520x64 at 60,60): (204,96) E=0000 N=ffff, (205,96) E=0000 N=ffff, (206,96) E=0000 N=ffff, (209,96) E=0000 N=ffff, (210,96) E=0000 N=ffff, (211,96) E=0000 N=ffff
+948 T3711 DIFF   806 px raw, 466 px by pen (520x64 at 60,60): (200,95) E=ffdf N=ffff, (201,95) E=0000 N=ffff, (202,95) E=0000 N=ffff, (203,95) E=0000 N=ffff, (204,95) E=0000 N=ffff, (205,95) E=0000 N=ffff
+949 T3712 DIFF   576 px raw, 166 px by pen (520x64 at 60,60): (100,96) E=ffdf N=ffff, (101,96) E=0000 N=ffff, (102,96) E=0000 N=ffff, (103,96) E=0000 N=ffff, (104,96) E=ffdf N=ffff, (105,96) E=ffdf N=ffff
+950 T3713 DIFF   166 px raw, 166 px by pen (520x64 at 60,60): (104,96) E=0000 N=ffff, (105,96) E=0000 N=ffff, (106,96) E=0000 N=ffff, (109,96) E=0000 N=ffff, (110,96) E=0000 N=ffff, (111,96) E=0000 N=ffff
+951 T3714 DIFF   1000 px raw, 366 px by pen (520x64 at 60,60): (101,95) E=ffdf N=ffff, (102,95) E=0000 N=ffff, (103,95) E=0000 N=ffff, (104,95) E=0000 N=ffff, (105,95) E=0000 N=ffff, (106,95) E=0000 N=ffff
+952 T3715 DIFF   880 px raw, 566 px by pen (520x64 at 60,60): (100,96) E=ffdf N=ffff, (101,96) E=0000 N=ffff, (102,96) E=0000 N=ffff, (103,96) E=0000 N=ffff, (104,96) E=ffdf N=ffff, (105,96) E=ffdf N=ffff
+953 T3716 DIFF   562 px raw, 562 px by pen (520x64 at 60,60): (104,96) E=0000 N=ffff, (105,96) E=0000 N=ffff, (106,96) E=0000 N=ffff, (109,96) E=0000 N=ffff, (110,96) E=0000 N=ffff, (111,96) E=0000 N=ffff
+954 T3717 DIFF   1271 px raw, 728 px by pen (520x64 at 60,60): (101,95) E=ffdf N=ffff, (102,95) E=0000 N=ffff, (103,95) E=0000 N=ffff, (104,95) E=0000 N=ffff, (105,95) E=0000 N=ffff, (106,95) E=0000 N=ffff
+955 T3718 DIFF   162 px raw, 162 px by pen (520x64 at 60,60): (202,99) E=0000 N=ffff, (203,99) E=0000 N=ffff, (204,99) E=0000 N=ffff, (207,99) E=0000 N=ffff, (208,99) E=0000 N=ffff, (209,99) E=0000 N=ffff
+956 T3719 DIFF   160 px raw, 160 px by pen (520x64 at 60,60): (201,100) E=0000 N=ffff, (202,100) E=0000 N=ffff, (203,100) E=0000 N=ffff, (206,100) E=0000 N=ffff, (207,100) E=0000 N=ffff, (208,100) E=0000 N=ffff
+957 T3720 DIFF   152 px raw, 152 px by pen (520x64 at 60,60): (204,95) E=0000 N=ffff, (205,95) E=0000 N=ffff, (206,95) E=0000 N=ffff, (209,95) E=0000 N=ffff, (210,95) E=0000 N=ffff, (211,95) E=0000 N=ffff
+958 T3721 DIFF   152 px raw, 152 px by pen (520x64 at 60,60): (204,95) E=0000 N=ffff, (205,95) E=0000 N=ffff, (206,95) E=0000 N=ffff, (209,95) E=0000 N=ffff, (210,95) E=0000 N=ffff, (211,95) E=0000 N=ffff
+959 T3722 DIFF   160 px raw, 160 px by pen (520x64 at 60,60): (201,100) E=0000 N=ffff, (202,100) E=0000 N=ffff, (203,100) E=0000 N=ffff, (206,100) E=0000 N=ffff, (207,100) E=0000 N=ffff, (208,100) E=0000 N=ffff
+960 T3723 DIFF   576 px raw, 220 px by pen (520x64 at 60,60): (200,96) E=ffdf N=ffff, (201,96) E=0000 N=ffff, (202,96) E=0000 N=ffff, (203,96) E=0000 N=ffff, (204,96) E=ffdf N=ffff, (205,96) E=ffdf N=ffff
+961 T3724 DIFF   576 px raw, 220 px by pen (520x64 at 60,60): (100,96) E=ffdf N=ffff, (101,96) E=0000 N=ffff, (102,96) E=0000 N=ffff, (103,96) E=0000 N=ffff, (104,96) E=ffdf N=ffff, (105,96) E=ffdf N=ffff
+962 T3725 DIFF   620 px raw, 620 px by pen (520x64 at 60,60): (104,96) E=0000 N=ffff, (105,96) E=0000 N=ffff, (106,96) E=0000 N=ffff, (131,96) E=0000 N=ffff, (132,96) E=0000 N=ffff, (133,96) E=0000 N=ffff
+963 T3726 DIFF   343 px raw, 168 px by pen (520x64 at 60,60): (224,96) E=0000 N=ffff, (225,96) E=0000 N=ffff, (226,96) E=0000 N=ffff, (227,96) E=0000 N=ffff, (228,96) E=0000 N=ffff, (229,96) E=ffdf N=ffff
+964 T3727 DIFF   89 px raw, 66 px by pen (520x64 at 60,60): (283,95) E=ffff N=0000, (284,95) E=ffff N=0000, (290,95) E=0000 N=ffdf, (292,95) E=ffdf N=0000, (298,95) E=0000 N=ffdf, (300,95) E=ffdf N=0000
+965 T3728 DIFF   194 px raw, 194 px by pen (520x64 at 60,60): (309,89) E=0000 N=ffff, (311,89) E=ffff N=0000, (315,89) E=0000 N=ffff, (320,89) E=ffff N=0000, (396,89) E=0000 N=ffff, (400,89) E=ffff N=0000
+966 T3729 DIFF   196 px raw, 196 px by pen (520x64 at 60,60): (309,89) E=0000 N=ffff, (311,89) E=ffff N=0000, (315,89) E=0000 N=ffff, (320,89) E=ffff N=0000, (396,89) E=0000 N=ffff, (400,89) E=ffff N=0000
+967 T3730 EQUAL  (520x64 at 60,60)
+968 T3731 DIFF   560 px raw, 560 px by pen (520x64 at 60,60): (209,89) E=0000 N=ffff, (210,89) E=0000 N=ffff, (215,89) E=0000 N=ffff, (216,89) E=0000 N=ffff, (217,89) E=0000 N=ffff, (218,89) E=0000 N=ffff
+969 T3732 DIFF   762 px raw, 762 px by pen (520x64 at 60,60): (209,89) E=0000 N=ffff, (210,89) E=0000 N=ffff, (215,89) E=0000 N=ffff, (216,89) E=0000 N=ffff, (217,89) E=0000 N=ffff, (218,89) E=0000 N=ffff
+970 T3733 DIFF   2000 px raw, 692 px by pen (520x64 at 60,60): (200,86) E=ffdf N=ffff, (201,86) E=ffdf N=ffff, (202,86) E=ffdf N=ffff, (203,86) E=ffdf N=ffff, (204,86) E=ffdf N=ffff, (205,86) E=ffdf N=ffff
+971 T3734 DIFF   578 px raw, 578 px by pen (520x64 at 60,60): (109,89) E=0000 N=ffff, (110,89) E=0000 N=ffff, (115,89) E=0000 N=ffff, (116,89) E=0000 N=ffff, (117,89) E=0000 N=ffff, (118,89) E=0000 N=ffff
+972 T3735 DIFF   964 px raw, 964 px by pen (520x64 at 60,60): (109,89) E=0000 N=ffff, (110,89) E=0000 N=ffff, (115,89) E=0000 N=ffff, (116,89) E=0000 N=ffff, (117,89) E=0000 N=ffff, (118,89) E=0000 N=ffff
+973 T3736 DIFF   3063 px raw, 952 px by pen (520x64 at 60,60): (101,86) E=ffdf N=ffff, (102,86) E=ffdf N=ffff, (103,86) E=ffdf N=ffff, (104,86) E=ffdf N=ffff, (105,86) E=ffdf N=ffff, (106,86) E=ffdf N=ffff
+974 T3737 DIFF   314 px raw, 314 px by pen (520x64 at 60,60): (306,97) E=0000 N=ffff, (307,97) E=0000 N=ffff, (310,97) E=ffff N=0000, (311,97) E=ffff N=0000, (312,97) E=0000 N=ffff, (313,97) E=0000 N=ffff
+975 T3738 DIFF   404 px raw, 404 px by pen (520x64 at 60,60): (305,100) E=0000 N=ffff, (306,100) E=0000 N=ffff, (310,100) E=ffff N=0000, (312,100) E=0000 N=ffff, (313,100) E=0000 N=ffff, (314,100) E=0000 N=ffff
+976 T3739 EQUAL  (520x64 at 60,60)
+977 T3740 DIFF   194 px raw, 194 px by pen (520x64 at 60,60): (309,87) E=0000 N=ffff, (311,87) E=ffff N=0000, (315,87) E=0000 N=ffff, (320,87) E=ffff N=0000, (396,87) E=0000 N=ffff, (400,87) E=ffff N=0000
+978 T3741 DIFF   334 px raw, 334 px by pen (520x64 at 60,60): (302,102) E=0000 N=ffff, (303,102) E=0000 N=ffff, (308,102) E=0000 N=ffff, (309,102) E=0000 N=ffff, (312,102) E=0000 N=ffff, (316,102) E=ffff N=0000
+cases 954, differing 369

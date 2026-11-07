@@ -1,0 +1,11 @@
+build base rpi4 rc 0
+clippy base rpi4 rc 0
+build base qemu-virt rc 0
+clippy base qemu-virt rc 0
+build base rpi4 release rc 0
+build fix rpi4 rc 0
+clippy fix rpi4 rc 0
+build fix qemu-virt rc 0
+clippy fix qemu-virt rc 0
+build fix rpi4 release rc 0
+BUILDSDONE

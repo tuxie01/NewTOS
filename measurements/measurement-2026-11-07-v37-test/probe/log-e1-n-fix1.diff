@@ -1,0 +1,12 @@
+583,585c583,585
+<    vqt_name(2) c4=33 id=7 name=[AUDIT FONT SEVEN................]
+<    vst_font c2=0 c4=1 io 7 po
+<    attr c2=2 c4=6 io 7 1 0 0 0 1 po 5 4 5 6
+---
+>    vqt_name(2) c4=33 id=1 name=[6x6 system font.................]
+>    vst_font c2=0 c4=1 io 1 po
+>    attr c2=2 c4=6 io 1 1 0 0 0 1 po 5 4 6 6
+1591c1591
+<    vsl_width c2=1 c4=0 io po 3 0
+---
+>    vsl_width c2=1 c4=0 io po 9 0

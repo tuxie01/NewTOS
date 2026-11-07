@@ -1,0 +1,34 @@
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v37t/dkk.R6cNhB: tag [inj], desktop (495 bytes)
+kernel 72c210a1f171349276f883fb5aae7a81a9a8a253ad56a4b7e0d16db22f5df0e8 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v37t/k-desk-base.img (tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v37t/t2/base, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v37t/dkk.viStky: tag [inj], desktop (495 bytes)
+kernel 8605d1080b67d915c467dacef5503e506038f4775365a2271a2f9859d0b69620 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v37t/k-desk-fix.img (tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v37t/t2/fix, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+files e60ded3383d2624e
+qemu-system-aarch64: terminating on signal 15 from pid 32486 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 33312 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 34305 (<unknown process>)
+kernel def6e3dbddc265f5b349e0d18df2bbcd4c616fb02cb55275c52dd949cf275b41 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 35167 (<unknown process>)
+kernel d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 35466 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 36932 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 37841 (<unknown process>)
+kernel def6e3dbddc265f5b349e0d18df2bbcd4c616fb02cb55275c52dd949cf275b41 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 38717 (<unknown process>)
+kernel d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+GUIFINISHED

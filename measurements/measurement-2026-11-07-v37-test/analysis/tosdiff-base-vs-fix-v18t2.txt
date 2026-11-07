@@ -1,0 +1,3 @@
+VDI.BIN vs VDI.BIN -- area VDI, 32 cases from vdi-v18-t2.tsv
+
+0 of 32 cases differ
