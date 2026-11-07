@@ -1,6 +1,6 @@
-# V53 — Quittung UNFINISHED (2026-11-07)
+# V53 — Quittung DONE (2026-11-08)
 
-UNFINISHED heisst: umgesetzt und vom Developer gemessen, die Tester-Abnahme fehlt.
+Umgesetzt, gemessen und vom Tester abgenommen (PASS, `c013f4b2`, `measurements/measurement-2026-11-07-v53-test/RUNINFO.TXT`): W1/W2/C1 orakelgleich (C1 mit spaetem Paket nach `v_clswk` belegt), Basis gegen Fix nur die sechs Records, Tabellen und AES bytegleich, Programmwechsel per `#Z` mit Menue, Dialog und Ziehen danach. Nicht gefahren: TeraDesk-Start/Ende (kein Injektor-Szenario), echte Pi (USB-Maus nach Programmwechsel ins Testszenario). Nebenbefund gefaltete Sentinels: [V56](V56.md).
 
 `v_opnwk` setzt die VDI-Maus jetzt bei jedem Aufruf zurueck wie EmuTOS `timer_init` + `vdimouse_init`
 (`references/emutos/vdi/vdi_control.c:562-563`, `vdi/vdi_mouse.c:565-615`, `vdi/vdi_misc.c:128`): Versteckzaehler 1 ohne

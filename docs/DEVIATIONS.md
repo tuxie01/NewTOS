@@ -37,7 +37,7 @@ Rules:
 | Reading the screen right after a mouse packet (before the next frame) | pointer already at the new position | still at the old one, `vq_mouse` already new | gemessen (wkprobe M1, M2) | [V55](../TASK/V55.md), user decision open |
 | `v_opnwk` while the physical workstation is open | returns, virtual workstations stay open | hangs | gemessen (wkprobe W9) | [SPEC04](../TASK/SPEC04.md) (COMPATIBILITY entry missing) |
 | `v_opnwk` with `work_in[0]` = mode + 2 | no mode switch, `work_out` = running geometry | `Setscreen`/`VsetMode` to that mode | gemessen (`vdi-v18-t3.tsv` 13) | ADR-017 Rev. 2; entry via [SPEC04](../TASK/SPEC04.md) |
-| `v_contourfill` whose seed queue never runs empty (smallest: 5x3 clip, dots at (3,1) and (1,2), seed (0,2), fill up to the boundary) | fill ends after 16 spans per screen pixel; what is drawn stays | loops for ever with IRQs masked, the machine stops | gelesen (NewTOS host test and the V21 Python model of `vdi_fill.c`; not on the oracle) | sanctioned, `docs/COMPATIBILITY.md` ([V38](../TASK/V38.md)) |
+| `v_contourfill` whose seed queue never runs empty (smallest: 5x3 clip, dots at (3,1) and (1,2), seed (0,2), fill up to the boundary) | fill ends after 16 spans per screen pixel; what is drawn stays | loops for ever with IRQs masked, the machine stops | gemessen (oracle: EmuTOS does not return in 30000 VBL; NewTOS with the brake returns, QEMU ~3 s at 640x480) | sanctioned, `docs/COMPATIBILITY.md` ([V38](../TASK/V38.md)) |
 
 ## XBIOS, keyboard, system variables
 

@@ -1775,8 +1775,9 @@ earlier state and repeat it for ever. The smallest case found is a 5x3 clip with
 dots at (3,1) and (1,2) and the seed at (0,2), filled red up to black or while-same with
 the region's own colour: the fill circles the dot at (3,1), four spans per round. NewTOS'
 fill and the independent Python model of `vdi_fill.c` from V21 both loop on it
-(`measurements/measurement-2026-11-07-v38/RUNINFO.TXT`); it is not measured on the oracle,
-which would not return. A VDI trap runs with IRQs masked from exception entry on (ARM ARM
+(`measurements/measurement-2026-11-07-v38/RUNINFO.TXT`). On the oracle EmuTOS does not return
+either: no return in 30000 VBL, while the same clip and seed without the dots returns in seconds
+(`measurements/measurement-2026-11-07-v38-test/RUNINFO.TXT`, probe `cfprobe.c`). A VDI trap runs with IRQs masked from exception entry on (ARM ARM
 DDI 0487M.c D1.4.2, rule R_WTXBY; `kernel/src/arch/aarch64/exception_vectors.s:23@EXC_BODY`
 unmasks nothing on the way to `tos_api::vdi::dispatch_in`), so such a fill stops the
 machine: no timer tick, no USB input, no way out but a reset.

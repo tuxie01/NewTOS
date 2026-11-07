@@ -1,6 +1,6 @@
-# V38 — Quittung UNFINISHED (2026-11-07)
+# V38 — Quittung DONE (2026-11-08)
 
-UNFINISHED heisst hier: umgesetzt und vom Developer gemessen, die Abnahme des Testers fehlt.
+Umgesetzt und vom Tester abgenommen (PASS, `f6ae5160`, `measurements/measurement-2026-11-07-v38-test/RUNINFO.TXT`). Am Orakel gemessen: EmuTOS kehrt im 5x3-Fall nicht zurueck (30000 VBL), NewTOS mit Bremse nach ~3 s (QEMU, 640x480); alle echten Fuellungen bytegleich. Offen: Dauer einer gebremsten Fuellung bei 1920x1080 auf der Pi (QEMU-Hochrechnung 20–25 s, keine Messung) ins Testszenario; Testluecke M3 (Fuellung, die genau am Budget endet) nur gelesen; Anwenderfrage Grenzhoehe.
 
 `v_contourfill` hat eine Notbremse: die Fuellung endet nach 16 entnommenen Spannen je Schirmpixel
 (`tos-api/src/vdi/contour.rs:118@BRAKE_SPANS_PER_PIXEL`, Pruefung vor jeder Entnahme in `Flood::run`) und
