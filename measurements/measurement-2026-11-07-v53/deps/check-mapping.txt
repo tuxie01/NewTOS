@@ -1,0 +1,3 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps --check-mapping`
+docs/analysis/deps/mapping.tsv: 1965 rows, all resolve, every class is valid; every bios/, bdos/, vdi/, aes/ function has a row

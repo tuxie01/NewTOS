@@ -191,10 +191,17 @@ impl Gsx {
 /// same backend and font ring the VDI answers from (`graf.rs`, `window.rs`),
 /// so they are not read back through the trap here.
 ///
+/// **`vex_wheelv(aes_wheel, …)`** (`gemgsxif.c:288-292`) runs last, as in
+/// EmuTOS: the `v_opnwk` above has just put `just_rts` into the wheel vector
+/// (`vdimouse_init`, `vdi/vdi_mouse.c:588`), so the AES claims it again every
+/// session ([`crate::vdi::mouse::install_aes_wheel`], V53).
+///
 /// The rest of `gsx_init` is elsewhere: `gsx_setmb` is the VDI mouse feed
-/// calling [`super::user_but`]/[`super::user_mot`] directly, `vex_wheelv`
-/// is `init::install_wheel_vector`, and `MOUSE_STATE`'s `xrat`/`yrat` seed
-/// is the input module's own state.
+/// calling [`super::user_but`]/[`super::user_mot`] directly — the VDI stops
+/// calling them between [`gsx_wsclose`]'s `v_clswk` and this `v_opnwk`, as
+/// `vdimouse_exit` takes `far_bcha`/`far_mcha` out of the vectors in EmuTOS
+/// (`vdi/vdi_mouse.c:624-625`) — and `MOUSE_STATE`'s `xrat`/`yrat` seed is
+/// the input module's own state.
 ///
 /// Without a raster backend the VDI returns before any handler
 /// (`tos-api/src/vdi/mod.rs`), `contrl[6]` stays the input `gl_handle`, and
@@ -226,13 +233,18 @@ pub fn gsx_init() {
     g.ptsin[1] = 0;
     g.ncode(SET_LINE_WIDTH, 1, 0); // vsl_width(1), `gemgsxif.c:653-658`
     g.code1(SET_UD_LINE_STYLE, -1); // 0xffff
+
+    // `vex_wheelv(aes_wheel, &old_wheelv)` (`gemgsxif.c:288-292`)
+    crate::vdi::mouse::install_aes_wheel();
 }
 
 /// `gsx_wsclose` (`gemgsxif.c:191-194`): `v_clswk` on `gl_handle`, run by
 /// the kernel's AES session loop when the session ends (`geminit.c:749`).
-/// The VDI closes every virtual workstation and keeps the physical one
-/// (`vdi_control.c:573-590`); `gl_handle` keeps its value, as EmuTOS's
-/// does, and the next session's [`gsx_init`] opens it again.
+/// The VDI closes every virtual workstation, keeps the physical one and
+/// switches the mouse off (`vdi_control.c:573-590`, `vdimouse_exit`): from
+/// here to the next [`gsx_init`] no packet reaches the AES. `gl_handle` keeps
+/// its value, as EmuTOS's does, and the next session's [`gsx_init`] opens it
+/// again.
 pub fn gsx_wsclose() {
     Gsx::new().ncode(CLOSE_WORKSTATION, 0, 0);
 }

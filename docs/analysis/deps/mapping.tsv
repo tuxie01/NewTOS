@@ -1201,8 +1201,8 @@ ratexit	aes/gemgsxif.c	kernel/src/shell_loop.rs	sh_toalpha	mapped	the cursor hid
 gsx_setmb	aes/gemgsxif.c	tos-api/src/aes/mod.rs	user_but	mapped	no vector installation: the VDI mouse feed calls the AES handler directly (user_but = far_bcha's b_click)
 gsx_setmb	aes/gemgsxif.c	tos-api/src/aes/mod.rs	user_mot	mapped	the motion half (far_mcha's mchange)
 gsx_resetmb	aes/gemgsxif.c	-	-	unmapped	no counterpart found: the old vectors are never restored (gsx_graphic(false) only issues the v_enter_cur escape); whether the VDI mouse feed keeps calling the AES handlers in alpha mode was not read
-aestrap_intercepted	aes/gemgsxif.c	-	-	unmapped	no counterpart: NVDI/trap-2 interception check guarding vex_wheelv; NewTOS installs the wheel vector unconditionally (init.rs install_wheel_vector); no ADR
-gsx_init	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	gsx_wsopen + gsx_start; gsx_setmb, MOUSE_STATE seed and vex_wheelv are elsewhere (user_but/user_mot, input.rs, install_wheel_vector)
+aestrap_intercepted	aes/gemgsxif.c	-	-	unmapped	no counterpart: NVDI/trap-2 interception check guarding vex_wheelv; NewTOS installs the wheel vector unconditionally (gsxif.rs gsx_init -> install_aes_wheel); no ADR
+gsx_init	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	gsx_wsopen + gsx_start + vex_wheelv (install_aes_wheel, last, after the v_opnwk reset it, V53); gsx_setmb and the MOUSE_STATE seed are elsewhere (user_but/user_mot, input.rs)
 gsx_graphic	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_graphic	mapped	v_exit_cur (contrl[5]=2) / v_enter_cur (3) on a change of gl_graphic; setmb/resetmb half missing (see gsx_resetmb)
 bb_set	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	bb_save	mapped	save half: VDI bb_save into the screen buffer (height cut to the buffer, CLIPPED counter instead of KINFO) or a heap/pool copy; the 16-pixel word alignment is vdi::bb_save's
 bb_set	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	restore	mapped	restore half: Saved::restore via vdi::bb_restore
@@ -1232,7 +1232,7 @@ vro_cpyfm	aes/gemgsxif.c	tos-api/src/vdi/raster.rs	blit_device_mem	mapped	the co
 vrt_cpyfm	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	blit_mono	mapped	MD_TRANS mono blit of icon/image rasters
 vrn_trnfm	aes/gemgsxif.c	-	-	unmapped	no counterpart: no device-form transform of mono data (see gsx_trans)
 vsl_width	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	the one call, vsl_width(1) in gsx_init's gsx_start part (ncode SET_LINE_WIDTH)
-vex_wheelv	aes/gemgsxif.c	tos-api/src/vdi/mouse.rs	install_aes_wheel	mapped	the AES's aes_wheel installed as the wheel vector; called from init.rs install_wheel_vector
+vex_wheelv	aes/gemgsxif.c	tos-api/src/vdi/mouse.rs	install_aes_wheel	mapped	the AES's aes_wheel installed as the wheel vector; called at the end of gsxif.rs gsx_init (every session, after v_opnwk, V53)
 ob_getsp	aes/gemobed.c	tos-api/src/aes/object.rs	tedinfo_read_abi	mapped	TEDINFO of the object read at the tree's ABI width, INDIRECT resolved by ObjTree::spec
 ob_center	aes/gemobed.c	tos-api/src/aes/form.rs	ob_center	mapped	tree ROOT centred below the menu bar, outer rect grown by OUTLINED 3 and 2*|th| for SHADOWED; shared by form_center and the file selector
 ins_char	aes/gemobed.c	tos-api/src/aes/object.rs	ins_char	mapped	insert with truncation at te_txtlen; pos clamped at 0 (EmuTOS edits a scratch copy)
@@ -1558,12 +1558,13 @@ arb_corner	vdi/vdi_misc.c	tos-api/src/vdi/attributes.rs	vs_clip	mapped	inline: t
 arb_line	vdi/vdi_misc.c	tos-api/src/vdi/gdp.rs	rbox	mapped	inline: the only EmuTOS caller is vdi_gdp.c:240 (v_rbox/v_rfbox); rbox swaps x1>x2 and y1<y2 in place (the LL/UR order)
 get_start_addr	vdi/vdi_misc.c	-	-	design:ADR-024@docs/MEMORY.md:2156	byte address of word column x, row y in the planar screen (v_planes_shift, v_lin_wr); NewTOS has no bit-planes (ADR-024), its cursor/fill go through RasterBackend pixels
 tick_int	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	the VDI's etv_timer handler (calls tim_addr then the old chain); NewTOS has no OS-internal etv_timer chain and never calls the vex_timv vector (ADR-031 etv_timer row, vex_timv row)
-timer_init	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	chains tick_int into etv_timer via Setexc(0x100); NewTOS has no etv_timer chain (ADR-031); the vex_timv default slot is seeded in mouse.rs ensure_init
+timer_init	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	chains tick_int into etv_timer via Setexc(0x100); NewTOS has no etv_timer chain (ADR-031); the tim_addr = just_rts half is the mapped row mouse.rs timer_init
+timer_init	vdi/vdi_misc.c	tos-api/src/vdi/mouse.rs	timer_init	mapped	tim_addr = just_rts only (vdi_misc.c:128), called by workstation.rs v_opnwk before vdimouse_init and by ensure_init on the power-up path (V53)
 timer_exit	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	restores the saved etv_timer value; NewTOS never chained it (ADR-031)
 vdi_vex_timv	vdi/vdi_misc.c	tos-api/src/vdi/mouse.rs	vex_timv	mapped	opcode 118; swaps TIM_ADDR and returns TICKCAL_MS; the handler is stored and returned but never called (ADR-031), EmuTOS calls it from tick_int
 build_vwk_chain	vdi/vdi_control.c	-	-	unmapped	EmuTOS links the virtual workstations through Vwk.next_work (Warp9 walks it, vdi_control.c:380-383); NewTOS Vwk (vwk.rs) is a static slot table without a next_work link
 get_vwk_by_handle	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	resolve	mapped	handle range check and table lookup; NewTOS also checks the slot's in_use flag
-init_wk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	fills the Vwk from INTIN[1..10] and DEV_TAB/SIZ_TAB into INTOUT/PTSOUT; NewTOS also calls mouse::init from it
+init_wk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	fills the Vwk from INTIN[1..10] and DEV_TAB/SIZ_TAB into INTOUT/PTSOUT; no mouse init (that is v_opnwk's vdimouse_init only, V53)
 update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	DEV_TAB[0,1,3,4,13,35,39] and the INQ_TAB patches are built inline in init_wk and vq_extnd; BYTES_LIN/v_lin_wr/mcs_ptr are line-A planar state with no NewTOS counterpart
 update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	same DEV_TAB/INQ_TAB patches recomputed per call (INQ_TAB[4] = planes, [5] = 0 for 16 planes)
 validate_color_index	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	validate_color_index	mapped	out-of-range index becomes pen 1; EmuTOS applies MAP_COL afterwards, NewTOS folds it to identity
@@ -1575,7 +1576,7 @@ vdi_v_clsvwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clsvwk	mapped	op
 vdi_v_clsvwk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	free_handle	mapped	vwk_ptr[handle] = NULL / Mfree
 vdi_v_opnwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_opnwk	mapped	opcode 1; NewTOS has no INTIN[0]-2 video mode switch (Setscreen/VsetMode, vdi_control.c:507-531); init_colors/text_init/esc_init/vdimouse_init are called or inlined
 vdi_v_opnwk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	open_physical	mapped	vwk_ptr[VDI_PHYS_HANDLE] = &phys_work, virtual slots cleared
-vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clswk	mapped	opcode 2; closes all virtual workstations and esc_exit; no timer_exit/vdimouse_exit counterpart
+vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clswk	mapped	opcode 2; closes all virtual workstations, mouse.rs vdimouse_exit, esc_exit; timer_exit has nothing to undo (ADR-031)
 vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	close_all_virtual	mapped	Mfree of vwk_ptr[2..]
 vdi_v_clrwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clrwk	mapped	opcode 3; truecolor fills 0xffff words, else pen 0 through RasterBackend (EmuTOS memset 0xff / 0x00 over v_lin_wr*V_REZ_VT bytes)
 vdi_vq_extnd	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	opcode 102; EdDI vq_scrninfo rides on 102 in eddi.rs
@@ -1599,8 +1600,9 @@ vdi_vex_motv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_motv	mapped	opcode 126
 vdi_vex_curv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_curv	mapped	opcode 127; stored, never called (ADR-031); NewTOS draws the cursor itself
 vdi_vex_wheelv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_wheelv	mapped	opcode 134, CONF_WITH_EXTENDED_MOUSE; ADR-031 lists vex_wheelv as served; NewTOS classifies the new vector (AES / EL0 / none) and delivers EL0 vectors as an upcall
 vdi_mousex_handler	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	mousex_handler	mapped	CONF_WITH_EXTENDED_MOUSE; buttons 3-5 and the four wheel scancodes
-vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	ensure_init	mapped	NewTOS initialises once (INIT_DONE), lazily at the first cursor op or workstation open; EmuTOS repeats it at every v_opnwk; no Initmous/vblqueue/statvec install
-vdimouse_exit	vdi/vdi_mouse.c	-	-	unmapped	v_clswk (workstation.rs) calls no mouse exit; vex slots, hide count and wheel vector stay. release_wheel_vector (mouse.rs) is a process-exit hook, not this
+vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vdimouse_init	mapped	every v_opnwk (V53): hide count 1 without restore, centre, vectors, arrow, MOUSE_BT/cur_ms_stat 0, mousexvec, packets on; the request modes in input.rs reset_input_modes; no vblqueue/statvec (no VBL draw path)
+vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	ensure_init	mapped	the power-up seeding before the first v_opnwk (NewTOS only: EmuTOS has no mouse before it); keeps hide count and buttons
+vdimouse_exit	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vdimouse_exit	mapped	v_clswk (V53): user_but/mot/cur/wheel = just_rts, packets dropped in feed_relative (Initmous(0)); the AES's direct user_but/user_mot calls stop with it; no statvec restore (no wheel_int)
 vb_draw	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	set_state	mapped	EmuTOS defers the redraw to the VBL (newx/newy, draw_flag); NewTOS erases and redraws synchronously on each mouse event
 cur_display	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	draws the 16x16 sprite saving the background; NewTOS per pixel through RasterBackend, EmuTOS per plane into the bit-planes with MCS save area
 cur_display16	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	CONF_WITH_VDI_16BIT truecolor path; NewTOS has the one RasterBackend path

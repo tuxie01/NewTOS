@@ -266,11 +266,6 @@ fn init_wk(vwk: &mut Vwk, pb: &Vdipb, backend: &dyn RasterBackend) {
             }
         }
     }
-
-    // Materialise the parked cursor centre + default arrow form now (EmuTOS
-    // `vdimouse_init`), so `vq_mouse`/`v_locator` report the centre before the
-    // first explicit cursor op instead of the power-up (0, 0). Idempotent.
-    super::mouse::init(backend);
 }
 
 /// Opcode 100 — open a virtual workstation.
@@ -351,19 +346,24 @@ pub fn vq_extnd(pb: &Vdipb, vwk: &crate::vdi::vwk::Vwk, backend: &dyn RasterBack
 
 /// Opcode 1 — open the physical workstation (the screen device).
 ///
-/// Unlike `v_opnvwk` this also runs `vdimouse_init()`
-/// (`vdi/vdi_control.c:563`), whose first act is to put all four logical
-/// input devices back into REQUEST mode (`vdi/vdi_mouse.c:575-578`). That
-/// reset is observable through `vqin_mode`, and it matters because the AES
-/// leaves the string device in SAMPLE mode on every keyboard poll
-/// (`input::set_input_mode`): a program that opens the physical
-/// workstation itself sees 0 again, one that opens only a virtual
-/// workstation on the AES's physical handle sees the AES's 1.
+/// Unlike `v_opnvwk` this also runs `timer_init()` and `vdimouse_init()`
+/// (`vdi/vdi_control.c:562-563`) — on **every** call, not once: the mouse
+/// comes back to its open-time state whatever the previous session or
+/// program left (centre, buttons 0, hide count 1, the default arrow, the
+/// `vex_*` defaults, packets on again; [`super::mouse::vdimouse_init`], V53).
+/// Its first act is to put all four logical input devices back into REQUEST
+/// mode (`vdi/vdi_mouse.c:575-578`). That reset is observable through
+/// `vqin_mode`, and it matters because the AES leaves the string device in
+/// SAMPLE mode on every keyboard poll (`input::set_input_mode`): a program
+/// that opens the physical workstation itself sees 0 again, one that opens
+/// only a virtual workstation on the AES's physical handle sees the AES's 1.
 pub fn v_opnwk(pb: &Vdipb, backend: &dyn RasterBackend) {
     // SAFETY: single trap path.
     let vwk = unsafe { vwk::open_physical() };
     let handle = vwk.handle;
     init_wk(vwk, pb, backend);
+    super::mouse::timer_init();
+    super::mouse::vdimouse_init(backend);
     super::input::reset_input_modes();
     // `esc_init(vwk)` (`vdi_control.c:564`) — "enter graphics mode": the
     // alpha console's `escfn2` (home, cursor off, clear), CON04.
@@ -379,15 +379,19 @@ pub fn v_opnwk(pb: &Vdipb, backend: &dyn RasterBackend) {
 /// aliased opcode 2 onto `v_clsvwk` and so closed the *physical* screen
 /// device on the standard standalone-GEM call (AUD-V1-001).
 ///
+/// Then `timer_exit()` and `vdimouse_exit()` (`vdi_control.c:587-588`): the
+/// mouse is switched off until the next `v_opnwk` — no packet moves or draws
+/// the pointer, the mouse vectors are `just_rts`
+/// ([`super::mouse::vdimouse_exit`], V53); `timer_exit` restores the
+/// `etv_timer` chain NewTOS never built (ADR-031) and leaves `tim_addr`.
 /// Last, `esc_exit(vwk)` (`vdi_control.c:589`) — "back to console mode":
-/// the alpha console's `escfn3` (clear, cursor on, CR), CON04. The timer /
-/// mouse teardown (`timer_exit` / `vdimouse_exit`) that EmuTOS also runs
-/// here is out of this package's scope — the mouse/input (VW6) audit owns
-/// it — and NewTOS does not model line-A's `CUR_WORK` (documented
-/// acceptable deviation AUD-V1-010).
+/// the alpha console's `escfn3` (clear, cursor on, CR), CON04. NewTOS does
+/// not model line-A's `CUR_WORK` (documented acceptable deviation
+/// AUD-V1-010).
 pub fn v_clswk(backend: &dyn RasterBackend) {
     // SAFETY: single trap path.
     unsafe { vwk::close_all_virtual() };
+    super::mouse::vdimouse_exit();
     super::escape::esc_exit(backend);
 }
 

@@ -1,0 +1,9 @@
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/dkk.Mo5HpD: tag [inj], desktop (495 bytes)
+kernel d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/k-desk-base.img (tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/t/base, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/dkk.bIOtzG: tag [inj], desktop (495 bytes)
+kernel 55fd30defe94088e14d20709de4d82b6a0cf8841927a14e693f7e6531da834cb /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/k-desk-fix.img (tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/t/fix, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+WKPROBE.NAP aeb01a6dc0afe1535c716c6ad2e37421eb0bbc3b94c0a42e933e9e0fc7be4ad7
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/swk.Ke8qtY: tag [inj], launch:WKPROBE (18 bytes), desktop (495 bytes)
+kernel base 8fedfc4c8701a73b4b1726d2786660978e4d7b1e87e572928ce8ad6f118b8ebe
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/swk.DMGoYX: tag [inj], launch:WKPROBE (18 bytes), desktop (495 bytes)
+kernel fix 3c0bb58f8097bb07a5fba6b9286c52e3ec53ef8470f5b656dab850a0604f1f30

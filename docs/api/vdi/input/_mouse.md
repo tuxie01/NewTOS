@@ -389,8 +389,23 @@ by `tick_int`, which also chains the old system timer vector
   `vex_butv`/`motv`/`curv`/`timv` vector other than the VDI's default writes
   one `[hook] warning` per vector and process; the installing process owns the
   vector, and its `Pterm` puts the previous one back while the slot still
-  holds its vector (`tos-api/src/vdi/mouse.rs:931@exchange_hook`). The
+  holds its vector (`tos-api/src/vdi/mouse.rs:1042@exchange_hook`). The
   values stored and returned are unchanged.
+- **Workstation open and close (V53).** Every `v_opnwk` runs `timer_init` +
+  `vdimouse_init` (`vdi/vdi_control.c:562-563`): hide count 1 without
+  restoring a visible pointer, the centre, buttons 0, `cur_ms_stat` 0, the
+  default arrow, `user_but`/`user_mot`/`user_wheel`/`tim_addr` = `just_rts`,
+  `user_cur` = `mov_cur` (`vdi/vdi_mouse.c:565-615`, `vdi/vdi_misc.c:128`).
+  `v_clswk` runs `vdimouse_exit` (`vdi/vdi_mouse.c:622-645`): the four mouse
+  vectors `just_rts` (`user_cur` too) and `Initmous(0, 0, 0)` — no packet
+  reaches `mouse_int` until the next `v_opnwk`; `tim_addr`, the pointer and
+  `mousexvec` stay. NewTOS: `tos-api/src/vdi/mouse.rs` `vdimouse_init`,
+  `vdimouse_exit`, `timer_init`; `feed_relative` drops every packet while the
+  workstation is closed, and the AES's direct `user_but`/`user_mot` calls —
+  from `feed_relative` and from `mousex_handler`'s extra buttons — stop with
+  it. The AES claims the wheel vector again at the end of every `gsx_init`
+  (`aes/gemgsxif.c:288-292`). Measured: `tosdump/probes/wkprobe.c` W1, W2, C1
+  (`measurements/measurement-2026-11-07-v53/RUNINFO.TXT`).
 - `vsc_form` installs the 37-WORD MFORM into the NewTOS `RasterBackend`
   sprite (`tos-api/src/vdi/mouse.rs`); the interleaved `Mcdb` layout is an
   EmuTOS detail — NewTOS may store the sprite however it likes, as long as

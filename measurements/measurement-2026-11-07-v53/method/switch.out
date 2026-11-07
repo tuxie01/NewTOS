@@ -1,0 +1,10 @@
+WKPROBE.NAP aeb01a6dc0afe1535c716c6ad2e37421eb0bbc3b94c0a42e933e9e0fc7be4ad7
+qemu-system-aarch64: terminating on signal 15 from pid 50261 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 52193 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+SWITCHFINISHED

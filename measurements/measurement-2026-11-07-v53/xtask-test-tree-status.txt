@@ -1,0 +1,13 @@
+ M docs/DEVIATIONS.md
+ M docs/analysis/deps/mapping.tsv
+ M docs/api/aes/window-graphics.md
+ M docs/api/vdi/input/_mouse.md
+ M docs/api/vdi/workstation/01-v_opnwk.md
+ M docs/api/vdi/workstation/101-v_clsvwk.md
+ M tos-api/src/aes/gsxif.rs
+ M tos-api/src/aes/init.rs
+ M tos-api/src/vdi/contour.rs
+ M tos-api/src/vdi/mouse.rs
+ M tos-api/src/vdi/workstation.rs
+?? tos-api/tests/aes_v53_session_mouse.rs
+?? tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs

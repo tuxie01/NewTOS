@@ -1,0 +1,30 @@
+     Running tests/aes_v53_session_mouse.rs (target/debug/deps/aes_v53_session_mouse-8b23a4aa9c72b83f)
+test gsx_wsclose_stops_the_aes_mouse_and_gsx_init_brings_it_back ... FAILED
+thread 'gsx_wsclose_stops_the_aes_mouse_and_gsx_init_brings_it_back' (6185804) panicked at tos-api/tests/aes_v53_session_mouse.rs:100:5:
+assertion `left == right` failed: after gsx_wsclose no packet reaches the VDI cursor or the AES (vdimouse_exit, Initmous(0))
+  left: (210, 210, 1)
+ right: (200, 200, 0)
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+error: test failed, to rerun pass `-p tos-api --test aes_v53_session_mouse`
+     Running tests/vdi_v53_opnwk_clswk_mouse.rs (target/debug/deps/vdi_v53_opnwk_clswk_mouse-072376142bec9cb9)
+test w1bc_v_opnwk_resets_hide_count_and_form ... FAILED
+test w1_v_opnwk_resets_position_buttons_and_vectors ... FAILED
+test w2_v_opnwk_drops_a_visible_pointer_without_restoring_it ... FAILED
+test v_opnvwk_leaves_the_mouse_alone ... FAILED
+test c1_v_clswk_switches_the_mouse_off ... FAILED
+thread 'w1bc_v_opnwk_resets_hide_count_and_form' (6185809) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:295:5:
+W1b: one v_show_c(1) shows the arrow at the centre
+thread 'w1_v_opnwk_resets_position_buttons_and_vectors' (6185808) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:265:5:
+assertion `left == right` failed: v_opnwk: buttons 0, the centre (vdi_mouse.c:582-583,595)
+  left: (1, 100, 100)
+ right: (0, 319, 239)
+thread 'w2_v_opnwk_drops_a_visible_pointer_without_restoring_it' (6185810) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:201:5:
+W2b: no 16x16 remnant of the box: 256 words differ
+thread 'v_opnvwk_leaves_the_mouse_alone' (6185807) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:410:5:
+thread 'c1_v_clswk_switches_the_mouse_off' (6185806) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:357:5:
+assertion `left != right` failed: vdimouse_exit: user_but = just_rts (vdi_mouse.c:624)
+  left: 4330032
+ right: 4330032
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+error: test failed, to rerun pass `-p tos-api --test vdi_v53_opnwk_clswk_mouse`
+error: 2 targets failed:

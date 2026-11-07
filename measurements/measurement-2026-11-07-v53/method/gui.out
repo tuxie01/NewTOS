@@ -1,0 +1,30 @@
+files ed81b87e62306872
+qemu-system-aarch64: terminating on signal 15 from pid 42148 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 43657 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 44985 (<unknown process>)
+kernel d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 45374 (<unknown process>)
+kernel 50bb1508e57e9fc0d0efd5861effa297c2ff6e03fb71a47f7c56f78af4cb6247 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 45653 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 46627 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 47617 (<unknown process>)
+kernel d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 49626 (<unknown process>)
+kernel 50bb1508e57e9fc0d0efd5861effa297c2ff6e03fb71a47f7c56f78af4cb6247 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+GUIFINISHED

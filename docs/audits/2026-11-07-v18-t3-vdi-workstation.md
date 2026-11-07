@@ -56,8 +56,8 @@ dann `v_opnwk`.
 - EmuTOS: `references/emutos/vdi/vdi_control.c:562-563` (`timer_init`, `vdimouse_init` in jedem `v_opnwk`),
   `vdi/vdi_mouse.c:565-618` (`HIDE_CNT = 1` `:581`, Mitte `:582-583`, `user_*` `:585-589`, Standardform, `MOUSE_BT = 0`,
   `cur_ms_stat = 0`), `vdi/vdi_misc.c:121-135` (`tim_addr = just_rts`).
-- NewTOS: `tos-api/src/vdi/mouse.rs:343@ensure_init` (einmalig über `INIT_DONE`, `tos-api/src/vdi/mouse.rs:37@INIT_DONE`), gerufen aus
-  `tos-api/src/vdi/workstation.rs:273@init_wk` über `tos-api/src/vdi/mouse.rs:602@init`; `tos-api/src/vdi/workstation.rs:362@v_opnwk`.
+- NewTOS: `tos-api/src/vdi/mouse.rs:379@ensure_init` (einmalig über `INIT_DONE`, seit V53 entfernt), gerufen aus
+  `tos-api/src/vdi/workstation.rs:273@init_wk` über `mouse::init` (seit V53 entfernt); `tos-api/src/vdi/workstation.rs:362@v_opnwk`.
 - **LOCALIZED: `ensure_init`** (Gegenstück von `vdimouse_init`, `mapping.tsv`). `--down` von `vdimouse_init`: `set_mouse_form` /
   `validate_color_index` gleich (P2, P3), Zeigerbild gleich (P1–P5); `Initmous`/`kbdvbase` (bios) nicht eigens gemessen — ihre
   API-Wirkung (Pakete erreichen `mouse_int`) ist in M1–M3 gleich.
@@ -100,7 +100,7 @@ dann `v_opnwk`.
   `v_show_c(0)` beide den Block), F2c. Karten `measurements/measurement-2026-11-07-v18-t3/probe/maps/14-F1b.txt`, `17-F2b.txt`.
 - EmuTOS: `vdi/vdi_mouse.c:450-492` (`set_mouse_form` speichert nur, `mouse_flag` hält den VBL fern; kein `cur_replace`/`cur_display`).
   Über die AES ist es nicht sichtbar: `gsx_mfset` klammert mit `gsx_moff`/`gsx_mon` (`aes/gemgsxif.c:407-420`).
-- NewTOS: `tos-api/src/vdi/mouse.rs:773@vsc_form` (erase, speichern, draw).
+- NewTOS: `tos-api/src/vdi/mouse.rs:884@vsc_form` (erase, speichern, draw).
 - **LOCALIZED: `vsc_form`.** `--down` (`linea_transform_mouse`, `set_mouse_form`, `validate_color_index`): Speicherung, Hotspot-Maske
   und Farbprüfung gleich (P2 mit Hotspot `0x17`, P3 mit Stift 300/−2), Zeichnen/Restaurieren gleich (P1–P6).
 - Retest (`vdi_vsc_form --up`, 184; die AES-Aufrufer `gsx_mfset`, `gr_mouse`, `ct_mouse` … gehen in NewTOS über
@@ -122,7 +122,7 @@ dann `v_opnwk`.
   unter dem Zeiger gleich (`ffdf` Maske, `0000` Daten, `ffff` daneben).
 - EmuTOS: `vdi/vdi_asm.S:496-534` (`mov_cur`: nur `newx/newy`, `draw_flag`), `vdi/vdi_mouse.c:602` (`vblqueue[0] = vb_draw`),
   `:668-686` (`vb_draw`).
-- NewTOS: `tos-api/src/vdi/mouse.rs:190@feed_relative` → `tos-api/src/vdi/mouse.rs:169@set_state` (erase + draw im Paket).
+- NewTOS: `tos-api/src/vdi/mouse.rs:215@feed_relative` → `tos-api/src/vdi/mouse.rs:188@set_state` (erase + draw im Paket).
 - **LOCALIZED: `set_state`** (Gegenstück von `mov_cur` und `vb_draw`). `--down` von `vb_draw` (`cur_display16`, `cur_replace16`,
   `cur_display_clip`): gleich (P1–P7, D1, M1b, M2b, M3).
 - Spec: `docs/api/vdi/input/_mouse.md` (Kopf) führt den VBL-Zeichenweg als „Reference (NewTOS reimplements freely)“; die Messung zeigt

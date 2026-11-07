@@ -1,0 +1,5 @@
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53/c1k.vGwOI4: tag [inj], launch:WKPROBE (18 bytes)
+kernel 03975ecb44896deb89035e8c7e79705e25ae92a9b92287278eb2ed481a9122d7
+qemu-pid  5728
+qemu      done
+card      after bf63361bcbb636a0a3eec6c22cbb0482429882a0cf0fec662b2036dbb99ca426 (the booted clone)

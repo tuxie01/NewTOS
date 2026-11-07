@@ -75,7 +75,7 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
    mit gleich vielen Ebenen <= 8: EmuTOS planarer BitBlt, NewTOS 16-Bit-Chunky; PAT_FLAG fehlt.
 8. `vdi_fill.c:888` gegen `tos-api/src/vdi/contour.rs:352@v_contourfill`: Seed-Warteschlange gegen
    Seed-Stack + Visited-Bitmap; Muster, Ueberlauf, Reihenfolge nicht gezeigt.
-9. `vdi_asm.S:496` gegen `tos-api/src/vdi/mouse.rs:190@feed_relative`: EmuTOS zeichnet den Zeiger
+9. `vdi_asm.S:496` gegen `tos-api/src/vdi/mouse.rs:215@feed_relative`: EmuTOS zeichnet den Zeiger
    im VBL, NewTOS sofort.
 10. `vdi_fill.c:671` gegen `tos-api/src/vdi/inquiry.rs:190@v_get_pixel`: ausserhalb des Schirms.
 11. `vdi_gdp.c:386-392` gegen `tos-api/src/vdi/gdp.rs:162@curve`: frueher Ausstieg fehlt, wohl
@@ -120,14 +120,14 @@ Lead: `"vdi/"` in `MAPPED_DIRS` (`tools/xtask/src/deps.rs:63@MAPPED_DIRS`), Meld
 
 Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 
-20. `vdi_asm.S:283,359,367`, `vdi_misc.c:83` gegen `tos-api/src/vdi/mouse.rs:967@vex_butv`:
+20. `vdi_asm.S:283,359,367`, `vdi_misc.c:83` gegen `tos-api/src/vdi/mouse.rs:1078@vex_butv`:
     `vex_butv/motv/curv/timv` gespeichert, nie gerufen — ADR-031, bekannt.
-21. `vdi_mouse.c:565` gegen `mouse.rs:343@ensure_init`: EmuTOS setzt bei jedem `v_opnwk`
+21. `vdi_mouse.c:565` gegen `mouse.rs:379@ensure_init`: EmuTOS setzt bei jedem `v_opnwk`
     Versteckzaehler 1, Mitte, Tasten 0, Standardform; NewTOS einmalig.
 22. `vdi_control.c:573` gegen `tos-api/src/vdi/workstation.rs:374@v_clswk`: kein Maus-/Timer-Exit.
 23. `vdi_control.c:507-531` gegen `workstation.rs:359@v_opnwk`: Videomodus-Wechsel per
     `INTIN[0]-2` fehlt.
-24. `vdi_mouse.c:668` gegen `mouse.rs:169@set_state`: Zeiger im VBL gegen synchron (wie 9).
+24. `vdi_mouse.c:668` gegen `mouse.rs:188@set_state`: Zeiger im VBL gegen synchron (wie 9).
 25. `vdi_main.c:171-190` gegen `tos-api/src/vdi/mod.rs:391@dispatch_in`: Line-A-Spiegel
     `CUR_FONT/WRT_MODE/CLIP/CUR_WORK` fehlen (ADR-030 pruefen).
 26. `vdi_control.c:390` gegen `tos-api/src/vdi/vwk.rs`: keine Workstation-Kette (Warp9).

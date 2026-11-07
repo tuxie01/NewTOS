@@ -1,0 +1,65 @@
+pens EmuTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+pens NewTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+01 CAL   EQUAL  (136x8 at 0,0)
+02 P0    EQUAL  (32x32 at 52,52)
+03 P1    EQUAL  (32x32 at 96,96)
+04 P2    EQUAL  (64x64 at 176,126)
+05 P3    EQUAL  (32x32 at 292,142)
+06 P4    EQUAL  (40x40 at 600,440)
+07 P5    EQUAL  (40x40 at 0,0)
+08 P6a   EQUAL  (64x64 at 380,130)
+09 P6b   EQUAL  (64x64 at 380,130)
+10 P7a   EQUAL  (32x32 at 492,142)
+11 P7b   EQUAL  (32x32 at 492,142)
+12 P7c   EQUAL  (32x32 at 492,142)
+13 F1a   EQUAL  (64x64 at 90,240)
+14 F1b   EQUAL  (64x64 at 90,240)
+15 F1c   EQUAL  (64x64 at 90,240)
+16 F1d   EQUAL  (64x64 at 90,240)
+17 F2b   EQUAL  (64x64 at 280,240)
+18 F2c   EQUAL  (64x64 at 280,240)
+19 D1a   EQUAL  (56x56 at 432,244)
+20 D1b   EQUAL  (56x56 at 432,244)
+21 D1c   EQUAL  (56x56 at 432,244)
+22 M1a   EQUAL  (64x40 at 192,344)
+23 M1b   EQUAL  (64x40 at 192,344)
+24 M2a   EQUAL  (96x56 at 336,336)
+25 M2b   EQUAL  (96x56 at 336,336)
+26 M3a   EQUAL  (40x40 at 492,344)
+27 M3b   EQUAL  (40x40 at 492,344)
+28 W1a   EQUAL  (256x176 at 80,80)
+29 W1b   DIFF   54 px raw, 54 px by pen (256x176 at 80,80): (320,240) E=ffdf N=0000, (320,241) E=ffdf N=0000, (321,241) E=ffdf N=0000, (320,242) E=ffdf N=0000, (321,242) E=ffdf N=0000, (322,242) E=ffdf N=0000
+30 W1c   DIFF   142 px raw, 142 px by pen (256x176 at 80,80): (95,95) E=0000 N=ffdf, (96,95) E=001f N=ffdf, (109,95) E=001f N=ffdf, (110,95) E=0000 N=ffdf, (95,96) E=001f N=ffdf, (96,96) E=0000 N=ffdf
+31 W2a   EQUAL  (256x176 at 80,80)
+32 W2b   DIFF   256 px raw, 256 px by pen (256x176 at 80,80): (95,95) E=f800 N=ffdf, (96,95) E=ffc0 N=ffdf, (97,95) E=ffc0 N=ffdf, (98,95) E=001f N=ffdf, (99,95) E=001f N=ffdf, (100,95) E=ffc0 N=ffdf
+33 W2c   DIFF   310 px raw, 310 px by pen (256x176 at 80,80): (95,95) E=0000 N=ffdf, (96,95) E=001f N=ffdf, (97,95) E=ffc0 N=ffdf, (98,95) E=001f N=ffdf, (99,95) E=001f N=ffdf, (100,95) E=ffc0 N=ffdf
+34 C1a   EQUAL  (128x128 at 120,120)
+35 C1b   DIFF   310 px raw, 310 px by pen (128x128 at 120,120): (150,150) E=f800 N=ffdf, (151,150) E=f800 N=ffdf, (152,150) E=ffc0 N=ffdf, (153,150) E=ffc0 N=ffdf, (154,150) E=001f N=ffdf, (155,150) E=001f N=ffdf
+36 C1c   DIFF   310 px raw, 310 px by pen (128x128 at 120,120): (150,150) E=f800 N=ffdf, (151,150) E=f800 N=ffdf, (152,150) E=ffc0 N=ffdf, (153,150) E=ffc0 N=ffdf, (154,150) E=001f N=ffdf, (155,150) E=001f N=ffdf
+37 C1d   EQUAL  (128x128 at 120,120)
+cases 37, differing 6
+LOG E:   W1 after: vq_mouse 1 100 100
+LOG N:   W1 after: vq_mouse 0 319 239
+LOG E:   W1 vex_butv after: old == own 1, old == vector before W1 0
+LOG N:   W1 vex_butv after: old == own 0, old == vector before W1 1
+LOG E:   W1 vex_motv after: old == own 1, old == vector before W1 0
+LOG N:   W1 vex_motv after: old == own 0, old == vector before W1 1
+LOG E:   W1 vex_curv after: old == own 1, old == vector before W1 0
+LOG N:   W1 vex_curv after: old == own 0, old == vector before W1 1
+LOG E:   W1 vex_timv after: old == own 1, old == vector before W1 0 (ms 20)
+LOG N:   W1 vex_timv after: old == own 0, old == vector before W1 1 (ms 20)
+LOG E:   W1 vex_wheelv after: old == own 1, old == vector before W1 0
+LOG N:   W1 vex_wheelv after: old == own 0, old == vector before W1 1
+LOG E:   packet f8 0 0: vq_mouse 1 100 100 -> 0 100 100 (changed)
+LOG N:   packet f8 0 0: vq_mouse 0 319 239 -> 0 359 259 (changed)
+LOG E:   W2 after: vq_mouse 0 100 100
+LOG N:   W2 after: vq_mouse 0 319 239
+LOG E:   C1 vex_butv after v_clswk: old == own 1, old == vector before C1 0
+LOG N:   C1 vex_butv after v_clswk: old == own 0, old == vector before C1 1
+LOG E:   C1 vex_motv after v_clswk: old == own 1, old == vector before C1 0
+LOG N:   C1 vex_motv after v_clswk: old == own 0, old == vector before C1 1
+LOG E:   C1 vex_wheelv after v_clswk: old == own 1, old == vector before C1 0
+LOG N:   C1 vex_wheelv after v_clswk: old == own 0, old == vector before C1 1
+LOG E:   packet f8 40 20: vq_mouse 0 150 150 -> 0 190 170 (changed)
+LOG N:   packet f8 40 20: vq_mouse 0 150 150 -> 0 150 150 (unchanged)
+log lines 115/115, differing 12

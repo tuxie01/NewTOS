@@ -290,7 +290,7 @@ keeps, never appear. Measured on the pinned oracle, tt and falcontc:
 `tosdump/probes/akprobe.c`
 (`measurements/measurement-2026-10-30-a126/RUNINFO.TXT`).
 NewTOS: every AES site that reports the state reads it through one helper,
-`tos-api/src/aes/gsxif.rs:286@gsx_kstate` (`tos-api/src/aes/gsxif.rs:292@kstate_of` for the pop-up's host),
+`tos-api/src/aes/gsxif.rs:286@gsx_kstate` (`tos-api/src/aes/gsxif.rs:304@kstate_of` for the pop-up's host),
 which reads the BIOS shift byte `vq_key_s` reads and applies the same mask.
 
 ### Wake conditions and dispatch — contract (A112, 2026-10-17; re-extracted from source)

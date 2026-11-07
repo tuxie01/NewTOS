@@ -72,7 +72,7 @@ Für alle vier gilt:
 | `sh_write` (`aes/gemshlib.c:157`) | `tos-api/src/aes/shell.rs:495@shel_write` | aes | EQUAL (Sonde; EmuTOS-Trace `shel_write(intin: 0x1,0x0,0x1)`) | o-trace, n-* |
 | `sh_ldapp` (`aes/gemshlib.c:592-689`) | `kernel/src/shell_loop.rs:422@sh_ldapp` | aes | EQUAL (Sonde): keine Eingabe zwischen Programmende und Desktopstart | alle |
 | `sh_main`, `sh_chgrf`, `sh_tographic` (`:692-731`, `:513-523`, `:223-239`) | `kernel/src/shell_loop.rs:246@sh_main`, `kernel/src/shell_loop.rs:309@sh_chgrf`, `kernel/src/shell_loop.rs:351@sh_tographic` | aes | EQUAL (Sonde): gleiche Bildfolge (Text, weiß mit Sanduhr, grüne Fläche von oben, Menüzeile, Fenster), Ende pixelgleich mit dem Stand vor dem Start | alle |
-| `process_inf2` `#Z 00` (`aes/geminit.c:438-463`) | `tos-api/src/aes/init.rs:437@process_inf2` | aes | EQUAL (Sonde), Kontrolle auf dem unveränderten Kernel | o-zauto, n-zauto |
+| `process_inf2` `#Z 00` (`aes/geminit.c:438-463`) | `tos-api/src/aes/init.rs:421@process_inf2` | aes | EQUAL (Sonde), Kontrolle auf dem unveränderten Kernel | o-zauto, n-zauto |
 
 Bug-Dichte: 0 bestätigte Verhaltensfehler bei 7 gemessenen Funktionen. Die 4 Befunde sind Doku-Befunde (S4).
 

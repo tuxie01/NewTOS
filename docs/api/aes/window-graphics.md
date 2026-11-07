@@ -1632,8 +1632,11 @@ by the kernel's AES session loop (`kernel/src/lib.rs`) at the
 EmuTOS's zeroed BSS global is. Two `gsx_init` steps are not VDI calls on
 `gl_handle` here: `gsx_setmb` (the button/motion vectors are the AES's
 `user_but`/`user_mot`, called directly by the VDI mouse feed,
-`tos-api/src/vdi/mouse.rs`) and `vex_wheelv`
-(installed once at boot, `aes::init::install_wheel_vector`); `gsx_wsopen`'s
+`tos-api/src/vdi/mouse.rs` — not between `gsx_wsclose`'s `v_clswk` and the
+next `v_opnwk`, as EmuTOS' `vdimouse_exit` takes them out of the vectors,
+`vdi/vdi_mouse.c:622-634`, V53) and `vex_wheelv` (`vdi::mouse::install_aes_wheel`,
+at the end of `gsx_init`, after the `v_opnwk` has reset the wheel vector,
+`aes/gemgsxif.c:288-292`); `gsx_wsopen`'s
 `intout[45] = VsetMode(-1)` is not passed — NewTOS has no `VsetMode` and its
 `v_opnwk` switches no mode (`../vdi/workstation/01-v_opnwk.md`). The AES's
 own metrics (`gl_wchar`…`gl_hbox`, `gl_nplanes`) are derived from the same

@@ -1,0 +1,7 @@
+qemu      done
+card      after 901d25f4b4440bde0a01beab7519eb7f44be6d9c5c99dd9fb865a35b6b605897 (the booted clone)
+qemu      done
+card      after 5eb97db3667a36489f855d3d116a0bb9841eb8a2b2f4aa29a7a57e1ff7b762ae (the booted clone)
+977 T3740 EQUAL  (520x64 at 60,60)
+978 T3741 EQUAL  (520x64 at 60,60)
+cases 954, differing 0

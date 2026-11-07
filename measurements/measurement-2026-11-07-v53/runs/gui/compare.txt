@@ -1,0 +1,31 @@
+desk480: 11 shots, 0 differ
+desk1080: 11 shots, 0 differ
+  differ bc480 ./shots/00-t006.png
+  differ bc480 ./shots/01-t010.png
+bc480: 6 shots, 2 differ
+  differ bc1080 ./shots/00-t006.png
+  differ bc1080 ./shots/01-t010.png
+bc1080: 6 shots, 2 differ
+bc*: the 2 differing shots (6 s, 10 s) differ in 306 px in the box (425,190)-(492,201), the boot screen's build id after 'Built:' (base kernel built from a git archive, fix from the main tree); the other 4 identical
+switch480 ./shots/00-00-rest.png: 67 px, box 378 123 391 134
+first 378 123 000000 ffffff
+switch480 ./shots/01-01-menu-file.png: 67 px, box 378 123 391 134
+first 378 123 000000 ffffff
+switch480 ./shots/02-02-dialog.png: 0 px
+switch480 ./shots/03-03-rubberband-held.png: 67 px, box 378 123 391 134
+first 378 123 000000 ffffff
+switch480 ./shots/04-04-window-drag-held.png: 67 px, box 378 123 391 134
+first 378 123 000000 ffffff
+switch480 ./shots/05-05-slider-drag-held.png: 67 px, box 298 177 311 188
+first 298 177 000000 ffffff
+switch480 ./shots/06-06-sizer-drag-held.png: 67 px, box 298 177 311 188
+first 298 177 000000 ffffff
+switch480 ./shots/07-07-icon-drag-held.png: 67 px, box 298 177 311 188
+first 298 177 000000 ffffff
+switch480 ./shots/08-08-icon-top-edge-held.png: 67 px, box 298 177 311 188
+first 298 177 000000 ffffff
+switch480 ./shots/09-09-icon-bottom-edge-held.png: 67 px, box 298 177 311 188
+first 298 177 000000 ffffff
+switch480 ./shots/10-10-end.png: 67 px, box 298 177 311 188
+first 298 177 000000 ffffff
+switch480: the 67 px box is the desktop window's info line '999136/999141 bytes used' (WKPROBE.LOG on C: is 5 bytes longer on the fix); menu, dialog, rubberband, drags identical

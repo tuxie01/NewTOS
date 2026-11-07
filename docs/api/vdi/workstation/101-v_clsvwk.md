@@ -81,11 +81,26 @@ it `Mfree`s **every** open virtual workstation (`vwk_ptr[2..]`), sets
 `vdimouse_exit()`, and `esc_exit(vwk)` (→ `escfn3`, back to alpha/console
 mode). Inputs/outputs: 0/0/0/0.
 
-- **NewTOS:** the bring-up profile keeps the physical workstation open for
-  the system lifetime, so `v_clswk` is effectively a no-op there (it must
-  not tear down the framebuffer). If a program calls it, close the
-  virtual workstations but leave the screen device up, and return the
-  console to text mode via the escape path.
+- **`vdimouse_exit`** (`vdi/vdi_mouse.c:622-645`): `user_but = user_mot =
+  user_cur = just_rts` (`user_cur` too, not `mov_cur`) and `user_wheel =
+  just_rts` (`:624-628`), then `Initmous(0, 0, 0)` (`:634`), whose type 0
+  sets the BIOS `mousevec` to `just_rts` (`bios/mouse.c:47-48,119-121`): no
+  packet moves or draws the pointer, and none reaches the AES's
+  `far_bcha`/`far_mcha`, until the next `v_opnwk`. The pointer itself
+  (position, hide count, form, a visible sprite and its save-under) and
+  `mousexvec` (extra buttons) stay. **`timer_exit`** (`vdi/vdi_misc.c:144-150`)
+  restores the old `etv_timer` and leaves `tim_addr` as it is.
+- **NewTOS:** the AES calls it at every session end (`gsx_wsclose`,
+  `aes/gemgsxif.c:191-194`, `aes/geminit.c:749`). `tos-api/src/vdi/workstation.rs`
+  `v_clswk` closes every virtual workstation, keeps the physical one (the
+  framebuffer stays up), runs `mouse::vdimouse_exit` (packets dropped,
+  vectors `just_rts`, the AES's direct `user_but`/`user_mot` calls stop) and
+  returns the console to text mode (`esc_exit`). `timer_exit` has nothing to
+  undo (no `etv_timer` chain, ADR-031). *Correction (V53, 2026-11-07):* this
+  note called `v_clswk` "effectively a no-op" and NewTOS ran no mouse exit —
+  the pointer kept moving and drawing after it (wkprobe C1,
+  `measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`, VDI-WK-002); fixed and
+  re-measured in `measurements/measurement-2026-11-07-v53/RUNINFO.TXT`.
 
 ## Dependencies
 
@@ -107,8 +122,9 @@ mode). Inputs/outputs: 0/0/0/0.
 - Free the per-handle `Vwk` and keep `CUR_WORK` valid (→ physical). The
   chain relink is **reference**; NewTOS's handle registry does the
   equivalent.
-- `v_clswk` must **not** tear down the framebuffer in bring-up — keep the
-  physical device open, only return the console to text mode.
+- `v_clswk` must **not** tear down the framebuffer — keep the physical
+  device open, switch the mouse off (`vdimouse_exit`) and return the console
+  to text mode.
 
 ---
 

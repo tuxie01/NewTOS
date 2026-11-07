@@ -34,7 +34,26 @@ static MOUSE_BT: AtomicU8 = AtomicU8::new(0);
 static CUR_MS_STAT: AtomicU8 = AtomicU8::new(0);
 /// Cursor hide depth: 0 = shown, ≥1 = hidden. GEM powers up hidden.
 static HIDE_COUNT: AtomicI16 = AtomicI16::new(1);
-static INIT_DONE: AtomicU8 = AtomicU8::new(0);
+
+// ── the mouse driver's state across `v_opnwk` / `v_clswk` ──
+//
+// EmuTOS switches the mouse with the workstation: `vdimouse_init` (every
+// `v_opnwk`, `vdi/vdi_control.c:563`) ends with `Initmous(1, &mouse_params,
+// mouse_int)` (`vdi/vdi_mouse.c:605`), `vdimouse_exit` (`v_clswk`, `:588`)
+// with `Initmous(0, 0, 0)` (`:634`), which sets the BIOS `mousevec` to
+// `just_rts` (`bios/mouse.c:47-48,119-121`): from `v_clswk` to the next
+// `v_opnwk` no packet reaches `mouse_int`.
+
+/// No workstation has been opened or closed yet. The first cursor operation or
+/// packet seeds the mouse ([`ensure_init`]) — NewTOS' power-up path, for
+/// callers before the AES's first `v_opnwk` (the boot screen opens only a
+/// virtual workstation, `kernel/src/initinfo.rs`); EmuTOS has no mouse there.
+const MOUSE_FRESH: u8 = 0;
+/// [`vdimouse_init`] ran: packets reach [`feed_relative`] (`mouse_int`).
+const MOUSE_ON: u8 = 1;
+/// [`vdimouse_exit`] ran: packets are dropped until the next `v_opnwk`.
+const MOUSE_OFF: u8 = 2;
+static MOUSE_STATE: AtomicU8 = AtomicU8::new(MOUSE_FRESH);
 
 // ── cursor form (MFORM): hotspot, colours, 16 mask + 16 data rows ──
 static HOT_X: AtomicI16 = AtomicI16::new(0);
@@ -187,8 +206,17 @@ pub fn set_state(x: i16, y: i16, buttons: u8, backend: &dyn RasterBackend) {
 /// This is the API-level half of the mouse driver: it owns the cursor
 /// semantics. The hardware packet decode lives in the kernel — see
 /// `docs/api/vdi/input/_mouse-packet.md`.
+///
+/// Between `v_clswk` and the next `v_opnwk` the packet is dropped whole —
+/// position, buttons, `cur_ms_stat`, the AES's `user_but`/`user_mot`: EmuTOS'
+/// `vdimouse_exit` has pointed the BIOS `mousevec` at `just_rts`
+/// (`Initmous(0, 0, 0)`, `vdi/vdi_mouse.c:634`; `bios/mouse.c:119-121`), so
+/// `mouse_int` is not called at all (V53, wkprobe C1).
 pub fn feed_relative(dx: i16, dy: i16, buttons: u8, backend: &dyn RasterBackend) {
     ensure_init(backend);
+    if MOUSE_STATE.load(Ordering::Relaxed) != MOUSE_ON {
+        return;
+    }
     // Maintain `cur_ms_stat` for the locator input device (`v_locator` /
     // `gloc_key`), byte-for-byte as EmuTOS `mouse_int` (`vdi_asm.S:240-328`):
     // the raw deltas decide the motion bit, the button transition sets the
@@ -340,8 +368,16 @@ pub fn park_position(w: u16, h: u16) -> (i16, i16) {
     (xres / 2, yres / 2)
 }
 
+/// The power-up path ([`MOUSE_FRESH`]): the first cursor operation or packet
+/// before any workstation was opened seeds what the statics do not already
+/// hold — the arrow's rows, the centre, the default vectors — and switches the
+/// packets on. The hide count, `MOUSE_BT` and `cur_ms_stat` keep their
+/// power-up values *and* anything that changed them before (a `v_hide_c`
+/// before the first `v_show_c` still counts). After the first `v_opnwk` — and
+/// after a `v_clswk` — this does nothing: the state is the one the last open
+/// ([`vdimouse_init`]) or close ([`vdimouse_exit`]) left.
 fn ensure_init(backend: &dyn RasterBackend) {
-    if INIT_DONE.swap(1, Ordering::Relaxed) != 0 {
+    if MOUSE_STATE.load(Ordering::Relaxed) != MOUSE_FRESH {
         return;
     }
     let (_, _, mask, data) = &PRESET_FORMS[0]; // ARROW
@@ -349,34 +385,106 @@ fn ensure_init(backend: &dyn RasterBackend) {
         MASK[i].store(mask[i], Ordering::Relaxed);
         DATA[i].store(data[i], Ordering::Relaxed);
     }
-    // Park the cursor at the screen centre.
     let (cx, cy) = park_position(backend.width(), backend.height());
     GCURX.store(cx, Ordering::Relaxed);
     GCURY.store(cy, Ordering::Relaxed);
-    // Install the default exchange-vector slots (EmuTOS `vdimouse_init`,
-    // `vdi_mouse.c:585-589`; the `vex_timv` slot `tim_addr`, `vdi_misc.c:128`):
-    // the button / motion / wheel / timer vectors default to the `just_rts`
-    // no-op, the cursor-draw vector to `mov_cur`. NewTOS never *invokes* these
-    // from the cooperative feed path — the default behaviour is already inlined
-    // (`feed_relative` redraws the cursor; buttons/motion are no-ops) — but the
-    // slots must hold a real address so an app that installs its own vector via
-    // `vex_*` gets the genuine previous address back to save/restore, instead
-    // of a spurious NULL (AUD-V6-002).
-    // Cast the fn items through a raw pointer (not a direct fn→int cast) to
-    // take their address as a `u64` sentinel.
-    USER_BUT.store(just_rts as *const () as u64, Ordering::Relaxed);
-    USER_MOT.store(just_rts as *const () as u64, Ordering::Relaxed);
+    USER_BUT.store(just_rts_va(), Ordering::Relaxed);
+    USER_MOT.store(just_rts_va(), Ordering::Relaxed);
     USER_CUR.store(mov_cur as *const () as u64, Ordering::Relaxed);
-    TIM_ADDR.store(just_rts as *const () as u64, Ordering::Relaxed);
-    // `user_wheel = just_rts` (`vdi_mouse.c:588`) and `mousexvec =
-    // vdi_mousex_handler` (`:612`) — the wheel half of `vdimouse_init`, split
-    // out into [`wheel_init`] because EmuTOS runs `vdimouse_init` (workstation
-    // open) strictly before `gsx_init`'s `vex_wheelv(aes_wheel, …)`
-    // (`aes/gemgsxif.c:291`), while NewTOS' `ensure_init` is lazy — the first
-    // cursor operation — and can therefore run *after* the AES has installed
-    // its handler. [`wheel_init`] is one-shot, so whichever runs first seeds
-    // the slot and the other leaves it alone.
+    timer_init();
+    // `user_wheel` and `mousexvec`, unless the AES or a program got there
+    // first (one-shot, [`wheel_init`]).
     wheel_init();
+    MOUSE_STATE.store(MOUSE_ON, Ordering::Relaxed);
+}
+
+/// The `tim_addr` half of EmuTOS `timer_init` (`vdi/vdi_misc.c:121-135`), run
+/// by every `v_opnwk` before [`vdimouse_init`] (`vdi/vdi_control.c:562`):
+/// `tim_addr = just_rts` (`:128`), so a `vex_timv` vector a program left
+/// behind is gone after the next open (wkprobe W1). The other half — chaining
+/// `tick_int` into `etv_timer` with `Setexc(0x100, …)` (`:130-132`) — has no
+/// counterpart: NewTOS keeps no `etv_timer` chain and never calls `tim_addr`
+/// (ADR-031). `timer_exit` (`v_clswk`) leaves `tim_addr` standing
+/// (`:144-150`), so `v_clswk` has nothing to do here.
+pub(crate) fn timer_init() {
+    TIM_ADDR.store(just_rts_va(), Ordering::Relaxed);
+}
+
+/// EmuTOS `vdimouse_init` (`vdi/vdi_mouse.c:565-615`), run by every `v_opnwk`
+/// (`vdi/vdi_control.c:563`) — not by `v_opnvwk`. Puts the whole mouse back
+/// to its open-time state, whatever the previous session or program left
+/// (V53, wkprobe W1, W2):
+///
+/// * `HIDE_CNT = 1` (`:581`) — **without** `cur_replace`: a pointer that was
+///   visible is dropped, not erased, so the next `v_hide_c` restores no stale
+///   16×16 save-under (W2b) and one counted `v_show_c` shows it (W1b);
+/// * `GCURX`/`GCURY` = the centre (`:582-583`, [`park_position`]);
+/// * `user_but = user_mot = just_rts`, `user_cur = mov_cur`,
+///   `user_wheel = just_rts` (`:585-589`) — NewTOS stores these addresses and
+///   never calls them (ADR-031); the AES's direct handlers are not affected,
+///   see [`feed_relative`];
+/// * the default form (`set_mouse_form(default_mform(), …)`, `:593`; with the
+///   AES that is its `mouse_cursor[ARROW]`, `aes/geminit.c:174-177`) —
+///   `PRESET_FORMS[0]`, mask pen 0, data pen 1;
+/// * `MOUSE_BT = 0`, `cur_ms_stat = 0` (`:595-596`);
+/// * `mousexvec = vdi_mousex_handler` (`:612`);
+/// * last, `Initmous(1, &mouse_params, mouse_int)` (`:605`): packets reach
+///   [`feed_relative`] again ([`MOUSE_ON`]).
+///
+/// The four request modes (`:575-578`) are reset by the `v_opnwk` handler
+/// itself (`input::reset_input_modes`). `mouse_flag`, `draw_flag`,
+/// `newx`/`newy` and `vblqueue[0] = vb_draw` belong to EmuTOS' VBL draw path,
+/// which NewTOS does not have (the pointer is drawn in the packet). Neither
+/// the AES's tracked forms (`gl_prevmouse`, `p_mouse`: [`PREV_FORM`],
+/// [`SAVED_FORM`]) nor the save-under buffer are touched, as in EmuTOS.
+pub(crate) fn vdimouse_init(backend: &dyn RasterBackend) {
+    HIDE_COUNT.store(1, Ordering::Relaxed);
+    let (cx, cy) = park_position(backend.width(), backend.height());
+    GCURX.store(cx, Ordering::Relaxed);
+    GCURY.store(cy, Ordering::Relaxed);
+    USER_BUT.store(just_rts_va(), Ordering::Relaxed);
+    USER_MOT.store(just_rts_va(), Ordering::Relaxed);
+    USER_CUR.store(mov_cur as *const () as u64, Ordering::Relaxed);
+    reset_wheel_vector();
+    let form = ARROW_FORM;
+    HOT_X.store(form.hot_x, Ordering::Relaxed);
+    HOT_Y.store(form.hot_y, Ordering::Relaxed);
+    BG_COL.store(form.bg_col, Ordering::Relaxed);
+    FG_COL.store(form.fg_col, Ordering::Relaxed);
+    for i in 0..16 {
+        MASK[i].store(form.mask[i], Ordering::Relaxed);
+        DATA[i].store(form.data[i], Ordering::Relaxed);
+    }
+    MOUSE_BT.store(0, Ordering::Relaxed);
+    CUR_MS_STAT.store(0, Ordering::Relaxed);
+    WHEEL_INIT_DONE.store(1, Ordering::Relaxed);
+    crate::bios::vectors::set_mousexvec(mousex_handler);
+    MOUSE_STATE.store(MOUSE_ON, Ordering::Relaxed);
+}
+
+/// EmuTOS `vdimouse_exit` (`vdi/vdi_mouse.c:622-645`), run by `v_clswk`
+/// (`vdi/vdi_control.c:588`): `user_but = user_mot = user_cur = just_rts` —
+/// `user_cur` too, not `mov_cur` — and `user_wheel = just_rts` (`:624-629`),
+/// then `Initmous(0, 0, 0)` (`:634`): no packet reaches [`feed_relative`] until
+/// the next `v_opnwk` ([`MOUSE_OFF`], wkprobe C1). The pointer stays as it is
+/// — position, hide count, form, a visible sprite with its save-under — and so
+/// does `mousexvec`, which `vdimouse_exit` does not reset: the extended
+/// buttons still update `MOUSE_BT` ([`mousex_handler`]).
+pub(crate) fn vdimouse_exit() {
+    USER_BUT.store(just_rts_va(), Ordering::Relaxed);
+    USER_MOT.store(just_rts_va(), Ordering::Relaxed);
+    USER_CUR.store(just_rts_va(), Ordering::Relaxed);
+    reset_wheel_vector();
+    MOUSE_STATE.store(MOUSE_OFF, Ordering::Relaxed);
+}
+
+/// Whether the AES's handlers are installed in the mouse vectors — EmuTOS'
+/// AES puts `far_bcha`/`far_mcha` into `user_but`/`user_mot` in `gsx_init`
+/// (`aes/gemgsxif.c:271`), `vdimouse_exit` takes them out again. NewTOS' AES
+/// is called directly ([`crate::aes::user_but`]/[`crate::aes::user_mot`]),
+/// so the only state that silences it is the closed workstation.
+fn aes_mouse_vectors_live() -> bool {
+    MOUSE_STATE.load(Ordering::Relaxed) != MOUSE_OFF
 }
 
 /// EmuTOS `just_rts` (`vdi_asm.S`): the default no-op mouse vector shared by
@@ -453,23 +561,32 @@ fn aes_wheel_va() -> u64 {
     aes_wheel_token as *const () as u64
 }
 
-/// The wheel half of `vdimouse_init` (`vdi/vdi_mouse.c:588,612`): seed
-/// `user_wheel` with `just_rts` and install the VDI's extended-mouse handler
-/// into the BIOS' `mousexvec`. One-shot — see the comment at its
-/// [`ensure_init`] call site for why the ordering against the AES's
-/// `gsx_init` must not matter.
+/// `user_wheel = just_rts` (`vdi/vdi_mouse.c:588,628`), shared by
+/// [`vdimouse_init`] and [`vdimouse_exit`]: no handler, no owner.
+fn reset_wheel_vector() {
+    USER_WHEEL.store(just_rts_va(), Ordering::Relaxed);
+    USER_WHEEL_KIND.store(WHEEL_KIND_NONE, Ordering::Relaxed);
+    USER_WHEEL_SLOT.store(usize::MAX, Ordering::Relaxed);
+}
+
+/// The wheel half of `vdimouse_init` (`vdi/vdi_mouse.c:588,612`) for a caller
+/// that comes before any workstation was opened (the AES's
+/// [`install_aes_wheel`] without a raster backend, an application's
+/// `vex_wheelv`): seed `user_wheel` with `just_rts` and install the VDI's
+/// extended-mouse handler into the BIOS' `mousexvec`. One-shot, and a no-op
+/// once [`vdimouse_init`] has run — that seeds both itself.
 fn wheel_init() {
     if WHEEL_INIT_DONE.swap(1, Ordering::Relaxed) != 0 {
         return;
     }
-    USER_WHEEL.store(just_rts_va(), Ordering::Relaxed);
-    USER_WHEEL_KIND.store(WHEEL_KIND_NONE, Ordering::Relaxed);
+    reset_wheel_vector();
     crate::bios::vectors::set_mousexvec(mousex_handler);
 }
 
 /// Install the AES's wheel handler — EmuTOS `gsx_init`'s
 /// `vex_wheelv(aes_wheel, &old_wheelv)` (`aes/gemgsxif.c:288-292`), called
-/// from [`crate::aes::init::init`] (and its restart twin). EmuTOS guards that
+/// by [`crate::aes::gsxif::gsx_init`] right after its `v_opnwk`, whose
+/// [`vdimouse_init`] has just put `just_rts` into the slot. EmuTOS guards that
 /// call with `aestrap_intercepted()`, an NVDI-crash workaround for a
 /// third-party VDI that does not understand opcode 134 (`:277-290`); NewTOS
 /// *is* the VDI, so there is nothing to intercept and no guard to reproduce.
@@ -530,7 +647,12 @@ pub fn mousex_handler(scancode: u8) {
     };
     if buttons != old_buttons {
         MOUSE_BT.store(buttons, Ordering::Relaxed);
-        crate::aes::user_but(buttons);
+        // `call_user_but(MOUSE_BT)`: after `v_clswk` that is `just_rts`
+        // (`vdimouse_exit`, `:624`) — `MOUSE_BT` still follows, the AES does
+        // not hear it.
+        if aes_mouse_vectors_live() {
+            crate::aes::user_but(buttons);
+        }
     }
 
     match scancode {
@@ -590,17 +712,6 @@ fn call_user_wheel(wheel_number: i16, wheel_amount: i16) {
         }
         _ => {}
     }
-}
-
-/// Initialise the cursor subsystem at workstation-open time (EmuTOS
-/// `vdimouse_init`, `vdi_mouse.c:582-583`): load the default arrow form and
-/// park the cursor at the screen centre. This materialises `GCURX`/`GCURY`
-/// **before** the first cursor op, so `vq_mouse`/`v_locator` report the parked
-/// centre rather than the power-up `(0, 0)`. Idempotent (guarded by
-/// `INIT_DONE`), so it never clobbers a live cursor position moved by the HID
-/// mouse.
-pub fn init(backend: &dyn RasterBackend) {
-    ensure_init(backend);
 }
 
 /// Install an arbitrary cursor form (16-row mask + data, hotspot), drawn

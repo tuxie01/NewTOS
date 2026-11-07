@@ -260,6 +260,25 @@ allocation and no free-handle scan; the physical handle is fixed).
 - The `init_colors`/`timer_init`/`vdimouse_init`/`esc_init` bring-up
   sequence is **reference**; NewTOS runs the equivalent framebuffer /
   input / console init, not the EmuTOS routines.
+- **`timer_init` + `vdimouse_init` run on every `v_opnwk` (V53, 2026-11-07).**
+  Their observable part is contract: `tim_addr = just_rts`
+  (`vdi_misc.c:128`); `HIDE_CNT = 1` **without** `cur_replace`, so a pointer
+  visible before the open is dropped, not erased (`vdi_mouse.c:581`);
+  `GCURX`/`GCURY` = the centre (`:582-583`); `user_but = user_mot = just_rts`,
+  `user_cur = mov_cur`, `user_wheel = just_rts` (`:585-589`); the default arrow
+  (`:593`); `MOUSE_BT = 0`, `cur_ms_stat = 0` (`:595-596`); packets on again
+  (`Initmous(1, …, mouse_int)`, `:605`). `v_opnvwk` runs none of it.
+  NewTOS: `tos-api/src/vdi/workstation.rs` `v_opnwk` calls
+  `mouse::timer_init` and `mouse::vdimouse_init`. *Correction:* the mouse was
+  initialised once (the first cursor op or workstation open, `v_opnvwk`
+  included) and kept the previous session's or program's position, buttons,
+  hide count, form and vectors across `v_clswk` + `v_opnwk`; measured against
+  the oracle with `tosdump/probes/wkprobe.c` W1/W2
+  (`measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`, VDI-WK-001),
+  fixed and re-measured in `measurements/measurement-2026-11-07-v53/RUNINFO.TXT`.
+  Before the first `v_opnwk` (the boot screen opens only a virtual
+  workstation) NewTOS seeds the mouse at the first cursor op or packet, where
+  EmuTOS has no mouse at all.
 
 ---
 

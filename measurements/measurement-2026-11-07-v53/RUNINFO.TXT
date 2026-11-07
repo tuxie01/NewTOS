@@ -1,0 +1,107 @@
+V53 -- TASK/V53.md: v_opnwk resets the VDI mouse (timer_init + vdimouse_init on every open), v_clswk switches it off
+(vdimouse_exit), against the pinned oracle, before and after the fix, plus the AES/desktop counter-check. Developer run,
+2026-11-07, on main (74ad8d3e when the ticket was handed over, 3380004f -- docs only: TASK/EMU01.md, docs/STATUS.md --
+when the trees were cut) with the V53 change in the working tree (uncommitted at the time; the commit of this run
+holds it). Not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   base = 3380004f, product code untouched (= 74ad8d3e's; git archive into the session scratchpad, references/ linked;
+           method/trees.sh). fix = base + every file of the V53 change copied from the main tree (method/trees.sh; the
+           parallel V38 change in the main tree -- tos-api/src/vdi/contour.rs -- is NOT in the fix tree: the tree was cut
+           before it appeared).
+           rpi4 release kernel8.img (method/builds.sh): base d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3
+           (= the V18 part 3 audit's kernel), fix 50bb1508e57e9fc0d0efd5861effa297c2ff6e03fb71a47f7c56f78af4cb6247
+           (built in the main tree before contour.rs was touched; same sources as the fix tree).
+           Probe kernels (tools/inject-arm.py launch:WKPROBE=tosdump/probes/wkprobe-mouse.txt, method/probe-kernels.sh):
+           base 1f235766f18219669f1445b5e54ecd294c945e564a87853ca5ca879c572e812a (= the audit's), fix
+           c2b969030aec1130f2e949f4971aaf419377b148731c2cc96f04d75f7b94111c; fix with method/wkprobe-mouse-c1late.txt
+           (sha256 98452a40b0c526fba95829148ba2a99daad3e3faf7ee522b5d3adaa8ce0442d6, method/probe-c1late.sh)
+           03975ecb44896deb89035e8c7e79705e25ae92a9b92287278eb2ed481a9122d7.
+           Desktop kernels (desktop=V34 test mouse file, V35's desk-kernel.sh): base 8605d1080b67d915c467dacef5503e506038f4775365a2271a2f9859d0b69620
+           (= V37's fix desk kernel), fix 55fd30defe94088e14d20709de4d82b6a0cf8841927a14e693f7e6531da834cb. A first base desk
+           kernel came out as d0f31276... (the unarmed kernel): desk-kernel.sh copies the tree with its target/, whose
+           dep-info names the original paths, so cargo saw nothing to rebuild; deleted, target/ removed, rebuilt (above).
+           Switch kernels (launch:WKPROBE + desktop arms, method/switch.sh): base 8fedfc4c8701a73b4b1726d2786660978e4d7b1e87e572928ce8ad6f118b8ebe,
+           fix 3c0bb58f8097bb07a5fba6b9286c52e3ec53ef8470f5b656dab850a0604f1f30. Kernels not kept.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img (sha256 323c87bb...2d2750c),
+           Hatari 2.6.1, tools/oracle/hatari.cfg, profile falcontc (probe/e1/run.txt)
+  Boards   QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (removed by the scripts), one QEMU/Hatari of mine at
+           a time. Every QEMU was stopped by its own script by PID ("terminating on signal 15 from pid <the script>" in
+           method/gui.out, switch.out). None of my emulators ran before 23:10 local, so the V51 tester's 22:23/22:24 kills
+           did not touch this run.
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests probe/n-base, n-fix, n-fix-c1late, n-fix-c1late-try1-nofeed, vd-base, vd-fix; runs/tab-* (12); runs/gui/* (10)
+           -- each card.img.manifest (the EmuTOS side boots no card); optional_missing, verbatim, in all 28 of them:
+           optional_missing none
+  Commands method/*.sh (in this order: builds.sh base, trees.sh, probe-kernels.sh, run-wkprobe.sh emutos (e1) and newtos
+           (n-base, n-fix), probe-c1late.sh, vdprobe.sh, tables.sh, tosdiff-base-fix.sh, gui.sh, switch.sh), builds.sh fix
+           ran right after the code change; method/*.out are their outputs; method/pngdiff.py the shot compare.
+
+RESULT, HOST TEST (hosttest/)
+  tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs (5) + tos-api/tests/aes_v53_session_mouse.rs (1): on the base product code
+  (the two files copied into the base tree) 6 of 6 red, each at the V53 assertion (W1 vq_mouse 1 100 100, W1b no arrow,
+  W2b 256 words of remnant, C1 old vector == own, AES (210,210,1) after gsx_wsclose); fix 6 of 6 green.
+
+RESULT, PROBE wkprobe (probe/compare-*.txt; e1 LOG byte-identical to the audit's e1, n-base = the audit's n1 compare)
+  e1 vs n-base: 37 records, 11 differ (= audit: P0 F1b F2b M1a M2a W1b W1c W2b W2c C1b C1c), 28 LOG lines.
+  e1 vs n-fix: 5 differ -- P0 (the AES's pointer at program start), F1b F2b (TASK/V54), M1a M2a (TASK/V55). W1a-c, W2a-c,
+               C1a-d EQUAL.
+  n-base vs n-fix: exactly W1b, W1c, W2b, W2c, C1b, C1c differ, the other 31 byte-identical; 12 LOG lines (W1/W2/C1).
+  The C1 packet: on the fix the W1 "left button up" packet changes nothing (v_opnwk already cleared MOUSE_BT, as on
+               EmuTOS: e1 "packet f8 0 0 ... (unchanged)"), so the probe's NewTOS wait (until vq_mouse changes) ran on and
+               took C1's packet at +4000 while the workstation was still open (n-fix LOG: "packet f8 0 0 -> 0 359 259
+               (changed)"; C1's own wait then got nothing). n-fix's C1b/C1c are therefore no proof of the closed state.
+               n-fix-c1late: the same kernel with C1's packet at +8000 (method/wkprobe-mouse-c1late.txt). Serial: fed at
+               hz_200 11023; LOG: the W1 wait ended at its poll cap (3151 ticks after ~6300), C1's wait (2748 ticks)
+               ended before T03 12249 -- the packet arrived inside C1's wait, after its v_clswk. LOG "packet f8 40 20:
+               vq_mouse 0 150 150 -> 0 150 150 (unchanged)" = e1; W1 packet line = e1; BIN byte-identical to n-fix
+               (f774eea6...). First try with +11000 (probe/n-fix-c1late-try1-nofeed): the probe ended before the packet
+               was fed -- not evidence, kept for the record.
+  LOG lines still differing on the fix (23 of 115), none of them V53's subject:
+    - "old == vector before W1/C1" for W1 butv/motv/timv/wheelv and C1 butv/motv/curv/wheelv (EmuTOS 0, NewTOS 1).
+      (a) butv/motv/timv: NewTOS' AES is called directly, it never installs far_bcha/far_mcha/tikcod in the vex slots
+      (gsx_setmb, gsx_tick), so "the vector before" is the default. (b) curv/wheelv: in the release kernel mov_cur,
+      just_rts and aes_wheel_token are ONE address (llvm-nm on the base kernel ELF: mov_cur = just_rts = 0xffff00000010cfdc,
+      aes_wheel_token has no symbol of its own; the AES wheel token handed out before W1 equals just_rts after the
+      reset). Side findings, TASK/V53.md.
+    - Z1-Z8 geometry and Getrez (ADR-017, K23 ACCEPTED), W9 (SPEC04) -- as in the audit.
+
+RESULT, PROBE vdprobe (probe/vd-base, vd-fix; plain release kernels)
+  954 records, base vs fix 0 differ, BIN byte-identical (c7b004e6...), LOG identical.
+
+RESULT, TABLES (runs/tab-*, runs/tosdiff-base-vs-fix-*.txt; base and fix tree, cargo xtask tosdump --tree)
+  vdi-v18-t3 vs EMUTOS-1a7484ab-VDI-v18t3-falcontc: fix 1 of 2 (case 13, K23 ACCEPTED -- as before).
+  vdi-v18-t2 vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: fix 0 of 32.   vdi-all vs EMUTOS-1a7484ab-VDI-all-falcontc: fix 0 of 182.
+  base vs fix: vdi-v18-t3 0/2, vdi-v18-t2 0/32, vdi-all 0/182, aes-r2-wind 0/78, aes-r3-wind-state 0/39,
+  aes-r4-subfunctions 0/181; every BIN byte-identical base vs fix.
+
+GUI (runs/gui/compare.txt; per run run.txt, card.img.manifest, shots.sha256; V34 test run's desk-inj.sh, boot-console.sh,
+mouse file, NEWDESK.INF, shot list; C: file set 40 files "V53 desktop file nn")
+  desk480, desk1080 (menu, dialog, rubberband, window/slider/sizer/icon drags): 11/11 identical base vs fix.
+  bc480, bc1080 (boot screen + APITEST.NCP console, 6/10/18/24/32/45 s): 4/6 identical; the 6 s and 10 s shots differ
+           in the boot screen's build id after "Built:" only (306 px, box 425,190-492,201: base from a git archive, fix
+           from the main tree).
+  switch480 (method/switch.sh: #Z WKPROBE.NAP -- which itself runs v_clswk 10 and v_opnwk 11 times and ends with v_opnwk --,
+           then the desktop and the same injector scene): base vs fix differ only in the window's info line (999136 vs
+           999141 bytes: the fix's WKPROBE.LOG is 5 bytes longer), 67 px; the menu opens, the dialog, rubberband and all
+           drags run identically. Mouse moves and clicks after the program switch on the fix.
+  0 exception/panic lines in every run.
+
+DEPENDENCIES (deps/)
+  vdimouse_init --up: 11 functions, vdi complete (vdimouse_init -> mouse.rs ensure_init + vdimouse_init).
+  vdimouse_exit --up: 9 functions, vdi complete (vdimouse_exit was unmapped; now mouse.rs vdimouse_exit).
+  cargo xtask deps --check-mapping: 1965 rows, all resolve.
+
+WARNINGS (builds/warnings-*.txt; fresh target per board)
+  rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121, rpi4 and qemu-virt, base = fix. The new test files:
+  no warning of their own (vdi_v53_opnwk_clswk_mouse shows the 2 harness warnings every vdi_reference/harness.rs user has).
+
+TESTS (xtask-test.txt)
+  cargo xtask test (full) in the main tree: 2305 passed, 0 failed, 6 ignored -- with the parallel V38 change present
+  (xtask-test-tree-status.txt; its 8 vdi::contour unit tests). For V53: 2297/0/6 = baseline 2291/0/6 (brief) + the 6 new
+  tests. (A full run in the git-archive fix tree fails 11 xtask self-tests that need a git checkout -- not a result.)
+
+NOT MEASURED
+  Real Pi; qemu-virt beyond the build; an AES session restart (SHW_RESCHNG -- gsx_wsclose + gsx_init) on the target (host
+  test aes_v53_session_mouse covers that sequence); TeraDesk, QED, HypView, zView, DOOM not started (their sources make no
+  v_opnwk/v_clswk/vex_but|mot|cur|timv call on a card setup -- read, TASK/V53.md).
