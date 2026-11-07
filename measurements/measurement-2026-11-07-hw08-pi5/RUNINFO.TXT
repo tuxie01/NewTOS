@@ -1,0 +1,31 @@
+HW08, FSWBENCH on the new test card on the real Pi WITH the fix, first run, by the user (2026-11-07). Numbers read from the photos by the lead.
+Card state and hashes: measurements/measurement-2026-11-07-hw08-pi4-card/RUNINFO.TXT (kernel 39ab2a6a..., 16bfa004). The report agrees: its cache line has no "gave up".
+Plan: measurements/measurement-2026-11-06-hw08-fix/PI-RUN.TXT, step 1b, which asks for at least two runs (measurements/measurement-2026-11-07-hw08-pi4/RUNINFO.TXT). This is ONE run.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built; files copied by hand).
+Drive E: (the two runs without the fix used D:); same BPB: clsiz 16, FAT 245, root at 491, data at 523.
+
+RESULT: no failure, uptime 0:08:41, photos/ in screen order.
+  driver: 4-bit multi, errors 0, timeouts 0, recover 0, nonrecover 0, refused 0. Longest wait: write_rdy 249.5 ms, write_done 251.0 ms.
+  write n 6895, sectors 295638, failed 0, max 1756.4 ms; <4 ms 5646, <16 1065, <64 76, <250 97, <500 8, <1000 0, more 3.
+    Without the fix: n 10782 (hw08-pi2), 10997 (hw08-pi4), about the same sectors. 36-37 % fewer write commands.
+  read n 502, sectors 45920, failed 0, max 852.7 ms. cache: writeback failed 0, retried 0, dirty 2.
+  The two dirty sectors: C: lba 85713, 85714, tries 0, code 0, at the time of the report, with the log on C: still open. After it: log last Fwrite=850 Fclose=0.
+    Read as the open log's tail (the fix leaves such sectors in memory until Fclose). Not verified: C:\FSWBENCH.LOG not read yet.
+  H: every sector about 1148 us, data, directory and FAT alike, max 1187 us.
+  R: longest run 130720 of 131072 sectors at cluster 192. p50/p90/max us, 64 each, >=1 s 0, failed 0:
+    random over 64 MiB 4002/4015/98853; random within 256 KiB 1429/2388/98575; same offset 1428/1449/98515; sequential 1446/20372/250279; new small files 6076/7037/161735.
+
+SPEED, KB/s: with the fix (E:) / without, hw08-pi4 (D:) / without, hw08-pi2 (D:)
+  size     L2 Fwrite 512   4096             32768            whole file       L3 fwrite 1K     L4 copy 32K
+  10 KiB    82 / 359 / 360  2412 / 1019 / 1130  3269 / 1566 / 1849  3267 / 1566 / 1867  1115 / 1005 / 1116    95 / 1154 / 1154
+  100 KiB  113 / 382 / 123  2577 / 1452 / 1433  4676 / 3482 / 3219  5335 / 4937 / 4470  3670 /  531 / 2900  3329 / 2823 / 2703
+  1 MiB    -                2570 /  590 /  893  6168 / 4169 / 3006  3707 / 8328 / 8208  3746 / 4113 / 1281  2807 / 2932 / 3033
+  10 MiB   -                1897 /  934 /  835  5024 / 2849 / 2058  9577 / 9092 / 9447  6446 / 3917 / 4264  3520 / 2369 / 2913
+  Fcreate 1155-1200 us. Fclose now 3453-3488 us at 10/100 KiB, 5770-5878 us at 1 MiB, 15041-15362 us at 10 MiB; before about 1130-1190 us: the FAT moved from Fwrite to Fclose, as designed.
+
+READING, ONE RUN AND SCATTER UP TO 5.5 BETWEEN RUNS WITHOUT A CHANGE
+  As PI-RUN.TXT predicted in the rows that weigh: 10 MiB 4096 x2.0-2.3, 32768 x1.8-2.4, whole file the same. 512 B not better. L3 10 MiB x1.5-1.6, L4 10 MiB x1.2-1.5.
+  Below the earlier values: L4 10 KiB 95 (104932 us for 10 KiB), L2 512 10 KiB 82 (120577 us), L2 whole 1 MiB 3707 (276227 us against about 123000). Each fits one card pause of 100-150 ms in a short test: likely, not traced per request; the second run shows it.
+  QED copy with a stopwatch, Fbench and X-Shot saves, CoreMark, old card, WFPROBE: not in this run.
