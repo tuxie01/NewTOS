@@ -1,0 +1,1 @@
+A141 check: title+toolbar strip y0..68 identical base vs fix on 42 of 42 HypView screens (differing: 0)

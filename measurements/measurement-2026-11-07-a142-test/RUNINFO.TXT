@@ -1,0 +1,74 @@
+measurement-2026-11-07-a142-test -- acceptance test of TASK/A142 (GitHub #21): cflib built-in images (2f6ea7eb) and HypView .HYP pictures (56fd81a1).
+=====================================================================================================================
+Tester, 2026-11-07. Fresh `git clone` trees of main in the session scratchpad: base = 9881de95 (before 2f6ea7eb), fix = 6e43e35a (HEAD). The gitignored upstream
+trees (sdk/apps/qed, hypview, teradesk) were rsync'ed in from the main tree without build/; every library was rebuilt from the tracked tarballs by the build scripts
+(libc, gemlib, cflib, libm, compiler-rt). QEMU 11.0.2 raspi4b / virt, Hatari 2.6.1 oracle (tools/oracle/oracle.env, pinned ROM 323c87bb...). No Pi, no card, no
+product code touched, nothing committed.
+
+host_clang   Apple clang version 21.0.0 (clang-2100.4.1.1)   (host_clang line of every manifest below)
+manifests    runs/*/card.img.manifest, one per booted card image (15). optional_missing, verbatim, in all 15: `optional_missing none`
+             (oracle runs boot no card image; they use Hatari GEMDOS drives).
+kernels      rpi4 --release from a fresh clone of main (tools/inject-arm.py scratch arms; kernel sources otherwise = HEAD, not changed by A142):
+               c751b718c35b6eeebc30ff22a219741c98166672d4c66d0c89c4e77a2727be56  issue    (up:QED, scripts/issue.txt)
+               9ba72c17416b66ca205557c95342e6cae2a7c877b9f0de803f51dfa2111eaaa6  toggle   (up:QED)
+               1a3ef8874af68cb4a19d3a7015f690e829a37fabdee5e6b0550b22ccc320d967  alt      (up:ALT)
+               28b822d6bdc51d6ae50bbe686221c68f473295044490e7fcc8dae469869b46db  hv       (up:HYP_VIEW, 13 Ctrl+Shift+Right)
+               d94cb0f25705c1d6c0ea0749bf80eff479c3c5de8627eae792e0186c4dda7010  plain rpi4 (no injector)
+               a5c427e3a5b4b2300a3a34122f97326e2c6d628ec75bf1001a0da71edd2e4183  plain qemu-virt ELF
+programs     QED.NAP   base eeca3492fcaf9ed91b9966bb738025e4aae721ba2a8b98711bc4d788b1b2be5d   fix 43876955c943357aa8d7abf621519c89a90814d99a0cd049006ea47f4a6ad5d8
+             (differ from the developer's 206cc3ea / ed05b558 only through the build path: absolute source paths are embedded; the main tree's own build has ed05b558)
+             qed.rsc   30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79 both (same as the developer's)
+             ALT.NAP (scratch cflib program, not product, scratch only: do_walert with icons 0..3) base f5df18ad... fix 7eb60af6...
+             HYP_VIEW.NAP / hyp_view.rsc, DESKTOP.NAP (TeraDesk), ZVIEW.NAP, SYSACC.NAC rebuilt in the fix clone; HypView in both.
+.HYP         sd-card-backup-2026-11-06/BOOT/Apps/{QED,TERADESK,ZVIEW}/*.HYP (hashes in the developer's RUNINFO)
+oracle       m68k QED from ~/.nt-hatari/hd/QED (TT medium, 4 planes; English resource); m68k hyp_view.app + hyp_view.rsc from Applications/z-tools/zview/_dist/doc/hypview
+             (Falcon truecolor profile, `#E 1A E0 00 1C 60`).
+
+METHOD (method/)
+  mk-scripts.sh   injector scripts via the developer's gen-mouse.py (copied; unchanged)
+  run.sh          QED / ALT on NewTOS raspi4b, APFS clone card, QMP shots (structure of the developer's run.sh)
+  run-hv.sh       HypView on NewTOS, same, with 13 "Next page" presses (Ctrl+Shift+Right, window.c) and a shot per page
+  hatari-qed.sh   the developer's oracle script (copy)           hatari-hv-pages.sh  derived from a141's hatari-hypview.sh, + the same page presses
+  run-boot.sh     boot to desktop / autorun program, one screendump
+  glyph-compare.py, toggle-compare.py, hv-compare.py   own pixel comparisons (not the developer's compare.py)
+  pixel comparison 16-plane vs TT 4-plane: no RGB comparison (palettes and bit depth differ). glyphs: every pixel mapped to a class (black, white, blue, red, grey) and
+  compared at identical coordinates (the oracle screen has the same top-left origin, extra rows are Hatari's status bar); alert icon: 32x32 anchored on the blue
+  block (box width differs because the English text differs). HypView: both screens Falcon-truecolor-like, 5 bits per channel, content area x0..619 y70..459,
+  offset (0,0) found best on page 0 by a search of +-6 px.
+
+RESULTS (analysis/)
+  glyphs-compare.txt   fix: 9 of 9 check boxes (off and on) 0 px differ from the oracle's box of the same state; 3 of 3 radio buttons 0 px; alert "!" 0 of 1024 px.
+                       base: check boxes 82..106 px, radios 160..168, alert 424 of 1024.
+  toggle-compare.txt   clicked states (runs/qed-*-toggle): fix: clicked check box 0 px vs oracle on-box, deselected radio 0, selected radio 0 (pointer area excluded);
+                       base 69 / 160 / 126.
+  alt-{base,fix}-montage.png  all four alert icons, cflib do_walert [0] info, [1] !, [2] ?, [3] stop: fix correct in all four, base scrambled in all four.
+  hv-compare.txt       QED.HYP page 0: 1747 -> 54 px (54 = the oracle's mouse pointer, constant on every page); TERADESK.HYP pages 1..13: 148..358 -> 54..60, i.e.
+                       the picture on page 1 ff. (folder icon beside "Contents") was scrambled before and is right after; ZVIEW.HYP pages 0..13 unchanged, 0 worse.
+                       QED.HYP page 9: 396 px before and after = separator lines of the File menu page (black dashes in the oracle, grey hatch on NewTOS), unrelated to A142.
+  toolbar-untouched.txt  title + toolbar strip y0..68 identical base vs fix on 42 of 42 HypView screens (A141 not touched).
+  qed-p09-oracle-over-fix.png, qed-hyp-logo-base-fix-oracle.png
+
+HOST AND BUILD
+  inline-rsh-host:       base inline.rsh (INLINE_RSH_SRC=git show 9881de95:...)  137 checks, 42 failed;  fix 137 checks, 0 failed
+  hypview-prepare-host:  base prepare.c (PREPARE_SRC=git show 9881de95:...)       27 checks, 7 failed;   fix 27 checks, 0 failed
+  sdk/run-host-tests.sh (main tree, HEAD): 38 passed, 0 failed, 0 skipped
+  cargo xtask test (main tree, HEAD): 2239 passed, 0 failed, 1 ignored (sum of all `test result` lines) = STATUS baseline 2239 / 0 / 1, delta 0
+  cargo xtask build --release for rpi4 and qemu-virt in the fix clone: both exit 0 (kernel compiled for each; 93 warnings on virt, not compared: no crate touched)
+  git diff 9881de95..HEAD: kernel/ tos-api/ tos-types/ programs/ tools/ Cargo.* boot/ sdk/libc sdk/gemlib sdk/zview sdk/apps: empty; only the 8 sdk files of the two fixes.
+  independent conversion check (own script, tarball from sdk/cflib/cflib-21-ce57817.tar.xz, sha256 8427502d...): 44 upstream _UBYTE tables, 44 overlay tables, same names,
+  1024 words compared, every word = (hi<<8)|lo of upstream's bytes, 0 mismatching tables, 0 _UBYTE tables left; apart from the tables, the file differs from upstream
+  only in the guard comment and the `#if` line (17 lines). Tarball and all *.sha256 unchanged by git.
+
+OTHER PROGRAMS
+  llvm-nm: inline_IMAGE / inline_RS symbols: QED.NAP 67 (both builds); HYP_VIEW.NAP, DESKTOP.NAP (TeraDesk), ZVIEW.NAP, SYSACC.NAC 0 and none calls cflib
+  (do_walert/init_app/fix_cicon/make_userdef: 0). build-teradesk.sh says it does not use cflib. So on the release-card list only QED.NAP inherits the cflib fix; HYP_VIEW.NAP
+  changes through the prepare.c patch only. DOOM, COREMARK not built here (no cflib, not touched).
+  boots (runs/boot-*): rpi4 desktop (menu bar, minimal NEWDESK.INF without icon lines), rpi4 autorun TeraDesk (desktop with drives A,B,C, Trash, Printer), rpi4 autorun
+  ZVIEW (menu bar zView/File/Edit/View/Help), qemu-virt desktop (Trash, Printer icons); panic/exception lines 0 in every serial log.
+
+NOT RUN / NOT DRIVEN
+  The real Pi 4. 8-line glyphs (BT_RLOW/BT_CLOW, used when gl_hchar <= 8): the kernel only provides TT medium here, so not reachable; the decoded tables were inspected as
+  bit patterns (RS2/RS3, 8 rows, circle and square) only. The other three alert icons have no oracle counterpart (m68k cflib test program not built); judged by eye as the
+  standard info/exclamation/question/stop shapes. HypView palette path (not reachable at 16 planes). ZVIEW.HYP and TERADESK.HYP beyond page 13, ZVIEW pages in
+  other nodes. The release package itself (package-release.sh) was not run; its program steps were run one by one for qed, hypview, teradesk, zview, sysacc.
+  Hatari oracle for QED in Falcon truecolor not run (the developer reports a ROM panic); comparison only against TT medium.

@@ -1,0 +1,45 @@
+== QED: pages 14/14/14; best oracle offset (dx,dy)=(0,0) page-0 diff 54
+  page  0: before   1747  after     54  <-- improved
+  page  1: before     54  after     54
+  page  2: before     63  after     63
+  page  3: before     58  after     58
+  page  4: before     59  after     59
+  page  5: before     54  after     54
+  page  6: before     65  after     65
+  page  7: before     54  after     54
+  page  8: before     54  after     54
+  page  9: before    396  after    396
+  page 10: before     54  after     54
+  page 11: before     65  after     65
+  page 12: before     54  after     54
+  page 13: before     54  after     54
+== TERADESK: pages 14/14/14; best oracle offset (dx,dy)=(0,0) page-0 diff 54
+  page  0: before     54  after     54
+  page  1: before    148  after     54  <-- improved
+  page  2: before    258  after     60  <-- improved
+  page  3: before    252  after     54  <-- improved
+  page  4: before    356  after     54  <-- improved
+  page  5: before    356  after     54  <-- improved
+  page  6: before    358  after     56  <-- improved
+  page  7: before    252  after     54  <-- improved
+  page  8: before    257  after     59  <-- improved
+  page  9: before    148  after     54  <-- improved
+  page 10: before    148  after     54  <-- improved
+  page 11: before    258  after     60  <-- improved
+  page 12: before    252  after     54  <-- improved
+  page 13: before    255  after     57  <-- improved
+== ZVIEW: pages 14/14/14; best oracle offset (dx,dy)=(0,0) page-0 diff 54
+  page  0: before     54  after     54
+  page  1: before     54  after     54
+  page  2: before     54  after     54
+  page  3: before     54  after     54
+  page  4: before     58  after     58
+  page  5: before     65  after     65
+  page  6: before     56  after     56
+  page  7: before     58  after     58
+  page  8: before     61  after     61
+  page  9: before     54  after     54
+  page 10: before     54  after     54
+  page 11: before     54  after     54
+  page 12: before     89  after     89
+  page 13: before     57  after     57

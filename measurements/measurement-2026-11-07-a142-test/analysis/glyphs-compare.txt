@@ -1,0 +1,102 @@
+oracle check boxes, K-pixel counts per row: [56, 81, 81, 81, 81, 56, 56, 56, 81]
+== base: check boxes (Globale Einstellungen), each vs the oracle's box with the same state; best/worst over same-state oracle boxes
+  y133 K= 56  diff vs oracle boxes: min  82  (all: [82, 98, 98, 98, 98, 82, 82, 82, 98])
+  y149 K= 56  diff vs oracle boxes: min  82  (all: [82, 98, 98, 98, 98, 82, 82, 82, 98])
+  y165 K= 81  diff vs oracle boxes: min  98  (all: [98, 106, 106, 106, 106, 98, 98, 98, 106])
+  y181 K= 81  diff vs oracle boxes: min  98  (all: [98, 106, 106, 106, 106, 98, 98, 98, 106])
+  y197 K= 56  diff vs oracle boxes: min  82  (all: [82, 98, 98, 98, 98, 82, 82, 82, 98])
+  y213 K= 56  diff vs oracle boxes: min  82  (all: [82, 98, 98, 98, 98, 82, 82, 82, 98])
+  y229 K= 56  diff vs oracle boxes: min  82  (all: [82, 98, 98, 98, 98, 82, 82, 82, 98])
+  y245 K= 56  diff vs oracle boxes: min  82  (all: [82, 98, 98, 98, 98, 82, 82, 82, 98])
+  y261 K= 81  diff vs oracle boxes: min  98  (all: [98, 106, 106, 106, 106, 98, 98, 98, 106])
+== fix: check boxes (Globale Einstellungen), each vs the oracle's box with the same state; best/worst over same-state oracle boxes
+  y133 K= 56  diff vs oracle boxes: min   0  (all: [0, 25, 25, 25, 25, 0, 0, 0, 25])
+  y149 K= 56  diff vs oracle boxes: min   0  (all: [0, 25, 25, 25, 25, 0, 0, 0, 25])
+  y165 K= 81  diff vs oracle boxes: min   0  (all: [25, 0, 0, 0, 0, 25, 25, 25, 0])
+  y181 K= 81  diff vs oracle boxes: min   0  (all: [25, 0, 0, 0, 0, 25, 25, 25, 0])
+  y197 K= 56  diff vs oracle boxes: min   0  (all: [0, 25, 25, 25, 25, 0, 0, 0, 25])
+  y213 K= 56  diff vs oracle boxes: min   0  (all: [0, 25, 25, 25, 25, 0, 0, 0, 25])
+  y229 K= 56  diff vs oracle boxes: min   0  (all: [0, 25, 25, 25, 25, 0, 0, 0, 25])
+  y245 K= 56  diff vs oracle boxes: min   0  (all: [0, 25, 25, 25, 25, 0, 0, 0, 25])
+  y261 K= 81  diff vs oracle boxes: min   0  (all: [25, 0, 0, 0, 0, 25, 25, 25, 0])
+== base: radio buttons (Textinfo) at y281: x184 (on), x292 (off), x384 (off) vs oracle same coordinates
+  x184: 168 px differ of 256
+  x292: 160 px differ of 256
+  x384: 160 px differ of 256
+== fix: radio buttons (Textinfo) at y281: x184 (on), x292 (off), x384 (off) vs oracle same coordinates
+  x184: 0 px differ of 256
+  x292: 0 px differ of 256
+  x384: 0 px differ of 256
+fix glyph at check y=165 (on) / y=133 (off), oracle same y:
+KKKKKKKKKKKKKKKg
+KKWWWWWWWWWWWKKg
+KWKWWWWWWWWWKWKg
+KWWKWWWWWWWKWWKg
+KWWWKWWWWWKWWWKg
+KWWWWKWWWKWWWWKg
+KWWWWWKWKWWWWWKg
+KWWWWWWKWWWWWWKg
+KWWWWWKWKWWWWWKg
+KWWWWKWWWKWWWWKg
+KWWWKWWWWWKWWWKg
+KWWKWWWWWWWKWWKg
+KWKWWWWWWWWWKWKg
+KKWWWWWWWWWWWKKg
+KKKKKKKKKKKKKKKg
+gggggggggggggggg
+
+KKKKKKKKKKKKKKKg
+KKWWWWWWWWWWWKKg
+KWKWWWWWWWWWKWKg
+KWWKWWWWWWWKWWKg
+KWWWKWWWWWKWWWKg
+KWWWWKWWWKWWWWKg
+KWWWWWKWKWWWWWKg
+KWWWWWWKWWWWWWKg
+KWWWWWKWKWWWWWKg
+KWWWWKWWWKWWWWKg
+KWWWKWWWWWKWWWKg
+KWWKWWWWWWWKWWKg
+KWKWWWWWWWWWKWKg
+KKWWWWWWWWWWWKKg
+KKKKKKKKKKKKKKKg
+gggggggggggggggg
+radio on, fix vs oracle:
+gggggggggggggggg
+ggggggKKKKgggggg
+ggggKKWWWWKKgggg
+gggKWWWWWWWWKggg
+ggKWWWKKKKWWWKgg
+ggKWWKKKKKKWWKgg
+gKWWKKKKKKKKWWKg
+gKWWKKKKKKKKWWKg
+gKWWKKKKKKKKWWKg
+gKWWKKKKKKKKWWKg
+ggKWWKKKKKKWWKgg
+ggKWWWKKKKWWWKgg
+gggKWWWWWWWWKggg
+ggggKKWWWWKKgggg
+ggggggKKKKgggggg
+gggggggggggggggg
+
+gggggggggggggggg
+ggggggKKKKgggggg
+ggggKKWWWWKKgggg
+gggKWWWWWWWWKggg
+ggKWWWKKKKWWWKgg
+ggKWWKKKKKKWWKgg
+gKWWKKKKKKKKWWKg
+gKWWKKKKKKKKWWKg
+gKWWKKKKKKKKWWKg
+gKWWKKKKKKKKWWKg
+ggKWWKKKKKKWWKgg
+ggKWWWKKKKWWWKgg
+gggKWWWWWWWWKggg
+ggggKKWWWWKKgggg
+ggggggKKKKgggggg
+gggggggggggggggg
+alert blue bbox origin oracle (203, 230)
+base origin (198, 230)
+  32x32 around blue origin: differ 424 of 1024
+fix origin (199, 230)
+  32x32 around blue origin: differ 0 of 1024

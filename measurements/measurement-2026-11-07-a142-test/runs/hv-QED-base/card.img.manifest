@@ -1,0 +1,15 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/7fba4f48-e8f1-4a5e-8c58-696d17828400/scratchpad/runs/run.TTjiPn/card.img
+image_sha256 5bc65dc06af4ae84ca8e0df9c5ac74335bbe35a201a77f9b60778b513c2103ea
+size_mib 64
+created 2026-11-07T02:43:20Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file 9bdb47a618c049c0621f7974fc41e355c3dc7c7173b7450960c5038d17be28f3 21 C:\HYP_VIEW.CFG
+file 0118e4da4c31da20d014a8197d7f413dcbdde785fc53c944d438abc5760371ec 280480 C:\HYP_VIEW.NAP
+file 54589e1c59da47f45a5b6529ded425908c8f6f28d4d5a9e7bcab7e47a8540caa 27747 C:\HYP_VIEW.RSC
+file 4d89e2ea48b6df7edecd9451937960cd95738d3c099ac0df4102d71b9bc4ca89 31 C:\NEWDESK.INF
+file dab1d3cbcb34379ff600bde885c68dfd53fc61e3db6005eddb5eb56c517e0d82 43102 C:\TEST.HYP

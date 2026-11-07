@@ -1,0 +1,15 @@
+t0 = detection of '[inj] up:HYP_VIEW armed at hz_200' on the serial file
+00 p00 planned 2.400s request 2.408s done 2.415s ok
+01 p01 planned 3.400s request 3.410s done 3.419s ok
+02 p02 planned 4.400s request 4.406s done 4.415s ok
+03 p03 planned 5.400s request 5.407s done 5.417s ok
+04 p04 planned 6.400s request 6.410s done 6.419s ok
+05 p05 planned 7.400s request 7.410s done 7.419s ok
+06 p06 planned 8.400s request 8.406s done 8.414s ok
+07 p07 planned 9.400s request 9.402s done 9.409s ok
+08 p08 planned 10.400s request 10.410s done 10.417s ok
+09 p09 planned 11.400s request 11.410s done 11.417s ok
+10 p10 planned 12.400s request 12.410s done 12.417s ok
+11 p11 planned 13.400s request 13.403s done 13.411s ok
+12 p12 planned 14.400s request 14.410s done 14.417s ok
+13 p13 planned 15.400s request 15.410s done 15.417s ok

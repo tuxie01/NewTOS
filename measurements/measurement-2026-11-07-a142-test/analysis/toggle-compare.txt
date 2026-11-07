@@ -1,0 +1,4 @@
+base clicked check box (on), px differ vs oracle on-box, pointer area ignored: 69
+base deselected Atari radio vs oracle off glyph: 160 | selected Unix radio vs oracle on glyph (pointer ignored): 126
+fix clicked check box (on), px differ vs oracle on-box, pointer area ignored: 0
+fix deselected Atari radio vs oracle off glyph: 0 | selected Unix radio vs oracle on glyph (pointer ignored): 0

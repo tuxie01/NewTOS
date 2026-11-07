@@ -1,0 +1,5 @@
+a142-test boot run rpi4 (2026-11-07T03:04:55Z)
+kernel d94cb0f25705c1d6c0ea0749bf80eff479c3c5de8627eae792e0186c4dda7010
+inf #Z 01 C:\\APPS\\ZVIEW\\ZVIEW.NAP@
+card a50bc738f79a153cfc776b472d8ca2560306aad66e388af5fd7ddb7c0f2781a6
+panic-lines 0

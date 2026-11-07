@@ -1,0 +1,151 @@
+RB2
+NewTOS booting on rpi4
+[serial] output on: boot arguments contain `serial=on`
+Phase 02 reached.
+[mm] DTB at 0x0000000000000100
+[mm] firmware: ARM memory bank 0: 0x0000000000000000 + 1006632960 bytes (960 MiB)
+[mm] firmware: VC memory: 0x000000003c000000 + 67108864 bytes (64 MiB)
+[mm] device tree: no usable /memory node (blob invalid or absent)
+[clock] ARM 700 -> 700 MHz (max 700, measured ?, SoC 25.0 C)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000000000000..0x000000003c000000 (1006632960 bytes) — source: firmware
+[mm]   kernel: 0x0000000000080000..0x00000000003a3000 (3289088 bytes)
+[mm]   ST-RAM: 0x0000000000400000..0x0000000000e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000001000000..0x0000000039800000 (947912704 bytes)
+[mm]   OSrsvd: 0x0000000039800000..0x000000003c000000 (41943040 bytes)
+[mm]     bcach: 0x0000000039800000..0x000000003b800000 (33554432 bytes)
+[mm]     heap: 0x000000003b800000..0x000000003c000000 (8388608 bytes)
+[mm]   MMIO 00: 0x00000000fd500000..0x00000000fd510000
+[mm]   MMIO 01: 0x00000000fe000000..0x00000000ff000000
+[mm]   MMIO 02: 0x00000000ff800000..0x0000000100000000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=231424 used=0 free=231424 (947912704 B free)
+[mm] alloc ST-RAM frame -> 0x0000000000400000
+[mm] alloc TT-RAM frame -> 0x0000000001000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] VideoCore display geometry detected: 640x480
+[fb] alpha mode = 2
+[fb] 640x480 pitch 2560 virtual height 960 -> 2 screen page(s), 2400 KiB
+[fb] VideoCore fb up: 640x480 stride 640px
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x01000000+2415 tables
+[mm] BDOS pools: ST-RAM 0x00400000+10485760 TT-RAM 0x0196f000+938020864
+[mm] user address space: pools mapped VA = PA (453 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=938020864 free=938020864 used=0 largest_free=938020864 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[clock] no RTC: clock starts at the build date 2026-11-07 00:00:00 (Gettime 0x5d670000, os_dosdate 0x5d67)
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: 32768 KiB at 0x39800000 (asked 32768 KiB, default), 61680 sectors of 512 B, linear-read share 5 % (default), write-through
+[emmc] SD card on controller @ 0xffff0000fe300000
+[emmc] M1 SLOTISR_VER=0x24020000 (SDHCI spec 0x02) CAPABILITIES=0x052134b4 (base 52 MHz)
+[emmc] M1 CONTROL0=0x00000f02 CONTROL1=0x000e0207 div=2 -> SDCLK ~13000000 Hz
+[emmc] M1 mailbox clock rate: EMMC(1)=50000000 Hz EMMC2(12)=700000000 Hz
+[emmc] FS08 mode: multi-block (CMD18/CMD25 + Auto CMD12) — bus 4-bit (ACMD6 ok, SCR SD_BUS_WIDTHS=0x5), CONTROL0[1] Data Transfer Width=1
+[emmc] M1 during identification: 2 error(s), 0 timeout(s), 2 recovery(ies) CTO=2
+[pcie] RC not present (no response at RC_BASE); USB disabled
+[proc] stand-in PDs: initial_basepage 0x001f2000, AES PD 0x001f2100, accdesk 0x001f2300, EmuCON 0x001f2400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x0196f000 len=614400 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting C:\HYP_VIEW.NAP, sh_nextapp=2, sh_isgem=1
+[launch] EL0: slot 0 entry 0x1a08000
+[inj] up:HYP_VIEW armed at hz_200 3059 (slot Some(0) name HYP_VIEW)
+[inj] up:HYP_VIEW feed 0xf8 at hz_200 3159 (+100)
+[inj] up:HYP_VIEW feed 0x81 at hz_200 3159 (+100)
+[inj] up:HYP_VIEW feed 0x7f at hz_200 3159 (+100)
+[inj] up:HYP_VIEW feed 0xf8 at hz_200 3162 (+103)
+[inj] up:HYP_VIEW feed 0x81 at hz_200 3162 (+103)
+[inj] up:HYP_VIEW feed 0x7f at hz_200 3162 (+103)
+[inj] up:HYP_VIEW feed 0xf8 at hz_200 3165 (+106)
+[inj] up:HYP_VIEW feed 0x81 at hz_200 3165 (+106)
+[inj] up:HYP_VIEW feed 0x7f at hz_200 3165 (+106)
+[inj] up:HYP_VIEW feed 0xf8 at hz_200 3168 (+109)
+[inj] up:HYP_VIEW feed 0x81 at hz_200 3168 (+109)
+[inj] up:HYP_VIEW feed 0x7f at hz_200 3168 (+109)
+[inj] up:HYP_VIEW feed 0xf8 at hz_200 3171 (+112)
+[inj] up:HYP_VIEW feed 0x81 at hz_200 3171 (+112)
+[inj] up:HYP_VIEW feed 0x7f at hz_200 3171 (+112)
+[inj] up:HYP_VIEW feed 0xf8 at hz_200 3174 (+115)
+[inj] up:HYP_VIEW feed 0x81 at hz_200 3174 (+115)
+[inj] up:HYP_VIEW feed 0x7f at hz_200 3174 (+115)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 3559 (+500)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 3569 (+510)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 3579 (+520)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 3589 (+530)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 3599 (+540)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 3609 (+550)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 3759 (+700)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 3769 (+710)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 3779 (+720)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 3789 (+730)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 3799 (+740)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 3809 (+750)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 3959 (+900)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 3969 (+910)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 3979 (+920)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 3989 (+930)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 3999 (+940)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 4009 (+950)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 4159 (+1100)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 4169 (+1110)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 4179 (+1120)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 4189 (+1130)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 4199 (+1140)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 4209 (+1150)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 4359 (+1300)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 4369 (+1310)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 4379 (+1320)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 4389 (+1330)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 4399 (+1340)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 4409 (+1350)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 4559 (+1500)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 4569 (+1510)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 4579 (+1520)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 4589 (+1530)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 4599 (+1540)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 4609 (+1550)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 4759 (+1700)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 4769 (+1710)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 4779 (+1720)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 4789 (+1730)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 4799 (+1740)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 4809 (+1750)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 4959 (+1900)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 4969 (+1910)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 4979 (+1920)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 4989 (+1930)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 4999 (+1940)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 5009 (+1950)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 5159 (+2100)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 5169 (+2110)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 5179 (+2120)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 5189 (+2130)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 5199 (+2140)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 5209 (+2150)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 5359 (+2300)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 5369 (+2310)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 5379 (+2320)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 5389 (+2330)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 5399 (+2340)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 5409 (+2350)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 5559 (+2500)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 5569 (+2510)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 5579 (+2520)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 5589 (+2530)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 5599 (+2540)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 5609 (+2550)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 5759 (+2700)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 5769 (+2710)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 5779 (+2720)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 5789 (+2730)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 5799 (+2740)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 5809 (+2750)
+[inj] up:HYP_VIEW feed 0x1d at hz_200 5959 (+2900)
+[inj] up:HYP_VIEW feed 0x2a at hz_200 5969 (+2910)
+[inj] up:HYP_VIEW feed 0x4d at hz_200 5979 (+2920)
+[inj] up:HYP_VIEW feed 0xcd at hz_200 5989 (+2930)
+[inj] up:HYP_VIEW feed 0xaa at hz_200 5999 (+2940)
+[inj] up:HYP_VIEW feed 0x9d at hz_200 6009 (+2950)

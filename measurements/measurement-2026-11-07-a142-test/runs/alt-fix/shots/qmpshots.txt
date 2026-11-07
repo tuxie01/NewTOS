@@ -1,0 +1,5 @@
+t0 = detection of '[inj] up:ALT armed at hz_200' on the serial file
+00 icon0 planned 2.250s request 2.258s done 2.267s ok
+01 icon1 planned 4.250s request 4.257s done 4.265s ok
+02 icon2 planned 6.250s request 6.251s done 6.258s ok
+03 icon3 planned 8.250s request 8.260s done 8.267s ok

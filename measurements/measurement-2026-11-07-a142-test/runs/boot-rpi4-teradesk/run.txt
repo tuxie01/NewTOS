@@ -1,0 +1,5 @@
+a142-test boot run rpi4 (2026-11-07T03:03:31Z)
+kernel d94cb0f25705c1d6c0ea0749bf80eff479c3c5de8627eae792e0186c4dda7010
+inf #Z 01 C:\\APPS\\TERADESK\\DESKTOP.NAP@
+card 130b271103dc9aabc0bcb27443fa1391866488d45c25cec80727a82b53ccca7e
+panic-lines 0

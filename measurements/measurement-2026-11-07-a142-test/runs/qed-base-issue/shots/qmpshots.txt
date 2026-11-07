@@ -1,0 +1,5 @@
+t0 = detection of '[inj] up:QED armed at hz_200' on the serial file
+00 global planned 3.500s request 3.506s done 3.515s ok
+01 alert planned 8.500s request 8.502s done 8.509s ok
+02 neu planned 13.500s request 13.510s done 13.517s ok
+03 info planned 17.000s request 17.010s done 17.017s ok
