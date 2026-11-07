@@ -1,0 +1,8 @@
+WFPROBE (TASK/HW08), test card, sd-fault kernel. Boot fresh for every run.
+o out of range, real command (M-A)      t one write timeout, CMD12 in a transfer (M-C)
+d data CRC errors for a while (M-C)     u busy 1.2 s  v busy 2.2 s  w busy 3.5 s (dir)
+f busy 2.2 s, FAT    3 one refused write   b FAT refused for a while  x b + Fdelete
+key (other: end): 
+drive to run on, D, E or F: 
+end
+END

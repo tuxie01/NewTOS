@@ -1,0 +1,16 @@
+Read from card 3 after measurements/measurement-2026-11-07-hw08-pi5/RUNINFO.TXT, lead, 2026-11-07. Nothing written to the card. Kernel on the card 39ab2a6a...; files copied here: FSWBENCH.LOG, WFPROBE.LOG, FBENC.TXT.
+
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing: not applicable (no image built).
+
+FSWBENCH.LOG, 4774 B: complete, ends with the report's bcache line. Its last lines include the report's two "dirty C:" lines, and they reached the card: those sectors were the open log's tail, closed with Fclose=0. Same run as the photos (n 6895, drive E:). No second FSWBENCH run on the card.
+WFPROBE.LOG, 389 B: menu only, ended without a case. WFPROBE has not been run.
+
+FBENCH, saved with this kernel on the user's report ("very fast, no problems", user): stamps are time since boot, there is no RTC, so they alone do not name the boot.
+  FBENC.TXT 7664 B, MACHINE.FBP 5281 B, RESULT.PDF 37154 B and COMPARE.PDF 71611 B, both PDFs with %%EOF. Past the 32 KiB that were cut off on the old card.
+  FBENCH.TXT and RESULTS.PDF are OLD: FBENCH.TXT is byte equal to measurements/measurement-2026-11-06-hw08-pi3/FBENCH-new-kernel.TXT.
+  Against that report, 109 tests, more than 10 percent apart, one run each: Mono blit aligned x1.23, Mono blit x+3 x1.14; Window create+delete x0.90 (at the limit). So the x0.81 of hw08-pi3 for aligned mono blit did not hold.
+
+STAMPS: FBench 00:04:16-00:05:06, FSWBENCH.LOG 00:05:24, report uptime 0:08:41. Likely one boot, Fbench first. Then the report's write n 6895 includes the Fbench saves, and the fall against 10782 and 10997 is at least what is stated.
+
+NOT SEEN ON THE CARD: an X-Shot file (searched by the usual picture names, not by date alone), a QED.NAP copy on D: to H:. fsck_msdos not run, needs root.
