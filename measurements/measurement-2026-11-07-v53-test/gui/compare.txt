@@ -1,0 +1,16 @@
+desk480: 11/11 identical
+desk1080: 11/11 identical
+bc480: 6/6 identical
+bc1080 02-t018.png DIFF 129345 px, box 1 2 708 1071 first 33 2 ffffff 000000 
+bc1080: 5/6 identical
+switch480 00-00-rest.png DIFF 41 px, box 378 123 391 134 first 378 123 000000 ffffff 
+switch480 01-01-menu-file.png DIFF 41 px, box 378 123 391 134 first 378 123 000000 ffffff 
+switch480 03-03-rubberband-held.png DIFF 41 px, box 378 123 391 134 first 378 123 000000 ffffff 
+switch480 04-04-window-drag-held.png DIFF 41 px, box 378 123 391 134 first 378 123 000000 ffffff 
+switch480 05-05-slider-drag-held.png DIFF 41 px, box 298 177 311 188 first 298 177 000000 ffffff 
+switch480 06-06-sizer-drag-held.png DIFF 41 px, box 298 177 311 188 first 298 177 000000 ffffff 
+switch480 07-07-icon-drag-held.png DIFF 41 px, box 298 177 311 188 first 298 177 000000 ffffff 
+switch480 08-08-icon-top-edge-held.png DIFF 41 px, box 298 177 311 188 first 298 177 000000 ffffff 
+switch480 09-09-icon-bottom-edge-held.png DIFF 41 px, box 298 177 311 188 first 298 177 000000 ffffff 
+switch480 10-10-end.png DIFF 41 px, box 298 177 311 188 first 298 177 000000 ffffff 
+switch480: 1/11 identical

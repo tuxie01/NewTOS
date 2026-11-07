@@ -1,0 +1,2 @@
+kernel d0f31276e07fb09a9a1cd4fb3b50e0480711aa3b7b9893eaca19aff2696fbae3 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0

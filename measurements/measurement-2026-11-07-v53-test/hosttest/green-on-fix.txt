@@ -1,0 +1,10 @@
+     Running tests/aes_v53_session_mouse.rs (target/debug/deps/aes_v53_session_mouse-8b23a4aa9c72b83f)
+test gsx_wsclose_stops_the_aes_mouse_and_gsx_init_brings_it_back ... ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/vdi_v53_opnwk_clswk_mouse.rs (target/debug/deps/vdi_v53_opnwk_clswk_mouse-072376142bec9cb9)
+test c1_v_clswk_switches_the_mouse_off ... ok
+test v_opnvwk_leaves_the_mouse_alone ... ok
+test w2_v_opnwk_drops_a_visible_pointer_without_restoring_it ... ok
+test w1_v_opnwk_resets_position_buttons_and_vectors ... ok
+test w1bc_v_opnwk_resets_hide_count_and_form ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s

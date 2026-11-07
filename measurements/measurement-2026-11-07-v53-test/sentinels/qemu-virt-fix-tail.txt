@@ -1,0 +1,15 @@
+# qemu-virt headless (cargo xtask run --board qemu-virt --headless), fresh target, kernel built from git archive; log tail
+[usb] HID configured: slot 1 ep 0x81 dci 3 (keyboard)
+[usb] slot 1 iface 0: report descriptor 63 bytes (declared 63)
+[usb] device slot 2 (root port 6 route 0x0 speed 3)
+[usb] device descriptor: bLength=18 type=1 bcdUSB=0200 class=0 maxpkt0=64 VID=0627 PID=0001
+[usb] HID iface 0 protocol 2 → int-IN ep 0x81 max 4 interval 7
+[usb] HID configured: slot 2 ep 0x81 dci 3 (mouse)
+[usb] slot 2 iface 0: report descriptor 52 bytes (declared 52)
+[usb] enumeration done: 2 devices (2 keyboard/mouse, 0 observed only), 6 commands issued
+[proc] stand-in PDs: initial_basepage 0x401e1000, AES PD 0x401e1100, accdesk 0x401e1300, EmuCON 0x401e1400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x4158e000 len=4147200 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+[desk] desktop up (0 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 87964 (<unknown process>)

@@ -1,0 +1,8 @@
+== base (git archive of 3380004f, release rpi4 ELF)
+ffff00000010cfdc t tos_api::vdi::mouse::mov_cur (.llvm.577281115837648414)
+ffff00000010cfdc t tos_api::vdi::mouse::just_rts (.llvm.577281115837648414)
+symbols named aes_wheel_token: 0
+== fix (git archive of 4cc7005c, release rpi4 ELF)
+ffff00000010cfe8 t tos_api::vdi::mouse::mov_cur (.llvm.17656120619417274344)
+ffff00000010cfe8 t tos_api::vdi::mouse::just_rts (.llvm.17656120619417274344)
+symbols named aes_wheel_token: 0

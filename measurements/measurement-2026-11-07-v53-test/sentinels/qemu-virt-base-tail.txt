@@ -1,0 +1,5 @@
+# base
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+[desk] desktop up (0 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 88528 (<unknown process>)

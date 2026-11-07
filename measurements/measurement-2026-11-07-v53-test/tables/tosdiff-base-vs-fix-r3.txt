@@ -1,0 +1,5 @@
+BASE.BIN vs FIX.BIN -- area AES, 39 cases from aes-r3-wind-state.tsv
+
+0 of 39 cases differ
+address check, BASE.BIN: format 3, pointer 8 bytes, least significant word first; 39 address cells checked, 0 not < 0x80000000
+address check, FIX.BIN: format 3, pointer 8 bytes, least significant word first; 39 address cells checked, 0 not < 0x80000000

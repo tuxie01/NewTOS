@@ -1,0 +1,7 @@
+wkprobe run, side emutos (2026-11-07T22:50:33Z)
+tree      4cc7005cc197c209e8d97bfd98ede4dbd90273b5 0 dirty paths in tosdump/probes
+source    wkprobe.c 73b6982ffa8daf2e2c3eb26795cf3f0c3ba00df2ea5ee3b26fbaf8f129e88d80 wkprobe-mouse.txt 1a08bf54230f8d5b8f12ef59354ddb341717996ee7024d1c186da8dc05167f63
+probes    WKPROBE.PRG f6747d2b33f3fbd42f3f3955ea1991f08491bd2dbfd40920b927a8b62bdcbe57 WKPROBE.NAP aeb01a6dc0afe1535c716c6ad2e37421eb0bbc3b94c0a42e933e9e0fc7be4ad7
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46, profile falcontc
+hatari    w9-no-end

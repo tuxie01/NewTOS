@@ -1,0 +1,13 @@
+Side finding 1 (folded vector sentinels), checked on the tester's own release rpi4 kernels (builds/, llvm-nm.txt):
+- base 3380004f and fix 4cc7005c: llvm-nm -C shows tos_api::vdi::mouse::mov_cur and ::just_rts at ONE address
+  (base 0xffff00000010cfdc, fix 0xffff00000010cfe8); no symbol named aes_wheel_token exists in either ELF.
+- vex_wheelv in the fix kernel (0xffff00000010bf18): objdump shows exactly one compare against the just_rts address
+  (cmp x10, x21 with x21 = adr just_rts, b.eq, then cbz x10): the "new == aes_wheel_va()" test that follows just_rts in
+  the source (tos-api/src/vdi/mouse.rs vex_wheelv) is not present in the release code -- the WHEEL_KIND_AES branch of
+  the classification is dead, because aes_wheel_token has been merged into just_rts.
+Consequence: an EL0 program that saves the AES wheel vector (vex_wheelv(own, &old); old = the AES token = just_rts) and
+restores it at the end (vex_wheelv(old)) is classified WHEEL_KIND_NONE: the AES wheel handler is not back, the desktop
+wheel stays dead until the next gsx_init (V53 puts it back there, install_aes_wheel at the end of gsx_init) -- so the
+damage now ends with the next session restart where it used to end never. vex_curv hands out just_rts where EmuTOS
+hands out mov_cur (old == own tests cannot tell them apart). Not caused by V53 (the base kernel has the same folding);
+V53 only makes it visible in the wkprobe LOG "vector before" lines. Not fixed.

@@ -1,0 +1,14 @@
+WKPROBE.NAP aeb01a6dc0afe1535c716c6ad2e37421eb0bbc3b94c0a42e933e9e0fc7be4ad7
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53t/swk.fUJjIf: tag [inj], launch:WKPROBE (18 bytes), desktop (495 bytes)
+kernel base 8fedfc4c8701a73b4b1726d2786660978e4d7b1e87e572928ce8ad6f118b8ebe
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v53t/swk.sN9bmM: tag [inj], launch:WKPROBE (18 bytes), desktop (495 bytes)
+kernel fix 3c0bb58f8097bb07a5fba6b9286c52e3ec53ef8470f5b656dab850a0604f1f30
+qemu-system-aarch64: terminating on signal 15 from pid 50470 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 68136 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+SWITCHFINISHED

@@ -1,0 +1,23 @@
+test w1_v_opnwk_resets_position_buttons_and_vectors ... FAILED
+test c1_v_clswk_switches_the_mouse_off ... FAILED
+test v_opnvwk_leaves_the_mouse_alone ... FAILED
+test w2_v_opnwk_drops_a_visible_pointer_without_restoring_it ... FAILED
+test w1bc_v_opnwk_resets_hide_count_and_form ... FAILED
+thread 'w1_v_opnwk_resets_position_buttons_and_vectors' (6376304) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:265:5:
+assertion `left == right` failed: v_opnwk: buttons 0, the centre (vdi_mouse.c:582-583,595)
+  left: (1, 100, 100)
+ right: (0, 319, 239)
+thread 'c1_v_clswk_switches_the_mouse_off' (6376302) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:357:5:
+assertion `left != right` failed: vdimouse_exit: user_but = just_rts (vdi_mouse.c:624)
+  left: 4330032
+ right: 4330032
+thread 'v_opnvwk_leaves_the_mouse_alone' (6376303) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:408:5:
+thread 'w2_v_opnwk_drops_a_visible_pointer_without_restoring_it' (6376306) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:201:5:
+thread 'w1bc_v_opnwk_resets_hide_count_and_form' (6376305) panicked at tos-api/tests/vdi_v53_opnwk_clswk_mouse.rs:295:5:
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+test gsx_wsclose_stops_the_aes_mouse_and_gsx_init_brings_it_back ... FAILED
+thread 'gsx_wsclose_stops_the_aes_mouse_and_gsx_init_brings_it_back' (6376406) panicked at tos-api/tests/aes_v53_session_mouse.rs:100:5:
+assertion `left == right` failed: after gsx_wsclose no packet reaches the VDI cursor or the AES (vdimouse_exit, Initmous(0))
+  left: (210, 210, 1)
+ right: (200, 200, 0)
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

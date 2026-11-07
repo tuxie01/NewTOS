@@ -1,0 +1,2 @@
+[shell] sh_ldapp: 'C:\WKPROBE.NAP' exited with rc=0
+[desk] desktop up (1 drives)

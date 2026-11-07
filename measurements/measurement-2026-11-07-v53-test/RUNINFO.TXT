@@ -1,0 +1,95 @@
+V53 TESTER ACCEPTANCE -- TASK/V53.md: v_opnwk resets the VDI mouse (timer_init + vdimouse_init on every open), v_clswk
+switches it off (vdimouse_exit). Independent acceptance of fix commit 4cc7005c against base 3380004f, in QEMU and against
+the pinned EmuTOS oracle. Tester run, 2026-11-07 (late evening into 2026-11-08 local). No card, no Pi, no push.
+
+host_clang   Apple clang version 21.0.0 (clang-2100.4.1.1)   (host_clang line of every card manifest)
+TREES        base = git archive 3380004f, fix = git archive 4cc7005c, each its own scratch tree (references/ symlinked, NO
+             target/ copied between trees; the V38 developer's working tree was never read or built); scratch =
+             <session scratchpad>/v53t/t/{base,fix}. V38 landed meanwhile as e6ffdedc (contour.rs only; not in either tree).
+KERNELS      sha256 in builds/kernel-sha256.txt. Every injector/desktop/switch kernel and the release kernels are byte-identical
+             to the ones the developer reported (base release d0f31276..., kinj-base 1f235766..., kinj-fix c2b96903...,
+             kinj-fix-c1late 03975ecb..., k-desk-base 8605d108..., k-desk-fix 55fd30de..., k-sw-base 8fedfc4c...,
+             k-sw-fix 3c0bb58f...) EXCEPT the plain fix release kernel: 71d2d8dd... here vs 50bb1508... in the developer's run
+             (that one was built in the dirty main tree; same sources by the developer's own account -- not re-derived).
+BOARDS       QEMU 11.0.2 raspi4b (-append serial=on, APFS clone per boot, removed by the scripts) and qemu-virt
+             (cargo xtask run --board qemu-virt --headless, fresh target dir). One emulator of mine at a time. Every kill by
+             recorded PID (the QEMU child of the xtask run found via pgrep -P of my xtask PID; scripts kill $pid); no
+             pkill/killall; no script of another run reused except the V53 developer's trees/vdprobe/tables/switch scripts
+             and the V34/V35 desk-inj.sh/boot-console.sh (all kill by PID; read first). desk-kernel.sh NOT used (copies
+             target/); desk kernels from desk-inj.sh kernel <commit> (clean git archive).
+ORACLE       EmuTOS 1a7484ab, ROM tools/oracle/etos512de-1a7484ab.img (323c87bb...2d2750c), Hatari 2.6.1 falcontc, own e1 run.
+MANIFESTS    27 card.img.manifest in this directory, optional_missing, verbatim, in all 27: "optional_missing none".
+
+1 HOST TESTS (hosttest/)
+  cargo xtask test in the fix archive tree: tos-api + tos-types + xtask unit/integration tests 2286 passed, 11 failed,
+  5 ignored; cargo stops after the xtask unit-test binary failed, so the tos-api doc-tests were run separately
+  (cargo test -p tos-api --doc: 0 passed, 1 ignored). The 11 failures are the archive artefacts (doc_check x4 "git ls-files
+  failed", rsc_* x7 missing resource files) and are THE SAME 11 on the base archive tree (2280 passed, 11 failed, 5 ignored).
+  Accounting: fix 2286+11 = 2297 tests, ignored 5+1 = 6; base 2280+11 = 2291, ignored 6; delta +6 = the two new test files.
+  The developer's 2297/0/6 is thus reproduced up to the 11 archive artefacts (their 0 failed needs a git checkout); the main
+  tree run (2305/0/6 incl. V38's 8) was not repeated (V38 developer's tree).
+  Red/green: the two new test files copied into the base archive tree: 6 of 6 red, at the V53 assertions
+  (W1 buttons/centre (1,100,100) vs (0,319,239); c1 user_but still own (4330032 == 4330032); aes (210,210,1) after gsx_wsclose
+  vs (200,200,0); w2/w1bc/v_opnvwk test panic at their asserts -- hosttest/red-on-base.txt); on fix 6 of 6 green
+  (hosttest/green-on-fix.txt).
+
+2 BUILDS (builds/)
+  Fresh target per board: cargo xtask build --board rpi4 / qemu-virt, cargo clippy -p kernel --features board-X, then rpi4
+  --release; base and fix: all rc 0. Warnings (builds/warnings-summary.txt), identical on both boards and both trees:
+  rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121; delta fix - base = 0 everywhere, 0 clippy errors.
+  Boot: rpi4 serial=on to "[desk] desktop up (1 drives)" on the fix desk kernel (gui/*/serial-markers.txt, 0 exception/panic
+  lines) and base; qemu-virt headless, fresh build, fix and base: "[desk] desktop up (0 drives)", 0 exception/panic lines
+  (sentinels/qemu-virt-*-tail.txt). (rpi4 boots used the release kernels; the dev-profile rpi4 kernel was built, not booted.)
+
+3 WKPROBE (probe/; tosdump/probes/run-wkprobe.sh emutos|newtos, standard script and the c1late script)
+  e1 vs n-base: 37 records, 11 differ (P0 F1b F2b M1a M2a W1b W1c W2b W2c C1b C1c) = the audit.
+  e1 vs n-fix : 5 differ (P0 F1b F2b M1a M2a). W1a-c, W2a-c, C1a-d EQUAL.
+  e1 vs n-fix-c1late: the same 5; W1/W2/C1 EQUAL.   n-base vs n-fix: exactly W1b W1c W2b W2c C1b C1c differ (6), 31 identical.
+  BIN of n-fix and n-fix-c1late byte-identical (f774eea6...); n-base 1feaa299...; e1 51b6e19f... LOG e1 identical to the
+  developer's e1; the NewTOS LOGs differ from the developer's only in hz_200/tick numbers.
+  C1 TIMING (probe/n-fix-c1late/BOOT-SERIAL.txt, WKPROBE.LOG): the C1 packet f8 28 14 is fed "at hz_200 11024 (+8001)".
+  The log's C1 block: "C1 v_clswk on the graf_handle handle" (line 81) precedes C1's own wait ("N waited 3058 ticks,
+  2000000 polls", i.e. ended on the poll cap, "packet f8 40 20: vq_mouse 0 150 150 -> 0 150 150 (unchanged)"); T03 end at
+  hz_200 11469, so C1's wait began at 11469-3058-(post-wait work) <= 8411 and ended >= 11024 (poll cap, not a change):
+  the feed at 11024 lies inside C1's wait, ~2600+ ticks after v_clswk (which precedes the wait start <= 8411). The packet was
+  dropped: vq_mouse unchanged, equal to e1's line. Standard script (probe/n-fix): the packet is fed at 7022 (+4000) and was
+  swallowed by the W1 wait while the workstation was still open ("packet f8 0 0: ... -> 0 359 259 (changed)" at line 72) --
+  confirms the developer's point that n-fix's C1b/C1c alone are not proof of the closed state; n-fix-c1late is.
+  LOG lines still different on the fix: 23 of the compare-e1-n-fix-c1late.txt LOG pairs, all in the developer's list:
+  "old == vector before W1/C1" for W1 butv/motv/timv/wheelv and C1 butv/motv/curv/wheelv (AES not in the slots; folded
+  sentinels), Z1-Z8 / Getrez (ADR-017), W9 (SPEC04). F1b/F2b and M1a/M2a records (V54/V55) and P0 are the 5 record diffs.
+  No other LOG difference.
+
+4 TABLES AND vdprobe (tables/, probe/vd-*)
+  vdprobe base vs fix: 954 records, 0 differ. Tables, fix vs oracle: vdi-v18-t3 1 of 2 (case 13, K23 ACCEPTED -- identical
+  to base), vdi-v18-t2 0 of 32, vdi-all 0 of 182. Base vs fix (tosdiff and byte compare): vdi-v18-t3 0/2, vdi-v18-t2 0/32,
+  vdi-all 0/182, aes-r2-wind 0/78, aes-r3-wind-state 0/39, aes-r4-subfunctions 0/181; every BIN byte-identical.
+
+5 GUI / PROGRAM SWITCH (gui/)
+  desktop + injector 640x480: 11/11 identical base vs fix; 1920x1080: 11/11 identical. Boot screen + APITEST console:
+  640x480 6/6 identical; 1920x1080 5/6, the 18 s shot differs (capture falls in a scroll phase of the console; a rerun
+  of both kernels gives again a different 18 s shot for each, the base differing from its own first run too -- timing,
+  not V53). 0 exception/panic lines in all runs. I looked at: 640x480 File menu, About dialog, window drag, icon drag
+  and the 1080 shots: menu bar, window, pointer and dialog render as expected. NOTE: the V34 scene was recorded for
+  640x480; at 1920x1080 its relative moves do not reach the menu bar or the dialog (the 1080 "menu"/"dialog" shots show
+  the plain window with the pointer in it) -- identical on base, so the 1080 run proves only equality and a moving pointer,
+  not menu/dialog operation at that size.
+  Program switch (switch.sh: #Z C:\WKPROBE.NAP, which itself does 10 v_clswk and 11 v_opnwk and ends with v_opnwk;
+  serial: "'C:\WKPROBE.NAP' exited with rc=0", then "[desk] desktop up"): on the fix the menu opens, the dialog, rubber
+  band, window/slider/sizer/icon drags all work after the switch (images 00-10 viewed: File menu open in 01, icon drag
+  rubber outline with grabbing hand in 07). Base vs fix: 10 of 11 shots differ by 41 px each, only in the window info line
+  (999136 vs 999140 bytes used: WKPROBE.LOG is 4 bytes longer on the fix); 02-dialog identical.
+  TeraDesk start/exit: NOT RUN -- no injector scene for TeraDesk exists in the current mechanism (inject-arm.py launch:/up:);
+  the only TeraDesk scene (measurements/measurement-2026-09-25-port03) predates it. Source read: no v_opnwk/v_clswk/vex_*
+  call in sdk/apps/teradesk, qed except prn_cfg.c (GDOS printer), hypview, doom, sdk/cflib, programs/ (grep).
+
+6 SPEC CITES (checked by reading references/emutos at the pin)
+  vdi_control.c:562-563 (timer_init, vdimouse_init), :587-588 (timer_exit, vdimouse_exit); vdi_misc.c:128 (tim_addr = just_rts),
+  :144-150 (timer_exit: Setexc etv_timer); vdi_mouse.c:565 (vdimouse_init), :581 HIDE_CNT, :582-583 centre, :585-589 vectors,
+  :593 default form, :595-596, :605 Initmous, :612 mousexvec, :622/624-628/634 vdimouse_exit; bios/mouse.c:47-48 (type 0)
+  and :119-121 (just_rts in the else branch reached by type 0: retval stays -1 but `type != 0` is false); geminit.c:174-177
+  (default_mform = mouse_cursor[ARROW]), :749 (gsx_wsclose); gemgsxif.c:191-194, :271 (gsx_setmb), :288-292 (vex_wheelv aes_wheel),
+  :313 (gsx_resetmb): all resolve and say what the four spec files say. cargo xtask doc-check on the four specs + TASK/V53.md:
+  0 failures.
+
+7 SIDE FINDING 1: sentinels/NOTES.txt, sentinels/llvm-nm.txt.
