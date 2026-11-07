@@ -1,0 +1,120 @@
+== rpi4-release
+@0xc72f8 kernel/src/vdi_backend.rs: line 636 -> 639 (+3) col 31
+@0x129c08 kernel/src/vdi_backend.rs: line 906 -> 913 (+7) col 26
+@0x129c20 kernel/src/vdi_backend.rs: line 893 -> 900 (+7) col 12
+@0x129c38 kernel/src/vdi_backend.rs: line 745 -> 750 (+5) col 28
+@0x129c50 kernel/src/vdi_backend.rs: line 932 -> 939 (+7) col 30
+5 differing bytes in 5 words; unexplained: 0; base 0xffff000000080000
+exit 0
+== qemu-virt-release
+@0xbed10 kernel/src/vdi_backend.rs: line 636 -> 639 (+3) col 31
+@0x1205b8 kernel/src/vdi_backend.rs: line 906 -> 913 (+7) col 26
+@0x1205d0 kernel/src/vdi_backend.rs: line 893 -> 900 (+7) col 12
+@0x1205e8 kernel/src/vdi_backend.rs: line 745 -> 750 (+5) col 28
+@0x120600 kernel/src/vdi_backend.rs: line 932 -> 939 (+7) col 30
+5 differing bytes in 5 words; unexplained: 0; base 0xffff000040080000
+exit 0
+== rpi4-dev
+@0x12d3f0 kernel/src/vdi_backend.rs: line 321 -> 322 (+1) col 28
+@0x12d408 kernel/src/vdi_backend.rs: line 321 -> 322 (+1) col 21
+@0x12d420 kernel/src/vdi_backend.rs: line 322 -> 323 (+1) col 25
+@0x12d438 kernel/src/vdi_backend.rs: line 323 -> 324 (+1) col 20
+@0x12d450 kernel/src/vdi_backend.rs: line 411 -> 412 (+1) col 20
+@0x12d468 kernel/src/vdi_backend.rs: line 411 -> 412 (+1) col 19
+@0x12d480 kernel/src/vdi_backend.rs: line 416 -> 417 (+1) col 23
+@0x12d498 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 63
+@0x12d4b0 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 62
+@0x12d4c8 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 90
+@0x12d4e0 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 89
+@0x12d4f8 kernel/src/vdi_backend.rs: line 1012 -> 1020 (+8) col 5
+@0x12df60 kernel/src/vdi_backend.rs: line 540 -> 541 (+1) col 18
+@0x12df78 kernel/src/vdi_backend.rs: line 893 -> 900 (+7) col 12
+@0x12df90 kernel/src/vdi_backend.rs: line 904 -> 911 (+7) col 29
+@0x12dfa8 kernel/src/vdi_backend.rs: line 906 -> 913 (+7) col 26
+@0x12dfc0 kernel/src/vdi_backend.rs: line 742 -> 747 (+5) col 24
+@0x12dfd8 kernel/src/vdi_backend.rs: line 744 -> 749 (+5) col 27
+@0x12dff0 kernel/src/vdi_backend.rs: line 745 -> 750 (+5) col 34
+@0x12e008 kernel/src/vdi_backend.rs: line 745 -> 750 (+5) col 28
+@0x12e020 kernel/src/vdi_backend.rs: line 850 -> 857 (+7) col 39
+@0x12e038 kernel/src/vdi_backend.rs: line 875 -> 882 (+7) col 39
+@0x12e050 kernel/src/vdi_backend.rs: line 930 -> 937 (+7) col 29
+@0x12e068 kernel/src/vdi_backend.rs: line 932 -> 939 (+7) col 30
+@0x12e080 kernel/src/vdi_backend.rs: line 862 -> 869 (+7) col 56
+@0x12e098 kernel/src/vdi_backend.rs: line 779 -> 785 (+6) col 37
+@0x12e0b0 kernel/src/vdi_backend.rs: line 779 -> 785 (+6) col 22
+@0x12e0c8 kernel/src/vdi_backend.rs: line 781 -> 787 (+6) col 41
+@0x12e0e0 kernel/src/vdi_backend.rs: line 781 -> 787 (+6) col 26
+@0x12e0f8 kernel/src/vdi_backend.rs: line 782 -> 788 (+6) col 28
+@0x12e110 kernel/src/vdi_backend.rs: line 819 -> 826 (+7) col 23
+@0x12e128 kernel/src/vdi_backend.rs: line 820 -> 827 (+7) col 50
+@0x12e140 kernel/src/vdi_backend.rs: line 820 -> 827 (+7) col 32
+@0x12e158 kernel/src/vdi_backend.rs: line 821 -> 828 (+7) col 37
+@0x12e170 kernel/src/vdi_backend.rs: line 821 -> 828 (+7) col 22
+@0x12e188 kernel/src/vdi_backend.rs: line 825 -> 832 (+7) col 27
+@0x12e1a0 kernel/src/vdi_backend.rs: line 826 -> 833 (+7) col 55
+@0x12e1b8 kernel/src/vdi_backend.rs: line 826 -> 833 (+7) col 37
+@0x12e1d0 kernel/src/vdi_backend.rs: line 827 -> 834 (+7) col 41
+@0x12e1e8 kernel/src/vdi_backend.rs: line 827 -> 834 (+7) col 26
+@0x12e200 kernel/src/vdi_backend.rs: line 833 -> 840 (+7) col 75
+@0x12e218 kernel/src/vdi_backend.rs: line 834 -> 841 (+7) col 39
+@0x12e230 kernel/src/vdi_backend.rs: line 835 -> 842 (+7) col 52
+@0x12e4e8 kernel/src/vdi_backend.rs: line 706 -> 711 (+5) col 35
+@0x12e500 kernel/src/vdi_backend.rs: line 636 -> 639 (+3) col 31
+@0x12e518 kernel/src/vdi_backend.rs: line 440 -> 441 (+1) col 41
+@0x12e530 kernel/src/vdi_backend.rs: line 441 -> 442 (+1) col 52
+@0x12e548 kernel/src/vdi_backend.rs: line 443 -> 444 (+1) col 62
+@0x12e560 kernel/src/vdi_backend.rs: line 444 -> 445 (+1) col 56
+49 differing bytes in 49 words; unexplained: 0; base 0xffff000000080000
+exit 0
+== qemu-virt-dev
+@0xc8258 kernel/src/vdi_backend.rs: line 321 -> 322 (+1) col 28
+@0xc8270 kernel/src/vdi_backend.rs: line 321 -> 322 (+1) col 21
+@0xc8288 kernel/src/vdi_backend.rs: line 322 -> 323 (+1) col 25
+@0xc82a0 kernel/src/vdi_backend.rs: line 323 -> 324 (+1) col 20
+@0xc82b8 kernel/src/vdi_backend.rs: line 411 -> 412 (+1) col 20
+@0xc82d0 kernel/src/vdi_backend.rs: line 411 -> 412 (+1) col 19
+@0xc82e8 kernel/src/vdi_backend.rs: line 416 -> 417 (+1) col 23
+@0xc8300 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 63
+@0xc8318 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 62
+@0xc8330 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 90
+@0xc8348 kernel/src/vdi_backend.rs: line 1075 -> 1083 (+8) col 89
+@0xc8360 kernel/src/vdi_backend.rs: line 1012 -> 1020 (+8) col 5
+@0xc8dc8 kernel/src/vdi_backend.rs: line 540 -> 541 (+1) col 18
+@0xc8de0 kernel/src/vdi_backend.rs: line 893 -> 900 (+7) col 12
+@0xc8df8 kernel/src/vdi_backend.rs: line 904 -> 911 (+7) col 29
+@0xc8e10 kernel/src/vdi_backend.rs: line 906 -> 913 (+7) col 26
+@0xc8e28 kernel/src/vdi_backend.rs: line 742 -> 747 (+5) col 24
+@0xc8e40 kernel/src/vdi_backend.rs: line 744 -> 749 (+5) col 27
+@0xc8e58 kernel/src/vdi_backend.rs: line 745 -> 750 (+5) col 34
+@0xc8e70 kernel/src/vdi_backend.rs: line 745 -> 750 (+5) col 28
+@0xc8e88 kernel/src/vdi_backend.rs: line 850 -> 857 (+7) col 39
+@0xc8ea0 kernel/src/vdi_backend.rs: line 875 -> 882 (+7) col 39
+@0xc8eb8 kernel/src/vdi_backend.rs: line 930 -> 937 (+7) col 29
+@0xc8ed0 kernel/src/vdi_backend.rs: line 932 -> 939 (+7) col 30
+@0xc8ee8 kernel/src/vdi_backend.rs: line 862 -> 869 (+7) col 56
+@0xc8f00 kernel/src/vdi_backend.rs: line 779 -> 785 (+6) col 37
+@0xc8f18 kernel/src/vdi_backend.rs: line 779 -> 785 (+6) col 22
+@0xc8f30 kernel/src/vdi_backend.rs: line 781 -> 787 (+6) col 41
+@0xc8f48 kernel/src/vdi_backend.rs: line 781 -> 787 (+6) col 26
+@0xc8f60 kernel/src/vdi_backend.rs: line 782 -> 788 (+6) col 28
+@0xc8f78 kernel/src/vdi_backend.rs: line 819 -> 826 (+7) col 23
+@0xc8f90 kernel/src/vdi_backend.rs: line 820 -> 827 (+7) col 50
+@0xc8fa8 kernel/src/vdi_backend.rs: line 820 -> 827 (+7) col 32
+@0xc8fc0 kernel/src/vdi_backend.rs: line 821 -> 828 (+7) col 37
+@0xc8fd8 kernel/src/vdi_backend.rs: line 821 -> 828 (+7) col 22
+@0xc8ff0 kernel/src/vdi_backend.rs: line 825 -> 832 (+7) col 27
+@0xc9008 kernel/src/vdi_backend.rs: line 826 -> 833 (+7) col 55
+@0xc9020 kernel/src/vdi_backend.rs: line 826 -> 833 (+7) col 37
+@0xc9038 kernel/src/vdi_backend.rs: line 827 -> 834 (+7) col 41
+@0xc9050 kernel/src/vdi_backend.rs: line 827 -> 834 (+7) col 26
+@0xc9068 kernel/src/vdi_backend.rs: line 833 -> 840 (+7) col 75
+@0xc9080 kernel/src/vdi_backend.rs: line 834 -> 841 (+7) col 39
+@0xc9098 kernel/src/vdi_backend.rs: line 835 -> 842 (+7) col 52
+@0xc92d8 kernel/src/vdi_backend.rs: line 706 -> 711 (+5) col 35
+@0xc92f0 kernel/src/vdi_backend.rs: line 636 -> 639 (+3) col 31
+@0xc9308 kernel/src/vdi_backend.rs: line 440 -> 441 (+1) col 41
+@0xc9320 kernel/src/vdi_backend.rs: line 441 -> 442 (+1) col 52
+@0xc9338 kernel/src/vdi_backend.rs: line 443 -> 444 (+1) col 62
+@0xc9350 kernel/src/vdi_backend.rs: line 444 -> 445 (+1) col 56
+49 differing bytes in 49 words; unexplained: 0; base 0xffff000040080000
+exit 0
