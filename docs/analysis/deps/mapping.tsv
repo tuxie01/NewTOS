@@ -1457,9 +1457,10 @@ vdi2videl	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for
 videl2vdi	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for VgetRGB; NewTOS truecolor reads no VIDEL register
 vq_color16	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	truecolor branch of vq_color (flag 0 raw req_col, else 5-bit pseudo-palette)
 vs_color16	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	truecolor branch of vs_color (raw req_col, clamped pseudo-palette)
-char_resize	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	resize	mapped	DDA size; the 0xFFFF double case leaves the accumulator untouched (same as EmuTOS here)
+char_resize	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	resize	mapped	DDA size; 0xFFFF returns size*2; XDDA is read, not moved (V31)
 check_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	early-out whole-cell clip decision; NewTOS intersects the cell with the clip box and the screen per pixel instead; ClipRect::OFF (no CLIP) takes the unclipped walk (V30)
 check_clip	vdi/vdi_textblit.c	tos-api/src/vdi/primitives.rs	line_clip	mapped	the CLIP test: with vs_clip(0) the text path hands ClipRect::OFF to the glyph blit and the underline, nothing is cut (V30)
+check_clip	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	wholly_clipped	mapped	the -1 answer: a cell wholly outside the clip window is neither scaled nor drawn, XDDA stays, the pen moves (V31)
 direct_screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	CONF_WITH_VDI_TEXT_SPEEDUP direct 8-wide blit (on in the 512 build); NewTOS has no direct path, v_gtext goes through the general glyph path; planar branch is ADR-024
 direct_screen_blit16	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	truecolor direct blit; the general path of NewTOS draws the same cell (equal output not measured)
 do_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	trims the cell to the clip window; NewTOS clips per pixel in the backend
@@ -1468,7 +1469,7 @@ merge_byte	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	helper o
 outline	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	outline effect step of the cell builder
 pre_blit	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	build_cell	mapped	thicken, skew, light and outline into an intermediate cell
 rotate	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	rotate_cell	mapped	chup 900/1800/2700
-scale	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_glyph	mapped	DDA magnify; the 0xFFFF double case does not run EmuTOS' spacing loop (see report)
+scale	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_glyph	mapped	DDA magnify; the spacing loop moves XDDA also at 0xFFFF and gives the scaled width, no at-least-1 (K14, V31)
 scaledown	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_down	mapped	-
 scaleup	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	scale_row_up	mapped	-
 screen_blit	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	glyph cell to the screen with the writing mode; the planar branch (v_planes <= 8) is ADR-024 and has no code
@@ -1481,6 +1482,7 @@ text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	raw_glyph	mapped	the glyph f
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	horizontal_at	mapped	position of the character blit (chup 0)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	output_glyph	mapped	per-character driver: picks one-word or eight-word rows for the cell, NewTOS has no scratch buffer (V44)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	assemble_and_blit	mapped	per-character blit: scale, effects, rotate, blit in the rows picked (V44)
+text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	glyph_advance	mapped	upda_dst: the pen move from char_resize(XDDA, DELX) taken on entry, outline, WEIGHT (V31)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	fits_narrow	mapped	whether a cell fits the one-word rows, no EmuTOS counterpart in itself: a speed path of the driver, same pixels (V44)
 text_blt	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	output_text_rotated	mapped	per-character blit and position (chup 900/1800/2700)
 bios_conws	vdi/vdi_esc.c	tos-api/src/vdi/escape.rs	puts	mapped	string through the VT52 automaton

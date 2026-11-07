@@ -680,7 +680,7 @@ leaves them alone. Everything on the screen, the run-on into the neighbouring
 rows included, is EmuTOS' (one exception, a run of more than 4095 8-pixel
 characters: `docs/api/vdi/output/_text.md`, § Clipping off). Code
 `tos-api/src/vdi/line.rs:70@glyph_unclipped`,
-`tos-api/src/vdi/text.rs:920@underline_lines`; spec
+`tos-api/src/vdi/text.rs:989@underline_lines`; spec
 `docs/api/vdi/output/_text.md` (§ Clipping off); host test
 `tos-api/tests/vdi_reference/cases_v30.rs`; run
 `measurements/measurement-2026-11-06-v30/RUNINFO.TXT`.

@@ -99,7 +99,7 @@ Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
     driftet EmuTOS' `XDDA`, NewTOS liefert absichtlich genau `2*size` (Kommentar im Code).
 15. `vdi_text.c:770-817` gegen `text.rs:235@scaled_header` und `attributes.rs:171@vst_font`:
     `point*2` im skalierten Header, `vst_font` waehlt die Groesse in NewTOS nicht neu.
-16. `vdi_text.c:1177-1289` gegen `text.rs:1246@v_justified`: Drehung 900/1800/2700 fehlt.
+16. `vdi_text.c:1177-1289` gegen `text.rs:1315@v_justified`: Drehung 900/1800/2700 fehlt.
 17. `vdi_esc.c:100-107` gegen `tos-api/src/vdi/escape.rs:793@v_escape`: ESC Y (Spalten > 223,
     Byte-Abschneiden) anders, als Entscheidung Q6 im Code.
 18. `vdi_esc.c:241-247` gegen `escape.rs:793@v_escape`: Escape 17 ruft `Scrdmp()` nicht; `dump_vec`

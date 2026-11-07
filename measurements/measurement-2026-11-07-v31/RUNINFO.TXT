@@ -1,0 +1,72 @@
+V31 -- TASK/V31.md (VDI-TEXT-007, VDI-TEXT-008 = K14): the horizontal DDA of scaled text against the pinned
+oracle, before and after the fix. Developer run, 2026-11-07, on main at deaad5df with the V31 change in the
+working tree (uncommitted at the time, the commit of this run holds it); not the Tester's acceptance. No card,
+no Pi, no push.
+
+WHAT RAN
+  NewTOS   head = the tree before the product change (only tosdump/probes/vdprobe.c changed): rpi4 release
+           kernel8.img sha256 d38033c99b18a2a45f1dacb7d88eedc14cbf896f3994d2eddcbb5f542fd17d4a (1517800 B).
+           fix  = the tree with the change: rpi4 release kernel8.img sha256
+           060cced2ea673bbaade7c9f4974fc6fe91065d5cc802a4b66bb2276df4989840 (1521896 B), the same kernel
+           cargo xtask tosdump built for both tables (runs/*/tosdump-run.txt). Kernels not kept.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img,
+           tools/hatari-oracle.sh falcontc (640x480 16-bit truecolor), Hatari 2.6.1 (probe/e1/hatari.log)
+  Boards   QEMU raspi4b, -append serial=on, APFS clone per boot (removed by the scripts)
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests (5): probe/n-head, probe/n-fix1, probe/n-fix2, runs/newtos-vdi-v18t2, runs/newtos-vdi-all, each
+           card.img.manifest; optional_missing, verbatim, in all of them:
+           optional_missing none
+  Commands method/run.sh (its head comment: the head stage); the spans of the host test from method/gen-spans.py.
+
+INSTRUMENT
+  tosdump/probes/vdprobe.c  cases T31A..T31E appended after tz (function t31): vst_height 20 with a clip window
+           the run starts outside of, for v_justified (A), rotation 1800 (B), 900 (C), 2700 (D), and the
+           scale-down DDA, vst_height 10 (E). The 928 records before them unchanged on both sides: the first
+           25207802 bytes of probe/e1 BIN = measurements/measurement-2026-11-06-v41/probe/e1/VDPROBE.BIN
+           (sha256 b04c44ad...), of probe/n-head BIN = .../v41/probe/n-head/VDPROBE.BIN.
+           VDPROBE.PRG 7b0b1fe622d8b91464a982bd2afb8774e367090f00acd3baa88901cb483b3ec3, NAP in probe/*/run.txt.
+
+REPRODUCIBLE
+  probe/e1 == probe/e2      BIN 8af7228c...c38b105a, LOG a0ee48cb... (e2: sha256 only)
+  probe/n-fix1 == n-fix2    BIN c2825bd2...7125c7f7c, LOG 21246e53... (n-fix2: sha256 only)
+  The host-test spans regenerate byte-identically from the e1 BINs (method/gen-spans.py, both calls), and the
+  T31 spans of e2 equal those of e1.
+
+RESULT, PROBE (933 cases; probe/compare-*.txt)
+  e1 vs n-head   346 differ.   e1 vs n-fix1   338 differ.   n-head vs n-fix1   9 differ, exactly:
+    T14E   1490 px -> equal   (007, v_gtext, clip from x 100)
+    T14K     26 px -> equal   (008/K14: char 4095 of 4096, clip off; probe/t14k-cell-head.txt, -fix.txt)
+    T31A   1455 px -> equal   (007, v_justified)
+    T31B    764 px -> equal   (007, rotation 1800)
+    T31C    570 px -> equal   (007, rotation 900)
+    T31D    794 px -> equal   (007, rotation 2700)
+    T31E    589 px -> equal   (007, scale-down DDA)
+    ZG012   523 px -> equal   (V41's side finding "vst_height 20 with clip", ticket TASK/V45)
+    ZG013   485 px -> 98 px   (the same with skew; the rest is skew, probe/maps-fix/928-ZG013.txt)
+  Every other case byte-identical head vs fix, among them all ZD (clip with bold/skew/outline, unscaled), ZB
+  (scaled with effects), ZC (rotated with effects), T14A-D, F-J, L, M.
+  Maps of the 9 cases before the fix: probe/maps-head/.
+
+RESULT, TABLES (cargo xtask tosdump, fix kernel; runs/)
+  runs/newtos-vdi-v18t2  vdi-v18-t2.tsv vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: 2 of 32 differ: 50, 54 (TASK/V35).
+                         86, 90 equal now (007); control 94 equal. Before the fix 4 of 32 (50, 54, 86, 90),
+                         measurements/measurement-2026-11-06-v30-test/RUNINFO.TXT.
+  runs/newtos-vdi-all    vdi-all.tsv vs EMUTOS-1a7484ab-VDI-all-falcontc: 0 of 182 differ.
+
+HOST TEST
+  tos-api/tests/vdi_reference/cases_v31.rs (16), on the head product code (same tree, before the edit of
+  tos-api/src/vdi/text.rs): 10 red, 6 green.
+    red   86, 90, T14E, T14K, T31A-T31E: pixels differ from the oracle (T14K exactly the 26 px of the audit);
+          T14M: the test double's draw_glyph_sized overflows `x + col` for a cell near x 32767 with clip on
+          (tos-api/tests/vdi_reference/harness.rs, debug build) -- not an oracle difference, the probe has
+          T14M equal on the head kernel; after the fix those cells are skipped before the blit.
+    green the controls 94, T14A, T14D, T14F, T14I, T14J.
+  After the fix 16 of 16 green; unit test vdi::text::tests::exact_double_spacing_dda_drifts (new).
+  cargo xtask test: 2241/0/1 before, 2258/0/1 after (+16 cases_v31, +1 unit test).
+
+DEPENDENCIES  deps/text_blt-up.txt, scale-up.txt, char_resize-up.txt, check_clip-up.txt (cargo xtask deps on the
+  tree with the change): vdi 0 unmapped (complete), aes 1 (eralert), desk 130 (desk/*.c not mapped).
+
+NOT DRIVEN / OPEN
+  Real Pi4: nothing. AES tables, shprobe/slprobe, desktop run: the Tester's (V18 "Gemeinsam" point 2).
+  qemu-virt: built, not booted here.

@@ -2619,6 +2619,47 @@ static void tz(void)
 	tz_misc();
 }
 
+/* ---- T31 (TASK/V31, VDI-TEXT-007): a scaled run whose leading characters lie wholly outside the clip ----
+ * window.  text_blt skips scale() for them (check_clip < 0 -> goto upda_dst, vdi_textblit.c:1344-1346), so
+ * XDDA does not move (vdi_textblit.c:722-733); T14E is the v_gtext case, these are v_justified, the three
+ * right angles (the clip on the side the run starts from) and the scale-down DDA. */
+static void t31(void)
+{
+	tbegin("T31A", "vst_height(20), clip (100,0)-(639,479), v_justified interchar 14 chars len 300 at (0,60)");
+	p1(12, 0, 20);
+	clip(1, 100, 0, 639, 479);
+	justified(0, 60, 300, 0, 1, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31A", 0, 30, 400, 40);
+	tbegin("T31B", "vst_height(20), rotation 1800, clip (0,0)-(299,479), v_gtext 14 chars at (400,100)");
+	p1(12, 0, 20);
+	i1(13, 1800);
+	clip(1, 0, 0, 299, 479);
+	gtext(400, 100, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31B", 160, 60, 260, 70);
+	tbegin("T31C", "vst_height(20), rotation 900, clip (0,0)-(639,199), v_gtext 14 chars at (100,330)");
+	p1(12, 0, 20);
+	i1(13, 900);
+	clip(1, 0, 0, 639, 199);
+	gtext(100, 330, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31C", 60, 80, 80, 260);
+	tbegin("T31D", "vst_height(20), rotation 2700, clip (0,200)-(639,479), v_gtext 14 chars at (300,120)");
+	p1(12, 0, 20);
+	i1(13, 2700);
+	clip(1, 0, 200, 639, 479);
+	gtext(300, 120, "ABCDEFGHIJKLMN");
+	clip(0, 0, 0, 0, 0);
+	grab("T31D", 260, 100, 80, 260);
+	tbegin("T31E", "vst_height(10) (DDA down), clip (40,0)-(639,479), v_gtext 20 chars at (0,60)");
+	p1(12, 0, 10);
+	clip(1, 40, 0, 639, 479);
+	gtext(0, 60, "ABCDEFGHIJKLMNOPQRST");
+	clip(0, 0, 0, 0, 0);
+	grab("T31E", 0, 40, 300, 30);
+}
+
 static void t2(void)
 {
 	t19();
@@ -2635,6 +2676,7 @@ static void t2(void)
 	tx();
 	ty();
 	tz();
+	t31();
 }
 
 

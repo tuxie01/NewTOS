@@ -19,6 +19,10 @@
 //! (`vdi_textblit.c`): [`scale_glyph`] duplicates/drops rows and doubles
 //! bits per the DDA, [`build_cell`] bakes the effects onto the scaled
 //! glyph, [`rotate_cell`] turns it, and [`blit_cell`] outputs it.
+//! The pen moves by [`glyph_advance`] (`char_resize`); a glyph whose cell lies
+//! wholly outside the clip window is neither scaled nor drawn
+//! ([`wholly_clipped`]), so the horizontal DDA `XDDA` moves only for the glyphs
+//! [`scale_glyph`] scales (TASK/V31).
 //!
 //! **Working store.** EmuTOS scales and assembles into the scratch buffer of the
 //! workstation (`SCRTCHP`, the caller's after `vst_load_fonts`). NewTOS assembles
@@ -192,17 +196,17 @@ unsafe fn store() -> &'static mut GlyphStores {
     unsafe { &mut *STORE.0.get() }
 }
 
-/// EmuTOS `char_resize` / `act_siz` (`vdi_textblit.c:1257`,
-/// `vdi_text.c:743`): the actual scaled size of a `size`-unit dimension
-/// under the DDA `(dda_inc, t_sclsts)` given the accumulator seed `init`,
-/// and the accumulator value left after processing it. `0xFFFF` means
-/// "exactly double" (returns `size*2`, accumulator untouched — this also
-/// avoids EmuTOS' rare exact-double `XDDA` drift, keeping every glyph a
-/// clean 2×).
+/// EmuTOS `char_resize` / `act_siz` (`vdi_textblit.c:1257-1278`,
+/// `vdi_text.c:743-767`): the actual scaled size of a `size`-unit dimension
+/// under the DDA `(dda_inc, t_sclsts)` with the accumulator seeded at `init`.
+/// `0xFFFF` means "exactly double" (`size*2`); otherwise at least 1 for a
+/// non-zero `size`. The accumulator is not kept: `text_blt` reads `XDDA`
+/// through `char_resize` and leaves it, only the spacing loop of `scale()`
+/// moves it ([`scale_glyph`]).
 #[inline]
-fn resize(init: u16, size: u16, dda_inc: u16, t_sclsts: bool) -> (u16, u16) {
+fn resize(init: u16, size: u16, dda_inc: u16, t_sclsts: bool) -> u16 {
     if dda_inc == 0xFFFF {
-        return (size.wrapping_shl(1), init);
+        return size.wrapping_shl(1);
     }
     let mut accu = init;
     let mut retval: u16 = if t_sclsts { size } else { 0 };
@@ -215,14 +219,14 @@ fn resize(init: u16, size: u16, dda_inc: u16, t_sclsts: bool) -> (u16, u16) {
     if size != 0 && retval == 0 {
         retval = 1; // non-zero input → at least 1
     }
-    (retval, accu)
+    retval
 }
 
 /// The scaled size of a `size`-unit dimension (EmuTOS `act_siz`, seed
-/// `0x7fff`); the accumulator is discarded (used only for metric fields).
+/// `0x7fff`).
 #[inline]
 pub(crate) fn act_siz(size: u16, dda_inc: u16, t_sclsts: bool) -> u16 {
-    resize(0x7fff, size, dda_inc, t_sclsts).0
+    resize(0x7fff, size, dda_inc, t_sclsts)
 }
 
 /// The scaled scratch `Fonthead` for `f` under the DDA — EmuTOS
@@ -459,10 +463,15 @@ fn scale_row_down<const N: usize>(src_row: &Row<N>, w: i16, dda_inc: u16, xdda: 
 /// DDA-magnify a raw glyph — EmuTOS `scale` (`vdi_textblit.c:672-741`): a
 /// vertical DDA (seed `0x7fff`) duplicates a source row on a scale-up carry
 /// or drops it on scale-down, and each emitted row is horizontally scaled
-/// ([`scale_row_up`]/[`scale_row_down`]). The per-glyph cell advance and
+/// ([`scale_row_up`]/[`scale_row_down`]). The width of the scaled glyph and
 /// the running horizontal accumulator `xdda` (the sub-pixel nudge that
 /// spreads the fractional character spacing across the string) come from
-/// the char-spacing DDA at the end of `scale()`.
+/// the char-spacing DDA at the end of `scale()` (`:722-733`). That loop has
+/// neither `char_resize`'s exact-double shortcut nor its "at least 1": at
+/// `0xFFFF` each glyph takes `xdda` down by its `DELX`, and the glyph that
+/// finds it below `DELX` doubles one source column less ([`scale_row_up`]
+/// seeds every row with it) and is one pixel narrower, while the pen still
+/// moves `DELX * 2` ([`glyph_advance`]; K14, TASK/V31).
 fn scale_glyph<const N: usize, const R: usize>(
     src: &[Row<N>; R],
     size: SrcSize,
@@ -491,10 +500,19 @@ fn scale_glyph<const N: usize, const R: usize>(
             d += 1;
         }
     }
-    // Char-spacing DDA: the scaled cell advance + the persistent accumulator.
-    let (w, new_xdda) = resize(seed, size.w as u16, dda_inc, t_sclsts);
-    *xdda = new_xdda;
-    SrcSize { w: w as i16, h: d as i16 }
+    // Char-spacing DDA: the scaled glyph's width + the persistent accumulator
+    // (`delx = SCALDIR ? DELX : 0`, one step per source column, `WORD` loop
+    // counter).
+    let mut accum = seed;
+    let mut w = if t_sclsts { size.w } else { 0 };
+    for _ in 0..size.w.max(0) {
+        accum = accum.wrapping_add(dda_inc);
+        if accum < dda_inc {
+            w = w.wrapping_add(1);
+        }
+    }
+    *xdda = accum;
+    SrcSize { w, h: d as i16 }
 }
 
 /// Per-glyph-row rightward skew shift, driven by the font's `skew`
@@ -699,13 +717,13 @@ fn fits_narrow(call: &TextCall, gcode: u16) -> bool {
 }
 
 /// Assemble one character's cell (raw → optional DDA scale → effects) into
-/// `st.cell`.
+/// `st.cell`. Scaling moves `xdda` ([`scale_glyph`]).
 fn make_glyph<const N: usize, const R: usize>(
     st: &mut GlyphStore<N, R>,
     call: &TextCall,
     gcode: u16,
     xdda: &mut u16,
-) -> (CellSize, Advance) {
+) -> CellSize {
     let (pb, base, f, vwk) = (call.pb, call.base, call.f, call.vwk);
     let mut size = raw_glyph(pb, base, gcode, &mut st.raw);
     let scaled = vwk.scaled;
@@ -713,13 +731,59 @@ fn make_glyph<const N: usize, const R: usize>(
         size = scale_glyph(&st.raw, size, vwk.dda_inc, vwk.t_sclsts, xdda, &mut st.scaled);
     }
     let rows = if scaled { &st.scaled } else { &st.raw };
-    let cell = build_cell(rows, size, f, vwk.style, &mut st.shifts, &mut st.source, &mut st.cell);
-    let outline = if vwk.style & T_OUTLINE != 0 { OUTLINE_THICKNESS } else { 0 };
-    let mut pen = size.w.wrapping_add(outline * 2);
+    build_cell(rows, size, f, vwk.style, &mut st.shifts, &mut st.source, &mut st.cell)
+}
+
+/// The pen's move behind glyph `gcode` — EmuTOS `text_blt`'s `upda_dst`
+/// (`vdi_textblit.c:1402-1417`): `DELX`, or `char_resize(XDDA, DELX)` taken
+/// on entry (`:1304-1308`) when the workstation is scaled, plus the outline
+/// pixels and a proportional font's `WEIGHT`. `xdda` is the accumulator before
+/// the glyph; it is read, not moved.
+fn glyph_advance(call: &TextCall, gcode: u16, xdda: u16) -> Advance {
+    let (pb, base, f, vwk) = (call.pb, call.base, call.f, call.vwk);
+    let delx = table_width(pb, base, gcode as i16);
+    let mut pen = if vwk.scaled { resize(xdda, delx as u16, vwk.dda_inc, vwk.t_sclsts) as i16 } else { delx };
+    if vwk.style & T_OUTLINE != 0 {
+        pen = pen.wrapping_add(OUTLINE_THICKNESS * 2);
+    }
     if vwk.style & T_THICKEN != 0 && !f.mono() {
         pen = pen.wrapping_add(f.thicken);
     }
-    (cell, Advance { pen, hor: horz_step(pb, f, gcode) })
+    Advance { pen, hor: horz_step(pb, f, gcode) }
+}
+
+/// Whether the cell of a glyph whose pen advance is `pen`, placed with its
+/// top-left at `(x, y)`, lies wholly outside the clip window — EmuTOS
+/// `check_clip` returning `-1` (`vdi_textblit.c:128-166`), which makes
+/// `text_blt` skip `scale()` and the blit and only move the pen
+/// (`:1344-1346`). The cell is the one `text_blt` hands it (`:1301-1342`):
+/// `delx` = the advance plus the skew offsets `LOFF + ROFF`, `dely` = the
+/// scaled `DELY` (`char_resize(0x7fff, form_height)`) plus the outline pixels,
+/// swapped at 900 and 2700. Never with clipping off (`:132-133`). `WORD`
+/// arithmetic (`-mshort`).
+fn wholly_clipped(call: &TextCall, pen: i16, x: i16, y: i16) -> bool {
+    let (vwk, f) = (call.vwk, call.f);
+    if !vwk.clip {
+        return false;
+    }
+    let mut delx = pen;
+    if vwk.style & T_SKEW != 0 {
+        delx = delx.wrapping_add(f.left_offset.wrapping_add(f.right_offset));
+    }
+    let mut dely = if vwk.scaled {
+        resize(0x7fff, f.form_height as u16, vwk.dda_inc, vwk.t_sclsts) as i16
+    } else {
+        f.form_height
+    };
+    if vwk.style & T_OUTLINE != 0 {
+        dely = dely.wrapping_add(OUTLINE_THICKNESS * 2);
+    }
+    let (w, h) = if matches!(vwk.chup, 900 | 2700) { (dely, delx) } else { (delx, dely) };
+    let c = vwk.clip_rect();
+    (x < c.xmn && x.wrapping_add(w) <= c.xmn)
+        || x > c.xmx
+        || (y < c.ymn && y.wrapping_add(h) <= c.ymn)
+        || y > c.ymx
 }
 
 /// Pack a cell to `ceil(cell_w/8)` bytes per row and blit it with its top-left at
@@ -750,7 +814,8 @@ fn blit_cell<const N: usize, const R: usize>(
 }
 
 /// Assemble one glyph in `st` and blit it, rotated at a right-angle `chup`. `place`
-/// gives the cell's top-left from the pen advance.
+/// gives the cell's top-left from the pen advance. A cell wholly outside the clip
+/// window is skipped before it is scaled, `xdda` stays ([`wholly_clipped`]).
 fn assemble_and_blit<const N: usize, const R: usize>(
     st: &mut GlyphStore<N, R>,
     bytes: &mut [u8; MAX_ROWS * WIDE_BYTES],
@@ -759,8 +824,12 @@ fn assemble_and_blit<const N: usize, const R: usize>(
     xdda: &mut u16,
     place: impl FnOnce(i16) -> (i16, i16),
 ) -> Advance {
-    let (cell, advance) = make_glyph(st, call, gcode, xdda);
+    let advance = glyph_advance(call, gcode, *xdda);
     let (x, y) = place(advance.pen);
+    if wholly_clipped(call, advance.pen, x, y) {
+        return advance; // `goto upda_dst`
+    }
+    let cell = make_glyph(st, call, gcode, xdda);
     let chup = call.vwk.chup;
     if matches!(chup, 900 | 1800 | 2700) {
         let rot = rotate_cell(&st.cell, cell, chup, &mut st.rotated);
@@ -1052,10 +1121,10 @@ pub fn v_gtext(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let x_pen0 = x.wrapping_sub(delh);
     let top_y = top_for(f, y, vwk.v_align);
 
-    // Per-char advance comes from each assembled glyph (scaled cell width +
-    // outline); the persistent `xdda` spreads the fractional spacing so the
-    // run's total equals `calc_width`'s scaled width (EmuTOS `XDDA = 32767`
-    // seed, carried across glyphs).
+    // Per-char advance from [`glyph_advance`] (scaled cell width + outline);
+    // the persistent `xdda` spreads the fractional spacing over the glyphs
+    // that are scaled (EmuTOS `XDDA = 32767` seed, `vdi_text.c:457`, carried
+    // across glyphs; a glyph wholly outside the clip window leaves it).
     let mut xdda: u16 = 0x7fff;
     let mut cx = x_pen0;
     for i in 0..count as usize {
@@ -1693,5 +1762,30 @@ mod tests {
         assert_eq!((w, h), (512, 512));
         assert_eq!(bytes.len(), 512 * 64);
         assert_eq!(bytes[511 * 64 + 63] & 0x01, 0x01, "the last pixel of the last row");
+    }
+
+    /// K14 (TASK/V31): at an exact double `scale()`'s spacing loop runs anyway
+    /// (`vdi_textblit.c:722-733`). Seeded at 15 an 8-pixel row doubles every
+    /// column and leaves 7; seeded at 7 the eighth column finds the accumulator
+    /// at 0, is not doubled, and the glyph is 15 wide. The pen moves 16 either
+    /// way (`char_resize`, `:1261-1263`).
+    #[test]
+    fn exact_double_spacing_dda_drifts() {
+        let mut src = [[0u64; 1]; NARROW_SIDE];
+        src[0][0] = 0xFF << 56;
+        let mut out = [[0u64; 1]; NARROW_SIDE];
+        let row = SrcSize { w: 8, h: 1 };
+
+        let mut xdda = 15;
+        let s = scale_glyph(&src, row, 0xFFFF, true, &mut xdda, &mut out);
+        assert_eq!((s.w, s.h, xdda), (16, 2, 7));
+        assert_eq!(out[0][0] >> 48, 0xFFFF);
+
+        let s = scale_glyph(&src, row, 0xFFFF, true, &mut xdda, &mut out);
+        assert_eq!((s.w, s.h, xdda), (15, 2, 0xFFFF));
+        assert_eq!(out[0][0] >> 48, 0xFFFE);
+        assert_eq!(out[1][0] >> 48, 0xFFFE);
+
+        assert_eq!(resize(7, 8, 0xFFFF, true), 16);
     }
 }

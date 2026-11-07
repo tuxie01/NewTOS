@@ -205,6 +205,42 @@ direct blit, whose destination pointer never wraps: the characters from number 4
 on land 51 rows further down (32768 / 640), where NewTOS, on the general path as for
 any other run, wraps the `WORD` pen (probe TVZ, 844 words).
 
+## Scaled glyphs: the horizontal DDA
+
+With `vwk->scaled` set (a `vst_height`/`vst_point` size the ring has not,
+[`../attributes/_text.md`](../attributes/_text.md)) `output_text` hands `SCALE`,
+`DDAINC` = `dda_inc` and `SCALDIR` = `t_sclsts` to `text_blt` (`vdi_text.c:311-313`)
+and seeds the horizontal accumulator once per call, `XDDA = 32767` (`:457`); it carries
+from glyph to glyph. Per glyph (`vdi_textblit.c`):
+
+- On entry the cell's size comes from `char_resize`: `dely = char_resize(0x7fff, DELY)`,
+  `delx = char_resize(XDDA, DELX)` (`:1304-1308`). `char_resize` returns `size << 1` when
+  `dda_inc == 0xFFFF`, otherwise `size` (scale up) or 0 (scale down) plus the carries of
+  `size` steps of `dda_inc`, at least 1 for a non-zero `size` (`:1257-1278`). It reads
+  `XDDA` and leaves it. The pen moves by this `delx`, plus the outline pixels and a
+  proportional font's `WEIGHT` (`upda_dst`, `:1402-1417`).
+- `check_clip` gets that cell, `delx` with `LOFF + ROFF` under skew and both sides with the
+  outline pixels, swapped at 900/2700, at `DESTX`/`DESTY` after the `chup` shift
+  (`:1310-1342`). A cell wholly outside the clip window (`-1`, `:128-166`) jumps to
+  `upda_dst` (`:1344-1346`): no `scale()`, no blit, `XDDA` unchanged. With clipping off
+  `check_clip` returns 0 (`:132-133`), every glyph is scaled.
+- Otherwise `scale()` scales the glyph: every row through `scaleup`/`scaledown`, each row
+  seeded with `XDDA` (`:587`, `:638`), then the spacing loop runs `DELX` steps of `dda_inc`
+  from `XDDA`, gives the scaled glyph's width and stores the sum in `XDDA` (`:722-736`). This
+  loop has neither the exact-double shortcut nor the "at least 1" of `char_resize`.
+
+So which source columns of a scaled glyph are doubled (or dropped) depends on the glyphs
+scaled before it in the same call, and a glyph wholly outside the clip window does not
+count (measured: `tosdump/cases/vdi-v18-t2.tsv` 86/90, control 94; probes T14E, T31A-T31E,
+the last for `v_justified`, the three right angles and the scale-down DDA).
+
+At an exact double `XDDA` falls by `DELX` per scaled glyph. The glyph that finds it below
+`DELX` — in the 8-pixel font the 4096th of a call, then every 8192nd — doubles one source
+column less and is one pixel narrower, while the pen still moves `DELX * 2` (measured:
+probe T14K, 26 pixels; controls T14L with 4095 characters and T14M with clipping on, where
+only the visible glyphs are scaled). Reachable only when that many glyphs of one call are
+scaled: clipping off, or a clip window they pass. NewTOS does the same (TASK/V31).
+
 ## Dependencies
 
 ### Requires

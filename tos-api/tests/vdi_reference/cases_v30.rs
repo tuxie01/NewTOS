@@ -55,8 +55,8 @@ use crate::harness::{reset_vdi, screen_word, workstation, Call, Case, Pb, ABI, V
 
 static FALCON_TC_V18T2: &[u8] = include_bytes!("../../../tosdump/reference/EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN");
 
-const B: u16 = 0x0000;
-const P: u16 = 0xFFDF;
+pub(crate) const B: u16 = 0x0000;
+pub(crate) const P: u16 = 0xFFDF;
 const WHITE: u16 = 0xFFFF;
 
 const ABCDEFGH: &[i16] = &[65, 66, 67, 68, 69, 70, 71, 72];
@@ -132,14 +132,14 @@ fn v30_case_0079_glyph_clip_on_control() {
 // ── the probe: whole grab rectangles ──────────────────────────────────────
 
 /// `(y, x_first, x_last, word)`.
-type Span = (i16, i16, i16, u16);
+pub(crate) type Span = (i16, i16, i16, u16);
 
 /// A grab rectangle `(x, y, w, h)` and the oracle's non-white words in it.
-type Grab = ((i16, i16, i16, i16), &'static [Span]);
+pub(crate) type Grab = ((i16, i16, i16, i16), &'static [Span]);
 
 /// Every screen word of every grab rectangle must be the word of the span
 /// it lies in, and `0xFFFF` outside every span.
-fn compare(name: &str, grabs: &[Grab]) {
+pub(crate) fn compare(name: &str, grabs: &[Grab]) {
     let mut diffs = Vec::new();
     for &((gx, gy, gw, gh), spans) in grabs {
         for y in gy..gy + gh {
@@ -165,7 +165,7 @@ fn compare(name: &str, grabs: &[Grab]) {
 
 /// The probe's `tbegin` (its `reset` plus the text part, the dumper's
 /// reset), then `calls` in order, then [`compare`].
-fn probe(name: &str, calls: &[Call], grabs: &[Grab]) {
+pub(crate) fn probe(name: &str, calls: &[Call], grabs: &[Grab]) {
     let _guard = VDI_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let wk = workstation();
     let mut pb = Pb::new();
@@ -212,13 +212,13 @@ fn big_call(opcode: i16, sub: i16, intin: &[i16], ptsin: &[i16], handle: i16) {
 }
 
 /// 'A'..'Z' cycling, `n` codes (the probe's `gtext_big`).
-fn big_text(n: usize) -> Vec<i16> {
+pub(crate) fn big_text(n: usize) -> Vec<i16> {
     (0..n).map(|i| b'A' as i16 + (i % 26) as i16).collect()
 }
 
 /// The probe's `tbegin`, `pre` (small calls), then one big call, then
 /// [`compare`].
-fn probe_big(name: &str, pre: &[Call], opcode: i16, sub: i16, intin: &[i16], ptsin: &[i16], grabs: &[Grab]) {
+pub(crate) fn probe_big(name: &str, pre: &[Call], opcode: i16, sub: i16, intin: &[i16], ptsin: &[i16], grabs: &[Grab]) {
     let _guard = VDI_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let wk = workstation();
     let mut pb = Pb::new();
