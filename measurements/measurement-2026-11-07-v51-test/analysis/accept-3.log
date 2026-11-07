@@ -1,0 +1,52 @@
+=== phase slprobe 22:37:39
+=== done slprobe 22:47:24
+=== phase gui 22:47:24
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/sh/shprobe.yTBrGJ/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel c5654fec45998c5bb52b4102d81822e6e3bb38da4f6ea4ed6076dbb3c34cd077 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/kernel-sh-base.img (commit abe8dae163cabf45e27a5e92789449b5e23c0a2d, armed launch:SHPROBE)
+kernel 90c0174e56c3842b4f7762bb5149cf9808da850fdc581da750222defb2a9187b /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/k-base.img (commit abe8dae163cabf45e27a5e92789449b5e23c0a2d, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/sh/shprobe.rGzPC7/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel ad6fde54f07d375d24a9170aa6f763c02c88b0fad7890d403e84680ac1cc5ad0 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/kernel-sh-chg.img (commit 1197fed7328baba278dc0bdfee16540173c9f165, armed launch:SHPROBE)
+kernel 053d0cf5d37a3f899ff774992f26c04a0ba06ab0acbf3b999d46111f579f7af5 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/k-chg.img (commit 1197fed7328baba278dc0bdfee16540173c9f165, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+qemu-system-aarch64: terminating on signal 15 from pid 96606 (<unknown process>)
+qemu-extra []
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 8499 (<unknown process>)
+kernel e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 15513 (<unknown process>)
+qemu-extra []
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 16614 (<unknown process>)
+kernel d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 28491 (<unknown process>)
+qemu-extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 40437 (<unknown process>)
+kernel e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 54075 (<unknown process>)
+qemu-extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 65582 (<unknown process>)
+kernel d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48 APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+=== done gui 22:59:59
+=== phase pikernels 22:59:59
+qemu-system-aarch64: terminating on signal 15 from pid 82282 (<unknown process>)
+kernel d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48
+exception-panic-lines 0
+[desk] desktop up (1 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 82701 (<unknown process>)
+kernel 5fdb50ee93301ac80bb826de722306af7a83be617862c6c7e24850297409d30e
+exception-panic-lines 0
+[desk] desktop up (1 drives)
+e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f  base-kernel8.img
+6ea946d09d04a29e17ace8a28fd19388a5f315e2a873b0e0287df9ceceedf96a  base-prof-kernel8.img
+d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48  chg-kernel8.img
+5fdb50ee93301ac80bb826de722306af7a83be617862c6c7e24850297409d30e  chg-prof-kernel8.img
+=== done pikernels 23:00:54

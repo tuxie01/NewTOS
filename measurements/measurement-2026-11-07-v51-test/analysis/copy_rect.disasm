@@ -1,0 +1,352 @@
+
+target/aarch64-unknown-none-softfloat/release/kernel:	file format elf64-littleaarch64
+
+Disassembly of section .text:
+
+ffff0000000960e8 <kernel::raster_copy::copy_rect>:
+ffff0000000960e8:      	sub	sp, sp, #0x100
+ffff0000000960ec:      	stp	x29, x30, [sp, #0xf0]
+ffff0000000960f0:      	add	x29, sp, #0xf0
+ffff0000000960f4:      	ldr	x8, [x29, #0x10]
+ffff0000000960f8:      	sub	w9, w6, w4
+ffff0000000960fc:      	sub	w10, w7, w5
+ffff000000096100:      	add	w13, w2, w9
+ffff000000096104:      	ldp	w11, w12, [x8]
+ffff000000096108:      	ldp	w14, w8, [x8, #0x8]
+ffff00000009610c:      	sub	w15, w13, #0x1
+ffff000000096110:      	cmp	w9, w11
+ffff000000096114:      	csel	w13, w9, w11, gt
+ffff000000096118:      	cmp	w15, w14
+ffff00000009611c:      	add	w11, w3, w10
+ffff000000096120:      	csel	w14, w15, w14, lt
+ffff000000096124:      	cmp	w10, w12
+ffff000000096128:      	sub	w11, w11, #0x1
+ffff00000009612c:      	csel	w15, w10, w12, gt
+ffff000000096130:      	cmp	w11, w8
+ffff000000096134:      	csel	w8, w11, w8, lt
+ffff000000096138:      	subs	w11, w14, w13
+ffff00000009613c:      	b.lt	0xffff000000096150 <kernel::raster_copy::copy_rect+0x68>
+ffff000000096140:      	subs	w8, w8, w15
+ffff000000096144:      	b.lt	0xffff000000096150 <kernel::raster_copy::copy_rect+0x68>
+ffff000000096148:      	adds	w16, w11, #0x1
+ffff00000009614c:      	b.lo	0xffff00000009615c <kernel::raster_copy::copy_rect+0x74>
+ffff000000096150:      	ldp	x29, x30, [sp, #0xf0]
+ffff000000096154:      	add	sp, sp, #0x100
+ffff000000096158:      	ret
+ffff00000009615c:      	ldrb	w12, [x29, #0x18]
+ffff000000096160:      	and	w14, w12, #0xf
+ffff000000096164:      	cmp	w14, #0x5
+ffff000000096168:      	b.eq	0xffff000000096150 <kernel::raster_copy::copy_rect+0x68>
+ffff00000009616c:      	add	w8, w8, #0x1
+ffff000000096170:      	sxtw	x8, w8
+ffff000000096174:      	cbz	w8, 0xffff000000096150 <kernel::raster_copy::copy_rect+0x68>
+ffff000000096178:      	sxtw	x11, w13
+ffff00000009617c:      	sub	w13, w13, w9
+ffff000000096180:      	sub	w10, w15, w10
+ffff000000096184:      	sxtw	x17, w15
+ffff000000096188:      	sxtw	x9, w16
+ffff00000009618c:      	sxtw	x13, w13
+ffff000000096190:      	sxtw	x15, w10
+ffff000000096194:      	lsl	x10, x1, #2
+ffff000000096198:      	cmp	w7, w5
+ffff00000009619c:      	b.le	0xffff0000000961b8 <kernel::raster_copy::copy_rect+0xd0>
+ffff0000000961a0:      	sub	x18, x8, #0x1
+ffff0000000961a4:      	neg	x10, x10
+ffff0000000961a8:      	add	x16, x18, x17
+ffff0000000961ac:      	add	x15, x18, x15
+ffff0000000961b0:      	mul	x16, x16, x1
+ffff0000000961b4:      	b	0xffff0000000961bc <kernel::raster_copy::copy_rect+0xd4>
+ffff0000000961b8:      	mul	x16, x1, x17
+ffff0000000961bc:      	mul	x15, x15, x1
+ffff0000000961c0:      	add	x16, x0, x16, lsl #2
+ffff0000000961c4:      	cmp	w14, #0x3
+ffff0000000961c8:      	add	x11, x16, x11, lsl #2
+ffff0000000961cc:      	add	x15, x0, x15, lsl #2
+ffff0000000961d0:      	add	x13, x15, x13, lsl #2
+ffff0000000961d4:      	b.ne	0xffff000000096288 <kernel::raster_copy::copy_rect+0x1a0>
+ffff0000000961d8:      	mov	x12, sp
+ffff0000000961dc:      	cmp	w6, w4
+ffff0000000961e0:      	b.le	0xffff000000096458 <kernel::raster_copy::copy_rect+0x370>
+ffff0000000961e4:      	stp	q0, q1, [x12]
+ffff0000000961e8:      	stp	q2, q3, [x12, #0x20]
+ffff0000000961ec:      	add	x14, x13, x9, lsl #2
+ffff0000000961f0:      	add	x15, x11, x9, lsl #2
+ffff0000000961f4:      	subs	x16, x9, #0x10
+ffff0000000961f8:      	b.lo	0xffff000000096214 <kernel::raster_copy::copy_rect+0x12c>
+ffff0000000961fc:      	sub	x14, x14, #0x40
+ffff000000096200:      	ld1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x14]
+ffff000000096204:      	sub	x15, x15, #0x40
+ffff000000096208:      	st1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x15]
+ffff00000009620c:      	subs	x16, x16, #0x10
+ffff000000096210:      	b.hs	0xffff0000000961fc <kernel::raster_copy::copy_rect+0x114>
+ffff000000096214:      	tbz	w16, #0x3, 0xffff000000096228 <kernel::raster_copy::copy_rect+0x140>
+ffff000000096218:      	sub	x14, x14, #0x20
+ffff00000009621c:      	ld1	{ v0.4s, v1.4s }, [x14]
+ffff000000096220:      	sub	x15, x15, #0x20
+ffff000000096224:      	st1	{ v0.4s, v1.4s }, [x15]
+ffff000000096228:      	tbz	w16, #0x2, 0xffff00000009623c <kernel::raster_copy::copy_rect+0x154>
+ffff00000009622c:      	sub	x14, x14, #0x10
+ffff000000096230:      	ld1	{ v0.4s }, [x14]
+ffff000000096234:      	sub	x15, x15, #0x10
+ffff000000096238:      	st1	{ v0.4s }, [x15]
+ffff00000009623c:      	tbz	w16, #0x1, 0xffff000000096250 <kernel::raster_copy::copy_rect+0x168>
+ffff000000096240:      	sub	x14, x14, #0x8
+ffff000000096244:      	ld1	{ v0.2s }, [x14]
+ffff000000096248:      	sub	x15, x15, #0x8
+ffff00000009624c:      	st1	{ v0.2s }, [x15]
+ffff000000096250:      	tbz	w16, #0x0, 0xffff000000096264 <kernel::raster_copy::copy_rect+0x17c>
+ffff000000096254:      	sub	x14, x14, #0x4
+ffff000000096258:      	ld1	{ v0.s }[0], [x14]
+ffff00000009625c:      	sub	x15, x15, #0x4
+ffff000000096260:      	st1	{ v0.s }[0], [x15]
+ffff000000096264:      	add	x13, x13, x10
+ffff000000096268:      	add	x11, x11, x10
+ffff00000009626c:      	subs	x8, x8, #0x1
+ffff000000096270:      	b.ne	0xffff0000000961ec <kernel::raster_copy::copy_rect+0x104>
+ffff000000096274:      	ldp	q0, q1, [x12]
+ffff000000096278:      	ldp	q2, q3, [x12, #0x20]
+ffff00000009627c:      	ldp	x29, x30, [sp, #0xf0]
+ffff000000096280:      	add	sp, sp, #0x100
+ffff000000096284:      	ret
+ffff000000096288:      	lsl	w15, w12, #4
+ffff00000009628c:      	lsl	w14, w12, #6
+ffff000000096290:      	sbfx	w17, w12, #0, #1
+ffff000000096294:      	cmp	w6, w4
+ffff000000096298:      	eor	w16, w15, w12, lsl #5
+ffff00000009629c:      	sbfx	w14, w14, #7, #1
+ffff0000000962a0:      	sbfx	w12, w15, #7, #1
+ffff0000000962a4:      	sbfx	w15, w16, #7, #1
+ffff0000000962a8:      	eor	w16, w14, w17
+ffff0000000962ac:      	mov	x17, sp
+ffff0000000962b0:      	b.le	0xffff0000000964d4 <kernel::raster_copy::copy_rect+0x3ec>
+ffff0000000962b4:      	stp	q0, q1, [x17]
+ffff0000000962b8:      	stp	q2, q3, [x17, #0x20]
+ffff0000000962bc:      	stp	q4, q5, [x17, #0x40]
+ffff0000000962c0:      	stp	q6, q7, [x17, #0x60]
+ffff0000000962c4:      	stp	q8, q9, [x17, #0x80]
+ffff0000000962c8:      	stp	q10, q11, [x17, #0xa0]
+ffff0000000962cc:      	stp	q12, q13, [x17, #0xc0]
+ffff0000000962d0:      	dup	v10.4s, w14
+ffff0000000962d4:      	dup	v11.4s, w16
+ffff0000000962d8:      	dup	v12.4s, w12
+ffff0000000962dc:      	dup	v13.4s, w15
+ffff0000000962e0:      	add	x18, x13, x9, lsl #2
+ffff0000000962e4:      	add	x0, x11, x9, lsl #2
+ffff0000000962e8:      	subs	x1, x9, #0x10
+ffff0000000962ec:      	b.lo	0xffff00000009635c <kernel::raster_copy::copy_rect+0x274>
+ffff0000000962f0:      	sub	x18, x18, #0x40
+ffff0000000962f4:      	ld1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x18]
+ffff0000000962f8:      	sub	x0, x0, #0x40
+ffff0000000962fc:      	ld1	{ v4.4s, v5.4s, v6.4s, v7.4s }, [x0]
+ffff000000096300:      	and	v8.16b, v4.16b, v11.16b
+ffff000000096304:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096308:      	and	v4.16b, v4.16b, v13.16b
+ffff00000009630c:      	eor	v4.16b, v4.16b, v12.16b
+ffff000000096310:      	bsl	v0.16b, v8.16b, v4.16b
+ffff000000096314:      	and	v9.16b, v5.16b, v11.16b
+ffff000000096318:      	eor	v9.16b, v9.16b, v10.16b
+ffff00000009631c:      	and	v5.16b, v5.16b, v13.16b
+ffff000000096320:      	eor	v5.16b, v5.16b, v12.16b
+ffff000000096324:      	bsl	v1.16b, v9.16b, v5.16b
+ffff000000096328:      	and	v8.16b, v6.16b, v11.16b
+ffff00000009632c:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096330:      	and	v6.16b, v6.16b, v13.16b
+ffff000000096334:      	eor	v6.16b, v6.16b, v12.16b
+ffff000000096338:      	bsl	v2.16b, v8.16b, v6.16b
+ffff00000009633c:      	and	v9.16b, v7.16b, v11.16b
+ffff000000096340:      	eor	v9.16b, v9.16b, v10.16b
+ffff000000096344:      	and	v7.16b, v7.16b, v13.16b
+ffff000000096348:      	eor	v7.16b, v7.16b, v12.16b
+ffff00000009634c:      	bsl	v3.16b, v9.16b, v7.16b
+ffff000000096350:      	st1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x0]
+ffff000000096354:      	subs	x1, x1, #0x10
+ffff000000096358:      	b.hs	0xffff0000000962f0 <kernel::raster_copy::copy_rect+0x208>
+ffff00000009635c:      	tbz	w1, #0x3, 0xffff00000009639c <kernel::raster_copy::copy_rect+0x2b4>
+ffff000000096360:      	sub	x18, x18, #0x20
+ffff000000096364:      	ld1	{ v0.4s, v1.4s }, [x18]
+ffff000000096368:      	sub	x0, x0, #0x20
+ffff00000009636c:      	ld1	{ v4.4s, v5.4s }, [x0]
+ffff000000096370:      	and	v8.16b, v4.16b, v11.16b
+ffff000000096374:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096378:      	and	v4.16b, v4.16b, v13.16b
+ffff00000009637c:      	eor	v4.16b, v4.16b, v12.16b
+ffff000000096380:      	bsl	v0.16b, v8.16b, v4.16b
+ffff000000096384:      	and	v9.16b, v5.16b, v11.16b
+ffff000000096388:      	eor	v9.16b, v9.16b, v10.16b
+ffff00000009638c:      	and	v5.16b, v5.16b, v13.16b
+ffff000000096390:      	eor	v5.16b, v5.16b, v12.16b
+ffff000000096394:      	bsl	v1.16b, v9.16b, v5.16b
+ffff000000096398:      	st1	{ v0.4s, v1.4s }, [x0]
+ffff00000009639c:      	tbz	w1, #0x2, 0xffff0000000963c8 <kernel::raster_copy::copy_rect+0x2e0>
+ffff0000000963a0:      	sub	x18, x18, #0x10
+ffff0000000963a4:      	ld1	{ v0.4s }, [x18]
+ffff0000000963a8:      	sub	x0, x0, #0x10
+ffff0000000963ac:      	ld1	{ v4.4s }, [x0]
+ffff0000000963b0:      	and	v8.16b, v4.16b, v11.16b
+ffff0000000963b4:      	eor	v8.16b, v8.16b, v10.16b
+ffff0000000963b8:      	and	v4.16b, v4.16b, v13.16b
+ffff0000000963bc:      	eor	v4.16b, v4.16b, v12.16b
+ffff0000000963c0:      	bsl	v0.16b, v8.16b, v4.16b
+ffff0000000963c4:      	st1	{ v0.4s }, [x0]
+ffff0000000963c8:      	tbz	w1, #0x1, 0xffff0000000963f4 <kernel::raster_copy::copy_rect+0x30c>
+ffff0000000963cc:      	sub	x18, x18, #0x8
+ffff0000000963d0:      	ld1	{ v0.2s }, [x18]
+ffff0000000963d4:      	sub	x0, x0, #0x8
+ffff0000000963d8:      	ld1	{ v4.2s }, [x0]
+ffff0000000963dc:      	and	v8.16b, v4.16b, v11.16b
+ffff0000000963e0:      	eor	v8.16b, v8.16b, v10.16b
+ffff0000000963e4:      	and	v4.16b, v4.16b, v13.16b
+ffff0000000963e8:      	eor	v4.16b, v4.16b, v12.16b
+ffff0000000963ec:      	bsl	v0.16b, v8.16b, v4.16b
+ffff0000000963f0:      	st1	{ v0.2s }, [x0]
+ffff0000000963f4:      	tbz	w1, #0x0, 0xffff000000096420 <kernel::raster_copy::copy_rect+0x338>
+ffff0000000963f8:      	sub	x18, x18, #0x4
+ffff0000000963fc:      	ld1	{ v0.s }[0], [x18]
+ffff000000096400:      	sub	x0, x0, #0x4
+ffff000000096404:      	ld1	{ v4.s }[0], [x0]
+ffff000000096408:      	and	v8.16b, v4.16b, v11.16b
+ffff00000009640c:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096410:      	and	v4.16b, v4.16b, v13.16b
+ffff000000096414:      	eor	v4.16b, v4.16b, v12.16b
+ffff000000096418:      	bsl	v0.16b, v8.16b, v4.16b
+ffff00000009641c:      	st1	{ v0.s }[0], [x0]
+ffff000000096420:      	add	x13, x13, x10
+ffff000000096424:      	add	x11, x11, x10
+ffff000000096428:      	subs	x8, x8, #0x1
+ffff00000009642c:      	b.ne	0xffff0000000962e0 <kernel::raster_copy::copy_rect+0x1f8>
+ffff000000096430:      	ldp	q0, q1, [x17]
+ffff000000096434:      	ldp	q2, q3, [x17, #0x20]
+ffff000000096438:      	ldp	q4, q5, [x17, #0x40]
+ffff00000009643c:      	ldp	q6, q7, [x17, #0x60]
+ffff000000096440:      	ldp	q8, q9, [x17, #0x80]
+ffff000000096444:      	ldp	q10, q11, [x17, #0xa0]
+ffff000000096448:      	ldp	q12, q13, [x17, #0xc0]
+ffff00000009644c:      	ldp	x29, x30, [sp, #0xf0]
+ffff000000096450:      	add	sp, sp, #0x100
+ffff000000096454:      	ret
+ffff000000096458:      	stp	q0, q1, [x12]
+ffff00000009645c:      	stp	q2, q3, [x12, #0x20]
+ffff000000096460:      	mov	x14, x13
+ffff000000096464:      	mov	x15, x11
+ffff000000096468:      	subs	x16, x9, #0x10
+ffff00000009646c:      	b.lo	0xffff000000096480 <kernel::raster_copy::copy_rect+0x398>
+ffff000000096470:      	ld1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x14], #64
+ffff000000096474:      	st1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x15], #64
+ffff000000096478:      	subs	x16, x16, #0x10
+ffff00000009647c:      	b.hs	0xffff000000096470 <kernel::raster_copy::copy_rect+0x388>
+ffff000000096480:      	tbz	w16, #0x3, 0xffff00000009648c <kernel::raster_copy::copy_rect+0x3a4>
+ffff000000096484:      	ld1	{ v0.4s, v1.4s }, [x14], #32
+ffff000000096488:      	st1	{ v0.4s, v1.4s }, [x15], #32
+ffff00000009648c:      	tbz	w16, #0x2, 0xffff000000096498 <kernel::raster_copy::copy_rect+0x3b0>
+ffff000000096490:      	ld1	{ v0.4s }, [x14], #16
+ffff000000096494:      	st1	{ v0.4s }, [x15], #16
+ffff000000096498:      	tbz	w16, #0x1, 0xffff0000000964a4 <kernel::raster_copy::copy_rect+0x3bc>
+ffff00000009649c:      	ld1	{ v0.2s }, [x14], #8
+ffff0000000964a0:      	st1	{ v0.2s }, [x15], #8
+ffff0000000964a4:      	tbz	w16, #0x0, 0xffff0000000964b0 <kernel::raster_copy::copy_rect+0x3c8>
+ffff0000000964a8:      	ld1	{ v0.s }[0], [x14], #4
+ffff0000000964ac:      	st1	{ v0.s }[0], [x15], #4
+ffff0000000964b0:      	add	x13, x13, x10
+ffff0000000964b4:      	add	x11, x11, x10
+ffff0000000964b8:      	subs	x8, x8, #0x1
+ffff0000000964bc:      	b.ne	0xffff000000096460 <kernel::raster_copy::copy_rect+0x378>
+ffff0000000964c0:      	ldp	q0, q1, [x12]
+ffff0000000964c4:      	ldp	q2, q3, [x12, #0x20]
+ffff0000000964c8:      	ldp	x29, x30, [sp, #0xf0]
+ffff0000000964cc:      	add	sp, sp, #0x100
+ffff0000000964d0:      	ret
+ffff0000000964d4:      	stp	q0, q1, [x17]
+ffff0000000964d8:      	stp	q2, q3, [x17, #0x20]
+ffff0000000964dc:      	stp	q4, q5, [x17, #0x40]
+ffff0000000964e0:      	stp	q6, q7, [x17, #0x60]
+ffff0000000964e4:      	stp	q8, q9, [x17, #0x80]
+ffff0000000964e8:      	stp	q10, q11, [x17, #0xa0]
+ffff0000000964ec:      	stp	q12, q13, [x17, #0xc0]
+ffff0000000964f0:      	dup	v10.4s, w14
+ffff0000000964f4:      	dup	v11.4s, w16
+ffff0000000964f8:      	dup	v12.4s, w12
+ffff0000000964fc:      	dup	v13.4s, w15
+ffff000000096500:      	mov	x18, x13
+ffff000000096504:      	mov	x0, x11
+ffff000000096508:      	subs	x1, x9, #0x10
+ffff00000009650c:      	b.lo	0xffff000000096574 <kernel::raster_copy::copy_rect+0x48c>
+ffff000000096510:      	ld1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x18], #64
+ffff000000096514:      	ld1	{ v4.4s, v5.4s, v6.4s, v7.4s }, [x0]
+ffff000000096518:      	and	v8.16b, v4.16b, v11.16b
+ffff00000009651c:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096520:      	and	v4.16b, v4.16b, v13.16b
+ffff000000096524:      	eor	v4.16b, v4.16b, v12.16b
+ffff000000096528:      	bsl	v0.16b, v8.16b, v4.16b
+ffff00000009652c:      	and	v9.16b, v5.16b, v11.16b
+ffff000000096530:      	eor	v9.16b, v9.16b, v10.16b
+ffff000000096534:      	and	v5.16b, v5.16b, v13.16b
+ffff000000096538:      	eor	v5.16b, v5.16b, v12.16b
+ffff00000009653c:      	bsl	v1.16b, v9.16b, v5.16b
+ffff000000096540:      	and	v8.16b, v6.16b, v11.16b
+ffff000000096544:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096548:      	and	v6.16b, v6.16b, v13.16b
+ffff00000009654c:      	eor	v6.16b, v6.16b, v12.16b
+ffff000000096550:      	bsl	v2.16b, v8.16b, v6.16b
+ffff000000096554:      	and	v9.16b, v7.16b, v11.16b
+ffff000000096558:      	eor	v9.16b, v9.16b, v10.16b
+ffff00000009655c:      	and	v7.16b, v7.16b, v13.16b
+ffff000000096560:      	eor	v7.16b, v7.16b, v12.16b
+ffff000000096564:      	bsl	v3.16b, v9.16b, v7.16b
+ffff000000096568:      	st1	{ v0.4s, v1.4s, v2.4s, v3.4s }, [x0], #64
+ffff00000009656c:      	subs	x1, x1, #0x10
+ffff000000096570:      	b.hs	0xffff000000096510 <kernel::raster_copy::copy_rect+0x428>
+ffff000000096574:      	tbz	w1, #0x3, 0xffff0000000965ac <kernel::raster_copy::copy_rect+0x4c4>
+ffff000000096578:      	ld1	{ v0.4s, v1.4s }, [x18], #32
+ffff00000009657c:      	ld1	{ v4.4s, v5.4s }, [x0]
+ffff000000096580:      	and	v8.16b, v4.16b, v11.16b
+ffff000000096584:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096588:      	and	v4.16b, v4.16b, v13.16b
+ffff00000009658c:      	eor	v4.16b, v4.16b, v12.16b
+ffff000000096590:      	bsl	v0.16b, v8.16b, v4.16b
+ffff000000096594:      	and	v9.16b, v5.16b, v11.16b
+ffff000000096598:      	eor	v9.16b, v9.16b, v10.16b
+ffff00000009659c:      	and	v5.16b, v5.16b, v13.16b
+ffff0000000965a0:      	eor	v5.16b, v5.16b, v12.16b
+ffff0000000965a4:      	bsl	v1.16b, v9.16b, v5.16b
+ffff0000000965a8:      	st1	{ v0.4s, v1.4s }, [x0], #32
+ffff0000000965ac:      	tbz	w1, #0x2, 0xffff0000000965d0 <kernel::raster_copy::copy_rect+0x4e8>
+ffff0000000965b0:      	ld1	{ v0.4s }, [x18], #16
+ffff0000000965b4:      	ld1	{ v4.4s }, [x0]
+ffff0000000965b8:      	and	v8.16b, v4.16b, v11.16b
+ffff0000000965bc:      	eor	v8.16b, v8.16b, v10.16b
+ffff0000000965c0:      	and	v4.16b, v4.16b, v13.16b
+ffff0000000965c4:      	eor	v4.16b, v4.16b, v12.16b
+ffff0000000965c8:      	bsl	v0.16b, v8.16b, v4.16b
+ffff0000000965cc:      	st1	{ v0.4s }, [x0], #16
+ffff0000000965d0:      	tbz	w1, #0x1, 0xffff0000000965f4 <kernel::raster_copy::copy_rect+0x50c>
+ffff0000000965d4:      	ld1	{ v0.2s }, [x18], #8
+ffff0000000965d8:      	ld1	{ v4.2s }, [x0]
+ffff0000000965dc:      	and	v8.16b, v4.16b, v11.16b
+ffff0000000965e0:      	eor	v8.16b, v8.16b, v10.16b
+ffff0000000965e4:      	and	v4.16b, v4.16b, v13.16b
+ffff0000000965e8:      	eor	v4.16b, v4.16b, v12.16b
+ffff0000000965ec:      	bsl	v0.16b, v8.16b, v4.16b
+ffff0000000965f0:      	st1	{ v0.2s }, [x0], #8
+ffff0000000965f4:      	tbz	w1, #0x0, 0xffff000000096618 <kernel::raster_copy::copy_rect+0x530>
+ffff0000000965f8:      	ld1	{ v0.s }[0], [x18], #4
+ffff0000000965fc:      	ld1	{ v4.s }[0], [x0]
+ffff000000096600:      	and	v8.16b, v4.16b, v11.16b
+ffff000000096604:      	eor	v8.16b, v8.16b, v10.16b
+ffff000000096608:      	and	v4.16b, v4.16b, v13.16b
+ffff00000009660c:      	eor	v4.16b, v4.16b, v12.16b
+ffff000000096610:      	bsl	v0.16b, v8.16b, v4.16b
+ffff000000096614:      	st1	{ v0.s }[0], [x0], #4
+ffff000000096618:      	add	x13, x13, x10
+ffff00000009661c:      	add	x11, x11, x10
+ffff000000096620:      	subs	x8, x8, #0x1
+ffff000000096624:      	b.ne	0xffff000000096500 <kernel::raster_copy::copy_rect+0x418>
+ffff000000096628:      	ldp	q0, q1, [x17]
+ffff00000009662c:      	ldp	q2, q3, [x17, #0x20]
+ffff000000096630:      	ldp	q4, q5, [x17, #0x40]
+ffff000000096634:      	ldp	q6, q7, [x17, #0x60]
+ffff000000096638:      	ldp	q8, q9, [x17, #0x80]
+ffff00000009663c:      	ldp	q10, q11, [x17, #0xa0]
+ffff000000096640:      	ldp	q12, q13, [x17, #0xc0]
+ffff000000096644:      	ldp	x29, x30, [sp, #0xf0]
+ffff000000096648:      	add	sp, sp, #0x100
+ffff00000009664c:      	ret
