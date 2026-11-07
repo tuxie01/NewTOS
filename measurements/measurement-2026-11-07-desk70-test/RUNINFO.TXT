@@ -1,0 +1,59 @@
+DESK70 -- Tester verification of 729bab3b (CoreMark waits for a key after a desktop launch, not from C:\AUTO)
+==========================================================================================================
+
+Date      2026-11-07
+Who       Tester agent (Sonnet). No product code, no hardware, no card, no push.
+Ticket    TASK/DESK70.md; developer run: measurements/measurement-2026-11-07-desk70-build/RUNINFO.TXT
+NewTOS    main @ 729bab3b (clean tree). Kernels built from fresh scratch `git clone`s of 729bab3b (wt: rpi4 + injector
+          kernels; wt2: qemu-virt), never in the repository tree. CoreMark built by sdk/apps/build-coremark.sh in the tree
+          (its output dir sdk/apps/coremark/build is untracked; git status stayed clean).
+QEMU      qemu-system-aarch64, -M raspi4b -append serial=on (qemu-shots.py, per-run `cp -c` clone of the card, deleted)
+Host      host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the manifests)
+
+1 BUILD   PASS
+  build/build-coremark.log: all 6 MD5 checks "ok", 0 warnings, both links "undefined symbols: 0".
+    CORE.NCP    bb3a5843ce5ceb724995da4fd4bc6332053cb78e523e8e30b2867cca07b3b93b  (binaries.sha256; equal to the developer's
+    COREVAL.NCP 61a3db14731ff50caf9608de79a55e17b35a296538922be0feb817e022208b01   and equal in two builds of mine)
+  rpi4 release (cargo xtask build --board rpi4 --release, wt): build/build-rpi4-release.log, Finished; kernels.sha256
+    (the kernel shas differ from the developer's: other clone path, panic Location strings; not a defect).
+  qemu-virt release (fresh clone wt2, cargo xtask build --board qemu-virt --release): Finished (93 kernel / 64 tos-api
+    warnings = base counts of STATUS.md; no clippy run, not requested). Booted `cargo xtask run --board qemu-virt --release
+    --headless` for 40 s: "[desk] desktop up (0 drives)", no exception/panic line (log not kept: scratch).
+  rpi4 boots to the desktop in every run below ("desktop up (1 drives)").
+
+2 AUTO    PASS   (serial/a-auto-msi/serial-stamped.log, screendumps/a-auto-msi, screens.txt)
+  Image: tools/make-sd-image.sh with SD_COREMARK_AUTO=1 (auto-msi.img.manifest, optional_missing none, sha in cards.sha256).
+  Plain rpi4 kernel, NO input, stop 3 s after the first "desktop up".
+    15.213 [auto] running C:\AUTO\CORE.NCP ... 36.561 Correct operation validated, CoreMark 1.0 : 5708.354956
+    36.591 [auto] running C:\AUTO\COREVAL.NCP ... 58.092 Correct operation validated
+    58.092 [auto] 3 AUTO program(s) run (MXPROBE.NCP too)   58.237 [desk] desktop up (1 drives)
+  "Press any key" occurs nowhere in this serial log; COREVAL starts 30 ms after CORE's last line (no wait).
+  Clone sha after the run == base image sha (cards.sha256).
+
+3 DESKTOP PASS   (core-return, coreval-space; b0-desk = the desktop before, plain kernel)
+  Card desk.img (tools/mkcard.sh via method/cards.sh; C:\COREMARK\{CORE,COREVAL}.NCP, window opens on C:\COREMARK).
+  Injector kernels = scratch-clone only (developer's build-inj.sh/mk-injector.py from measurement-2026-11-07-desk70/method,
+  host_env.rs restored + cmp-checked; scripts method/core-return.actions, method/coreval-space.actions).
+  core-return: dclick CORE.NCP (190,95); 41.383 result + "Press any key to exit."; NO key until 95.146 (tick 16000): screen
+    006 (41.4 - 92.9 s, 51 s) shows the full report plus "Press any key to exit." and a cursor; after RETURN: 95.146
+    returned rc, desktop up 95.339; screen 008 (95.9 s) sha1 8c61653971b8 == screen 004 (before launch) -- pixel equal.
+    Result: Correct operation validated, CoreMark 1.0 : 5576.679341.
+  coreval-space: dclick COREVAL.NCP (274,95); 41.423 "Correct operation validated" + "Press any key to exit."; no key until
+    95.128, then SPACE (0x39, not RETURN): returned, desktop up 95.319; screen 008 sha1 767fe87be521 == screen 004.
+    Screens 006/007 differ (cursor blink phase; 006 viewed: full report + prompt, 007 not viewed individually).
+  Viewed: core-return/screen-006, coreval-space/screen-006/-004/-008, b0-desk/screen-002 (look like the pre-launch desktop).
+  The clone-after-run lines of these two runs were cut off in the console (not recorded); the desk.img base sha is in
+  cards.sha256 and the b0-desk clone matched it. Honest gap: write-immutability of the two injector runs not printed.
+
+4 REGRESSION   PARTIAL / skipped by judgement
+  sdk01a-test, sdk01j, con04-test: NOT repeated. Their CoreMark parts compare old/new toolchain builds or desktop cells
+  against 2026-10 commits (1dec9058), with scripts for old kernels; a repeat is not cheap and would not add to item 2,
+  which covers the same observable (CORE/COREVAL from C:\AUTO validate, printed through the double %f path, boot reaches
+  the desktop, no exception).
+
+5 HOST TESTS   PASS   cargo xtask test: rc 0, summed over all "test result" lines 2239 passed / 0 failed / 1 ignored
+  (serial/hosttest-full.log) = STATUS.md baseline 2239 / 0 / 1, delta 0.
+
+NOT DRIVEN  Real Pi 4 (HW-test scenario); start from EmuCON; qemu-virt interactive; a desktop launch of a copy in the
+  root (does not wait by design, documented in core_portme.c); clippy.
+CLEANUP  scratch clones, kernels, cards, per-run clones deleted after the run; repository tree untouched except this dir.

@@ -1,0 +1,5 @@
+# double-click CORE.NCP in the C:\COREMARK window (icon 190,95), no key until tick 16000 (80 s), then RETURN
+200 parkbr
+600 move 190 95
+800 dclick
+16000 key 1C
