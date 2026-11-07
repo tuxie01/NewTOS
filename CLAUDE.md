@@ -63,6 +63,8 @@ Companion documents (read in this order at session start):
 - `docs/ARCHITECTURE.md` — layer diagram, module boundaries, ABI rules
 - `docs/STATUS.md` — current implementation state, open issues
 - `docs/analysis/ORACLE.md` — the pinned EmuTOS oracle (commit, ROM, Hatari)
+- `docs/DEVIATIONS.md` — known differences to EmuTOS, by trigger: the first look when a
+  program misbehaves. A difference found and not fixed adds a row; its fix removes it
 - `docs/api/` — **the extracted TOS API specification** (produced in Phase 00)
 - `TASK/` — tickets, the unit of work: `<ID>.md` plus its receipt
 - `phases/` — phase-by-phase implementation guidelines (PHASE-00 …
