@@ -53,6 +53,12 @@
  *   F1a-d    K24: vsc_form while the pointer is shown (a: before, b: right
  *            after vsc_form, c: after v_hide_c, d: after v_show_c(0))
  *   F2b/c    K24: only the hotspot changes while shown (0,0 -> 8,8)
+ *   G1b-d    (version 2, TASK/V54) F1 through the AES: graf_mouse(USER_DEF,
+ *            block, pens 0/1) while shown (b: right after it, c: after
+ *            v_hide_c, d: after v_show_c(0)) -- gsx_mfset's gsx_moff/gsx_mon
+ *            bracket, aes/gemgsxif.c:407-420
+ *   G2b/c    (version 2) F2 through the AES: graf_mouse(USER_DEF, arrow,
+ *            hotspot 8,8) while shown
  *   D1a-c    v_bar over the shown pointer, then v_hide_c, then v_show_c(0)
  *   M1a/b    K9/K24: packet M1 while shown (immediate / settled)
  *   M2a/b    K9/K24: v_bar over the shown pointer, then packet M2
@@ -77,7 +83,7 @@
 
 #include "abi.h"
 
-#define VERSION 1
+#define VERSION 2
 
 /* ---- parameter arrays ------------------------------------------------ */
 static int16_t contrl[16];
@@ -528,6 +534,53 @@ static void k_form(void)
 	grab("F2c", 280, 240, 64, 64);
 }
 
+/*
+ * The AES's form install (TASK/V54): gr_mouse(USER_DEF) -> gsx_mfset
+ * (aes/gemgrlib.c:419-455, aes/gemgsxif.c:407-420), which brackets the same
+ * vsc_form with gsx_moff/gsx_mon.  Pens 0/1 and hotspots inside 0..15, so the
+ * cases see only the moment of drawing.
+ */
+static int16_t mform[37];
+
+static void graf_mouse_user(int hx, int hy, const uint16_t *m, const uint16_t *d)
+{
+	int i;
+
+	mform[0] = (int16_t)hx; mform[1] = (int16_t)hy; mform[2] = 1;
+	mform[3] = 0; mform[4] = 1;
+	for (i = 0; i < 16; i++) {
+		mform[5 + i] = (int16_t)m[i];
+		mform[21 + i] = (int16_t)d[i];
+	}
+	aes_int_in[0] = 255;			/* USER_DEF */
+	aes_addr_in[0] = mform;
+	aes(78, 1, 1, 1);			/* graf_mouse */
+}
+
+static void k_aesform(void)
+{
+	begin("G1", "V54: graf_mouse(USER_DEF, block, pens 0/1) while the pointer is shown at (110,360) on a pattern");
+	pattern(90, 340, 153, 403);
+	arrow(); setpos(110, 360); show(0);
+	graf_mouse_user(0, 0, block_mask, block_data);
+	grab("G1b", 90, 340, 64, 64);
+	hide();
+	grab("G1c", 90, 340, 64, 64);
+	show(0);
+	grab("G1d", 90, 340, 64, 64);
+	hide();
+
+	begin("G2", "V54: graf_mouse(USER_DEF, arrow, hotspot 8,8) while shown at (300,360) on a pattern");
+	pattern(280, 340, 343, 403);
+	arrow(); setpos(300, 360); show(0);
+	graf_mouse_user(8, 8, arrow_mask, arrow_data);
+	grab("G2b", 280, 340, 64, 64);
+	hide();
+	grab("G2c", 280, 340, 64, 64);
+	aes_int_in[0] = 0;			/* graf_mouse(ARROW) while hidden */
+	aes(78, 1, 1, 1);
+}
+
 static void k_drop(void)
 {
 	begin("D1", "v_bar pen 2 over the shown arrow at (450,260), then v_hide_c, then v_show_c(0)");
@@ -824,6 +877,7 @@ int main(void)
 	k_calibration();
 	k_pointer();
 	k_form();
+	k_aesform();
 	k_drop();
 	emit("T02 before the packets hz_200 %lu\n", (unsigned long)ticks());
 	k_motion();
