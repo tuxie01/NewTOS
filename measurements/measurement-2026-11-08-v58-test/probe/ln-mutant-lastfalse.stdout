@@ -1,0 +1,7 @@
+qemu-system-aarch64: terminating on signal 15 from pid 58553 (<unknown process>)
+qemu pid 58646
+state done kernel 6d743c6f40c0a05ca6735c24281c9f27bf790ddeb8095e24d1641d5a6cb2dc0e nap 17b0e7f26fdc6110cbd7d86cd2586c2c92d32ff64bde27915358f2be579f401e
+exception-panic-lines 0
+23 mode 3 clip 2 poly 1 lines 300 hash e053a5c41ec542c0
+24 mode 4 clip 2 poly 1 lines 300 hash e1d347cd7bf84290
+END

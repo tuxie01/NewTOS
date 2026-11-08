@@ -1,0 +1,26 @@
+H00 handle 2 xres 639 yres 479
+01 mode 1 clip 0 poly 0 lines 300 hash e9c553499bef1a50
+02 mode 2 clip 0 poly 0 lines 300 hash cdb08b238da3ebdb
+03 mode 3 clip 0 poly 0 lines 300 hash c60767047addd1cc
+04 mode 4 clip 0 poly 0 lines 300 hash c181e33fd1de6df1
+05 mode 1 clip 1 poly 0 lines 300 hash 0131d9c66f72b11f
+06 mode 2 clip 1 poly 0 lines 300 hash 5141455271cc3922
+07 mode 3 clip 1 poly 0 lines 300 hash b6b1413f5ff53d8c
+08 mode 4 clip 1 poly 0 lines 300 hash a3efdf473e12c16f
+09 mode 1 clip 2 poly 0 lines 300 hash cdd4543ceb5ba512
+10 mode 2 clip 2 poly 0 lines 300 hash 7cac74e362c3ead2
+11 mode 3 clip 2 poly 0 lines 300 hash c2798e361b403a56
+12 mode 4 clip 2 poly 0 lines 300 hash 982cd803a498c397
+13 mode 1 clip 0 poly 1 lines 300 hash b2c770574a13ae0a
+14 mode 2 clip 0 poly 1 lines 300 hash 9d1ca15ff743c78e
+15 mode 3 clip 0 poly 1 lines 300 hash ee7dd29222ec5668
+16 mode 4 clip 0 poly 1 lines 300 hash c24ac1936a3dba69
+17 mode 1 clip 1 poly 1 lines 300 hash 1c50d3e551aead04
+18 mode 2 clip 1 poly 1 lines 300 hash 0fb839a69ff33c61
+19 mode 3 clip 1 poly 1 lines 300 hash cfe9c46508c1f71d
+20 mode 4 clip 1 poly 1 lines 300 hash 371f62467f6ba3fd
+21 mode 1 clip 2 poly 1 lines 300 hash d348eedd0fbf5bdb
+22 mode 2 clip 2 poly 1 lines 300 hash e5d241c6b8632ac1
+23 mode 3 clip 2 poly 1 lines 300 hash b98a26ecfe053724
+24 mode 4 clip 2 poly 1 lines 300 hash e1d347cd7bf84290
+END

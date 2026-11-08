@@ -1,0 +1,21 @@
+horizontal 400         mode 1 style 1     87 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+vertical 400           mode 1 style 1     97 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+vertical 400 up        mode 1 style 1     96 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+diagonal 400           mode 1 style 1    268 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+shallow 400x100        mode 1 style 1    133 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+horizontal 400         mode 1 style 3     82 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+vertical 400           mode 1 style 3     97 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+vertical 400 up        mode 1 style 3     96 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+diagonal 400           mode 1 style 3    268 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+shallow 400x100        mode 1 style 3    133 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+horizontal 400         mode 3 style 1     85 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+vertical 400           mode 3 style 1     99 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+vertical 400 up        mode 3 style 1    100 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+diagonal 400           mode 3 style 1    271 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+shallow 400x100        mode 3 style 1    136 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+horizontal 400         mode 3 style 3     80 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+vertical 400           mode 3 style 3     94 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+vertical 400 up        mode 3 style 3     94 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+diagonal 400           mode 3 style 3    266 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+shallow 400x100        mode 3 style 3    132 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+END
