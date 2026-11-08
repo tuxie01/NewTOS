@@ -1,0 +1,8 @@
+llvm-objdump --mattr=+neon of the release kernel (rpi4, tree = chg, feature off), raster_expand::mono .. fill_pattern start (0xffff000000095f5c..0xffff000000096ea8, 989 lines)
+SIMD/FP-register mnemonics (instructions naming a v/q register):
+  36 bit    8 bsl   56 cmtst   24 dup   18 eor    8 ext   38 ld1   52 ldp    2 ldr   24 mov   40 st1   52 stp    2 str 
+registers named:
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 
+any fp/saturating/other mnemonic in the range (fadd fmul fmov f* sq* uq* mla...):
+   1 format
+(end)

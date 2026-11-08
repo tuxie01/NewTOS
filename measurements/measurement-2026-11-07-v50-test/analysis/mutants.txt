@@ -1,0 +1,13 @@
+T1 Word Xor uses bit instead of eor (occurrences 1): rc 101 RED; failed tests 6; ['test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s']
+T2 MD_ERASE colour swap removed (mono_colors) (occurrences 2): rc 101 RED; failed tests 2; ['test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s']
+T3 rmw kernel: restore of q8,q10 dropped (occurrences 1): rc 101 RED; failed tests 2; ['test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s']
+T4 Replace kernel: restore of q10 dropped (occurrences 1): rc 101 RED; failed tests 2; ['test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s']
+T5 refill reads a unit when nb == needed (one unit too many) (occurrences 1): rc 101 RED; failed tests 0; ["  process didn't exit successfully: `/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a86a976363716f766/target/debug/deps/raster_kernel_expand-eba968a682159b2e` (signal: 10, SIGBUS: access to undefined memory)"]
+T6 Byte Replace gets fg and bg swapped (occurrences 1): rc 101 RED; failed tests 4; ['test result: FAILED. 8 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s']
+T7 start bit shift in row prologue dropped (occurrences 1): rc 101 RED; failed tests 6; ['test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s']
+T8 mono start bit +1 (occurrences 1): rc 101 RED; failed tests 4; ['test result: FAILED. 8 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s']
+T9 Replace tail 2-pixel step tests bit 0 (occurrences 1): rc 101 RED; failed tests 6; ['test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s']
+T10 glyph accepts box wider than the cell (>= -> >) (occurrences 1): rc 0 GREEN(!); failed tests 0; ['test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s']
+T11 mono: 'raster too short' test off by one word (occurrences 1): rc 101 RED; failed tests 2; ['test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s']
+T12 skip of unchanged word moves 63 bytes (occurrences 1): rc 101 RED; failed tests 6; ['test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s']
+restored sha256 1f70634cf5c152f8abdd88b92ca52bb1608cbf32be2ed222ed64efb9a3d9ca42 == original 1f70634cf5c152f8abdd88b92ca52bb1608cbf32be2ed222ed64efb9a3d9ca42

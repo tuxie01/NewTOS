@@ -1,0 +1,9 @@
+cases 176
+Y cases 88 min distinct colours 3 max 4 cases with no pixel != corner colour: []
+Z cases 8 min distinct colours 3 max 4 cases with no pixel != corner colour: []
+W cases 56 min distinct colours 2 max 3 cases with no pixel != corner colour: []
+V cases 24 min distinct colours 2 max 4 cases with no pixel != corner colour: []
+V cases with <20 pixels outside the two most common colours: ['Va4', 'Vb4', 'Vc4', 'Vd4', 'Ve4', 'Vf4'] of 24
+W cases with <20 pixels outside the two most common colours: ['Wa04', 'Wa14', 'Wb04', 'Wb14', 'Wc04', 'Wc14', 'Wd04', 'Wd14', 'We04', 'We14', 'Wf04', 'Wf14'] of 56
+Y cases with <20 pixels outside the two most common colours: [] of 88
+Z cases with <20 pixels outside the two most common colours: [] of 8

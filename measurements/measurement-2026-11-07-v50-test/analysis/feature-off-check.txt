@@ -1,0 +1,3 @@
+nohook (hook lines blanked, feature off) kernel8.img e07cbdbf... == chg-rpi4-release.img e07cbdbf... byte-identical
+e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/t/nohook/target/aarch64-unknown-none-softfloat/release/kernel8.img
+e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/chg-rpi4-release.img

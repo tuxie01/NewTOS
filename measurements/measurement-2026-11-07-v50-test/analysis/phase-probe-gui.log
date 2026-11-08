@@ -1,0 +1,39 @@
+=== phase probe 20:54:38
+=== done probe 20:56:45
+=== phase gui 20:58:28
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/sh/shprobe.nX0xMu/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel 329aaf13c2df67d12e79ceacf38712b25c9a1458294dc68ed6057c3244fa2c4a /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/kernel-sh-base.img (commit ce5e79c229b56045941852f2a62bef774e7762bc, armed launch:SHPROBE)
+kernel 9f44ad2786714a0b863dc94da03ae73127a64cd5ffab0206377bdf47d0d06941 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/k-base.img (commit ce5e79c229b56045941852f2a62bef774e7762bc, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/sh/shprobe.tPCYTc/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel c5654fec45998c5bb52b4102d81822e6e3bb38da4f6ea4ed6076dbb3c34cd077 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/kernel-sh-chg.img (commit 3255df27d7477087fc6e5363d04149f9015ef385, armed launch:SHPROBE)
+kernel 90c0174e56c3842b4f7762bb5149cf9808da850fdc581da750222defb2a9187b /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/k/k-chg.img (commit 3255df27d7477087fc6e5363d04149f9015ef385, armed desktop, mouse 9504c426065400e1b4210f2f2feb7b6831d744fc0c592a7a4a38d06773a979cb)
+qemu-system-aarch64: terminating on signal 15 from pid 34355 (<unknown process>)
+qemu-extra []
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 35251 (<unknown process>)
+kernel 35b1d793d15c9ca1f29da50b3260e816a9531f5f56ae2e533827d03e8204b20a APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 35554 (<unknown process>)
+qemu-extra []
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 37649 (<unknown process>)
+kernel e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 37963 (<unknown process>)
+qemu-extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 38839 (<unknown process>)
+kernel 35b1d793d15c9ca1f29da50b3260e816a9531f5f56ae2e533827d03e8204b20a APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 39065 (<unknown process>)
+qemu-extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 40378 (<unknown process>)
+kernel e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+=== done gui 21:11:25
+ALLDONE

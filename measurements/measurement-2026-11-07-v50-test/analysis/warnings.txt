@@ -1,0 +1,24 @@
+build-base-prof-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-base-prof-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-base-prof-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-base-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-base-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-base-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-prof-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-prof-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-prof-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+clippy-base-prof-qemu-virt.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-base-prof-rpi4.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-base-qemu-virt.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-base-rpi4.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-chg-prof-qemu-virt.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-chg-prof-rpi4.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-chg-qemu-virt.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-chg-rpi4.txt: warning: `tos-api` (lib) generated 73 warnings warning: `kernel` (lib) generated 121 warnings 
+clippy-chg-prof-qemu-virt.txt hits in touched files:    --> kernel/src/lib.rs:9:9 
+clippy-chg-prof-rpi4.txt hits in touched files:    --> kernel/src/lib.rs:9:9 
+clippy-chg-qemu-virt.txt hits in touched files:    --> kernel/src/lib.rs:9:9 
+clippy-chg-rpi4.txt hits in touched files:    --> kernel/src/lib.rs:9:9 
