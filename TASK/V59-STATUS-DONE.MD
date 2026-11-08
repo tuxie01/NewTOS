@@ -1,4 +1,6 @@
-# V59 — Quittung UNFINISHED (2026-11-08)
+# V59 — Quittung DONE (2026-11-08)
+
+Tester PASS (`2d58115d`, `measurements/measurement-2026-11-08-v59-test/RUNINFO.TXT`). Pi des Anwenders mit `main` + V58 + V59: Hide/show mouse 20 377 -> 111 346/s (x5,46), graf_mouse off+on 19 319 -> 87 063/s (x4,51), form_dial redraw x1,94 (`measurements/measurement-2026-11-08-v58-v59-pi/RUNINFO.TXT`), ADR-036 Punkt 5 erfuellt. In `main` mit Merge `64bf181e`. Offen, klein: ein EL0-Test mit lebenden V-Registern (Tester).
 
 Datum 2026-11-08 · Zweig `v59`, Basis `6821179c` (`main` mit V49–V51) · Commits `5a3052ec` (Code und Tests) und der
 Folgecommit mit Lauf und Tickets · Beleg `measurements/measurement-2026-11-08-v59/RUNINFO.TXT`

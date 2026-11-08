@@ -1,4 +1,6 @@
-# V58 — Quittung UNFINISHED (2026-11-08)
+# V58 — Quittung DONE (2026-11-08)
+
+Tester PASS (`3711dd00`, `measurements/measurement-2026-11-08-v58-test/RUNINFO.TXT`). Pi des Anwenders mit `main` + V58 + V59: XOR line +57 %, User line style +18 %, Polyline 32 +13 %, keine Linienzeile langsamer als die Streuung der Kontrollzeilen; Line, 2 points und Dashed line unveraendert (`measurements/measurement-2026-11-08-v58-v59-pi/RUNINFO.TXT`), ADR-036 Punkt 5 erfuellt. In `main` mit Merge `b2ba4981`. Offen, klein: die `raster-prof`-Kerne (Kern gegen `clean`) liefen nicht; Abstand zur V4SA bleibt bei Line, 2 points und Dashed line.
 
 Datum 2026-11-08 · Zweig `v58`, Basis `6821179c` (`main` mit V49–V51) · Commit `1c1c71a3` (Linien) · Beleg
 `measurements/measurement-2026-11-08-v58/RUNINFO.TXT`
