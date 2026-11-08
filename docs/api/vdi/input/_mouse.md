@@ -94,6 +94,16 @@ colour index; `MAP_COL[]` — pen → hardware PEL.
    storage detail (device-specific sprite format); the contract is only the
    37-WORD `INTIN` input.
 5. `mouse_flag -= 1` re-enables drawing.
+6. **No redraw.** `set_mouse_form` calls neither `cur_replace` nor
+   `cur_display` (`vdi_mouse.c:450-492`), and the `mouse_flag` bracket only
+   keeps `vb_draw` away (`:673`). A pointer that is shown keeps its old image
+   — old shape, old hotspot — and the save-under taken when it was drawn; the
+   new form appears at the next redraw: `vb_draw` after a packet (`:668-686`),
+   or `hide_cur` + `dis_cur` (`:127-171`). Measured: wkprobe F1/F2
+   (VDI-WK-003, `docs/audits/2026-11-07-v18-t3-vdi-workstation.md`; TASK/V54).
+   The AES never sees this: `gsx_mfset` brackets its `vsc_form` with
+   `gsx_moff`/`gsx_mon` (`aes/gemgsxif.c:407-420,440-455`), a hide and a
+   counted show, so `graf_mouse` redraws a shown pointer at once.
 
 The default installed at init is the arrow `arrow_mform` (hotspot 1,0;
 `mf_bg=0`, `mf_fg=1` — but only in the `!WITH_AES` build; with AES the AES

@@ -867,12 +867,17 @@ fn erase(backend: &dyn RasterBackend) {
 /// Opcode 111 — `vsc_form`: install the 37-WORD cursor definition from
 /// `INTIN` (hotspot x/y, reserved, mask colour, data colour, then 16
 /// mask rows and 16 data rows).
+///
+/// Store only, no redraw (V54, VDI-WK-003): EmuTOS `set_mouse_form`
+/// (`vdi/vdi_mouse.c:450-492`) copies the form between `mouse_flag += 1` and
+/// `-= 1` and calls neither `cur_replace` nor `cur_display`, so a shown
+/// pointer keeps its old image (shape and hotspot) and its save-under
+/// ([`BACK`], with the place it was taken at) until the next redraw — a
+/// packet ([`set_state`]/[`feed_relative`]) or `v_hide_c` + `v_show_c`
+/// (wkprobe F1, F2). The AES's own installs ([`install_form`], EmuTOS
+/// `gsx_mfset`) bracket theirs with a hide/show and redraw at once.
 pub fn vsc_form(pb: &Vdipb, backend: &dyn RasterBackend) {
     ensure_init(backend);
-    let was_shown = shown();
-    if was_shown {
-        erase(backend);
-    }
     // Hotspot constrained to 0..15 by masking (EmuTOS `set_mouse_form`
     // `& 0x0f`): values above 15 wrap, they never overflow the 16×16 sprite.
     HOT_X.store(pb.intin(0) & 0x0f, Ordering::Relaxed);
@@ -886,9 +891,6 @@ pub fn vsc_form(pb: &Vdipb, backend: &dyn RasterBackend) {
     for i in 0..16 {
         MASK[i].store(pb.intin(5 + i) as u16, Ordering::Relaxed);
         DATA[i].store(pb.intin(21 + i) as u16, Ordering::Relaxed);
-    }
-    if was_shown {
-        draw(backend);
     }
 }
 
