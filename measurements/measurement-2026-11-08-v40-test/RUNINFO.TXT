@@ -1,0 +1,74 @@
+V40 TESTER -- TASK/V40.md: LSTLIN kept as one global flag written by polyline like EmuTOS, read by the XOR text underline,
+AES line/box paths set it TRUE. Independent acceptance, 2026-11-08, base 559614ed (V56 in both) vs fix 5be660c2.
+No product code changed, no hardware, no card, no push. Scripts: the developer's measurements/measurement-2026-11-08-v40/method/
+(trees.sh logic, builds.sh, tables.sh, gui.sh, gui-compare.sh) run unchanged from the main tree with S = scratchpad v40t;
+nothing new written into method/ (own commands: git archive of the two commits into $S/t/base, $S/t/fix, references link
+as trees.sh does). Mutants were edited by hand in the scratch fix tree and restored (cmp against the main tree: identical).
+
+WHAT RAN
+  EmuTOS oracle  pinned 1a7484ab, tools/hatari-oracle.sh falcontc via tosdump/probes/run-vdprobe.sh emutos falcontc
+  NewTOS         raspi4b QEMU 11.0.2, -append serial=on (through run-vdprobe.sh / xtask tosdump / gui scripts);
+                 qemu-virt headless via cargo xtask run --board qemu-virt --headless --release (own ELF, fresh target)
+  host_clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+  Kernels        base release rpi4 kernel8.img ac5a9970...a9cc, fix 3a014777...5935 (builds/kernel-sha256.txt), each
+                 built from an empty target/aarch64-unknown-none-softfloat, base then fix back to back (same build day)
+  Manifests      probe/n-base, probe/n-fix, tables/tab-*, gui/* each card.img.manifest; optional_missing, verbatim, in all:
+                 optional_missing none
+  QEMU/Hatari    one at a time; qemu-virt: killed by the recorded PID (22275, xtask 22169).
+
+1. LSTLIN readers/writers against the EmuTOS source (read the cited lines)
+   bios/lineavars.S:288 one WORD global, BSS. Writers: vdi_line.c:1106-1108 polyline (FALSE at loop start, TRUE for i==1
+   before clip_line), vdi_bezier.c:187 (HAVE_BEZIER 0). Readers: vdi_line.c:2319 abline; abline callers (grep): polyline,
+   vdi_bezier.c:196, vdi_text.c:527/534 underline, linea_line :2377. polyline callers: vdi_line.c:1015 (width 1), vdi_gdp.c:213,
+   331, 444, vdi_fill.c:608 (fill_per, after the band test :584-588). abline's vertical early return (CONF_WITH_VDI_VERTLINE,
+   :2273-2295) precedes the XOR rule, so "vertical never shortened" in _text.md is right. gemgsxif.c:573-578 v_pline = VDI trap.
+   NewTOS diff 559614ed..5be660c2 read: polyline writes for every n (set FALSE, TRUE before last segment); v_pline width 1
+   with <2 points runs polyline; fill_polygon returns the band test, perimeter skipped when clip on and outside; v_fillarea 0 points
+   runs a one-point polyline with the band test on PTSIN[1]; underline reads lstlin(); draw_line, draw_border, rect_outline,
+   menu_bar separator set TRUE. Agrees with the EmuTOS reading. Verdict: as specified.
+
+2. Host tests
+   fix, cargo test -p tos-api --test vdi_reference v40: 12 passed; --lib v40: 2 passed (v40_box_border_and_aes_lines_set_lstlin,
+   v40_frame_outline_sets_lstlin).
+   base product code + the three test files copied in: 5 passed / 7 failed (l40a_l40b, l40c_l40e, l40g_l40j, l40l_l40s, l40t,
+   l40x_l40zb, tvj_tvk); TVK failure: grab (hash, non-white words) 159 vs oracle 158 = the underline end pixel.
+   Mutants on the fix (scratch tree, restored):
+     M1 underline_lines reads `true` instead of lstlin()            7 of 12 red (the same seven), 2 unit tests green
+     M2 polyline sets TRUE (not FALSE) before the loop              7 of 12 red
+     M3 RasterBackend::draw_line without set_lstlin                  v40_aes_draw_line_sets_lstlin red + menu.rs unit test red
+     M4 v_fillarea/curve perimeter without the band test (fill_per only)  v40_probe_l40g_l40j_fillarea red
+     M5 menu_bar separator set_lstlin removed                        ALL GREEN -- survivor: the menu separator writer has no
+        test (the developer's hand-over says so: "menu_bar ohne Test"); read-only confirmed, not oracle-measured
+   cargo xtask test (main tree, 5be660c2, clean apart from run dirs; hosttest/xtask-test.txt): 2318 passed / 0 failed /
+   6 ignored. STATUS baseline 2302; +12 cases_v40, +2 unit tests, +2 V56 (aes_v56_vector_tokens) = 2318.
+
+3. Oracle probe (probe/compare-*.txt; tosdump/probes/run-vdprobe.sh, vdprobe-compare.py)
+   e1 (oracle) vs n-base: 986 cases, 348 differ.   e1 vs n-fix: 332 differ.   n-base vs n-fix: 16 differ.
+   The 16: TVK L40A L40B L40E L40H L40I L40J L40M L40O L40S L40T L40W L40X L40Y L40Z L40Zb (383 979 980 983 986 987 988 991
+   993 997 998 1001 1002 1003 1004 1006) -- identical to the developer's list; TVK = 1 px at (148,101) E=ffff N=0000; L40Y 2 px.
+   The other 970 records equal; VDPROBE.LOG base == fix (cmp). On fix TVJ, TVK and all 32 L40/L41: EQUAL (34/34, 0 non-EQUAL).
+   The 332 remaining differences = the 348 of the base minus these 16 (not V40 scope).
+   Tables (tables/): vdi-v18-t2 0 of 32 differ (base and fix); vdi-all 0 of 182 (base and fix). aes-r2 78/78 and aes-r3 39/39
+   differ against the oracle on base AND fix (pre-existing, V30 test run); VDI.BIN/AES.BIN and LOG of all five tables
+   base vs fix cmp-identical (r4 has no reference). 0 exception/panic lines in the ten table boots.
+
+4. AES / desktop (gui/): IKBD injector (V34 test run's desk-inj.sh, mouse file, shot list), armed desktop kernels built from
+   the two trees: 640x480 11/11 and 1920x1080 11/11 shots byte-identical base vs fix (menu, dialog, rubber band, window/slider/
+   sizer drag, icon drags incl. edges); boot screen + APITEST.NCP console 6/6 and 6/6 identical (base and fix built the same
+   day, so no build-date digit difference). 0 exception/panic lines in all 8 boots. Looked at desk480-fix 03-03-rubberband-held
+   (dotted XOR rubber-band box visible lower left) and 01-01-menu-file (File menu open, entries drawn) -- both normal.
+
+5. Boards / warnings
+   rpi4 and qemu-virt built fresh (dev + clippy + release rpi4) for base and fix, rc 0: rustc tos-api 64 / kernel 93,
+   clippy tos-api 73 / kernel 121, base = fix on both boards (builds/*/warnings.txt). rpi4 fix booted (raspi4b, serial=on):
+   "[desk] desktop up (1 drives)" and 0 exception/panic in the table and desktop runs. qemu-virt fix headless, own ELF
+   (sha256 0ddfdb21...4c65c54): "[desk] desktop up (0 drives)", 0 exception/panic lines (builds/qemu-virt-fix-serial.txt).
+
+6. Spec texts: docs/api/vdi/output/_lines-markers.md section LSTLIN and _text.md Underline read against vdi_line.c:1106-1108,
+   2319, 1015, 1397-1398, 1355-1370, vdi_fill.c:584-588, 604-609, vdi_text.c:527/534, vdi_gdp.c callers, gemgsxif.c:573-578,
+   lineavars.S:288: statements and cites agree. cargo xtask doc-check on both specs and TASK/V40.md: 0 failures.
+
+NOT RUN / OPEN
+  Real Pi4 (no hardware touched, none needed); the menu separator and window frame writers against the oracle (L40V/L40W
+  cover the object border only); Line-A 3 reader (no Line-A in NewTOS, ADR-030); a card program with a XOR underline.
+  HW-test checklist: nothing new.
