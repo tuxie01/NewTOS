@@ -1,0 +1,19 @@
+6.33 screendump 00-rest {'return': {}}
+6.33 rel 20 15 {'return': {}}
+6.39 rel 20 15 {'return': {}}
+6.45 rel 20 15 {'return': {}}
+6.50 rel 20 15 {'return': {}}
+6.56 rel 20 15 {'return': {}}
+6.62 rel 20 15 {'return': {}}
+6.68 rel 20 15 {'return': {}}
+6.73 rel 20 15 {'return': {}}
+7.83 screendump 01-moved {'return': {}}
+7.83 rel -10 5 {'return': {}}
+7.89 rel -10 5 {'return': {}}
+7.95 rel -10 5 {'return': {}}
+8.01 rel -10 5 {'return': {}}
+8.07 rel -10 5 {'return': {}}
+8.13 rel -10 5 {'return': {}}
+8.18 rel -10 5 {'return': {}}
+8.25 rel -10 5 {'return': {}}
+9.35 screendump 02-moved2 {'return': {}}

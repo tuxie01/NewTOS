@@ -1,0 +1,43 @@
+V55 gate addendum, independent tester acceptance (TASK/V55.md "Nachtrag (Developer, 2026-11-08)"; earlier finding in
+"Abnahme (Tester, 2026-11-08)"). Tester run, 2026-11-08. No card, no Pi, no push. Base 8f19602e, change aeda18ea
+(= fix 8ef6cf96 + run commit; git diff 8ef6cf96 aeda18ea over kernel/tos-api/tos-types/tools is empty).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the 13 card.img.manifest in runs/)
+optional_missing, verbatim, in all 13 manifests: optional_missing none
+Builds/QEMU in `git archive` trees (scratchpad, references/ linked); method/accept.sh = the developer's accept.sh with this run
+dir; phases run: trees builds virtimg boots virtmouse rpiboot gui wkprobe (gui = desktop injector scenes, added vs developer).
+QEMU 11.0.2, each started QEMU killed by recorded PID (analysis/qemu-pids.txt: all "gone"; pgrep after the run: none).
+Phase log not kept in repo; per-phase results in analysis/ and runs/.
+
+RESULTS
+ 1 CODE  git diff 8f19602e 8ef6cf96: irq_tick builds Interrupted{from_el0, process, upcall_depth, aes_suspended} exactly as
+         host_env::irq_input_pump (same slot_for(current()), upcall_depth.load(Acquire), aes::thread::is_suspended()) and gates
+         run_if_due on input_gate::frame_tick_allowed = irq_pump_allowed. Callers in kernel/src + tos-api/src: run_if_due <-
+         irq_tick (gic.rs:228) and pump_tick (host_env.rs:523, trap-side, between operations); vb_draw only from run_if_due.
+         No bypass.
+ 2 PASS  frame_tick_needs_the_pump_context: mutant (frame_tick_allowed = mode==Irq && from_el0) RED, panics at input_gate.rs:323
+         (upcall assertion) (analysis/test-gate-red-mutant.txt, rc 101); original GREEN (test-gate-green.txt). Mutant made in the
+         scratch tree and edited back (diff against git show: identical). Limit: the test covers the pure decision, not the
+         wiring in irq_tick (that is item 1, by reading).
+ 3 PASS  cargo xtask test (main checkout, aeda18ea): 2369 / 0 / 6 (analysis/cargo-xtask-test-chg.txt).
+ 4 PASS  warnings base vs chg, fresh target, both boards (analysis/warnings.txt): rustc 64/93 both; clippy -p kernel 73+121 (sum 194)
+         both boards, tos-api 73, --tests 87: delta 0; touched-file hits 8 = 8.
+ 5 PASS  boots: qemu-virt headless 100 s base and chg: "[desk] desktop up (0 drives)", 0 exception/panic. raspi4b serial=on: boot
+         screen + console (rpiboot) 6/6 PNG base==chg, 0 exceptions.
+ 6 PASS  desktop injector scenes, raspi4b armed kernels (analysis/shots-compare.txt): desk480 11/11, desk1080 11/11, bc480 6/6,
+         bc1080 6/6 byte-equal base vs chg, 0 exceptions.
+ 7 PASS  wkprobe v2 (runs/wkprobe): e1==e2 (BIN fcc49cf4...); e1 vs n-chg 1 of 42 differs = P0 (known); e1 vs n-base: same
+         1 of 42 (see compare-e1-n-base.txt); n-base vs n-chg: 0 of 42 differ, LOG 122/122; all three NewTOS BINs eee2e2a8...
+         (= developer run). n-chg vs n-chg2 BIN equal; LOG differs only in poll/tick counters (timing). The 2000000-poll cap hit in
+         LOG line 96 is the post-v_clswk "unchanged" check, same in n-base (2000 ticks): intended, not an abort.
+ 8 PASS  qemu-virt USB mouse via QMP (runs/virtmouse-*): 00-rest/01-moved/02-moved2 base==chg byte for byte (2e0f487f, 5a4671bc,
+         dfe559b8, = V55 runs). Viewed 02-moved2: arrow at the moved place, no trail.
+ 9 PASS  trap-free compute run (own scenario, method/spin-patch.py = TESTER-TEMP desktop key 'c': spin, one pump pass, spin, hand;
+         applied to scratch trees only; method/spin2.sh, virt-spin2.py): runs/spin2-{base,chg}: identical timelines, s000-s003 rest
+         picture, s004-s009 pointer at the new place (through the 2nd spin), s010 on = hand. Mutant (irq_tick returns at once,
+         runs/spin2-mut): no change until s010, pointer only after the spin ends (s011): the scenario discriminates, the redraw
+         in the 2nd spin is the timer-IRQ frame tick over a quiet EL0 program. Viewed s005 chg: arrow at (1120,665), no trail.
+
+NOT DRIVEN / OPEN
+  The blocked case itself (timer tick during an EL0 upcall: kbdvec hook / G_USERDEF callout) was NOT run: no program of the
+  repo does that in a controlled way (DOOM has a kbdvec hook, not driven); covered only by the decision test and by reading
+  irq_tick against irq_input_pump. Real Pi 4: nothing run (pointer under cache/HDMI, USB-HID stay on the HW checklist).

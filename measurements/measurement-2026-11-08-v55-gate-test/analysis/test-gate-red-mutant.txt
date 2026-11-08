@@ -1,0 +1,39 @@
+   Compiling xtask v0.1.0 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/t/chg/tools/xtask)
+warning: constant `PROPTAG_GET_MAX_CLOCK_RATE` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:25:11
+   |
+25 | pub const PROPTAG_GET_MAX_CLOCK_RATE: u32 = 0x0003_0004;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `PROPTAG_GET_CLOCK_RATE_MEASURED` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:29:11
+   |
+29 | pub const PROPTAG_GET_CLOCK_RATE_MEASURED: u32 = 0x0003_0047;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `xtask` (bin "xtask" test) generated 2 warnings
+    Finished `test` profile [optimized + debuginfo] target(s) in 9.32s
+     Running unittests src/main.rs (target/debug/deps/xtask-2896962bfa6f77a9)
+
+running 1 test
+test kernel_input_gate::tests::frame_tick_needs_the_pump_context ... FAILED
+
+failures:
+
+---- kernel_input_gate::tests::frame_tick_needs_the_pump_context stdout ----
+
+thread 'kernel_input_gate::tests::frame_tick_needs_the_pump_context' (11153032) panicked at tools/xtask/src/../../../kernel/src/input_gate.rs:323:9:
+assertion failed: !frame_tick_allowed(InputMode::Irq,
+        Interrupted { upcall_depth: 1, ..QUIET_EL0 })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    kernel_input_gate::tests::frame_tick_needs_the_pump_context
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 244 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p xtask --bin xtask`
+rc 101

@@ -1,0 +1,3 @@
+  Z8 vq_extnd(1): planes 16 lut 0; Getrez 2
+22 W9     v_opnwk while the physical workstation is open (no v_clswk)
+  W9 before

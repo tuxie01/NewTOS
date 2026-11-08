@@ -1,0 +1,12 @@
+t0 = detection of '[inj] desktop armed at hz_200' on the serial file
+00 00-rest planned 2.040s request 2.045s done 2.085s ok
+01 01-menu-file planned 2.885s request 2.889s done 2.924s ok
+02 02-dialog planned 5.545s request 5.550s done 5.585s ok
+03 03-rubberband-held planned 9.020s request 9.024s done 9.060s ok
+04 04-window-drag-held planned 11.080s request 11.085s done 11.120s ok
+05 05-slider-drag-held planned 13.035s request 13.040s done 13.075s ok
+06 06-sizer-drag-held planned 14.990s request 14.995s done 15.030s ok
+07 07-icon-drag-held planned 17.230s request 17.235s done 17.271s ok
+08 08-icon-top-edge-held planned 19.230s request 19.235s done 19.272s ok
+09 09-icon-bottom-edge-held planned 21.560s request 21.565s done 21.602s ok
+10 10-end planned 22.825s request 22.830s done 22.865s ok

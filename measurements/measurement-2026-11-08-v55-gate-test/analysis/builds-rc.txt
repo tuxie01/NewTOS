@@ -1,0 +1,19 @@
+build base rpi4 rc 0
+clippy kernel base rpi4 rc 0
+build base qemu-virt rc 0
+clippy kernel base qemu-virt rc 0
+clippy tos-api base rc 0
+clippy tos-api --tests base rc 0
+build base rpi4 release rc 0
+build chg rpi4 rc 0
+clippy kernel chg rpi4 rc 0
+build chg qemu-virt rc 0
+clippy kernel chg qemu-virt rc 0
+clippy tos-api chg rc 0
+clippy tos-api --tests chg rc 0
+build chg rpi4 release rc 0
+BUILDSDONE
+build base qemu-virt release (img) rc 0
+build chg qemu-virt release (img) rc 0
+spin build base rc 0
+spin build chg rc 0
