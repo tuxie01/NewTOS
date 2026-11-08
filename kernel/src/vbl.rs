@@ -21,8 +21,10 @@
 //! of moments after the frame began:
 //!
 //! * [`irq_tick`] — the 200 Hz timer interrupt, when it interrupted a program
-//!   at EL0 (and the input pump is not confined to the trap path, boot
-//!   argument `input=aes`, [`crate::input_gate::InputMode`]). A program that
+//!   at EL0 with no kernel operation suspended underneath it — no upcall in
+//!   flight, the AES fiber not suspended — and the input pump is not confined
+//!   to the trap path (boot argument `input=aes`): the context of INPUT01's
+//!   pump, [`crate::input_gate::frame_tick_allowed`]. A program that
 //!   computes, or returns from a `Vsync`, gets its pointer redrawn here.
 //! * [`pump_tick`] — the start of every trap-side input pump
 //!   (`crate::host_env` `pump_devices`: the AES wait loops, the blocking
@@ -41,11 +43,15 @@
 //! `vb_draw` touches the pointer's save-under and draws through the screen
 //! backend. Neither moment interrupts a cursor operation or a backend call:
 //!
-//! * An interrupt taken from EL0 interrupts no kernel code — every trap runs
-//!   with IRQs masked, and the kernel never returns to EL0 in the middle of a
-//!   cursor operation (`crate::input_gate`, first condition). An interrupt
-//!   taken at EL1 — inside an input pump's open-IRQ window, a blocking read,
-//!   the boot path or the shell — never runs `vb_draw`.
+//! * The interrupt runs `vb_draw` only over a program at EL0 with nothing
+//!   suspended underneath: every trap runs with IRQs masked, so an interrupt
+//!   from EL0 interrupts no running kernel code; and an EL0 upcall (a
+//!   `kbdvec` hook, a `G_USERDEF` callout in the middle of an AES draw) or a
+//!   suspended AES fiber — where a kernel operation *is* suspended under the
+//!   program — is excluded by the same conditions as INPUT01's pump
+//!   (`crate::input_gate`). An interrupt taken at EL1 — inside an input
+//!   pump's open-IRQ window, a blocking read, the boot path or the shell —
+//!   never runs `vb_draw`.
 //! * The pump moment is the trap path itself, between two complete
 //!   operations: no cursor function calls the pump.
 //!
@@ -70,23 +76,39 @@
 //! `kernel/src/arch/aarch64/exceptions.rs:999@save_fp_context`), which an
 //! interrupt never runs. From the pump the case is the one of every VDI trap.
 //! A nested kernel cannot occur on either path: the interrupt one runs only
-//! over EL0, and an interrupt over the pump one does not draw (the cursor
+//! over a quiet EL0 program, and an interrupt over the pump one does not draw (the cursor
 //! blink it may run draws through the scalar row methods).
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
-use crate::input_gate::{self, InputMode};
+use crate::input_gate;
 
 /// The frame [`run_if_due`] last ran for.
 static LAST_FRAME: AtomicU64 = AtomicU64::new(0);
 
 /// The frame tick of the 200 Hz timer interrupt; `spsr` is the interrupted
-/// context's `SPSR_EL1`. Runs [`run_if_due`] only when the interrupt came
-/// from EL0 and the input pump may run from the interrupt at all
-/// ([`InputMode::Irq`], the default; `input=aes` keeps all pointer work on
-/// the trap path, as before INPUT01).
+/// context's `SPSR_EL1`. Runs [`run_if_due`] only in the context the INPUT01
+/// input pump needs ([`input_gate::frame_tick_allowed`] =
+/// [`input_gate::irq_pump_allowed`]): the interrupt came from a program at
+/// EL0, with no upcall in flight and the AES fiber not suspended, and the
+/// pump may run from the interrupt at all ([`input_gate::InputMode::Irq`], the default;
+/// `input=aes` keeps all pointer work on the trap path, as before INPUT01).
+/// The context is read as `crate::host_env::irq_input_pump` reads it.
 pub fn irq_tick(spsr: u64) {
-    if input_gate::spsr_is_el0(spsr) && input_gate::mode() == InputMode::Irq {
+    use tos_api::bdos::process::{current, slot_for, PROCESS_TABLE};
+
+    let from_el0 = input_gate::spsr_is_el0(spsr);
+    if !from_el0 {
+        return;
+    }
+    let slot = slot_for(current());
+    let ctx = input_gate::Interrupted {
+        from_el0,
+        process: slot.is_some(),
+        upcall_depth: slot.map_or(0, |s| PROCESS_TABLE[s].upcall_depth.load(Ordering::Acquire)),
+        aes_suspended: tos_api::aes::thread::is_suspended(),
+    };
+    if input_gate::frame_tick_allowed(input_gate::mode(), ctx) {
         run_if_due();
     }
 }

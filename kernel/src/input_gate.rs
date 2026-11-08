@@ -275,6 +275,18 @@ impl Drop for PumpGuard<'_> {
     }
 }
 
+/// `true` when the timer interrupt may run the frame tick's pointer redraw
+/// (`crate::vbl`, TASK/V55) — the same context as the input pump
+/// ([`irq_pump_allowed`]). An interrupt from EL0 alone is not enough: during
+/// an EL0 upcall (a `kbdvec` hook, a `G_USERDEF` callout in the middle of an
+/// AES draw) or while the AES fiber is suspended, a kernel operation is
+/// suspended underneath the program, and the redraw must not run in the
+/// middle of it. It waits for the next frame tick outside such a context,
+/// or for the next trap-side pump.
+pub fn frame_tick_allowed(mode: InputMode, ctx: Interrupted) -> bool {
+    irq_pump_allowed(mode, ctx)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -298,6 +310,20 @@ mod tests {
         assert!(!irq_pump_allowed(InputMode::Irq, Interrupted { upcall_depth: 8, ..QUIET_EL0 }));
         // The AES fiber is suspended in a G_USERDEF callout.
         assert!(!irq_pump_allowed(InputMode::Irq, Interrupted { aes_suspended: true, ..QUIET_EL0 }));
+    }
+
+    /// TASK/V55: the frame tick's redraw from the interrupt keeps the pump's
+    /// context, not only "from EL0 in Irq mode".
+    #[test]
+    fn frame_tick_needs_the_pump_context() {
+        assert!(frame_tick_allowed(InputMode::Irq, QUIET_EL0));
+        assert!(!frame_tick_allowed(InputMode::Aes, QUIET_EL0));
+        assert!(!frame_tick_allowed(InputMode::Irq, Interrupted { from_el0: false, ..QUIET_EL0 }));
+        // An upcall over a suspended kernel operation (kbdvec hook, G_USERDEF).
+        assert!(!frame_tick_allowed(InputMode::Irq, Interrupted { upcall_depth: 1, ..QUIET_EL0 }));
+        // The AES fiber suspended in a G_USERDEF callout.
+        assert!(!frame_tick_allowed(InputMode::Irq, Interrupted { aes_suspended: true, ..QUIET_EL0 }));
+        assert!(!frame_tick_allowed(InputMode::Irq, Interrupted { process: false, ..QUIET_EL0 }));
     }
 
     #[test]
