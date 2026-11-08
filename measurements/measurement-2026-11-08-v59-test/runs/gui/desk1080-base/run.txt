@@ -1,0 +1,2 @@
+kernel 68851c217a77751460b92b8ccf219c20b8febf377f5aa5dcceec1749e03bf041 card 98676f2d8249a75420813449dbd6f815bfe3f1531d9a4ddef30655768b8d2cd7 extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0

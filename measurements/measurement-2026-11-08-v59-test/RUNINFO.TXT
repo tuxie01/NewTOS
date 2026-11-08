@@ -1,0 +1,98 @@
+V59 tester run -- independent acceptance of TASK/V59.md (the VDI mouse pointer saved/painted/restored per 16x16 cell,
+read_device_rect / write_device_rect / draw_sprite, NEON copy_rows + V50 expansions), ADR-036. Date 2026-11-08.
+Measured: base 6821179c (main with V49-V51) against change 5a3052ec (branch v59, worktree
+.claude/worktrees/agent-a194b0b2cc3f6d929; d86b55fa only adds the developer's run + ticket text). No product code touched,
+no card, no Pi, no push. Method scripts of this run: method/ (own scripts; the developer's accept.sh and the V51/V35 leak_check/boot-virt.sh
+were NOT used; inputs read from the V51 run: desk-mouse.txt, desk-shots.txt, desk-NEWDESK.INF, timed-shots.py).
+Every build ran in a `git archive` tree of its commit in the session scratchpad (references/ linked from the main checkout), fresh target per
+build. Every QEMU started by method/run.sh and method/gui.sh was killed by the PID recorded at its launch and checked gone
+(analysis/qemu-pids.txt: 16 started, 16 gone); the committed probe runners (run-vdprobe/wkprobe/shprobe, xtask tosdump) kill by their own
+recorded PID. No QEMU/Hatari left alive from this run.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim: optional_missing none   (35 manifests, all of them; analysis/manifests.txt)
+QEMU 11.0.2 raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot) and virt (qemu-virt headless,
+flat image = rust-objcopy -O binary of the release ELF, own ELF per commit).
+
+KERNELS (release, archive trees; analysis/kernels.sha256)
+  base rpi4 a17613afb0eab0a06ab1d2f94446a34a4c8e9934f22f00d0c3c641f794ffa080   chg rpi4 eb708adddb7de9ea32e96fef2fb1e7342f0e60b138f0a11a066a8dbeb44f0543
+  base virt 00b90c2b5b2bbd602b329ca2e3795bb38566a750b86160371dd6298c6e62f06c   chg virt a3d67b7f4466bae09b5c2865ec27af0ab2075927ce8beccb3a7e99e1ac71260b
+  armed desktop kernels (injector): analysis/armed-kernels.sha256; wkprobe/shprobe armed kernels are rebuilt per run by the probe scripts.
+
+RESULTS
+ 1 PASS  ADR-036 in the release ELF of 5a3052ec (llvm-objdump of the whole kernel, analysis/disasm-*.txt, vfunctions-*.txt, method/regions.py):
+         functions naming any V/Q register, base: copy_rect, expand, fill_pattern + the 6 context-switch functions of exceptions.rs; change: the same
+         plus exactly two new ones, kernel::raster_copy::read_rect and VdiScreen::write_device_rect (copy_rows inlined), both v0-v3 only.
+         Per save/restore region (every stp/str q block matched with its ldp/ldr q block): saved == restored == superset of the registers named in
+         between, 0 bl/blr/ret/svc/msr/mrs between (read_rect 1 region q0-q3; write_device_rect 1 region q0-q3; expand 8 regions q0-q10 or q0-q8,q10-q14;
+         copy_rect 4; fill_pattern 4). Mnemonics naming V registers: read_rect/write_device_rect only stp, ldp, ld1, st1; expand stp/str/ldp/ldr/ld1/st1/dup/cmtst/
+         bsl/bit/eor/mov/ext -- no f* arithmetic, no saturating instruction, 0 msr/mrs (FPCR/FPSR untouched). VdiScreen::draw_sprite and raster_expand::sprite name no
+         V register (they call expand). Save areas are stack locals (mov x17, sp / add x14, sp, #0x60 before the first stp), so a kernel entered from an
+         IRQ that landed inside another one saves and restores its own copy.
+         IRQ / FP context (new finding of the developer, checked): see section FP-CONTEXT below.
+ 2 PASS  host tests: raster_kernel_cell 6/6 (2.58 s), vdi_mouse_v59_cell 2/2, raster_kernel_copy register check 10/10; `cargo xtask test` in the worktree: 2347 passed /
+         0 failed / 6 ignored over 205 result lines (analysis/cargo-xtask-test-chg.txt). The base total (2339/0/6) was not re-measured by me.
+         Default trait methods: diff of tos-api/src/vdi/{backend,mouse}.rs 6821179c..5a3052ec read: read_device_rect = get_device_pixel per pixel (0 beyond i16 max, 0
+         off the screen by get_device_pixel), write_device_rect = put_device_pixel per pixel (no flush), draw_sprite = per painted pixel fill_rect 1x1 with the
+         full-screen clip, data before mask, exactly the loop body of `draw` at 6821179c; mouse.rs draw/erase = read_device_rect + draw_sprite / write_device_rect +
+         the unchanged flush_rect(ox, oy, ox+15, oy+15); the test's old_draw/old_erase are verbatim the base functions (compared by eye against git show 6821179c).
+         MUTANTS of my own (method/mutants.py, scratch copy of the change tree, original restored from the pristine tree after each; analysis/mutants.txt):
+         10 of 10 RED -- M1 sprite data pass before mask pass; M2 read_rect target column offset c0 dropped (wrong rows at the left edge); M3 copy_rows q2/q3
+         not restored (red only by the source check every_v_register_used_is_saved_and_restored; the behaviour tests stay green -- as to be expected);
+         M4 erase flush ox+16; M5 draw saves after painting; M6 on_screen right/bottom span one too wide (SIGBUS at the guard page); M7 default draw_sprite bit
+         shifted; M8 default read_device_rect row stride h; M9 sprite mask painted in fg; M10 copy_rows 8-pixel remainder block dropped.
+         Not coverable by a host test (kernel glue not compiled on the host): `clean` over the unclipped cell in VdiScreen::draw_sprite (vdi_backend.rs) -- cache
+         maintenance only, not visible in QEMU either; Pi-only.
+ 3 PASS  builds, both boards, fresh target per build, base and change (analysis/builds-rc.txt, build-*.log, clippy-*.txt, warnings.txt): all 16 commands rc 0.
+         rustc: tos-api 64, kernel 93 on base and change, both boards. clippy -p kernel --features board-rpi4 / board-qemu-virt: 73 + 121 (sum 194) each, identical
+         message multiset base vs change; clippy -p tos-api 73, clippy -p tos-api --tests 87 in 22 lines (only the "(N duplicates)" tag moves between
+         targets). Delta 0. Hits in the touched files: the 8 existing `Vdipb` private-type warnings of mouse.rs/backend.rs on both sides; the two new test targets 0.
+         raster-prof build not repeated (not in scope of this run).
+ 4 PASS  boots (runs/boot-*): qemu-virt headless own ELF/image, base and change: "[desk] desktop up (0 drives)", 0 exception/panic lines; raspi4b serial=on, base and
+         change: "[desk] desktop up (1 drives)", 0 exception/panic lines.
+ 5 PASS  byte equality base vs change:
+         - wkprobe (V18 part 3: pointer cases P0-P7, F, C..., armed kernels feed the packets, the injector lines are in the serial): WKPROBE.BIN base == change ==
+           change again, sha256 f774eea68f1c0a4dae7110b597ba145d55bd574992759d521f45612676f8e292; wkprobe-compare 37 cases 0 differ, log 115/115 lines equal; the raw
+           LOG differs in 18 lines, all `T0x` hz_200 stamps / `N waited` lines (change vs change again the same 18). Includes P4 (arrow clipped right/bottom)
+           and P5 (cross hotspot 15/15 clipped left/top). (analysis/wkprobe-cmp.txt)
+         - vdprobe: VDPROBE.BIN base == change, sha256 0a13c757b5e97842d7fadd50d832e445f3b43488ca4bf323d3b520ec8cda6ae7, LOG identical, 986 cases 0 differ.
+         - cargo xtask tosdump --tree, pinned references: vdi-all VDI.BIN identical (e91b865b92b5dbf2), against the oracle 0 of 182 on both; vdi-v18-t2 (developer did not
+           run it) VDI.BIN identical (a26589eede1a4da4), against the oracle 0 of 32 on both. AES r2/r3/r4: tosdiff base vs change with the table 0 of 78 / 39 / 181;
+           raw: exactly one 8-byte word per case differs, all by 0x1000000000 (= a 4096 delta in the 4-byte address cell that starts one byte into the word) -- the kernel
+           image is 4096 bytes bigger (1526000 -> 1530096), as in the V50 run (analysis/aes-base-vs-chg.txt, tables-compare.txt). Against the oracle r2 78/78 and r3 39/39
+           differ on BOTH sides (the address cells; pre-existing, unchanged by V59).
+         - shprobe (developer did not run it) newtos 12/12 PNG byte-identical, shprobe newtos-desk 2/2 (analysis/shprobe-cmp.txt).
+         - desktop + IKBD injector (V51 script: rest, menu, dialog, rubberband, window drag, slider, sizer, icon drags incl. top/bottom edge, end): 11/11 PNG byte-identical at
+           640x480 and 11/11 at 1920x1080. Own edge scene (method/edge-mouse.txt: the pointer driven to all four corners and along the bottom edge): 5/5 at both sizes.
+           Boot screen + AUTO console (APITEST.NCP): 6/6 at both sizes. 0 exception/panic lines everywhere. (analysis/shots-compare.txt, shots.sha256)
+         VIEWED (runs/gui-viewed/): desk480 04-window-drag-held: arrow over the dragged window's content; desk480 09-icon-bottom-edge-held: the hand form at the bottom
+         screen edge, clipped by the edge, over the drag outline; edge480 e0-topleft: the arrow at (0,0) on the menu bar. At the right/bottom corners (e1..e3) the
+         arrow's only visible pixel is the white mask pixel of the tip on the white/green dither: equality of the PNGs is the evidence there, not the look.
+ 6 PASS  Pi kernels (measurements/measurement-2026-11-08-v59/pi-kernels/, gitignored): sha256 before a17613af...a080, after eb708add...0543 as in the developer's RUNINFO and
+         ticket; my fresh archive-tree rebuilds (rpi4 --release, fresh target, own build.sh) give the same two sha256 -> "after" rebuilt byte-equal from 5a3052ec.
+
+FP-CONTEXT (ADR-036 point 3) -- the pointer is also drawn from the timer IRQ, checked in code
+ (a) EL0 registers survive: rust_irq_handler (kernel/src/drivers/gic.rs:201@rust_irq_handler) -> host_env::irq_input_pump (kernel/src/host_env.rs:567@irq_input_pump) ->
+     pump_devices_irq -> ikbd feed_relative -> mouse erase/draw -> copy_rows / expand. When the IRQ interrupted EL0 the V registers hold the program's live values; no
+     other code between the exception entry and the kernel touches them (soft-float target, module note of kernel/src/raster_kernel.rs; the disassembly shows no V use
+     outside the five kernels listed in result 1 and the six context-switch functions). Each kernel stores every V register it names to a stack save area first and loads
+     it back before its block ends (result 1: per-region saved == restored). save_fp_context/restore_fp_context run only on synchronous svc paths (callers
+     kernel/src/arch/aarch64/exceptions.rs:1090@save_yield_frame, :1332@apply_switch, :1715@finish_terminate, :2318@handle_pexec), none from the IRQ path.
+ (b) no NEON kernel can be underneath that draw: the pump returns at once unless the IRQ came from EL0 (host_env.rs:572-575 `if !from_el0 { return; }`, input_gate.rs:144@spsr_is_el0,
+     :135@irq_pump_allowed requires from_el0 and process and upcall_depth == 0 and !aes_suspended); IRQs are masked on every exception entry, and gic.rs:224 runs the pump
+     "still with IRQs masked", so the pointer draw from the IRQ cannot be nested in another kernel. The sites that unmask IRQs at EL1: host_env.rs:109 and :154 (the
+     one-pass pump_input and console_read_byte_blocking waits, daifclr #2 ... restore DAIF), host_env.rs:611 (read_key_loop), console.rs:237 (aux_read_blocking), and
+     gic::enable_irqs (gic.rs:278). Inside those windows the trap-side pump (pump_devices -> USB poll -> ikbd -> pointer draw -> NEON kernel) CAN run with IRQs unmasked,
+     i.e. a timer IRQ can land inside a raster kernel at EL1 (SPSR from EL1). Then irq_input_pump returns at once (not from EL0), so no second pointer draw; what still runs
+     in that IRQ is the timer, the PL011 drain and fbcon::blink_tick (gic.rs:226-228, tos-api alpha_blink via try_lock), which may draw the text cursor through the backend (the raster_kernel.rs
+     note says through the scalar row methods; I did not trace it) -- were it a NEON kernel, it saves and restores its registers on its own stack area, so the interrupted kernel's values are handed back; the V
+     registers are not corrupted either way. (Pre-existing since V49, not changed by V59; pixel-level interleaving of a blink with a pointer paint in that window is a
+     separate, unmeasured question -- out of scope.)
+     Verdict on the finding: confirmed from the code and the disassembly; not exercisable in QEMU as an EL0 register-survival test (no EL0 program checking v0-v31 across
+     pointer motion was run) -> an open item: Pi-side, the INPUT01 path with a hard-float EL0 program is the only direct test.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime (ADR-036 point 5, Fbench Hide/show mouse, graf_mouse off+on vs controls), cache effects of the one clean per paint; cache-sensitive rendering.
+  No EL0 test that holds live V registers while the pointer moves from the timer IRQ (see FP-CONTEXT).
+  raster-prof build, slprobe, the AES dialogs as pictures, other hotspots/forms than those in wkprobe/the desktop (hand, arrow); graf_mouse M_OFF/M_ON nested at the AES level
+  (covered only through vdi_mouse_v59_cell's hide/show script and wkprobe P7).
+  Base `cargo xtask test` total not re-measured (developer: 2339/0/6).

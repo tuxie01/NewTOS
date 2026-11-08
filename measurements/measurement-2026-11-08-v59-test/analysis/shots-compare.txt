@@ -1,0 +1,6 @@
+desk480: 11 shots base, 11 chg, 0 differ: | exc/panic base 0 chg 0
+desk1080: 11 shots base, 11 chg, 0 differ: | exc/panic base 0 chg 0
+edge480: 5 shots base, 5 chg, 0 differ: | exc/panic base 0 chg 0
+edge1080: 5 shots base, 5 chg, 0 differ: | exc/panic base 0 chg 0
+bc480: 6 shots base, 6 chg, 0 differ: | exc/panic base 0 chg 0
+bc1080: 6 shots base, 6 chg, 0 differ: | exc/panic base 0 chg 0

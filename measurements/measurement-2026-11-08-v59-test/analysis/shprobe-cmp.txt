@@ -1,0 +1,8 @@
+n: 12 png base, 0 differ
+d: 2 png base, 0 differ
+sh kernel base rc 0
+sh kernel chg rc 0
+sh run base rc 0
+sh desk base rc 0
+sh run chg rc 0
+sh desk chg rc 0

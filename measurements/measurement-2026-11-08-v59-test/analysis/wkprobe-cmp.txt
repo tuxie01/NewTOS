@@ -1,0 +1,24 @@
+== n-base vs n-chg
+WKPROBE.BIN identical
+35 C1b   EQUAL  (128x128 at 120,120)
+36 C1c   EQUAL  (128x128 at 120,120)
+37 C1d   EQUAL  (128x128 at 120,120)
+cases 37, differing 0
+log lines 115/115, differing 0
+LOG differing lines: 18
+== n-chg vs n-chg2
+WKPROBE.BIN identical
+35 C1b   EQUAL  (128x128 at 120,120)
+36 C1c   EQUAL  (128x128 at 120,120)
+37 C1d   EQUAL  (128x128 at 120,120)
+cases 37, differing 0
+log lines 115/115, differing 0
+LOG differing lines: 18
+f774eea68f1c0a4dae7110b597ba145d55bd574992759d521f45612676f8e292  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v59t/r/wkprobe/n-base/WKPROBE.BIN
+f774eea68f1c0a4dae7110b597ba145d55bd574992759d521f45612676f8e292  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v59t/r/wkprobe/n-chg/WKPROBE.BIN
+f774eea68f1c0a4dae7110b597ba145d55bd574992759d521f45612676f8e292  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v59t/r/wkprobe/n-chg2/WKPROBE.BIN
+wk kernel base rc 0
+wk kernel chg rc 0
+wk run n-base rc 0
+wk run n-chg rc 0
+wk run n-chg2 rc 0

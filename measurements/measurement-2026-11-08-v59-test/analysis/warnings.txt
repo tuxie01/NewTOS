@@ -1,0 +1,22 @@
+build-base-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-base-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-base-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-base-virt-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-virt-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+clippy-base-kernel-qemu-virt.txt: 2 lines, sum 194
+clippy-base-kernel-rpi4.txt: 2 lines, sum 194
+clippy-base-tosapi-tests.txt: 22 lines, sum 87
+clippy-base-tosapi.txt: 1 lines, sum 73
+clippy-chg-kernel-qemu-virt.txt: 2 lines, sum 194
+clippy-chg-kernel-rpi4.txt: 2 lines, sum 194
+clippy-chg-tosapi-tests.txt: 22 lines, sum 87
+clippy-chg-tosapi.txt: 1 lines, sum 73
+touched-file hits base (kernel rpi4 clippy): 8
+touched-file hits base (tosapi clippy): 8
+touched-file hits chg (kernel rpi4 clippy): 8
+touched-file hits chg (tosapi clippy): 8
+clippy-base-tosapi-tests.txt new targets raster_kernel_cell/vdi_mouse_v59_cell hits: 0
+clippy-chg-tosapi-tests.txt new targets raster_kernel_cell/vdi_mouse_v59_cell hits: 0

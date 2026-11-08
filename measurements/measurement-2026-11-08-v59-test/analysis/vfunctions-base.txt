@@ -1,0 +1,9 @@
+kernel::raster_copy::copy_rect 347 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13
+kernel::raster_expand::expand 748 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+kernel::raster_kernel::fill_pattern 287 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+kernel::arch::aarch64::exceptions::apply_switch 681 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+kernel::arch::aarch64::exceptions::handle_pexec 643 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+kernel::arch::aarch64::exceptions::handle_pwait 317 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+kernel::arch::aarch64::exceptions::finish_terminate 495 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+kernel::arch::aarch64::exceptions::yield_after_completed_call 161 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+rust_sync_handler 1107 insns; regs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
