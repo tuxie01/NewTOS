@@ -1,0 +1,49 @@
+V54 tester run -- independent acceptance of TASK/V54.md (vsc_form stores the pointer form without redrawing a shown pointer,
+EmuTOS set_mouse_form vdi/vdi_mouse.c:450-492, audit VDI-WK-003). Date 2026-11-08, main checkout, no card, no Pi, no push.
+Measured: base 67874e27 against change c52700129 (= 721e0441 fix + 61989b6d probe + the run/receipt commit; product-code diff
+base..c52700129 = tos-api/src/vdi/mouse.rs only, 9+/7-). Every build and QEMU side ran in a `git archive` tree of its commit in
+the session scratchpad (references/ linked from the main checkout), fresh target per build. method/accept.sh = the developer's
+accept.sh with only M pointed at this run (phases trees builds virtimg boots tables vdprobe wkprobe gui); method/hosttests.sh =
+host tests in the archive trees. Probes ran from the main checkout (wkprobe.c = commit 61989b6d). Results below are this run's
+own outputs; the developer's results were not used as evidence.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 21 card.img.manifest of this run)
+optional_missing, verbatim: optional_missing none   (all 21 manifests)
+QEMU 11.0.2: raspi4b (-append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot) and virt (headless, flat image).
+Oracle: EmuTOS 1a7484ab via tools/hatari-oracle.sh / run-wkprobe.sh emutos falcontc (Hatari 2.6.1), run twice (e1, e2).
+QEMU PIDs: analysis/qemu-pids.txt, 10 started by accept.sh, 10 gone, 0 ALIVE; probe runners/xtask tosdump kill their own by PID;
+0 qemu-system alive afterwards. (A foreign Hatari of another job, TOS3.06 measurements, ran in parallel: not mine, not touched.)
+
+KERNELS (analysis/kernels.sha256) -- identical to the developer's hashes
+  rpi4 release base c01f9bf8...  chg d5162a79...    qemu-virt flat base 40ddcc2e...  chg 4c02752f...
+
+RESULTS
+ 1 PASS  new host test tos-api/tests/vdi_v54_vsc_form_no_redraw.rs (4 tests), copied into the base tree: RED on base
+         (f1 + f2 fail, f2 left 180 right 0; analysis/newtest-base.txt: 2 passed 2 failed), GREEN on change (4/4, newtest-chg.txt).
+ 2 PASS  cargo xtask test in the main checkout (= c52700129, tree clean): 2362 passed / 0 failed / 6 ignored
+         (analysis/xtask-test-main-chg.txt). In the archive trees (cargo test --no-fail-fast, hosttest-nff-*.txt) 7 xtask tests
+         fail identically on base and change (doc_check x5, rsc x2: they need .git / ignored files, an archive-tree artefact);
+         passed base 2351, chg 2355 (+7 failed-by-artefact = 2358 / 2362): delta +4 = the new tests, ignored 6 both.
+ 3 PASS  builds both boards, base/chg, fresh target: rustc tos-api 64 / kernel 93 everywhere; clippy -p kernel 73+121 both boards;
+         clippy tos-api 73, --tests 87 (base 22 lines, chg 23 lines: new test target, same 87 sum) -- delta 0. All build/clippy rc 0
+         (analysis/builds-rc.txt, warnings.txt).
+ 4 PASS  boots: qemu-virt headless 100 s base and chg: "[desk] desktop up (0 drives)", 0 exception/panic. rpi4 (serial=on):
+         every desk/boot-console run reaches the desktop / console, 0 exception/panic (analysis/shots-compare.txt).
+ 5 PASS  wkprobe v2 vs the oracle (runs/wkprobe): e1 == e2 byte for byte. e1 vs n-chg: 42 cases, 3 differ = P0, M1a, M2a only;
+         F1a-F1d, F2b/F2c, G1b-G1d, G2b/G2c all EQUAL. e1 vs n-base: 5 differ = P0, F1b (243 px), F2b (180 px), M1a, M2a.
+         n-base vs n-chg: exactly F1b and F2b differ, LOG 122/122 lines equal. n-chg == n-chg2 byte for byte (BIN 82e9e690...).
+         G1/G2 (AES graf_mouse USER_DEF path) EQUAL to the oracle and base == change.
+         Poll limit: no run aborted its FIRST packet wait (1978-1980 ticks, 1.86-1.96 M polls < 2 M, all three NewTOS runs); the
+         "2000000 polls" line appears in all three NewTOS LOGs at a LATER wait (line 96, 2128 ticks; the known W9/EmuTOS-hang
+         area), identical on base and change -- all later cases stay aligned (n-base vs n-chg LOG 0 differing lines). Recorded,
+         not counted.
+ 6 PASS  vdprobe: VDPROBE.BIN base == chg byte for byte (0a13c757...), LOG identical, 986 cases 0 differ.
+ 7 PASS  tosdump --tree: vdi-all, AES r2, r3, r4 BIN base == chg byte for byte; vdi-all 0/182 vs oracle on both; r2 78/78 and
+         r3 39/39 differ vs oracle on both (the address cells, identical base/chg); r4 no reference.
+ 8 PASS  pictures base vs chg PNG byte for byte: desktop + IKBD injector 11/11 at 640x480, 11/11 at 1920x1080; boot screen +
+         AUTO console (APITEST.NCP) 6/6 at both. Viewed: desk480-chg 02-02-dialog (About dialog, arrow on the desktop), bc1080-chg
+         05-t045 (console text, 1920x1080).
+
+NOT DRIVEN / OPEN
+  Real Pi 4: nothing run. No card program calls vsc_form directly. Optional real-app check (QED / hourglass at start with
+  graf_mouse) not driven separately; the desktop injector scenes and AES r2-r4 exercise the unchanged graf_mouse path (byte-equal).
+  Noted: the developer's side finding graf_mouse(USER_DEF) colours/hotspot clamp (read, not measured) is outside this acceptance.

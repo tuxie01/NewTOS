@@ -1,0 +1,29 @@
+46c46
+< N   waited 1980 ticks, 1899720 polls
+---
+> N   waited 1980 ticks, 1960405 polls
+51c51
+< N   waited 390 ticks, 374298 polls
+---
+> N   waited 391 ticks, 386075 polls
+56c56
+< N   waited 390 ticks, 372761 polls
+---
+> N   waited 391 ticks, 385472 polls
+61c61
+< N   waited 390 ticks, 374234 polls
+---
+> N   waited 391 ticks, 385511 polls
+78c78
+< N   waited 778 ticks, 746773 polls
+---
+> N   waited 778 ticks, 759757 polls
+96c96
+< N   waited 2061 ticks, 2000000 polls
+---
+> N   waited 2107 ticks, 2000000 polls
+130c130
+< T03 end hz_200 9143
+---
+> T03 end hz_200 9193
+diff LOG exit 1

@@ -1,0 +1,3 @@
+kernel 4c02752ffba0cc094e91861cec0fc2ad6991368cfe19ffe8b818dfe5fed5f0c5
+exception-panic-lines 0
+[desk] desktop up (0 drives)

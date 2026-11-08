@@ -1,0 +1,37 @@
+2c2
+< T01 start hz_200 3022
+---
+> T01 start hz_200 3021
+44c44
+< T02 before the packets hz_200 3043
+---
+> T02 before the packets hz_200 3040
+46c46
+< N   waited 1978 ticks, 1859793 polls
+---
+> N   waited 1980 ticks, 1899720 polls
+51c51
+< N   waited 389 ticks, 364752 polls
+---
+> N   waited 390 ticks, 374298 polls
+56c56
+< N   waited 386 ticks, 362562 polls
+---
+> N   waited 390 ticks, 372761 polls
+61c61
+< N   waited 392 ticks, 365734 polls
+---
+> N   waited 390 ticks, 374234 polls
+78c78
+< N   waited 776 ticks, 727543 polls
+---
+> N   waited 778 ticks, 746773 polls
+96c96
+< N   waited 2128 ticks, 2000000 polls
+---
+> N   waited 2061 ticks, 2000000 polls
+130c130
+< T03 end hz_200 9216
+---
+> T03 end hz_200 9143
+diff LOG exit 1

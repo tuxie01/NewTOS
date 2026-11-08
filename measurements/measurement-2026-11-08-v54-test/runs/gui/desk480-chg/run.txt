@@ -1,0 +1,2 @@
+kernel 20dfcac50f0aafd5230c68230e29247b9b17ac493f6fb31e8a350d34f957954d card bdcab71cbf832141dce8c38cec573e9e7328b8affe990c0223c4eb7a1bbf7696 extra []
+exception-panic-lines 0
