@@ -1,0 +1,81 @@
+V56 acceptance (Tester), 2026-11-08 (local night 01:45-02:15). Independent of the developer run
+measurements/measurement-2026-11-08-v56/RUNINFO.TXT; its method scripts were reused (method/, adapted paths), every number
+below comes from this run's own output. No card, no Pi, no push, no product code touched.
+
+WHAT RAN
+  Trees    base = git archive ad201a57, fix = git archive 559614ed (method/trees-test.sh); product diff base..fix = only
+           tos-api/src/vdi/mouse.rs (+ the new host test, probe files, docs). Never built from the main working tree
+           (V40's uncommitted work, HEAD moved to 5be660c2 during the run). vdprobe/wkprobe/wvprobe scripts ran from a scratch
+           "probe repo" = the fix commit's tosdump/ (committed vdprobe.c, not V40's dirty one) + symlinks to the main
+           checkout's sdk/tools/references (libc.a, oracle ROM, mkcard).
+  NewTOS   QEMU 11.0.2 raspi4b (-append serial=on, APFS clone per boot) and virt (gic-version=2, headless), one QEMU/Hatari at
+           a time, every QEMU killed by the PID its own script recorded.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img (323c87bb...), Hatari 2.6.1,
+           profile falcontc.
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 24 card manifests)
+  Manifests 24 card.img.manifest (scene x4, probe x4, tables x8, gui x8), optional_missing verbatim in all 24:
+           optional_missing none
+  Kernels  builds/kernel-sha256.txt (release rpi4 base 5b6ed481..., fix ac5a9970...; armed scene kernels kinj-*, kwk-*, k-desk-*;
+           qemu-virt flat images virt/). Not kept (scratch disk). Hashes differ from the developer's run (other scratch path).
+  Commands method/*.sh (trees-test, builds, warnings, hosttest, scene, probes, tables, tosdiff-base-fix, gui, gui-compare,
+           virt); cargo test / llvm-nm / llvm-objdump / IR emit by hand (below).
+
+1 SYMBOLS AND DISASSEMBLY (evidence/)
+  llvm-nm -C release rpi4 ELF, BASE: tos_api::vdi::mouse::mov_cur and ::just_rts both 0xffff00000010cff8 (".llvm.14564678943241837896"),
+  no aes_wheel_token symbol. FIX: AES_WHEEL_TOKEN 0xffff00000038b04d, MOV_CUR ...38b059, JUST_RTS ...38b05a, all "b" (.bss);
+  distinct (MOV_CUR/JUST_RTS carry a ".llvm.<hash>" suffix = GlobalMerge packed them side by side, no fold).
+  vex_wheelv BASE: adr x21 = just_rts; one "cmp x10, x21" -> b.eq, then cbz x10, then slot_for; kind = csel #2/wzr; the constant 1
+  (WHEEL_KIND_AES) does not occur. FIX: "cmp x10, x20" (x20 = ...38b05a JUST_RTS) b.eq, cbz, then adrp+add #0x4d = ...38b04d,
+  "cmp x10, x8", b.ne, "mov w8, #0x1" -- the AES branch is present.
+  LLVM IR (cargo rustc -p tos-api --release --emit=llvm-ir, host): BASE the three markers are "define internal void ...
+  unnamed_addr"; FIX "internal global [1 x i8] zeroinitializer, align 1" (no unnamed_addr, not constant) -> cannot be merged by
+  MergeFunctions (not functions) nor merged as constants; size 1, mutable, .bss.
+
+2 HOST TESTS (hosttest/, xtask-test-*.txt)
+  tos-api/tests/aes_v56_vector_tokens.rs (2 tests), cargo test -p tos-api --release --test aes_v56_vector_tokens:
+    base tree: 0 passed, 2 FAILED ("the AES's wheel vector is not just_rts" left == right == 4332588184; no WM_ARROWED), rc 101
+    fix tree : 2 passed.
+  Debug (cargo test -p tos-api --test aes_v56_vector_tokens): 2 passed on base AND fix (nothing folds there).
+  Full host suite on the fix tree (git archive; xtask-test-fix-xtask-subcommand-archive.txt = plain `cargo xtask test` in the
+  archive: 12 xtask failures all archive artefacts -- no .git (doc-check "git ls-files failed"), no measurements/, no gitignored
+  assets). Then the archive got its own scratch `git init` and `cargo test --no-fail-fast --package tos-api --package tos-types
+  --package xtask` (= xtask test's command; xtask-test-fix-clean-archive.txt): 2297 passed, 7 failed, 6 ignored, doctests ran.
+  The 7 failures are xtask-only archive artefacts (test_tiers::the_cited_run_exists wants measurements/measurement-2026-10-28-tool04,
+  4x tosdump::tests::* NotFound recorded runs, 2x rsc_* recolour/cicon needing untracked assets); none in tos-api/tos-types.
+  2297 + 7 = 2304 = baseline 2302 (developer/lead number, not re-run) + 2 V56. Not a verified 2304/0/6 in the real tree (see open).
+
+3 WHEEL SCENE (scene/; tosdump/probes/run-wvprobe.sh at the fix commit)
+  The scene: C:\ window with 40 files, probe mode autoruns WVPROBE.NAP (#Z) which saves and returns vex_butv/curv/wheelv, then
+  the injector feeds 3 wheel-down and 3 wheel-up detents. Verdict by byte compare of QMP shots 00/01/02, and I looked at the images:
+    base probe    00==01==02 "WHEEL DEAD OR UNEXPECTED"; image 01: list still starts at LONGNM01 (rows 01..15)       RED
+    base control  00!=01, 00==02 WHEEL SCROLLS
+    fix probe     00!=01, 00==02 WHEEL SCROLLS; image 01: list starts at LONGNM10 (rows 10..24, 3 rows); image 02 = LONGNM01 again GREEN
+    fix control   00!=01, 00==02 WHEEL SCROLLS
+  WVPROBE.LOG: base E1 E2 E3 = 1 1 1; fix 0 0 0; oracle (Hatari, hatari "done") 0 0 0 (butv old 0xe30100, curv 0xe23c58, wheelv 0xe30154);
+  R1/R2 1/1 on all three. exc-panic 0 in all four NewTOS runs.
+
+4 REGRESSION BASE vs FIX (probe/, tables/, gui/)
+  vdprobe (committed vdprobe.c, 954 cases): 0 differ (base vs fix). 0 exception lines.
+  wkprobe: 37 records, 0 differ base vs fix; LOG 115 lines, exactly 3 differ: W1 vex_wheelv / C1 vex_curv / C1 vex_wheelv
+  "old == vector before ...": base 1, fix 0, oracle 0 (compare-n-base-n-fix.txt). Oracle vs fix LOG: 21 lines differ (base 24);
+  the oracle log has no W9 lines ("hatari w9-no-end", as in the developer run). Records vs oracle 5 differ (P0 etc.), same base and fix.
+  Tables via cargo xtask tosdump (tables/): base vs fix tosdiff vdi-all 0/182, aes-r2-wind 0/78, aes-r3-wind-state 0/39,
+  aes-r4-subfunctions 0/181, no differing byte (cmp -l empty). vs oracle: vdi-all 0/182 on base and fix; aes r2 78/78 and r3 39/39
+  differ vs oracle on base AND fix alike (not V56; r4 has no reference).
+  Desktop with injector: 640x480 11/11 and 1920x1080 11/11 shots byte-identical base vs fix; boot screen + APITEST console 6/6 and
+  6/6 identical (gui/gui-compare.txt); I viewed desk480-fix 10-end.png (desktop, C:\ window scrolled to LONGNM10, icons dragged) and
+  bc480-fix 05-t045.png (console test text): plausible, no corruption. exception/panic lines 0 in all 8 runs.
+
+5 BOTH BOARDS, BUILDS, WARNINGS (builds/, virt/)
+  Fresh target per board and tree (method/builds.sh): cargo xtask build rpi4 and qemu-virt, cargo clippy -p kernel --features
+  board-X, rpi4 --release: all rc 0 for base and fix. Warnings (builds/warnings.txt): tos-api 64 / kernel 93 (rustc), 73 / 121
+  (clippy) on both boards and both trees; delta 0, 0 errors.
+  raspi4b: boots in every scene/probe/table/gui run above (rpi4 serial=on), 0 exception/panic.
+  qemu-virt (method/virt.sh): own fresh `cargo xtask build --board qemu-virt` per tree, flat image as xtask run makes it,
+  QEMU virt headless 60 s: base and fix serial logs byte-identical (69 lines), last lines "[shell] sh_ldapp: starting desktop
+  NEWDESK", "[launch] EL0 ...", "[desk] desktop up (0 drives)", 0 exception/panic. (virt/serial-*.txt; no screendump taken on virt.)
+
+NOT RUN / OPEN
+  Real Pi4 and the USB wheel path (same mousexvec -> call_user_wheel path; HW scenario). TeraDesk start/exit (no vex_* callers,
+  developer grep not re-done). Full `cargo xtask test` in the real tree (V40's uncommitted work lives there; clean-archive
+  figure 2297+7 artefacts instead). wkprobe/AES r2/r3 oracle diffs predate V56 and were not chased.

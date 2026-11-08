@@ -1,0 +1,8 @@
+base  build-rpi4       tos-api=64 kernel=93  errors=0
+base  build-qemu-virt  tos-api=64 kernel=93  errors=0
+base  clippy-rpi4      tos-api=73 kernel=121  errors=0
+base  clippy-qemu-virt tos-api=73 kernel=121  errors=0
+fix   build-rpi4       tos-api=64 kernel=93  errors=0
+fix   build-qemu-virt  tos-api=64 kernel=93  errors=0
+fix   clippy-rpi4      tos-api=73 kernel=121  errors=0
+fix   clippy-qemu-virt tos-api=73 kernel=121  errors=0

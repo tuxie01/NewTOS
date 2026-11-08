@@ -1,0 +1,89 @@
+pens EmuTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+pens NewTOS: 0=ffdf 0=ffff 1=0000 2=f800 3=07c0 4=001f 5=07df 6=ffc0 7=f81f 8=bdd7 9=8c51 10=a800 11=0540 12=0015 13=0555 14=ad40 15=a815
+01 CAL   EQUAL  (136x8 at 0,0)
+02 P0    DIFF   248 px raw, 104 px by pen (32x32 at 52,52): (52,52) E=ffdf N=ffff, (53,52) E=ffdf N=ffff, (54,52) E=ffdf N=ffff, (55,52) E=ffdf N=ffff, (56,52) E=ffdf N=ffff, (57,52) E=ffdf N=ffff
+03 P1    EQUAL  (32x32 at 96,96)
+04 P2    EQUAL  (64x64 at 176,126)
+05 P3    EQUAL  (32x32 at 292,142)
+06 P4    EQUAL  (40x40 at 600,440)
+07 P5    EQUAL  (40x40 at 0,0)
+08 P6a   EQUAL  (64x64 at 380,130)
+09 P6b   EQUAL  (64x64 at 380,130)
+10 P7a   EQUAL  (32x32 at 492,142)
+11 P7b   EQUAL  (32x32 at 492,142)
+12 P7c   EQUAL  (32x32 at 492,142)
+13 F1a   EQUAL  (64x64 at 90,240)
+14 F1b   DIFF   243 px raw, 243 px by pen (64x64 at 90,240): (110,260) E=ffdf N=07c0, (111,260) E=ffdf N=f800, (112,260) E=ffc0 N=07c0, (113,260) E=ffc0 N=f800, (114,260) E=001f N=07c0, (115,260) E=001f N=f800
+15 F1c   EQUAL  (64x64 at 90,240)
+16 F1d   EQUAL  (64x64 at 90,240)
+17 F2b   DIFF   180 px raw, 180 px by pen (64x64 at 280,240): (292,252) E=f800 N=ffdf, (293,252) E=f800 N=ffdf, (292,253) E=f800 N=ffdf, (293,253) E=f800 N=0000, (294,253) E=ffc0 N=ffdf, (292,254) E=f800 N=ffdf
+18 F2c   EQUAL  (64x64 at 280,240)
+19 D1a   EQUAL  (56x56 at 432,244)
+20 D1b   EQUAL  (56x56 at 432,244)
+21 D1c   EQUAL  (56x56 at 432,244)
+22 M1a   DIFF   194 px raw, 108 px by pen (64x40 at 192,344): (200,350) E=ffdf N=ffff, (201,350) E=ffdf N=ffff, (200,351) E=ffdf N=ffff, (201,351) E=0000 N=ffff, (202,351) E=ffdf N=ffff, (200,352) E=ffdf N=ffff
+23 M1b   EQUAL  (64x40 at 192,344)
+24 M2a   DIFF   353 px raw, 352 px by pen (96x56 at 336,336): (350,350) E=f800 N=ffff, (351,350) E=f800 N=ffff, (352,350) E=f800 N=ffff, (353,350) E=f800 N=ffff, (354,350) E=f800 N=ffff, (355,350) E=f800 N=ffff
+25 M2b   EQUAL  (96x56 at 336,336)
+26 M3a   EQUAL  (40x40 at 492,344)
+27 M3b   EQUAL  (40x40 at 492,344)
+28 W1a   EQUAL  (256x176 at 80,80)
+29 W1b   EQUAL  (256x176 at 80,80)
+30 W1c   EQUAL  (256x176 at 80,80)
+31 W2a   EQUAL  (256x176 at 80,80)
+32 W2b   EQUAL  (256x176 at 80,80)
+33 W2c   EQUAL  (256x176 at 80,80)
+34 C1a   EQUAL  (128x128 at 120,120)
+35 C1b   EQUAL  (128x128 at 120,120)
+36 C1c   EQUAL  (128x128 at 120,120)
+37 C1d   EQUAL  (128x128 at 120,120)
+cases 37, differing 5
+LOG E:   W1 vex_butv after: old == own 0, old == vector before W1 0
+LOG N:   W1 vex_butv after: old == own 0, old == vector before W1 1
+LOG E:   W1 vex_motv after: old == own 0, old == vector before W1 0
+LOG N:   W1 vex_motv after: old == own 0, old == vector before W1 1
+LOG E:   W1 vex_timv after: old == own 0, old == vector before W1 0 (ms 20)
+LOG N:   W1 vex_timv after: old == own 0, old == vector before W1 1 (ms 20)
+LOG E:   W1 vex_wheelv after: old == own 0, old == vector before W1 0
+LOG N:   W1 vex_wheelv after: old == own 0, old == vector before W1 1
+LOG E:   packet f8 0 0: vq_mouse 0 319 239 -> 0 319 239 (unchanged)
+LOG N:   packet f8 0 0: vq_mouse 0 319 239 -> 0 359 259 (changed)
+LOG E:   C1 vex_butv after v_clswk: old == own 0, old == vector before C1 0
+LOG N:   C1 vex_butv after v_clswk: old == own 0, old == vector before C1 1
+LOG E:   C1 vex_motv after v_clswk: old == own 0, old == vector before C1 0
+LOG N:   C1 vex_motv after v_clswk: old == own 0, old == vector before C1 1
+LOG E:   C1 vex_curv after v_clswk: old == cursor vector before 0, == own 0
+LOG N:   C1 vex_curv after v_clswk: old == cursor vector before 1, == own 0
+LOG E:   C1 vex_wheelv after v_clswk: old == own 0, old == vector before C1 0
+LOG N:   C1 vex_wheelv after v_clswk: old == own 0, old == vector before C1 1
+LOG E:   Z1 vq_extnd(1): planes 16 lut 0; Getrez 2
+LOG N:   Z1 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z2 v_opnwk(2): handle 1 nintout 45 nptsout 6 work_out[0] 319 [1] 199 [13] 16 [35] 1 [39] 4096 ptsout[1] 4
+LOG N:   Z2 v_opnwk(2): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+LOG E:   Z2 vq_extnd(1): planes 4 lut 1; Getrez 0
+LOG N:   Z2 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z3 v_opnwk(3): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 199 [13] 4 [35] 1 [39] 4096 ptsout[1] 4
+LOG N:   Z3 v_opnwk(3): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+LOG E:   Z3 vq_extnd(1): planes 2 lut 1; Getrez 1
+LOG N:   Z3 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z4 v_opnwk(4): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 399 [13] 2 [35] 0 [39] 4096 ptsout[1] 4
+LOG N:   Z4 v_opnwk(4): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+LOG E:   Z4 vq_extnd(1): planes 1 lut 1; Getrez 2
+LOG N:   Z4 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z5 vq_extnd(1): planes 16 lut 0; Getrez 2
+LOG N:   Z5 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z6 vq_extnd(1): planes 8 lut 1; Getrez 2
+LOG N:   Z6 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z7 vq_extnd(1): planes 8 lut 1; Getrez 2
+LOG N:   Z7 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E:   Z8 vq_extnd(1): planes 16 lut 0; Getrez 2
+LOG N:   Z8 vq_extnd(1): planes 16 lut 0; Getrez 4
+LOG E: <none>
+LOG N:   W9 v_opnwk(1): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+LOG E: <none>
+LOG N:   W9 v_opnwk returned
+LOG E: <none>
+LOG N:   W9 three Vsync returned, hz_200 advanced 1
+LOG E: <none>
+LOG N: END
+log lines 111/115, differing 24

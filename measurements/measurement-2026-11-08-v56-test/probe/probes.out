@@ -1,0 +1,21 @@
+qemu      done
+card      after c61f261f402c7956245ae2cc89d65558dd00ae0cfabfb9072c3570bb9f297c13 (the booted clone)
+qemu      done
+card      after c1ff22dce43e86370c6a29017100e428a19c80a43d41aa9b4a1dea2cb08738bf (the booted clone)
+977 T3740 EQUAL  (520x64 at 60,60)
+978 T3741 EQUAL  (520x64 at 60,60)
+cases 954, differing 0
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/wk/wkprobe.FZaGs2/tree: tag [inj], launch:WKPROBE (18 bytes)
+kernel 614bc90d8848f99fb51b35ce2040a2b8716dce1e560e8e7404a1c0ce676ebd07 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/k/kwk-base.img (tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/t/base, armed launch:WKPROBE=1a08bf54230f8d5b8f12ef59354ddb341717996ee7024d1c186da8dc05167f63)
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/wk/wkprobe.QCh1JK/tree: tag [inj], launch:WKPROBE (18 bytes)
+kernel b1241bf7b6594f470b3d13d502e4cd8255a363fb18cfd3c523582b26d852c494 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/k/kwk-fix.img (tree /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/t/fix, armed launch:WKPROBE=1a08bf54230f8d5b8f12ef59354ddb341717996ee7024d1c186da8dc05167f63)
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), cfg c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46, profile falcontc
+hatari    w9-no-end
+qemu-pid  61439
+qemu      done
+card      after 033dee47f8a9d0ff79977a45d43f52937732b4aab681b495d9b4e9f165400237 (the booted clone)
+qemu-pid  62179
+qemu      done
+card      after d5701efe53faca7270e5b3efdd50c851cd34da020645b0c02a960f8637c932af (the booted clone)
+PROBEDONE
+FINISHED

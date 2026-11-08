@@ -1,0 +1,4 @@
+ffff0000000c1590 T tos_api::aes::aes_wheel
+ffff00000010bf28 T tos_api::vdi::mouse::vex_wheelv
+ffff00000010cff8 t tos_api::vdi::mouse::mov_cur (.llvm.14564678943241837896)
+ffff00000010cff8 t tos_api::vdi::mouse::just_rts (.llvm.14564678943241837896)

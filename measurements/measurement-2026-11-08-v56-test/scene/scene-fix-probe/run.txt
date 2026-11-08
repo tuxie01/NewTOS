@@ -1,0 +1,10 @@
+wvprobe run, side newtos probe (2026-11-08T00:19:59Z)
+tree      559614ed96ba99293cf267ea9d1577b37120705e 1 dirty paths in tosdump/probes
+source    wvprobe.c 18c4a3807cbc39e58c54095193c7c0a99f8420302d01a3dbc1cac88bfbb46ee0 wvprobe-mouse.txt a82b225840b7368f63587902731491aca4ae1467a4a961860de85b0744930b82 wvprobe-shots.txt 8afd1853be536d9726f4b278326018aab4c0e4e11eca5e2074677f3921ac37c4
+probes    WVPROBE.PRG 0fb88985174bcd0566efb68d620e87338937727b8f429565baeb10b7767c90fc WVPROBE.NAP 1adae4fe349389201b081d6734b307f146346e6ba2e81424b253b57e9f805213
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    9eb617f2b2577f81949a41b2aaa8a2d176a38c4219e63845a38e22bb5446f423 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/k/kinj-fix.img
+card      edc492c63fc457346aee8947f1159ec0be90a69fd92fc94fa7fc2ef490ee87dd (tools/mkcard.sh, C:\WVPROBE.NAP, 40 files, mode probe)
+qemu-pid  47388
+card      after efd44537d59010dc7e8e8b0145e57e023f0fbf18ffc404c248925ac69e65a5d8 (the booted clone)
+exc-panic 0

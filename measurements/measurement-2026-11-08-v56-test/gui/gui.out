@@ -1,0 +1,34 @@
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/dkk.TQO5MW: tag [inj], desktop (495 bytes)
+desk kernel base a0dbf622796f21da0a48ca65378cec2a0da69f9ec0f742630a3cbc59e81edbc6
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/dkk.VFOhID: tag [inj], desktop (495 bytes)
+desk kernel fix a7392c24b95f3d09415df5abc9c0388ff01aa5e501464194dff285dd053c9eb9
+qemu-system-aarch64: terminating on signal 15 from pid 82751 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 86332 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 87143 (<unknown process>)
+kernel 5b6ed481a0d6da393f6ad1ced50654de455c4337c06c7778187cfc78b771252c APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 87508 (<unknown process>)
+kernel ac5a99704229d0acbf7ea5d18473ee2367290c585e2fca01df011dd0bde5a9cc APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra []
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 87808 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 90300 (<unknown process>)
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+shots 11
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 92717 (<unknown process>)
+kernel 5b6ed481a0d6da393f6ad1ced50654de455c4337c06c7778187cfc78b771252c APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+qemu-system-aarch64: terminating on signal 15 from pid 93447 (<unknown process>)
+kernel ac5a99704229d0acbf7ea5d18473ee2367290c585e2fca01df011dd0bde5a9cc APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+exception-panic-lines 0
+GUIFINISHED
+FINISHED

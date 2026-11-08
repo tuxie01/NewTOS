@@ -1,0 +1,9 @@
+H graf_handle 1 handle 2
+A butv old 0xe30100 curv old 0xe23c58 wheelv old 0xe30154
+E1 wheelv old == butv old: 0
+E2 curv old == butv old: 0
+E3 wheelv old == curv old: 0
+R1 restoring wheelv returns the own routine: 1
+R2 the restored wheelv is the saved old: 1
+A own routine ran 0 0 0
+END

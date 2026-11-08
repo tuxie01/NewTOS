@@ -1,0 +1,4 @@
+t0 = detection of '[inj] desktop armed at hz_200' on the serial file
+00 before planned 1.750s request 1.760s done 1.768s ok
+01 wheel-down planned 3.500s request 3.510s done 3.517s ok
+02 wheel-up planned 5.500s request 5.510s done 5.518s ok

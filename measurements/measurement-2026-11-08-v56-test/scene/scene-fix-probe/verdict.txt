@@ -1,0 +1,3 @@
+00 vs 01  differ (wheel down: the window must scroll -> differ)
+00 vs 02  same (wheel back up: the window must return -> same)
+verdict   WHEEL SCROLLS

@@ -1,0 +1,13 @@
+build rpi4 rc=0
+clippy rpi4 rc=0
+build qemu-virt rc=0
+clippy qemu-virt rc=0
+release rc=0
+5b6ed481a0d6da393f6ad1ced50654de455c4337c06c7778187cfc78b771252c  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/k/base-release.img
+build rpi4 rc=0
+clippy rpi4 rc=0
+build qemu-virt rc=0
+clippy qemu-virt rc=0
+release rc=0
+ac5a99704229d0acbf7ea5d18473ee2367290c585e2fca01df011dd0bde5a9cc  /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v56t/k/fix-release.img
+ALLDONE

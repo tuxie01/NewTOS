@@ -1,0 +1,3 @@
+define internal void @_RNvNtNtCsktHLpSlqrEu_7tos_api3vdi5mouse15aes_wheel_token() unnamed_addr #29 !dbg !158058 {
+define internal void @_RNvNtNtCsktHLpSlqrEu_7tos_api3vdi5mouse7mov_cur() unnamed_addr #29 !dbg !158622 {
+define internal void @_RNvNtNtCsktHLpSlqrEu_7tos_api3vdi5mouse8just_rts() unnamed_addr #29 !dbg !158624 {
