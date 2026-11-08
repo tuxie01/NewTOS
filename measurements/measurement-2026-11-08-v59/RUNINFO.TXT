@@ -1,0 +1,80 @@
+V59 -- TASK/V59.md: the VDI mouse pointer saved, painted and restored per 16x16 cell instead of per pixel
+(RasterBackend::read_device_rect / write_device_rect / draw_sprite; in the kernel a NEON row copy and two V50
+expansions, one cache maintenance per paint), ADR-036. Developer run, 2026-11-08. No card, no Pi, no push.
+Worktree branch v59 (agent worktree), base 6821179c (main with V49-V51 merged). Change = 5a3052ec perf(vdi).
+Measured: base 6821179c against chg 5a3052ec.
+Every build/QEMU side ran in a `git archive` tree of its commit in the session scratchpad (references/ linked from the
+main checkout); method/accept.sh holds the phases (trees builds virtimg boots tables vdprobe wkprobe gui pikernels),
+written for this run: every QEMU is started by it or by a committed probe runner (tosdump/probes/run-*.sh) and killed
+by the PID recorded at its launch, never by name or pattern (the V51 run's leak_check/boot-virt.sh are not used).
+analysis/qemu-pids.txt: 11 QEMU started by accept.sh, 11 gone after their kill, 0 left alive.
+Inputs reused from committed runs (read, not copied): measurements/measurement-2026-11-07-v51/method/desk-mouse.txt,
+desk-shots.txt, desk-NEWDESK.INF, timed-shots.py. method/aes-bin-diff.py is a copy of the V50 run's with this run's path.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (20 manifests)
+QEMU 11.0.2: raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot, one QEMU
+at a time) and virt (qemu-virt, headless, the flat image `cargo xtask run` makes).
+
+KERNELS (rpi4 --release kernel8.img from the archive trees; the Pi pair also in pi-kernels/, gitignored)
+  before  6821179c  a17613afb0eab0a06ab1d2f94446a34a4c8e9934f22f00d0c3c641f794ffa080 1526000 B  pi-kernels/before-6821179c-kernel8.img
+  after   5a3052ec  eb708adddb7de9ea32e96fef2fb1e7342f0e60b138f0a11a066a8dbeb44f0543 1530096 B  pi-kernels/after-5a3052ec-kernel8.img
+  qemu-virt flat images: base 00b90c2b..., chg a3d67b7f... (analysis/kernels.sha256). Armed kernels (injector): wkprobe
+  runs/wkprobe/kernels.sha256, desktop runs/gui/armed-kernels.sha256.
+  The worktree's own rpi4 --release build of 5a3052ec (used only for analysis/disasm-v59.txt) differs from the archive
+  tree's in 79 bytes at the same size; the Pi kernel is the archive tree's (a clean `git archive` of the commit).
+
+RESULTS
+ 1 PASS  host tests (arm64 Mac = the instructions the Pi runs): tos-api/tests/raster_kernel_cell.rs 6 tests (2.4 s):
+         read_rect/write_rect against the per-pixel get/put_device_pixel references for the 16x16 cell at every
+         position from 17 px off to past every edge on five screens (stride minimal/+1/+3, 1920-wide rows), plus
+         widths 0..20 x heights 0..5 on, across and off each edge; sprite behind the backend's clipping against
+         sprite_reference (the old 1x1 fills) over the 8 presets, full/empty/mask-only/data-only/random forms, pen
+         and random colours, every position; save-paint-restore round trip; refusal of a box outside the cell.
+         Stores between two mprotect'ed pages at both ends, the read buffer ending at one; whole store compared.
+         tos-api/tests/vdi_mouse_v59_cell.rs 2 tests: mouse.rs draw/erase before V59 verbatim against the new
+         sequence on the trait defaults and on the kernel pieces (screen, save-under, flush log), all edge
+         positions/forms/colours; the public pointer API script (display_at at edges with every hotspot, nested
+         hide/show, remove, form changes while shown, save/restore/previous form, packets into every clamp) on both
+         paths, every step equal, display_at steps against the old paint, removals against the ground and their
+         flush against the cell.
+         RED with 16 deliberately wrong edits (method/red-mutants.py, analysis/red-mutants.txt), each file restored
+         byte for byte: 16 of 16 red (two of them by SIGBUS at a guard page, one by the register-list check).
+         tos-api/tests/raster_kernel_copy.rs register check now expects three kernels in raster_copy.rs (green).
+ 2 PASS  cargo xtask test (worktree; references/ and the two gitignored rsc inputs linked from the main checkout):
+         base 6821179c 2339 / 0 / 6, change 5a3052ec 2347 / 0 / 6 (+8 = the new tests)
+         (analysis/cargo-xtask-test-{base,chg}.txt). The same suite in a `git archive` tree fails the 5 doc_check
+         tests that need `git ls-files` -- why the base was measured in the worktree before the first edit.
+ 3 PASS  builds, fresh target per build, both boards, base / chg (+ chg with raster-prof, compile only)
+         (analysis/builds-rc.txt, build-*.log, clippy-*.txt, warnings.txt): rustc tos-api 64 / kernel 93 everywhere;
+         clippy -p kernel 73 + 121 on both boards, clippy -p tos-api 73, clippy -p tos-api --tests 87 in 22 lines --
+         base = change, delta 0. Hits in the touched files: only the 8 existing `Vdipb` private-type warnings of
+         mouse.rs, 15 lines up. The two new test targets: 0 warnings.
+ 4 PASS  ADR-036 points 2/3 in the release kernel (analysis/disasm-v59.txt, method/disasm-check.sh): read_rect and
+         write_device_rect (copy_rows inlined) name only q0-q3/v0-v3 in ld1/st1/stp/ldp; sprite and draw_sprite name
+         no V register (they call expand, V50's kernel). FP context: see TASK/V59.md "FP-Kontext" (the pointer is also
+         drawn in the timer IRQ when it interrupted EL0 -- INPUT01 -- already so before V59).
+ 5 PASS  boots: qemu-virt headless 100 s, base and chg (runs/boot-virt-*): "[desk] desktop up (0 drives)", 0
+         exception/panic lines. raspi4b: every run below 0 exception/panic lines; the Pi kernel "after" booted on its
+         own to "[desk] desktop up (1 drives)" (runs/boot-rpi4-chg).
+ 6 PASS  wkprobe (the V18 part 3 pointer/workstation probe, armed kernels feed its mouse packets; runs/wkprobe):
+         WKPROBE.BIN n-base = n-chg = n-chg2 byte-identical (sha256 f774eea6..., analysis/probe-bins.sha256),
+         wkprobe-compare 37 cases 0 differ, log 115/115 lines equal; the raw WKPROBE.LOG differs only in the T0x
+         hz_200 stamps and the "N waited" lines (timing), the same 18 lines chg vs chg2.
+ 7 PASS  vdprobe (runs/vdprobe): VDPROBE.BIN n-base = n-chg = n-chg2 byte-identical (sha256 0a13c757...),
+         VDPROBE.LOG identical, vdprobe-compare 986 cases 0 differ. The BIN files (27 MB each) are not committed.
+ 8 PASS  tables via cargo xtask tosdump --tree with the pinned references (runs/tab-*, analysis/tables-bin-compare.txt,
+         analysis/aes-bin-diff.txt): vdi-all VDI.BIN base == chg byte-identical (e91b865b...), vs oracle 0 of 182 on
+         both. AES r2/r3/r4: tosdiff base vs chg with the table 0 of 78 / 0 of 39 / 0 of 181; the raw files differ in
+         exactly one 8-byte word per case, all by the same delta in the address cell -- the kernel image is 4096 bytes
+         larger (1526000 -> 1530096 B), as in the V50 run. vs oracle r2 78/78, r3 39/39 on both sides (the address
+         cells, as in the sibling runs); r4 no reference.
+ 9 PASS  pictures base vs chg, PNG byte for byte (analysis/shots-compare.txt, runs/gui; inputs analysis/gui-inputs.txt):
+         desktop + IKBD injector (rest, menu, dialog, rubberband, window/slider/sizer/icon drags with the pointer over
+         windows) 11/11 at 640x480 and 11/11 at 1920x1080; boot screen + AUTO console (APITEST.NCP) 6/6 at 640x480 and
+         6/6 at 1920x1080. Viewed: desk480-chg 04-window-drag-held shows the arrow over the dragged window.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime (ADR-036 point 5) -- plan in TASK/V59.md "Uebergabe Pi"; not touched (no card, no HW).
+  The effect of the one clean per paint against up to 256 before (dc civac with a direct-screen alias) is Pi-only.
+  Not run: vdi-v18-t2, shprobe/shprobe-desk, slprobe (not in the ticket's list; the pointer is in every desktop shot).
+  Oracle side not rerun: the records are base == change. raster-prof has no entry for the cell methods (TASK/V59.md).

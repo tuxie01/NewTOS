@@ -1,0 +1,4 @@
+all VDI.BIN identical e91b865b92b5dbf2
+r2 AES.BIN DIFFER: 78 bytes
+r3 AES.BIN DIFFER: 39 bytes
+r4 AES.BIN DIFFER: 181 bytes

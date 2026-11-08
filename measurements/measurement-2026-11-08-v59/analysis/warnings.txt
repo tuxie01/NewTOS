@@ -1,0 +1,25 @@
+build-base-qemu-virt-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-base-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-base-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-base-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-qemu-virt-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-qemu-virt.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+build-chg-rpi4-release-prof.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-rpi4-release.log: warning: `kernel` (lib) generated 93 warnings warning: `tos-api` (lib) generated 64 warnings 
+build-chg-rpi4.log: warning: `tos-api` (lib) generated 64 warnings warning: `kernel` (lib) generated 93 warnings 
+clippy-base-kernel-qemu-virt.txt: 2 lines, sum 194
+clippy-base-kernel-rpi4.txt: 2 lines, sum 194
+clippy-base-tosapi-tests.txt: 22 lines, sum 87
+clippy-base-tosapi.txt: 1 lines, sum 73
+clippy-chg-kernel-qemu-virt.txt: 2 lines, sum 194
+clippy-chg-kernel-rpi4.txt: 2 lines, sum 194
+clippy-chg-tosapi-tests.txt: 22 lines, sum 87
+clippy-chg-tosapi.txt: 1 lines, sum 73
+clippy-chg-kernel-qemu-virt.txt hits in touched files:    --> tos-api/src/vdi/mouse.rs:870:1    --> tos-api/src/vdi/mouse.rs:913:1    --> tos-api/src/vdi/mouse.rs:996:1     --> tos-api/src/vdi/mouse.rs:1064:1     --> tos-api/src/vdi/mouse.rs:1069:1     --> tos-api/src/vdi/mouse.rs:1074:1     --> tos-api/src/vdi/mouse.rs:1097:1     --> tos-api/src/vdi/mouse.rs:1122:1 
+clippy-chg-kernel-rpi4.txt hits in touched files:    --> tos-api/src/vdi/mouse.rs:870:1    --> tos-api/src/vdi/mouse.rs:913:1    --> tos-api/src/vdi/mouse.rs:996:1     --> tos-api/src/vdi/mouse.rs:1064:1     --> tos-api/src/vdi/mouse.rs:1069:1     --> tos-api/src/vdi/mouse.rs:1074:1     --> tos-api/src/vdi/mouse.rs:1097:1     --> tos-api/src/vdi/mouse.rs:1122:1 
+clippy-chg-tosapi-tests.txt hits in touched files:    --> tos-api/src/vdi/mouse.rs:870:1    --> tos-api/src/vdi/mouse.rs:913:1    --> tos-api/src/vdi/mouse.rs:996:1     --> tos-api/src/vdi/mouse.rs:1064:1     --> tos-api/src/vdi/mouse.rs:1069:1     --> tos-api/src/vdi/mouse.rs:1074:1     --> tos-api/src/vdi/mouse.rs:1097:1     --> tos-api/src/vdi/mouse.rs:1122:1 
+clippy-chg-tosapi.txt hits in touched files:    --> tos-api/src/vdi/mouse.rs:870:1    --> tos-api/src/vdi/mouse.rs:913:1    --> tos-api/src/vdi/mouse.rs:996:1     --> tos-api/src/vdi/mouse.rs:1064:1     --> tos-api/src/vdi/mouse.rs:1069:1     --> tos-api/src/vdi/mouse.rs:1074:1     --> tos-api/src/vdi/mouse.rs:1097:1     --> tos-api/src/vdi/mouse.rs:1122:1 
+clippy-base-kernel-qemu-virt.txt hits in the same files on the base:    --> tos-api/src/vdi/mouse.rs:885:1    --> tos-api/src/vdi/mouse.rs:928:1     --> tos-api/src/vdi/mouse.rs:1011:1     --> tos-api/src/vdi/mouse.rs:1079:1     --> tos-api/src/vdi/mouse.rs:1084:1     --> tos-api/src/vdi/mouse.rs:1089:1     --> tos-api/src/vdi/mouse.rs:1112:1     --> tos-api/src/vdi/mouse.rs:1137:1 
+clippy-base-kernel-rpi4.txt hits in the same files on the base:    --> tos-api/src/vdi/mouse.rs:885:1    --> tos-api/src/vdi/mouse.rs:928:1     --> tos-api/src/vdi/mouse.rs:1011:1     --> tos-api/src/vdi/mouse.rs:1079:1     --> tos-api/src/vdi/mouse.rs:1084:1     --> tos-api/src/vdi/mouse.rs:1089:1     --> tos-api/src/vdi/mouse.rs:1112:1     --> tos-api/src/vdi/mouse.rs:1137:1 
+clippy-base-tosapi-tests.txt hits in the same files on the base:    --> tos-api/src/vdi/mouse.rs:885:1    --> tos-api/src/vdi/mouse.rs:928:1     --> tos-api/src/vdi/mouse.rs:1011:1     --> tos-api/src/vdi/mouse.rs:1079:1     --> tos-api/src/vdi/mouse.rs:1084:1     --> tos-api/src/vdi/mouse.rs:1089:1     --> tos-api/src/vdi/mouse.rs:1112:1     --> tos-api/src/vdi/mouse.rs:1137:1 
+clippy-base-tosapi.txt hits in the same files on the base:    --> tos-api/src/vdi/mouse.rs:885:1    --> tos-api/src/vdi/mouse.rs:928:1     --> tos-api/src/vdi/mouse.rs:1011:1     --> tos-api/src/vdi/mouse.rs:1079:1     --> tos-api/src/vdi/mouse.rs:1084:1     --> tos-api/src/vdi/mouse.rs:1089:1     --> tos-api/src/vdi/mouse.rs:1112:1     --> tos-api/src/vdi/mouse.rs:1137:1 

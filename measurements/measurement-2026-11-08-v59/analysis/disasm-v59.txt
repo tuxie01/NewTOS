@@ -1,0 +1,21 @@
+ELF target/aarch64-unknown-none-softfloat/release/kernel sha256 69196c3a6b556120117555ca0c3de119ff79ed05f14fdcf3c38a6c1bd38d7165
+== <kernel::raster_copy::read_rect>: 215 lines
+   instructions naming V/Q registers:  5 ld1, 2 ldp, 5 st1, 2 stp,
+   registers: q0 q1 q2 q3 v0 v1 v2 v3 
+   calls: core::panicking::panic_fmt;core::slice::index::slice_index_fail;kernel::raster_copy::on_screen;memset;
+== RasterBackend>::write_device_rect>: 94 lines
+   instructions naming V/Q registers:  5 ld1, 2 ldp, 5 st1, 2 stp,
+   registers: q0 q1 q2 q3 v0 v1 v2 v3 
+   calls: core::slice::index::slice_index_fail;kernel::raster_copy::on_screen;
+== <kernel::raster_expand::sprite>: 90 lines
+   instructions naming V/Q registers: 
+   registers: 
+   calls: core::panicking::panic_fmt;core::slice::index::slice_index_fail;kernel::raster_expand::expand;
+== RasterBackend>::draw_sprite>: 158 lines
+   instructions naming V/Q registers: 
+   registers: 
+   calls: kernel::raster_expand::sprite;kernel::vdi_backend::ensure_palette_init;
+== RasterBackend>::read_device_rect>: 27 lines
+   instructions naming V/Q registers: 
+   registers: 
+   calls: kernel::raster_copy::read_rect;
