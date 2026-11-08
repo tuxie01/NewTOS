@@ -1,0 +1,43 @@
+ffff0000001f21a4 d tos_api::vdi::mouse::HIDE_COUNT (.llvm.10582203389689335301)
+ffff0000001f23fc d tos_api::vdi::mouse::SAVED_FORM
+ffff00000038b1e8 b tos_api::vdi::mouse::USER_WHEEL (.llvm.10582203389689335301)
+ffff00000010bf28 T tos_api::vdi::mouse::vex_wheelv
+ffff00000038b048 B tos_api::vdi::mouse::CUR_MS_STAT
+ffff00000038b04c b tos_api::vdi::mouse::MOUSE_STATE (.0.llvm.10582203389689335301)
+ffff00000010bfe8 t tos_api::vdi::mouse::ensure_init (.llvm.10582203389689335301)
+ffff00000010c1dc t tos_api::vdi::mouse::swap_vector
+ffff00000010c400 t tos_api::vdi::mouse::install_form (.llvm.10582203389689335301)
+ffff00000010c748 T tos_api::vdi::mouse::feed_relative
+ffff00000010c98c T tos_api::vdi::mouse::mousex_handler
+ffff00000038b050 b tos_api::vdi::mouse::USER_WHEEL_KIND (.0.llvm.10582203389689335301)
+ffff0000001f2200 d tos_api::vdi::mouse::USER_WHEEL_SLOT (.0.llvm.10582203389689335301)
+ffff00000038b054 b tos_api::vdi::mouse::WHEEL_INIT_DONE (.llvm.10582203389689335301)
+ffff00000038cd48 b tos_api::vdi::mouse::BACK (.llvm.10582203389689335301)
+ffff00000038b3b0 b tos_api::vdi::mouse::DATA (.llvm.10582203389689335301)
+ffff00000038b3d0 b tos_api::vdi::mouse::MASK (.llvm.10582203389689335301)
+ffff00000010cca0 t tos_api::vdi::mouse::draw (.llvm.10582203389689335301)
+ffff00000038b0ec b tos_api::vdi::mouse::GCURX (.llvm.10582203389689335301)
+ffff00000038b0f0 b tos_api::vdi::mouse::GCURY (.llvm.10582203389689335301)
+ffff00000038b0f4 b tos_api::vdi::mouse::HOT_X (.0.llvm.10582203389689335301)
+ffff00000038b0f8 b tos_api::vdi::mouse::HOT_Y (.0.llvm.10582203389689335301)
+ffff00000010ce10 t tos_api::vdi::mouse::erase (.llvm.10582203389689335301)
+ffff00000038b058 b tos_api::vdi::mouse::BG_COL (.0.llvm.10582203389689335301)
+ffff0000001f2184 d tos_api::vdi::mouse::FG_COL (.0.llvm.10582203389689335301)
+ffff00000010cff8 t tos_api::vdi::mouse::mov_cur (.llvm.10582203389689335301)
+ffff00000038b05c b tos_api::vdi::mouse::MOUSE_BT (.0)
+ffff00000038b1f0 b tos_api::vdi::mouse::TIM_ADDR (.llvm.10582203389689335301)
+ffff00000038b1f8 b tos_api::vdi::mouse::USER_BUT (.llvm.10582203389689335301)
+ffff00000038b200 b tos_api::vdi::mouse::USER_CUR (.llvm.10582203389689335301)
+ffff00000038b208 b tos_api::vdi::mouse::USER_MOT (.llvm.10582203389689335301)
+ffff00000010cff8 t tos_api::vdi::mouse::just_rts (.llvm.10582203389689335301)
+ffff00000010d008 T tos_api::vdi::mouse::v_hide_c
+ffff00000010d068 T tos_api::vdi::mouse::v_show_c
+ffff00000010d154 T tos_api::vdi::mouse::vex_butv
+ffff00000010d2c8 T tos_api::vdi::mouse::vex_curv
+ffff00000010d43c T tos_api::vdi::mouse::vex_motv
+ffff00000010d5b0 T tos_api::vdi::mouse::vex_timv
+ffff00000010d778 T tos_api::vdi::mouse::vq_mouse
+ffff00000010d868 T tos_api::vdi::mouse::vsc_form
+ffff0000001f2444 d tos_api::vdi::mouse::PREV_FORM
+ffff0000001b16f0 R tos_api::bdos::mem::traps::KERNEL_PD_SENTINEL
+ffff0000001b16f1 R tos_api::bdos::mem::traps::TSR_OWNER_SENTINEL

@@ -1,0 +1,3 @@
+@_RNvNtNtCsktHLpSlqrEu_7tos_api3vdi5mouse15AES_WHEEL_TOKEN = internal global [1 x i8] zeroinitializer, align 1
+@_RNvNtNtCsktHLpSlqrEu_7tos_api3vdi5mouse7MOV_CUR = internal global [1 x i8] zeroinitializer, align 1
+@_RNvNtNtCsktHLpSlqrEu_7tos_api3vdi5mouse8JUST_RTS = internal global [1 x i8] zeroinitializer, align 1

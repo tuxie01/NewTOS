@@ -390,7 +390,7 @@ fn ensure_init(backend: &dyn RasterBackend) {
     GCURY.store(cy, Ordering::Relaxed);
     USER_BUT.store(just_rts_va(), Ordering::Relaxed);
     USER_MOT.store(just_rts_va(), Ordering::Relaxed);
-    USER_CUR.store(mov_cur as *const () as u64, Ordering::Relaxed);
+    USER_CUR.store(token_va(&MOV_CUR), Ordering::Relaxed);
     timer_init();
     // `user_wheel` and `mousexvec`, unless the AES or a program got there
     // first (one-shot, [`wheel_init`]).
@@ -444,7 +444,7 @@ pub(crate) fn vdimouse_init(backend: &dyn RasterBackend) {
     GCURY.store(cy, Ordering::Relaxed);
     USER_BUT.store(just_rts_va(), Ordering::Relaxed);
     USER_MOT.store(just_rts_va(), Ordering::Relaxed);
-    USER_CUR.store(mov_cur as *const () as u64, Ordering::Relaxed);
+    USER_CUR.store(token_va(&MOV_CUR), Ordering::Relaxed);
     reset_wheel_vector();
     let form = ARROW_FORM;
     HOT_X.store(form.hot_x, Ordering::Relaxed);
@@ -494,14 +494,15 @@ fn aes_mouse_vectors_live() -> bool {
 /// four are never called from NewTOS' cooperative feed path (AUD-V6-002).
 /// The **wheel** slot is different since GUI04: [`call_user_wheel`] really
 /// dispatches it, and `just_rts` is the address it recognises as "no handler,
-/// do nothing" — the behavioural equivalent of jumping to an `rts`.
-fn just_rts() {}
+/// do nothing" — the behavioural equivalent of jumping to an `rts`. A data
+/// token, not an empty `fn` (V56, [`token_va`]).
+static JUST_RTS: AtomicU8 = AtomicU8::new(0);
 
 /// EmuTOS `mov_cur` (`vdi_asm.S:496`): the default cursor-draw vector. EmuTOS'
 /// `mouse_int` calls it to redraw the sprite after a move; NewTOS redraws the
 /// cursor inline in [`feed_relative`], so this is a pure address sentinel for
-/// the `vex_curv` save/restore contract — never invoked.
-fn mov_cur() {}
+/// the `vex_curv` save/restore contract — never invoked ([`token_va`]).
+static MOV_CUR: AtomicU8 = AtomicU8::new(0);
 
 // ── extended mouse: buttons 3-5 and the wheel ──────────────────────────────
 //
@@ -549,16 +550,16 @@ static WHEEL_INIT_DONE: AtomicU8 = AtomicU8::new(0);
 /// chaining (gemlib `vex_wheelv.c`) therefore stops at the privilege boundary:
 /// an application that saves and later restores `old` gets the AES's wheel
 /// handling back, but it cannot chain into it while its own is installed.
-fn aes_wheel_token() {}
+static AES_WHEEL_TOKEN: AtomicU8 = AtomicU8::new(0);
 
-/// Address of the `just_rts` no-op, as stored in the vector slots.
+/// Address of the [`JUST_RTS`] token, as stored in the vector slots.
 fn just_rts_va() -> u64 {
-    just_rts as *const () as u64
+    token_va(&JUST_RTS)
 }
 
-/// Address of the [`aes_wheel_token`] sentinel.
+/// Address of the [`AES_WHEEL_TOKEN`].
 fn aes_wheel_va() -> u64 {
-    aes_wheel_token as *const () as u64
+    token_va(&AES_WHEEL_TOKEN)
 }
 
 /// `user_wheel = just_rts` (`vdi/vdi_mouse.c:588,628`), shared by
@@ -1087,7 +1088,7 @@ pub fn vex_motv(pb: &Vdipb) {
 /// Opcode 127 — `vex_curv`: install the cursor-draw vector.
 pub fn vex_curv(pb: &Vdipb) {
     let (prev, new) = swap_vector(pb, &USER_CUR);
-    exchange_hook(Cell::VexCurv, Hook::VexCurv, prev, new, mov_cur as *const () as u64);
+    exchange_hook(Cell::VexCurv, Hook::VexCurv, prev, new, token_va(&MOV_CUR));
 }
 
 /// Opcode 134 — `vex_wheelv`: install the mouse-wheel vector (EmuTOS
@@ -1099,7 +1100,7 @@ pub fn vex_curv(pb: &Vdipb) {
 /// so the swap is followed by a classification of the **new** value:
 ///
 /// * `just_rts` → [`WHEEL_KIND_NONE`] (an application clearing the vector);
-/// * the [`aes_wheel_token`] → [`WHEEL_KIND_AES`] (an application putting the
+/// * the [`AES_WHEEL_TOKEN`] → [`WHEEL_KIND_AES`] (an application putting the
 ///   `old` it saved back, the normal tear-down of a well-behaved program);
 /// * anything else, issued by a live EL0 process → [`WHEEL_KIND_EL0`] owned by
 ///   that process's slot;
@@ -1138,4 +1139,25 @@ pub fn vex_timv(pb: &Vdipb) {
     exchange_hook(Cell::VexTimv, Hook::VexTimv, prev, new, just_rts_va());
     pb.set_intout(0, TICKCAL_MS);
     pb.set_contrl(4, 1);
+}
+
+/// The address of a vector token: the value the `vex_*` slots hold for EmuTOS'
+/// `just_rts`, `mov_cur` and the AES's `aes_wheel` ([`JUST_RTS`], [`MOV_CUR`],
+/// [`AES_WHEEL_TOKEN`]). Only the address is used; the byte is never read or
+/// written.
+///
+/// The tokens were empty functions until V56, and in the release kernel the
+/// three had **one** address: rustc marks every function `unnamed_addr`
+/// (its address is declared insignificant), so LLVM's MergeFunctions pass,
+/// which rustc runs by default, folded the identical empty bodies into one
+/// and then folded the comparisons — `vex_wheelv` lost its
+/// `new == aes_wheel_va()` test, and an application that restored the saved
+/// AES wheel vector got "no handler" (`TASK/V56.md`). A `static` has a
+/// significant address: rustc emits it without `unnamed_addr`, and an
+/// interior-mutable one as a non-constant global, so LLVM may not merge two
+/// of them (its global merging only packs them side by side). Each is one
+/// byte, as a zero-sized static could share its address, and they sit in the
+/// writable `.bss`, which a linker's identical-section folding never touches.
+fn token_va(token: &'static AtomicU8) -> u64 {
+    token as *const AtomicU8 as u64
 }

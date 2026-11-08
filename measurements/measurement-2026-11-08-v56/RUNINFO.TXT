@@ -1,0 +1,94 @@
+V56 -- TASK/V56.md: the vex_* default vectors just_rts, mov_cur and the AES wheel token were three empty functions and
+ONE address in the release kernel (LLVM MergeFunctions); the restored AES wheel vector was taken for "no handler" and the
+desktop wheel stayed dead. Fix: the three tokens are one-byte statics. Developer run, 2026-11-08 (local night 00:30-01:30),
+not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   base = git archive of ad201a57 (HEAD when the ticket started; product code = 142134de's), fix = the same plus the
+           V56 files from the main tree's working copy (method/trees.sh; measurements/ left out of both archives, the scratch
+           volume had 7.5 GiB free). Neither tree holds the parallel V40 change (tos-api/src/vdi/line.rs, primitives.rs,
+           text.rs, gdp.rs in the main tree) -- EXCEPT the vdprobe source: run-vdprobe.sh builds tosdump/probes/vdprobe.c
+           from the main tree, which carried V40's uncommitted vdprobe.c (sha256 5d3b74d1..., 986 cases; HEAD's is
+           089329f1...). Both vdprobe runs used that same VDPROBE.NAP (21e2ae70...), so base vs fix stays a like-for-like
+           compare.
+           Kernels (builds/kernel-sha256.txt): plain rpi4 release base a3f61b9f..., fix 0192ed1c... (method/builds.sh);
+           wheel scene, armed desktop=tosdump/probes/wvprobe-mouse.txt: kinj-base c505583e..., kinj-fix 73ec7a4e...;
+           wkprobe, armed launch:WKPROBE: kwk-base e9fe29dc..., kwk-fix 27ee16ac...; desktop scene (V34 test's desk-mouse.txt,
+           built without the tree's target/, method/gui.sh): k-desk-base a0dbf622..., k-desk-fix a7392c24.... Not kept.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img (323c87bb...2d2750c), Hatari 2.6.1,
+           tools/oracle/hatari.cfg, profile falcontc (scene/oracle-e1, probe/e1).
+  Boards   QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (removed by the scripts). One QEMU/Hatari of mine at a
+           time; every QEMU killed by the PID its own script recorded at launch ("terminating on signal 15 from pid <script>").
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 24 card manifests)
+  Manifests scene/scene-{base,fix}-{probe,control}, probe/{n-base,n-fix,vd-base,vd-fix}, tables/tab-* (8), gui/* (8):
+           24 card.img.manifest, optional_missing, verbatim, in all 24:
+           optional_missing none
+  Commands method/*.sh, in this order: trees.sh, builds.sh base + fix, warnings.sh, nomerge.sh, hosttest.sh, scene.sh,
+           probes.sh, tables.sh, tosdiff-base-fix.sh, gui.sh, gui-compare.sh. scene.sh's steps ran one by one by hand in
+           that order; the first scene run (base probe) failed before booting -- the QMP socket path in the scratchpad was
+           over macOS's 104-byte limit -- and run-wvprobe.sh was changed to a socket path relative to its scratch dir
+           before every run kept here.
+
+1 CAUSE (evidence/)
+  llvm-nm -C, base release ELF: tos_api::vdi::mouse::mov_cur and ::just_rts at ONE address 0xffff00000010cff8 (both
+  ".llvm.<hash>" local), no aes_wheel_token symbol (evidence/llvm-nm-base.txt). vex_wheelv (evidence/vex_wheelv-base.dis):
+  one "cmp x10, x21" with x21 = adr just_rts, then cbz, then slot_for; the kind is "csel w8, #2 / wzr" -- the constant 1
+  (WHEEL_KIND_AES) does not occur: the `new == aes_wheel_va()` branch was folded away with the token.
+  Which pass: method/nomerge.sh builds the same base tree once more with `-Z merge-functions=disabled` (other flag as
+  .cargo/config.toml): aes_wheel_token 0xffff00000010d848, mov_cur ...dbb0, just_rts ...dbc0 -- three addresses
+  (evidence/llvm-nm-base-nomerge.txt). So LLVM's MergeFunctions pass (on by default in rustc) folds them, no linker ICF
+  (none is enabled for this target). LLVM IR of tos-api (host, release): the three markers are
+  `define internal void ... unnamed_addr` (evidence/ir-base-markers.txt) -- rustc declares every function's address
+  insignificant, which is what licenses the fold.
+
+2 FIX AND SYMBOLS (evidence/)
+  tos-api/src/vdi/mouse.rs: JUST_RTS, MOV_CUR, AES_WHEEL_TOKEN are `static AtomicU8`; token_va() gives their address.
+  IR: `internal global [1 x i8] zeroinitializer` -- no unnamed_addr, not constant (evidence/ir-fix-markers.txt).
+  llvm-nm -C, fix release ELF (evidence/llvm-nm-fix.txt): AES_WHEEL_TOKEN 0xffff00000038b04d, MOV_CUR ...b059,
+  JUST_RTS ...b05a, all "b" (.bss). vex_wheelv (evidence/vex_wheelv-fix.dis): "cmp x10, x20" (x20 = JUST_RTS), cbz, then
+  "cmp x10, x8" with x8 = ...b04d = AES_WHEEL_TOKEN, "b.ne" / "mov w8, #0x1" -- the WHEEL_KIND_AES branch is back.
+  KERNEL_PD_SENTINEL / TSR_OWNER_SENTINEL (tos-api/src/bdos/mem/traps.rs, `static u8`) at ...1b16f0 / ...1b16f1 in both
+  kernels: distinct, untouched.
+
+3 HOST TEST (hosttest/)
+  tos-api/tests/aes_v56_vector_tokens.rs, 2 tests, run optimised (`cargo test -p tos-api --release --test
+  aes_v56_vector_tokens`, method/hosttest.sh) because the fold is an optimiser effect: base tree 0 passed 2 failed
+  ("the AES's wheel vector is not just_rts": left == right == 4305390744; "the restored AES wheel vector must reach the AES
+  again": no WM_ARROWED), fix tree 2 passed. The default (debug) build runs them in cargo xtask test (section 7).
+
+4 SCENE (scene/; tosdump/probes/run-wvprobe.sh, tosdump/probes/wvprobe.c, wvprobe-mouse.txt, wvprobe-shots.txt)
+  The C:\ window of the V34 desktop INF with 40 files; probe mode autoruns WVPROBE.NAP by #Z first: it saves butv/curv/
+  wheelv with an own routine and puts each saved vector straight back, then exits; the desktop comes up, the injector
+  (armed on the first "desktop up") parks the pointer in the file list, feeds 3 wheel-down then 3 wheel-up detents;
+  QMP shots 00 before, 01 after down, 02 after up.
+    base probe    00 == 01 == 02 -> WHEEL DEAD (01: the list still starts at LONGNM01)            RED
+    base control  00 != 01, 00 == 02 -> WHEEL SCROLLS                                              (scene works)
+    fix probe     00 != 01, 00 == 02 -> WHEEL SCROLLS (01: the list starts at LONGNM10, 3 rows)   GREEN
+    fix control   00 != 01, 00 == 02 -> WHEEL SCROLLS
+  WVPROBE.LOG E1/E2/E3 (wheelv old == butv old, curv old == butv old, wheelv old == curv old): base 1 1 1 (all three
+  0xffff00000010da8c), fix 0 0 0, oracle 0 0 0 (aes_wheel 0xe30154, far_bcha 0xe30100, mov_cur 0xe23c58). R1/R2 1/1 on
+  all three. 0 exception/panic lines.
+
+5 REGRESSION (probe/, tables/, gui/)
+  vdprobe base vs fix: 986 cases, 0 differ (V40's probe source, see above).
+  wkprobe: base vs fix 37 records, 0 differ; LOG 115 lines, 3 differ, exactly the vector lines this ticket is about:
+    W1 vex_wheelv "old == vector before W1"  base 1, fix 0, oracle 0
+    C1 vex_curv   "old == cursor vector before" base 1, fix 0, oracle 0
+    C1 vex_wheelv "old == vector before C1"  base 1, fix 0, oracle 0
+  oracle vs base 24 LOG lines differ, oracle vs fix 21 (the three above now equal). Records vs oracle unchanged: P0 F1b F2b
+  M1a M2a (V54, V55, as in V53). The oracle LOG equals the V53 run's e1 LOG except hz_200 numbers.
+  Tables base vs fix (tosdiff + byte compare): vdi-all 0/182, aes-r2-wind 0/78, aes-r3-wind-state 0/39,
+  aes-r4-subfunctions 0/181, every BIN byte-identical. Fix vs oracle vdi-all 0/182; aes r2/r3 vs oracle 78/78, 39/39 on
+  base and fix alike (unchanged by V56).
+  Desktop + injector 640x480 11/11 and 1920x1080 11/11 shots byte-identical base vs fix; boot screen + APITEST console
+  640x480 6/6, 1920x1080 6/6 identical. 0 exception/panic lines.
+
+6 BUILDS AND WARNINGS (builds/)
+  Fresh target per board, base and fix: cargo xtask build rpi4 / qemu-virt, cargo clippy -p kernel --features board-X,
+  rpi4 --release: all rc 0. rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121 on both boards and both trees:
+  delta 0, 0 errors (builds/warnings.txt).
+
+7 cargo xtask test (xtask-test.txt; main tree, which also held V40's uncommitted change, xtask-test-tree-status.txt)
+  rc 0: 2318 passed, 0 failed, 6 ignored (sum of all "test result" lines). Baseline at HEAD 2302/0/6 (the lead's number,
+  not re-run here); +2 = tos-api/tests/aes_v56_vector_tokens.rs (both ok in the debug build), the other +14 are V40's
+  uncommitted tests in the same tree (12 of them tos-api/tests/vdi_reference/cases_v40.rs).

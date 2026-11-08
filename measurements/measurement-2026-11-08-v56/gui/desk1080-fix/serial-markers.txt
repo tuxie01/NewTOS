@@ -1,0 +1,2 @@
+[desk] desktop up (1 drives)
+[inj] desktop armed at hz_200 3059 (slot Some(0) name NEWDESK)

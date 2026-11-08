@@ -1,0 +1,60 @@
+
+target/aarch64-unknown-none-softfloat/release/kernel:	file format elf64-littleaarch64
+
+Disassembly of section .text:
+
+ffff00000010bf1c <tos_api::vdi::mouse::vex_wheelv>:
+ffff00000010bf1c:      	stp	x29, x30, [sp, #-0x30]!
+ffff00000010bf20:      	str	x21, [sp, #0x10]
+ffff00000010bf24:      	stp	x20, x19, [sp, #0x20]
+ffff00000010bf28:      	mov	x29, sp
+ffff00000010bf2c:      	adrp	x8, 0xffff00000038b000 <tos_api::uaccess::FAULT_ARMED>
+ffff00000010bf30:      	add	x8, x8, #0x54
+ffff00000010bf34:      	mov	w10, #0x1       // =1
+ffff00000010bf38:      	ldxrb	w9, [x8]
+ffff00000010bf3c:      	stxrb	w11, w10, [x8]
+ffff00000010bf40:      	cbnz	w11, 0xffff00000010bf38 <tos_api::vdi::mouse::vex_wheelv+0x1c>
+ffff00000010bf44:      	adrp	x19, 0xffff0000001f2000 <tos_api::bdos::process::usermem::PUBLICATIONS>
+ffff00000010bf48:      	cbnz	w9, 0xffff00000010bf74 <tos_api::vdi::mouse::vex_wheelv+0x58>
+ffff00000010bf4c:      	adrp	x8, 0xffff00000038b000 <tos_api::uaccess::FAULT_ARMED>
+ffff00000010bf50:      	add	x8, x8, #0x50
+ffff00000010bf54:      	add	x9, x8, #0xa
+ffff00000010bf58:      	str	x9, [x8, #0x198]
+ffff00000010bf5c:      	mov	x9, #-0x1       // =-1
+ffff00000010bf60:      	strb	wzr, [x8]
+ffff00000010bf64:      	str	x9, [x19, #0x200]
+ffff00000010bf68:      	nop
+ffff00000010bf6c:      	adr	x9, 0xffff00000010c998 <tos_api::vdi::mouse::mousex_handler>
+ffff00000010bf70:      	str	x9, [x8, #0x1d8]
+ffff00000010bf74:      	adrp	x20, 0xffff00000038b000 <tos_api::uaccess::FAULT_ARMED>
+ffff00000010bf78:      	add	x20, x20, #0x5a
+ffff00000010bf7c:      	add	x1, x20, #0x18e
+ffff00000010bf80:      	add	x21, x20, #0x18e
+ffff00000010bf84:      	bl	0xffff00000010c1e8 <tos_api::vdi::mouse::swap_vector>
+ffff00000010bf88:      	ldr	x10, [x21]
+ffff00000010bf8c:      	mov	w8, wzr
+ffff00000010bf90:      	mov	x9, #-0x1       // =-1
+ffff00000010bf94:      	cmp	x10, x20
+ffff00000010bf98:      	b.eq	0xffff00000010bfd8 <tos_api::vdi::mouse::vex_wheelv+0xbc>
+ffff00000010bf9c:      	cbz	x10, 0xffff00000010bfd8 <tos_api::vdi::mouse::vex_wheelv+0xbc>
+ffff00000010bfa0:      	adrp	x8, 0xffff00000038b000 <tos_api::uaccess::FAULT_ARMED>
+ffff00000010bfa4:      	add	x8, x8, #0x4d
+ffff00000010bfa8:      	cmp	x10, x8
+ffff00000010bfac:      	b.ne	0xffff00000010bfb8 <tos_api::vdi::mouse::vex_wheelv+0x9c>
+ffff00000010bfb0:      	mov	w8, #0x1        // =1
+ffff00000010bfb4:      	b	0xffff00000010bfd8 <tos_api::vdi::mouse::vex_wheelv+0xbc>
+ffff00000010bfb8:      	adrp	x8, 0xffff00000038b000 <tos_api::uaccess::FAULT_ARMED>
+ffff00000010bfbc:      	add	x8, x8, #0x210
+ffff00000010bfc0:      	ldar	x0, [x8]
+ffff00000010bfc4:      	bl	0xffff0000001164a4 <tos_api::bdos::process::slot_for>
+ffff00000010bfc8:      	mov	w8, #0x2        // =2
+ffff00000010bfcc:      	tst	w0, #0x1
+ffff00000010bfd0:      	csinv	x9, x1, xzr, ne
+ffff00000010bfd4:      	csel	w8, w8, wzr, ne
+ffff00000010bfd8:      	str	x9, [x19, #0x200]
+ffff00000010bfdc:      	adrp	x9, 0xffff00000038b000 <tos_api::uaccess::FAULT_ARMED>
+ffff00000010bfe0:      	strb	w8, [x9, #0x50]
+ffff00000010bfe4:      	ldp	x20, x19, [sp, #0x20]
+ffff00000010bfe8:      	ldr	x21, [sp, #0x10]
+ffff00000010bfec:      	ldp	x29, x30, [sp], #0x30
+ffff00000010bff0:      	ret

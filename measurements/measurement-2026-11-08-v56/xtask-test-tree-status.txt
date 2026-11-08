@@ -1,0 +1,38 @@
+ M TASK/A129.md
+ M TASK/A133.md
+ M TASK/TOOL32.md
+ M TASK/V22.md
+ M TASK/V25.md
+ M TASK/V30.md
+ M TASK/V40.md
+ M TASK/V46.md
+ M TASK/V49.md
+ M docs/COMPATIBILITY.md
+ M docs/DEVIATIONS.md
+ M docs/analysis/deps/mapping.tsv
+ M docs/analysis/fbench-functions-2026-11-07.md
+ M docs/api/vdi/inquiry/_color-pixel-input.md
+ M docs/api/vdi/output/_lines-markers.md
+ M docs/api/vdi/output/_text.md
+ M docs/audits/2026-11-05-v18-t1-vdi-draw.md
+ M docs/audits/2026-11-06-v18-t2-vdi-text.md
+ M tos-api/src/aes/menu.rs
+ M tos-api/src/aes/object.rs
+ M tos-api/src/aes/window.rs
+ M tos-api/src/vdi/backend.rs
+ M tos-api/src/vdi/gdp.rs
+ M tos-api/src/vdi/line.rs
+ M tos-api/src/vdi/mouse.rs
+ M tos-api/src/vdi/primitives.rs
+ M tos-api/src/vdi/text.rs
+ M tos-api/tests/vdi_reference.rs
+ M tos-api/tests/vdi_reference/harness.rs
+ M tosdump/probes/vdprobe.c
+?? TASK/V40-STATUS-UNFINISHED.MD
+?? measurements/measurement-2026-11-08-v40/
+?? tos-api/tests/aes_v56_vector_tokens.rs
+?? tos-api/tests/vdi_reference/cases_v40.rs
+?? tosdump/probes/run-wvprobe.sh
+?? tosdump/probes/wvprobe-mouse.txt
+?? tosdump/probes/wvprobe-shots.txt
+?? tosdump/probes/wvprobe.c

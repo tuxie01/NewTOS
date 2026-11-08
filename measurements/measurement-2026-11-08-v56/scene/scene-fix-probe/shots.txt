@@ -1,0 +1,5 @@
+# wvprobe-shots.txt -- QMP screendumps of tosdump/probes/run-wvprobe.sh (TASK/V56),
+# <ticks after "[inj] desktop armed"> <name>
+350 before
+700 wheel-down
+1100 wheel-up

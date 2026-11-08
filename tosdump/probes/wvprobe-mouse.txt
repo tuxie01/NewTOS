@@ -1,0 +1,23 @@
+# wvprobe-mouse.txt -- the injector script of tosdump/probes/run-wvprobe.sh
+# (TASK/V56), armed on "desktop" (tools/inject-arm.py): ticks (200 Hz) after the
+# first "[desk] desktop up", then IKBD bytes for kernel/src/ikbd.rs.
+# Park the pointer bottom-left (never through the menu bar), then into the file
+# list of the C:\ window the run's NEWDESK.INF opens (about 468,249 at 640x480).
+100 0xF8 0x81 0x7F
+101 0xF8 0x81 0x7F
+102 0xF8 0x81 0x7F
+103 0xF8 0x81 0x7F
+104 0xF8 0x81 0x7F
+105 0xF8 0x81 0x7F
+110 0xF8 0x75 0x8D
+111 0xF8 0x75 0x8D
+112 0xF8 0x75 0x00
+113 0xF8 0x75 0x00
+# three wheel-down detents (scancode 0x5A, bios/ikbd.c:746-760 -> mousexvec)
+400 0x5A
+420 0x5A
+440 0x5A
+# three wheel-up detents (0x59)
+800 0x59
+820 0x59
+840 0x59
