@@ -45,7 +45,7 @@ in Abschnitt 5 dieses Berichts, nicht in den Zählern.
 
 | Funktion | Status | Wirkung |
 |---|---|---|
-| `v_pmarker` | PARTIAL | EmuTOS setzt `vwk->clip = 1` und stellt es nicht zurück (`references/emutos/vdi/vdi_marker.c:114`, D-VDI-9 in `docs/api/vdi/_discrepancies.md`); NewTOS nimmt `&Vwk`, setzt `clip` nirgends (`tos-api/src/vdi/primitives.rs:849@v_pmarker`). Nach einem Marker-Aufruf gilt bei EmuTOS Clipping an, bei uns bleibt es wie vorher. Sichtbar über `vq_extnd` INTOUT[19] und über die Randfälle bei `vs_clip(0)`. Bei Fbench ohne Folge (Clip ist an). |
+| `v_pmarker` | PARTIAL | EmuTOS setzt `vwk->clip = 1` und stellt es nicht zurück (`references/emutos/vdi/vdi_marker.c:114`, D-VDI-9 in `docs/api/vdi/_discrepancies.md`); NewTOS nimmt `&Vwk`, setzt `clip` nirgends (`tos-api/src/vdi/primitives.rs:889@v_pmarker`). Nach einem Marker-Aufruf gilt bei EmuTOS Clipping an, bei uns bleibt es wie vorher. Sichtbar über `vq_extnd` INTOUT[19] und über die Randfälle bei `vs_clip(0)`. Bei Fbench ohne Folge (Clip ist an). |
 | `v_justified` | PARTIAL | Waagrechter Weg ignoriert `delh`: `h_align` 1/2 gegen `max_x` und der Kursiv-Versatz fehlen (`TASK/V37.md`, gemessen: Probe TVO 442, TVP 659 Wörter; ZG002/003/008/009 je 1 Pixel). Fbenchs `VDI.JUSTIFY` setzt links ausgerichtet und ohne Effekt, liegt also auf dem gemessenen Weg. |
 | `v_rbox`, `v_rfbox` | IMPLEMENTED-UNMEASURED | Code arbeitet (`tos-api/src/vdi/gdp.rs:282@rbox`), aber kein Pixelvergleich und kein Test gefunden; DUMPVDI-Fälle 11/8, 11/9 vergleichen nur leere Felder. |
 | `v_hide_c`, `v_show_c` | IMPLEMENTED-UNMEASURED | Zähler und Zeichnen im Code (`tos-api/src/vdi/mouse.rs:838@v_hide_c`, `:816@v_show_c`); die Fälle 122/123 in `vdi-all` haben leere Ausgaben, die Wirkung (Zeiger sichtbar oder nicht) ist nicht verglichen. |
@@ -129,8 +129,8 @@ Spalten: Funktion | VDI-Opcode (gemlib) | NewTOS: Dispatch / Arbeit | EmuTOS | S
 
 | Funktion | Op | NewTOS | EmuTOS | Spec | Evidenz | Status | Zeichnet |
 |---|---|---|---|---|---|---|---|
-| `v_pline` | 6 | `tos-api/src/vdi/mod.rs:547@v_pline` / `tos-api/src/vdi/primitives.rs:797@v_pline` (Breite 1: `polyline`, sonst `wideline`) → `kernel/src/vdi_backend.rs:608@abline`; liest `CONTRL[1]`, `PTSIN`, Linienattribute | `references/emutos/vdi/vdi_line.c:1000` | `docs/api/vdi/output/_lines-markers.md` | A op 6; B (+6, 127 Preludes); C K1-K3, K5C, K11, TP*; Fixes `TASK/V20-STATUS-DONE.MD`, `TASK/V23-STATUS-DONE.MD`; offen `TASK/V40.md` (Ein-Punkt-XOR, nicht Fbench) | IMPLEMENTED | ja |
-| `v_pmarker` | 7 | `tos-api/src/vdi/mod.rs:548@v_pmarker` / `tos-api/src/vdi/primitives.rs:849@v_pmarker` (sechs Glyphtabellen, Polylinien, Skala) | `references/emutos/vdi/vdi_marker.c:86` | `docs/api/vdi/output/_lines-markers.md` | A op 7 (leer); C K5A/B (Kappung, Marker "plus"); Typ 6 (Fbench) nicht pixelverglichen | **PARTIAL**: Seiteneffekt `clip = 1` fehlt (siehe Zusammenfassung) | ja |
+| `v_pline` | 6 | `tos-api/src/vdi/mod.rs:547@v_pline` / `tos-api/src/vdi/primitives.rs:829@v_pline` (Breite 1: `polyline`, sonst `wideline`) → `kernel/src/vdi_backend.rs:608@abline`; liest `CONTRL[1]`, `PTSIN`, Linienattribute | `references/emutos/vdi/vdi_line.c:1000` | `docs/api/vdi/output/_lines-markers.md` | A op 6; B (+6, 127 Preludes); C K1-K3, K5C, K11, TP*; Fixes `TASK/V20-STATUS-DONE.MD`, `TASK/V23-STATUS-DONE.MD`; offen `TASK/V40.md` (Ein-Punkt-XOR, nicht Fbench) | IMPLEMENTED | ja |
+| `v_pmarker` | 7 | `tos-api/src/vdi/mod.rs:548@v_pmarker` / `tos-api/src/vdi/primitives.rs:889@v_pmarker` (sechs Glyphtabellen, Polylinien, Skala) | `references/emutos/vdi/vdi_marker.c:86` | `docs/api/vdi/output/_lines-markers.md` | A op 7 (leer); C K5A/B (Kappung, Marker "plus"); Typ 6 (Fbench) nicht pixelverglichen | **PARTIAL**: Seiteneffekt `clip = 1` fehlt (siehe Zusammenfassung) | ja |
 
 ### 4.2 Flächen
 
@@ -138,7 +138,7 @@ Spalten: Funktion | VDI-Opcode (gemlib) | NewTOS: Dispatch / Arbeit | EmuTOS | S
 |---|---|---|---|---|---|---|---|
 | `vr_recfl` | 114 | `tos-api/src/vdi/mod.rs:580@vr_recfl` / `tos-api/src/vdi/primitives.rs:571@vr_recfl` → `kernel/src/vdi_backend.rs:647@fill_pattern` | `references/emutos/vdi/vdi_fill.c:293` | `docs/api/vdi/output/_fill.md` | C Fall CAL (Stifte 0..15); D raster-screen (+114 ×11); B (+114 ×4) | IMPLEMENTED | ja |
 | `v_bar` (GDP 1) | 11/1 | `tos-api/src/vdi/mod.rs:551@v_gdp` / `tos-api/src/vdi/gdp.rs:80@bar` (`fill_pattern` + Rahmen bei `fill_per`) | `references/emutos/vdi/vdi_gdp.c:426` (Fall 1) | `docs/api/vdi/output/_gdp.md` | A op 11/1; B (+11/1); C K6A-F | IMPLEMENTED | ja |
-| `v_fillarea` | 9 | `tos-api/src/vdi/mod.rs:550@v_fillarea` / `tos-api/src/vdi/primitives.rs:760@v_fillarea` → `fill_polygon` | `references/emutos/vdi/vdi_fill.c:617` | `docs/api/vdi/output/_fill.md` | A op 9; B 51/53; C K4A-H, K5D; `TASK/V22-STATUS-DONE.MD`, `TASK/V23-STATUS-DONE.MD` | IMPLEMENTED | ja |
+| `v_fillarea` | 9 | `tos-api/src/vdi/mod.rs:550@v_fillarea` / `tos-api/src/vdi/primitives.rs:787@v_fillarea` → `fill_polygon` | `references/emutos/vdi/vdi_fill.c:617` | `docs/api/vdi/output/_fill.md` | A op 9; B 51/53; C K4A-H, K5D; `TASK/V22-STATUS-DONE.MD`, `TASK/V23-STATUS-DONE.MD` | IMPLEMENTED | ja |
 | `v_contourfill` | 103 | `tos-api/src/vdi/mod.rs:552@v_contourfill` / `tos-api/src/vdi/contour.rs:353@v_contourfill` (Seed-Queue) | `references/emutos/vdi/vdi_fill.c:1084` | `docs/api/vdi/output/_fill.md` | A op 103; B; C K8A-J, K14A-C; `TASK/V21-STATUS-DONE.MD`; offen `TASK/V38.md` | IMPLEMENTED | ja |
 
 ### 4.3 Kreise, Bögen, Rundrechtecke

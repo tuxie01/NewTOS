@@ -3641,6 +3641,10 @@ fn draw_3d_outline(backend: &dyn RasterBackend, x: i16, y: i16, w: i16, h: i16, 
 }
 
 /// Draw a `t`-pixel border frame around `(x, y, w, h)` as four strips.
+///
+/// EmuTOS draws it as `gr_box`: one `gsx_box` = `v_pline` of five points per
+/// pixel of thickness (`aes/gemgraf.c:264-268,813-832`), which leaves `LSTLIN`
+/// TRUE; NewTOS draws strips and sets the flag itself (TASK/V40, probe L40V).
 fn draw_border(
     backend: &dyn RasterBackend,
     x: i16,
@@ -3652,6 +3656,7 @@ fn draw_border(
     clip: ClipRect,
 ) {
     let t = t.max(1);
+    crate::vdi::line::set_lstlin(true);
     backend.fill_rect(x, y, w, t, col, clip); // top
     backend.fill_rect(x, y + h - t, w, t, col, clip); // bottom
     backend.fill_rect(x, y, t, h, col, clip); // left

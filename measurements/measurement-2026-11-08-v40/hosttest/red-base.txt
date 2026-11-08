@@ -1,0 +1,20 @@
+test cases_v40::v40_aes_draw_line_sets_lstlin ... ok
+test cases_v40::v40_probe_l40a_l40b_short_pline_clears ... FAILED
+test cases_v40::v40_probe_l40c_l40e_wideline ... FAILED
+test cases_v40::v40_probe_l40k_clipped_pline_sets ... ok
+test cases_v40::v40_probe_l40l_l40s_gdp ... FAILED
+test cases_v40::v40_probe_l40u_other_workstation ... ok
+test cases_v40::v40_probe_l40x_l40zb_readers ... FAILED
+test cases_v40::v40_probe_l41a_l41d_xor_lines_and_markers ... ok
+test cases_v40::v40_probe_l40t_recfl ... FAILED
+test cases_v40::v40_probe_tvj_tvk_after_two_and_one_point_pline ... FAILED
+test cases_v40::v40_probe_l40g_l40j_fillarea ... FAILED
+test cases_v40::v40_probe_l40f_marker ... ok
+assertion `left == right` failed: L40A: the grab differs from the oracle (hash, non-white words)
+assertion `left == right` failed: L40E: the grab differs from the oracle (hash, non-white words)
+assertion `left == right` failed: L40M: the grab differs from the oracle (hash, non-white words)
+assertion `left == right` failed: L40X: the grab differs from the oracle (hash, non-white words)
+assertion `left == right` failed: L40T: the grab differs from the oracle (hash, non-white words)
+assertion `left == right` failed: TVK: the grab differs from the oracle (hash, non-white words)
+assertion `left == right` failed: L40H: the grab differs from the oracle (hash, non-white words)
+test result: FAILED. 5 passed; 7 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.05s

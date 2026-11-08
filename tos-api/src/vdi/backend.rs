@@ -261,6 +261,12 @@ pub trait RasterBackend: Sync {
     /// decoration): a standalone line is its own last segment (`last = true`,
     /// so the XOR `LSTLIN` shortening never applies) and the rotated mask is
     /// discarded. `mask`, `mode` and `clip` behave as for [`abline`](Self::abline).
+    ///
+    /// It is the AES's counterpart of EmuTOS' AES `v_pline` (`gsx_xline`,
+    /// `gsx_cline`, the 3D outlines; `aes/gemgsxif.c:573-578`), a polyline of
+    /// two or three points through the VDI trap, which leaves `LSTLIN` TRUE
+    /// (`vdi/vdi_line.c:1106-1108`): so does this
+    /// ([`crate::vdi::line::set_lstlin`], TASK/V40).
     #[allow(clippy::too_many_arguments)]
     fn draw_line(
         &self,
@@ -273,6 +279,7 @@ pub trait RasterBackend: Sync {
         clip: ClipRect,
         mask: u16,
     ) {
+        crate::vdi::line::set_lstlin(true);
         self.abline(x0, y0, x1, y1, pel, mode, clip, mask, true);
     }
 

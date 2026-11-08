@@ -2502,7 +2502,11 @@ fn inside_1(r: Grect) -> Grect {
     Grect { x: r.x + 1, y: r.y + 1, w: r.w - 2, h: r.h - 2 }
 }
 
+/// The 1px `gr_box` of a frame gadget. EmuTOS strokes it with `gsx_box`, a
+/// five-point `v_pline` (`aes/gemgraf.c:264-268,813-832`), which leaves
+/// `LSTLIN` TRUE; NewTOS draws strips and sets the flag itself (TASK/V40).
 fn rect_outline(r: Grect, pel: Pel, backend: &dyn RasterBackend, clip: ClipRect) {
+    crate::vdi::line::set_lstlin(true);
     backend.fill_rect(r.x, r.y, r.w, 1, pel, clip); // top
     backend.fill_rect(r.x, r.y + r.h - 1, r.w, 1, pel, clip); // bottom
     backend.fill_rect(r.x, r.y, 1, r.h, pel, clip); // left
@@ -6688,6 +6692,15 @@ mod live_title_tests {
         ];
         let title = with_maps(&maps, || title_of(&titled(LiveStr { ptr: VA + PAGE - 4, slot: Some(3) })));
         assert_eq!(title, kernel_title(b"SPANNING\0"), "each page must be resolved on its own");
+    }
+
+    /// V40: a frame gadget's 1px `gr_box` is a five-point `v_pline` in EmuTOS
+    /// (`aes/gemgraf.c:264-268`), so it leaves `LSTLIN` TRUE.
+    #[test]
+    fn v40_frame_outline_sets_lstlin() {
+        crate::vdi::line::set_lstlin(false);
+        rect_outline(R, 1, &GlyphLog::new(), ClipRect::full(640, 480));
+        assert!(crate::vdi::line::lstlin(), "gr_box's v_pline leaves LSTLIN TRUE");
     }
 
     #[test]

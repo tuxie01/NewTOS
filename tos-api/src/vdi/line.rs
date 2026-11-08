@@ -19,6 +19,50 @@
 
 use super::backend::{ClipRect, WriteMode};
 
+/// EmuTOS `LSTLIN` (`bios/lineavars.S:288`, BSS, so FALSE at boot): the one
+/// flag the XOR rule of [`abline`] reads (`vdi/vdi_line.c:2319`). One global
+/// line-A variable, not per workstation, written by `polyline` alone — FALSE
+/// as its loop starts, TRUE before its last segment (`:1106-1108`), so a
+/// polyline of fewer than two points leaves it FALSE — and by nothing else
+/// (`v_bez`, the other writer, is compiled out: `HAVE_BEZIER` 0,
+/// `vdi/vdi_defs.h:18`). Every `polyline` of the VDI writes it, the perimeters
+/// of fills and the marker strokes too, and so does every `v_pline` of the
+/// AES, which draws through the VDI trap (`aes/gemgsxif.c:573-578`). The text
+/// underline calls `abline` directly (`vdi/vdi_text.c:527,534`) and so takes
+/// whatever the last `polyline` left: [`lstlin`] (TASK/V40, probe cases TVJ,
+/// TVK, L40A–L40Zb of `tosdump/probes/vdprobe.c`).
+///
+/// Host unit tests run on parallel threads, so there the flag is per thread;
+/// every other build has the one global.
+#[cfg(not(test))]
+static LSTLIN: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
+
+#[cfg(test)]
+std::thread_local! {
+    static LSTLIN: core::cell::Cell<bool> = const { core::cell::Cell::new(false) };
+}
+
+/// The current EmuTOS `LSTLIN` (see the static above).
+pub fn lstlin() -> bool {
+    #[cfg(not(test))]
+    {
+        LSTLIN.load(core::sync::atomic::Ordering::Relaxed)
+    }
+    #[cfg(test)]
+    {
+        LSTLIN.with(|f| f.get())
+    }
+}
+
+/// Write `LSTLIN` (see the static above): the VDI's `polyline`, and the AES where it
+/// draws what EmuTOS' AES draws with a `v_pline`.
+pub fn set_lstlin(last: bool) {
+    #[cfg(not(test))]
+    LSTLIN.store(last, core::sync::atomic::Ordering::Relaxed);
+    #[cfg(test)]
+    LSTLIN.with(|f| f.set(last));
+}
+
 /// The linear pixel store a line is drawn into: `height` rows of `stride`
 /// pixels, of which the first `width` of each row are visible — the
 /// logical screen (`v_bas_ad`, `v_lin_wr`).

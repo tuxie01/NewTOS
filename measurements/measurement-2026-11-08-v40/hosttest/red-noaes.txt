@@ -1,0 +1,20 @@
+     Running tests/vdi_reference.rs (target/debug/deps/vdi_reference-9cd6c10b805e06a7)
+test cases_v40::v40_aes_draw_line_sets_lstlin ... FAILED
+test cases_v40::v40_probe_l40a_l40b_short_pline_clears ... ok
+test cases_v40::v40_probe_l40g_l40j_fillarea ... ok
+test cases_v40::v40_probe_l40t_recfl ... ok
+test cases_v40::v40_probe_l40u_other_workstation ... ok
+test cases_v40::v40_probe_l40x_l40zb_readers ... ok
+test cases_v40::v40_probe_l40k_clipped_pline_sets ... ok
+test cases_v40::v40_probe_l40l_l40s_gdp ... ok
+test cases_v40::v40_probe_l40f_marker ... ok
+test cases_v40::v40_probe_l41a_l41d_xor_lines_and_markers ... ok
+test cases_v40::v40_probe_tvj_tvk_after_two_and_one_point_pline ... ok
+test cases_v40::v40_probe_l40c_l40e_wideline ... ok
+thread 'cases_v40::v40_aes_draw_line_sets_lstlin' (7058762) panicked at tos-api/tests/vdi_reference/cases_v40.rs:96:5:
+assertion `left == right` failed: TVJ: the grab differs from the oracle (hash, non-white words)
+test result: FAILED. 11 passed; 1 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.06s
+     Running unittests src/lib.rs (target/debug/deps/tos_api-1dde971958c73158)
+test aes::menu::popup_wait_tests::v40_box_border_and_aes_lines_set_lstlin ... FAILED
+thread 'aes::menu::popup_wait_tests::v40_box_border_and_aes_lines_set_lstlin' (7059369) panicked at tos-api/src/aes/menu.rs:3215:9:
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 208 filtered out; finished in 0.00s

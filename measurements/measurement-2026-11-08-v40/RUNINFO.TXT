@@ -1,0 +1,120 @@
+V40 -- TASK/V40.md: LSTLIN, the flag abline's XOR end-pixel rule reads, kept as EmuTOS keeps it (one global, written
+by every polyline, read by the text underline), against the pinned oracle, before and after the fix, plus the AES/desktop
+counter-check. Developer run, 2026-11-08, on main at ad201a57 with the V40 change in the working tree (uncommitted at the
+time, the commit of this run holds it); not the Tester's acceptance. No card, no Pi, no push.
+
+WHAT RAN
+  NewTOS   base = git archive of ad201a57 (scratch tree, measurements/ left out; the references link of method/trees.sh landed
+           inside the archived references/ directory, so neither tree had the EmuTOS sources; every build succeeded), product
+           code untouched:
+           rpi4 release kernel8.img sha256 a3f61b9fc6e61adf99954163c85d67df80f41fde3fb2edd62547c924f85d0d17 (1517808 B).
+           fix  = base + exactly the V40 files (method/trees.sh; the main tree also held a parallel worker's uncommitted
+           V56 files, tos-api/src/vdi/mouse.rs and others, which stay out of both trees):
+             fix1 (first pass, without tos-api/src/aes/window.rs) a44bdae76b0cebe3189f0fc49a0fb1e8e658b1bd05814ddbf1865327def7f782,
+             fix  (final, + window.rs rect_outline) 350a2b9697950092f986751085be036c8345d3db74751b1b5a3f74e482db65ef (1517808 B,
+             same size as base: no load-address shift).
+           fix2 = the committed state (fix + a long line split into a binding, an EmuTOS cite and doc text in primitives.rs and
+             line.rs; method/final-check.sh): cdc031079738f66f107a79cfd36be4fc41b50cafb10fe207e7b5182c20d9ed40 (1517808 B);
+             probe n-fix2 == n-fix (VDPROBE.BIN and VDPROBE.LOG byte-identical). Tables and GUI ran on "fix".
+           Desktop kernels (tools/inject-arm.py desktop=<V34 test mouse file>, method/desk-kernel.sh): see GUI.
+  EmuTOS   1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img, tools/hatari-oracle.sh falcontc
+           (640x480 16-bit truecolor), Hatari v2.6.1 (probe/e1/hatari.log)
+  Boards   QEMU 11.0.2 raspi4b, -append serial=on, APFS clone per boot (removed by the scripts), one QEMU of mine at a time;
+           a fresh target/aarch64-unknown-none-softfloat per board build (method/builds.sh)
+  host_clang  Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card manifest)
+  Manifests probe/n-base, n-fix1, n-fix, n-fix2; runs/tab-* (10); runs/gui/* -- each card.img.manifest (the EmuTOS side boots no
+           card); optional_missing, verbatim, in all of them:
+           optional_missing none
+  Commands method/run.sh lists them in the order they ran.
+
+INSTRUMENT
+  tosdump/probes/vdprobe.c: t40 appended after t37 (cases 979-1010). Every case: tbegin, the flag set first (TRUE: v_pline
+  (10,300)-(20,300); FALSE: v_pline (10,300)), the call under test in replace mode away from the grab, then vst_effects(8),
+  vswr_mode(3), v_gtext 'ABCDEFGH' at (100,100), grab (80,80) 120x40 -- one pixel shorter iff LSTLIN is FALSE (TVJ/TVK).
+    L40A-L40B  width-1 v_pline of 0 points, of 1 point with arrowed ends
+    L40C-L40E  width 3: 1 point (from TRUE), a real segment (from FALSE), one zero-length segment (from FALSE)
+    L40F       v_pmarker 1 point
+    L40G-L40J  v_fillarea: perimeter on, off, 0 points (clip off), outside the clip band (clip (0,0)-(639,200))
+    L40K       a 2-point v_pline wholly clipped away
+    L40L-L40S  v_bar on/off, v_circle on/off, v_arc, v_rbox, v_rfbox, a circle the clip excludes
+    L40T       vr_recfl
+    L40U       v_pline on the AES's physical handle (graf_handle), underline on ours
+    L40V-L40W  objc_draw of a G_BOX with border 1 / border 0
+    L40X-L40Zb the readers: v_justified, vst_height(26) (two lines), rotation 1800, rotation 900 (vertical), two in a row
+    L41A-L41D  XOR v_pline 3 points and XOR markers after FALSE and after TRUE (controls: they set the flag themselves)
+  The earlier records are unchanged: the V37 run's probe/e1 BIN is a byte prefix of this e1 (cmp: EOF on the V37 file).
+  VDPROBE.PRG f9ee338f806603d975ff70beb2465092ae19015faa3c87b11f54ef2b7b40453d,
+  VDPROBE.NAP 21e2ae70a86c99dd88e72ec657c622fdfacce6dcb8ec152839f0841745485d3e (probe/*/run.txt).
+  probe/e1/VDPROBE.BIN.gz: the oracle BIN the host test's hashes come from (method/gen-grabs.py).
+
+RESULT, PROBE (probe/compare-*.txt)
+  e1 vs n-base: 986 cases, 348 differ. TVJ equal, TVK differs (1 px at (148,101)), and of the new ones exactly those where
+                EmuTOS' flag is FALSE: L40A L40B L40E L40H L40I L40J L40M L40O L40S L40T L40W L40X L40Y L40Z L40Zb
+                (NewTOS drew every underline full length).
+  n-base vs n-fix: exactly 16 cases differ -- TVK and the 15 above, each the underline's end pixel (L40Y/L40Zb two: two
+                lines); the other 970 records byte-identical; VDPROBE.LOG identical.
+  e1 vs n-fix:  332 differ; TVJ, TVK and all 32 L40/L41 EQUAL. The 332 are the 348 of the base minus these 16.
+  n-fix1 vs n-fix: VDPROBE.BIN and VDPROBE.LOG byte-identical (the window.rs writer changes no pixel and no probe case).
+  What EmuTOS showed, case by case, is the reading of the source in TASK/V40.md "Ursache": global (L40U), AES writes TRUE
+  (L40V) only where it draws a v_pline (L40W), polygon's band test (L40J), a clipped last segment still sets TRUE (L40K).
+
+RESULT, HOST TEST (tos-api/tests/vdi_reference/cases_v40.rs, 12 tests; unit tests v40_* in tos-api/src/aes/menu.rs, window.rs)
+  base (product code ad201a57, the new test files copied in): 7 of 12 red (hosttest/red-base.txt); green only the five that
+  expect full length only (L40F, L40K, L40U, L41A-D, the draw_line seam).
+  VDI part without the AES writers (draw_line/draw_border/menu_bar lines removed in the scratch tree, restored after):
+  v40_aes_draw_line_sets_lstlin and v40_box_border_and_aes_lines_set_lstlin red, the other 11 green (hosttest/red-noaes.txt).
+  Final tree without the rect_outline writer (removed in the scratch tree, restored after): v40_frame_outline_sets_lstlin
+  red, the menu.rs test green (hosttest/red-noaes-window.txt).
+  fix: all green; vdi_reference 354 passed / 0 failed / 5 ignored.
+  cargo xtask test: see TESTS.
+
+RESULT, TABLES (runs/tab-*; base = first pass, fix = final kernel)
+  vdi-v18-t2   vs EMUTOS-1a7484ab-VDI-v18t2-falcontc: base 0 of 32, fix 0 of 32.
+  vdi-all      vs EMUTOS-1a7484ab-VDI-all-falcontc:   base 0 of 182, fix 0 of 182.
+  aes-r2-wind / aes-r3-wind-state vs the oracle: 78/78 and 39/39 differ on base and fix alike (pre-existing, as in V30's
+  test run); aes-r4-subfunctions has no reference.
+  Bytes: VDI.BIN/AES.BIN and the LOGs of all five tables base vs fix identical (cmp, 0 bytes).
+
+GUI
+Desktop with the IKBD injector (method/gui.sh; the V34 test run's desk-inj.sh, mouse file, NEWDESK.INF, shot list:
+  menu, dialog, rubber band, window drag, slider drag, sizer drag, icon drags incl. top/bottom edge; C: file set 40 files
+  LONGNM01..40.TXT "V40 desktop file nn") and boot screen + APITEST.NCP console (6/10/18/24/32/45 s), base vs fix, one QEMU
+  at a time (runs/gui/compare.txt, per run run.txt, card.img.manifest, shots.sha256):
+    desk480  11/11 shots identical; desk1080 11/11 identical; 0 exception/panic lines in every run.
+    bc480, bc1080: 4/6 identical; 00-t006 and 01-t010 differ ONLY in the boot screen's build date: the base kernel was
+    built on 2026-11-07, the fix kernel after midnight ("Built : 2026-11-07" / "Boot time : 2026-11-07 00:00:00" against
+    -08; decoded (method/pngdiff.py): 72 pixels each, x 401-406 y 190-333 at 640x480 and x 1041-1046 y 490-633 at
+    1920x1080 -- the '7' -> '8' of those two lines, looked at in the 640x480 pair). 0 exception/panic lines.
+  Armed desktop kernels: base a0dbf622796f21da0a48ca65378cec2a0da69f9ec0f742630a3cbc59e81edbc6,
+  fix 74fc307d1531d7e90b7f5c200efeb3c2be06b4380ae371591dae91f396a4ee71 (not kept).
+
+DEPENDENCIES (deps/)
+  abline --down: 16 functions, vdi complete (0 unmapped). abline --up: 234 functions; vdi 0 unmapped (complete), aes 1
+  unmapped (eralert -> fm_show), desk 130 unmapped (EmuTOS desk/*.c; NewTOS' desktop is programs/desktop/, not mapped),
+  bios linea_0/int_linea design (ADR-030). polyline --up likewise. cargo xtask deps --check-mapping: all 1967 rows resolve.
+
+WARNINGS (builds/*/warnings.txt; fresh target per board)
+  rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121, rpi4 and qemu-virt, base = fix1 = fix; per-file clippy
+  locations base = fix. cargo clippy -p tos-api --tests: lib test 78, vdi_reference 3 on base and fix (no warning in
+  cases_v40.rs or the new unit tests).
+
+TESTS
+  2316 passed / 0 failed / 6 ignored (baseline of the brief 2302/0/6; +12 cases_v40 + 2 unit tests), assembled from two runs
+  because the scratch fix tree has no measurements/, no .git and no references/ (see WHAT RAN):
+    tos-api + tos-types in the fix tree ($S/t/fix, cargo test --package tos-api --package tos-types --no-fail-fast, the
+      packages and flags of cargo xtask test): 2072 / 0 / 6, 199 result lines (xtask-test-tosapi-types.txt);
+    xtask in the main tree (cargo test --package xtask; its code is HEAD, untouched by V40 and by the parallel worker; it
+      reads the workspace docs, which hold both workers' uncommitted edits): 244 / 0 / 0 (xtask-test-xtask-main.txt).
+  cargo xtask test in the fix tree itself: tos-api and tos-types all green, xtask 228 passed / 16 failed -- each panic a file
+  the reduced tree lacks (references/emutos/aes/gem.rsc, references/freemint/..., measurements/..., the workspace docs of
+  doc_check), and all 16 pass in the main tree with the same xtask code; cargo then stopped before the doc-tests
+  (xtask-test-fixtree-env.txt).
+  A first run of it (method/final-check.sh) failed v40_frame_outline_sets_lstlin: a stale lib. The red check for the window
+  writer had restored window.rs with cp -p, i.e. with its old mtime, so cargo kept the test binary built from the stripped
+  file; after touching the V40 files of the fix tree the test is green (above). The kernels are not affected: every kernel
+  build starts from an empty target/aarch64-unknown-none-softfloat (method/builds.sh).
+
+NOT MEASURED
+  Real Pi; qemu-virt beyond the build (not booted); the menu separator and the window frame as LSTLIN writers against the
+  oracle (read; window frame with a unit test); a program from the card. Line-A 3 (linea_line) reads LSTLIN in EmuTOS,
+  NewTOS has no Line-A (ADR-030).

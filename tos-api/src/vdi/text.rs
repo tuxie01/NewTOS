@@ -985,7 +985,10 @@ fn underline_offset(f: &SysFont, vwk: &Vwk) -> i16 {
 /// what makes the second line of a light, doubled underline the opposite dots.
 /// `clip` is the line clip ([`line_clip`]): with clipping off EmuTOS skips
 /// `clip_line` (`:519-534`) and the rule runs on like any line with clipping
-/// off (TASK/V30).
+/// off (TASK/V30). `abline` is called directly, not through `polyline`, so its
+/// XOR end-pixel rule follows the `LSTLIN` the last polyline left
+/// ([`super::line::lstlin`]): after one of fewer than two points a
+/// non-vertical rule in XOR mode loses its far end (probe TVK, TASK/V40).
 fn underline_lines(
     backend: &dyn RasterBackend,
     f: &SysFont,
@@ -1001,9 +1004,10 @@ fn underline_lines(
     let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
     // `LN_MASK`: `lighten` when F_LIGHT is set, else solid (`:513-516`).
     let mut mask = if vwk.style & T_LIGHT != 0 { f.lighten } else { 0xFFFF };
+    let last = super::line::lstlin();
     let ((mut x1, mut y1), (mut x2, mut y2)) = (start, end);
     for _ in 0..f.ul_size as u16 {
-        mask = backend.abline(x1, y1, x2, y2, vwk.text_color, mode, clip, mask, true).rotate_right(1);
+        mask = backend.abline(x1, y1, x2, y2, vwk.text_color, mode, clip, mask, last).rotate_right(1);
         x1 = x1.wrapping_add(step.0);
         x2 = x2.wrapping_add(step.0);
         y1 = y1.wrapping_add(step.1);

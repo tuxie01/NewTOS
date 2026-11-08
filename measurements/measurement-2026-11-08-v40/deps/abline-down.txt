@@ -1,0 +1,37 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps abline --down`
+deps abline --down (kinds asm,direct,layer,table,vector): 16 functions besides abline
+depth	function	layer	reached over	newtos	class
+0	abline	vdi	-	kernel/src/vdi_backend.rs@abline tos-api/src/vdi/line.rs@abline	mapped
+1	draw_line	vdi	abline -> draw_line [direct]	-	design
+1	draw_line16	vdi	abline -> draw_line16 [direct]	tos-api/src/vdi/line.rs@draw_line16	mapped
+1	draw_rect_common	vdi	abline -> draw_rect_common [direct]	kernel/src/vdi_backend.rs@fill_pattern	mapped
+1	hwblit_vertical_line	vdi	abline -> hwblit_vertical_line [direct]	-	design
+1	swblit_vertical_line16	vdi	abline -> swblit_vertical_line16 [direct]	tos-api/src/vdi/line.rs@vertical_line16	mapped
+1	vertical_line	vdi	abline -> vertical_line [direct]	-	design
+2	flush_data_cache	bios	hwblit_vertical_line -> flush_data_cache [direct]	-	unmapped
+2	get_start_addr	vdi	draw_line -> get_start_addr [direct]	-	design
+2	get_start_addr16	vdi	draw_line16 -> get_start_addr16 [direct]	kernel/src/vdi_backend.rs@get_device_pixel kernel/src/vdi_backend.rs@get_device_pixel_wrapped kernel/src/vdi_backend.rs@put_device_pixel tos-api/src/vdi/backend.rs@get_device_pixel_wrapped tos-api/src/vdi/line.rs@index	mapped
+2	hwblit_rect_common	vdi	draw_rect_common -> hwblit_rect_common [direct]	-	design
+2	invalidate_data_cache	bios	hwblit_vertical_line -> invalidate_data_cache [direct]	-	unmapped
+2	muls	include	hwblit_vertical_line -> muls [direct]		unmapped
+2	swblit_rect_common	vdi	draw_rect_common -> swblit_rect_common [direct]	-	design
+2	swblit_rect_common16	vdi	draw_rect_common -> swblit_rect_common16 [direct]	kernel/src/vdi_backend.rs@fill_pattern tos-api/src/vdi/line.rs@abline	mapped
+3	draw_rect_setup	vdi	hwblit_rect_common -> draw_rect_setup [direct]	-	design
+3	hwblit_rect_nonstd	vdi	hwblit_rect_common -> hwblit_rect_nonstd [direct]	-	design
+
+table edges inside the set (0):
+
+layer edges inside the set (0):
+
+vector edges inside the set (0):
+
+coverage of the set (17 functions, definitions per layer):
+layer     defs        mapped        design      unmapped
+bios         2      0   0.0%      0   0.0%      2 100.0%
+include      1      0   0.0%      0   0.0%      1 100.0%
+vdi         14      6  42.9%      8  57.1%      0   0.0%
+total       17      6  35.3%      8  47.1%      3  17.6%
+touched layers: vdi (the layers of abline; --layers to choose)
+unmapped in the touched layers (0):
+complete: yes (no unmapped function in the touched layers)

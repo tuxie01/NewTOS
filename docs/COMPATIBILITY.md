@@ -655,7 +655,7 @@ neighbours, another page, unmapped). **Observable difference:** only for a
 line with clipping off that leaves the screen through its top or bottom edge
 (or runs past the first/last pixel sideways): EmuTOS changes the bytes there,
 NewTOS leaves them alone. Everything on the screen, the run-on into the
-neighbouring rows included, is EmuTOS'. Code `tos-api/src/vdi/line.rs:39@index`;
+neighbouring rows included, is EmuTOS'. Code `tos-api/src/vdi/line.rs:83@index`;
 spec `docs/api/vdi/output/_lines-markers.md` (§ "One segment: `abline`",
 Addressing).
 
@@ -679,7 +679,7 @@ sideways), for example a cell above row 0: EmuTOS changes the bytes there, NewTO
 leaves them alone. Everything on the screen, the run-on into the neighbouring
 rows included, is EmuTOS' (one exception, a run of more than 4095 8-pixel
 characters: `docs/api/vdi/output/_text.md`, § Clipping off). Code
-`tos-api/src/vdi/line.rs:70@glyph_unclipped`,
+`tos-api/src/vdi/line.rs:114@glyph_unclipped`,
 `tos-api/src/vdi/text.rs:989@underline_lines`; spec
 `docs/api/vdi/output/_text.md` (§ Clipping off); host test
 `tos-api/tests/vdi_reference/cases_v30.rs`; run
@@ -706,7 +706,7 @@ last row (or sideways past the first/last pixel): EmuTOS answers a foreign
 memory word, NewTOS 0. `v_contourfill` reads only inside its clip rectangle
 cut to the screen and is not affected. Code
 `tos-api/src/vdi/contour.rs:162@pixelread`,
-`tos-api/src/vdi/backend.rs:386@get_device_pixel_wrapped`; spec
+`tos-api/src/vdi/backend.rs:393@get_device_pixel_wrapped`; spec
 `docs/api/vdi/inquiry/_color-pixel-input.md` (§ "Coordinates outside the
 screen"); host test `tos-api/tests/vdi_reference/cases_v24.rs`.
 
@@ -729,7 +729,7 @@ any other polygon. **Observable difference:** only for `v_fillarea` with
 `CONTRL[1]` >= 1024 (the filled GDP shapes have at most `MAX_ARC_CT` + 2 = 130
 points, `references/emutos/vdi/vdi_defs.h:85`): EmuTOS draws an undefined
 shape, NewTOS the polygon of the first 1024 vertices. Up to 1023 vertices
-both draw the same, 1 and 2 vertices included. Code `tos-api/src/vdi/primitives.rs:759@v_fillarea`; spec
+both draw the same, 1 and 2 vertices included. Code `tos-api/src/vdi/primitives.rs:786@v_fillarea`; spec
 `docs/api/vdi/output/_fill.md` (§ "PTSIN vertex contract"); host test
 `tos-api/tests/vdi_reference/cases_v22.rs`.
 

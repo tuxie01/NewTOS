@@ -1,0 +1,3 @@
+test aes::menu::popup_wait_tests::v40_box_border_and_aes_lines_set_lstlin ... ok
+test aes::window::live_title_tests::v40_frame_outline_sets_lstlin ... FAILED
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 208 filtered out; finished in 0.00s

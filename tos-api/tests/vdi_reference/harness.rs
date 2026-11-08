@@ -710,6 +710,13 @@ pub fn screen_word(x: i16, y: i16) -> u16 {
     HOST_CELL.get().expect("workstation() not opened").raster.screen_word(x, y)
 }
 
+/// The harness workstation's raster backend, for tests that draw past the
+/// VDI the way the AES does (`RasterBackend::draw_line`, TASK/V40). Call
+/// [`workstation`] first.
+pub fn raster() -> &'static MemBackend {
+    &HOST_CELL.get().expect("workstation() not opened").raster
+}
+
 /// The reset the dumper runs before every case, call for call.
 ///
 /// This is a port of `tosdump/core/runner.c`'s `td_reset_vdi`, and it has to

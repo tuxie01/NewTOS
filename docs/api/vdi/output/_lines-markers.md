@@ -55,7 +55,9 @@ jump-table `{nptsout,nintout} = {0,0}`).
 (end styles), `wrt_mode`, `clip` + `xmn_clip`/`ymn_clip`/`xmx_clip`/
 `ymx_clip`. Reads `CONTRL[1]` (vertex count) and `PTSIN[]`.
 
-**Globals written (reference):** `LN_MASK`, `LSTLIN` (Line-A dash state).
+**Globals written (reference):** `LN_MASK`, `LSTLIN` (Line-A dash state;
+[`LSTLIN`](#lstlin)). Contract since TASK/V40: `LSTLIN` decides the end pixel
+of a later XOR underline.
 
 **Build configuration:** `HAVE_BEZIER` is **hardcoded 0** in
 `vdi_defs.h:18` ("entirely untested"), so the `CONTRL[5]==13` Bezier
@@ -88,7 +90,8 @@ becomes pixels: [One segment: `abline`](#one-segment-abline) below.
   closed outline repeats the first vertex as the last.
 - Count `<= 1`: `polyline()`'s loop runs from `count-1` downward and does
   nothing for a single point (`vdi_line.c:1106`), so a 0/1-vertex polyline
-  draws nothing (no error).
+  draws nothing (no error). At width 1 it still clears `LSTLIN`; at width > 1
+  `wideline` returns first and leaves it ([`LSTLIN`](#lstlin)).
 
 ### Inputs
 
@@ -166,12 +169,60 @@ pixels). A pixel whose index lies outside the logical screen
 (`height * stride` pixels) is not drawn — the sanctioned deviation in
 `docs/COMPATIBILITY.md` (user decision A, TASK/V18). `polyline` passes the
 clip rectangle when `vwk->clip` is set and `ClipRect::OFF` when it is not
-(`tos-api/src/vdi/primitives.rs:93@line_clip`). `clip_line` is bounded to
+(`tos-api/src/vdi/primitives.rs:104@line_clip`). `clip_line` is bounded to
 64 rounds (EmuTOS loops until it converges; only endpoints more than 32767
 apart, where the `WORD` deltas wrap, could keep it from converging), and
 `mul_div_round` is exact in 64 bits where the m68k wraps `m2 * 2` in a
 `WORD` — the two differ only for clip edges more than 16383 pixels from an
 endpoint.
+
+### `LSTLIN`
+
+`LSTLIN` is one `WORD` of the line-A variables (`bios/lineavars.S:288`, in
+BSS, so FALSE at boot) — one flag for the whole system, not per workstation.
+It is read only by `abline`'s XOR rule (step 3 above, `vdi_line.c:2319`) and
+written only by `polyline`: FALSE as its loop starts, TRUE when the loop
+reaches the last segment (`:1106-1108`), before that segment's `clip_line`.
+(`v_bez` would write it too, `vdi_bezier.c:187`; `HAVE_BEZIER` is 0.)
+Measured against the oracle: probe cases TVJ, TVK, L40A–L40Zb, L41A–L41D of
+`tosdump/probes/vdprobe.c` (`measurements/measurement-2026-11-08-v40/RUNINFO.TXT`).
+
+- **Within a polyline** every segment but the last is shortened in XOR mode,
+  whatever the flag was before (L41A/L41B).
+- **After the call** it is what the last `polyline` left: TRUE after one of
+  two or more points — even when that last segment was clipped away (L40K) —,
+  FALSE after one of fewer (`v_pline` with `CONTRL[1]` 0 or 1 at width 1,
+  arrowed ends or not; L40A, L40B, TVK).
+- **Who runs `polyline`:** `v_pline` at width 1, `v_arc`/`v_ellarc` at width
+  1, `v_rbox` at width 1 (L40P, L40Q), every marker stroke (`v_pmarker` →
+  `vdi_v_pline`, L40F), `v_bar` with `fill_per` (L40L), and `polygon`'s
+  perimeter with `fill_per` (`vdi_fill.c:604-609`): `v_fillarea`, the closed
+  GDP curves, `v_rfbox` (L40G, L40N, L40R) and, under `s_fa_attr`'s
+  `fill_per = TRUE`, every box of a wide line and every arrowhead (L40D).
+  `polygon` returns before the perimeter when clipping is on and its y-extent
+  misses the clip band (`:584-588`, L40J); with 0 points and `fill_per` its
+  perimeter is a one-point polyline that clears the flag (L40I).
+- **Who does not:** a wide `v_pline` of one point (`wideline` returns at once,
+  `vdi_line.c:1397-1398`, L40C) or of one zero-length segment (skipped, no
+  box; L40E), `v_fillarea`/`v_bar`/the curves without `fill_per` (L40H, L40M,
+  L40O), a curve the clip excludes (`gdp_curve`, L40S), `vr_recfl` (L40T), text.
+- **Across workstations and layers:** a `v_pline` on another handle sets it
+  for every one (L40U); so does every `v_pline` of the AES, which draws
+  through the VDI trap (`aes/gemgsxif.c:573-578`): `gsx_box` (`gr_box`, a
+  bordered object, L40V; a box without border draws none, L40W), `gsx_cline`
+  (menu separator, `CROSSED`, edit cursor), `gsx_xline` (rubber band, drag
+  outlines) and the 3D outlines — all two to five points, so TRUE.
+- **Readers besides `polyline`'s own segments:** the text underline, which
+  calls `abline` directly ([`_text.md`](_text.md) § Underline), and line-A
+  function 3 (`linea_line`, `vdi_line.c:2367-2378`; no line-A in NewTOS,
+  ADR-030).
+
+**NewTOS** keeps the flag in `tos-api/src/vdi/line.rs:46@lstlin` (written by
+`tos-api/src/vdi/primitives.rs:74@polyline`; `fill_polygon` reports the band
+test so its callers skip the perimeter). The AES does not draw through the VDI
+trap: `RasterBackend::draw_line` (its `v_pline`), the object border
+(`draw_border`, its `gr_box`), the window frame gadgets' border
+(`rect_outline`) and the menu separator set the flag TRUE themselves.
 
 ---
 

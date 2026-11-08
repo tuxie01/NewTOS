@@ -111,7 +111,7 @@ padding pixels — and answers **0** outside it: truecolor `INTOUT[0] = 0`,
 `INTOUT[1] = 0`; palette `INTOUT[0] = INTOUT[1] = 0`. User decision B
 (TASK/V18, 2026-11-05), recorded in `docs/COMPATIBILITY.md`. The notion of
 "inside the logical screen" is the one lines with clipping off use
-(`tos-api/src/vdi/line.rs:39@index`, decision A), so a pixel a run-on line
+(`tos-api/src/vdi/line.rs:83@index`, decision A), so a pixel a run-on line
 draws reads back at the same coordinates.
 
 `v_contourfill` reads through the same `pixelread`, but only inside its

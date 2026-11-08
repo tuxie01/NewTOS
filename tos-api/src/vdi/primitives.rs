@@ -9,6 +9,7 @@ use core::cell::UnsafeCell;
 
 use super::backend::{ClipRect, PatternFill, Pel, RasterBackend, WriteMode};
 use super::fill_patterns;
+use super::line;
 use super::vwk::Vwk;
 use super::Vdipb;
 
@@ -64,6 +65,12 @@ const SOLID_PATTERN: [u16; 1] = [0xFFFF];
 /// segment with `clip_line` only `if (vwk->clip)` (`vdi_line.c:1115-1117`),
 /// and the backend's `abline` does exactly that per segment
 /// ([`crate::vdi::line::abline`]).
+///
+/// **`LSTLIN`** is written as EmuTOS writes it, for every `n`: FALSE as the
+/// loop starts, TRUE before the last segment (`vdi_line.c:1106-1108`), before
+/// that segment's clip test — so `n < 2` draws nothing and leaves it FALSE,
+/// and a polyline whose last segment is clipped away leaves it TRUE. The text
+/// underline reads it ([`crate::vdi::line::lstlin`], TASK/V40).
 pub(super) fn polyline(
     backend: &dyn RasterBackend,
     n: usize,
@@ -73,13 +80,17 @@ pub(super) fn polyline(
     clip: ClipRect,
     mut mask: u16,
 ) {
+    line::set_lstlin(false);
     if n < 2 {
         return;
     }
     for i in 0..n - 1 {
         let (x0, y0) = pt(i);
         let (x1, y1) = pt(i + 1);
-        let last = i == n - 2; // EmuTOS sets LSTLIN only for the final segment
+        let last = i == n - 2;
+        if last {
+            line::set_lstlin(true);
+        }
         mask = backend.abline(x0, y0, x1, y1, color, mode, clip, mask, last);
     }
 }
@@ -300,7 +311,10 @@ fn do_circ(
 /// (`vdi_fill.c:604-608` with `s_fa_attr`): fill the convex polygon solid
 /// in `color`, then draw its closed perimeter solid (width 1). Used for the
 /// wide-line boxes and the arrow triangles. `clip` bounds the fill,
-/// `line_clip` ([`line_clip`]) the perimeter.
+/// `line_clip` ([`line_clip`]) the perimeter. With clipping on, a polygon
+/// whose y-extent misses the clip band returns before the perimeter
+/// (`vdi_fill.c:584-588`), so its `polyline` does not write `LSTLIN`
+/// ([`fill_polygon`]'s result); [`ClipRect::OFF`] as `line_clip` is clipping off.
 fn polygon(
     backend: &dyn RasterBackend,
     pts: &[(i16, i16)],
@@ -316,10 +330,12 @@ fn polygon(
         pattern: &SOLID_PATTERN,
         mode,
     };
-    fill_polygon(backend, n, pts, fill, clip);
+    let shown = fill_polygon(backend, n, pts, fill, clip);
     // Perimeter: close back to the first vertex, solid width-1 (LN_MASK
     // forced to 0xffff by EmuTOS' polygon()).
-    polyline(backend, n + 1, |i| pts[i % n], color, mode, line_clip, 0xFFFF);
+    if shown || line_clip == ClipRect::OFF {
+        polyline(backend, n + 1, |i| pts[i % n], color, mode, line_clip, 0xFFFF);
+    }
 }
 
 /// EmuTOS `wideline` (`vdi_line.c:1389`): draw a polyline of width > 1 as a
@@ -645,15 +661,22 @@ static POLY: PolyScratch = PolyScratch {
 /// nothing; two vertices have the edge there and the edge back, which cross
 /// every scan line of `(miny, maxy]` at the same x, so they fill one pixel
 /// per row — a dotted stroke (V22, VDI-DRAW-004). `n == 0` has no edge.
+///
+/// Returns `false` when the vertices' y-extent misses `clip`'s band — where
+/// EmuTOS' `polygon`, with clipping on, returns before the perimeter
+/// (`vdi_fill.c:584-588`): the callers then draw no perimeter, so `LSTLIN`
+/// stays as it was (TASK/V40). With clipping off EmuTOS makes no such test;
+/// the callers ask for the perimeter then whatever this returns. `true`
+/// otherwise, and for `n == 0`, which [`v_fillarea`] tests itself.
 pub(super) fn fill_polygon(
     backend: &dyn RasterBackend,
     n: usize,
     v: &[(i16, i16)],
     fill: PatternFill,
     clip: ClipRect,
-) {
+) -> bool {
     if n == 0 {
-        return;
+        return true;
     }
     let n = n.min(MAX_VERTS);
     // Vertex y-extent (EmuTOS `polygon` fill_miny/fill_maxy, `vdi_fill.c:568-580`).
@@ -668,7 +691,7 @@ pub(super) fn fill_polygon(
     // fills down to `ymn_clip` inclusive (the clipped top edge agrees with
     // the unclipped case).
     if fmax < clip.ymn || fmin > clip.ymx {
-        return; // polygon entirely outside the clip band
+        return false; // polygon entirely outside the clip band
     }
     if fmin < clip.ymn {
         fmin = clip.ymn - 1;
@@ -738,6 +761,7 @@ pub(super) fn fill_polygon(
             i += 2;
         }
     }
+    true
 }
 
 /// Opcode 9 — `v_fillarea`: fill the closed polygon `PTSIN[0..2*n]` with
@@ -747,7 +771,10 @@ pub(super) fn fill_polygon(
 /// has no minimum; V22, VDI-DRAW-004): one vertex is the perimeter's dot,
 /// two are a stroke the fill alone already dots ([`fill_polygon`]).
 /// `CONTRL[1] = 0` draws nothing — no edge, and the perimeter is a
-/// one-point polyline (`vdi_line.c:1106`).
+/// one-point polyline (`vdi_line.c:1106`), which still clears `LSTLIN`
+/// when `fill_per` is set, unless clipping is on and `PTSIN[1]` (the
+/// y-extent `polygon` takes from vertex 0, `vdi_fill.c:568-569`, here what
+/// the local `PTSIN` copy holds) lies outside the clip band (TASK/V40).
 ///
 /// Of more than [`MAX_VERTS`] vertices the dispatcher hands over the first
 /// `MAX_VERTS` (`GSX_ENTRY`'s cap, [`super::dispatch_in`]), closed here back
@@ -761,6 +788,11 @@ pub fn v_fillarea(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     // At most `MAX_VERTS` (dispatcher cap); negative draws nothing, as 0.
     let n = pb.contrl(1).max(0) as usize;
     if n == 0 {
+        let y = pb.ptsin(1);
+        if vwk.fill_per && !(vwk.clip && (y < vwk.ymn_clip || y > vwk.ymx_clip)) {
+            let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
+            polyline(backend, 1, |_| (pb.ptsin(0), y), vwk.fill_color, mode, line_clip(vwk), 0xFFFF);
+        }
         return;
     }
     // SAFETY: see [`PolyScratch`]. `fill_polygon` below borrows `POLY.xs`,
@@ -780,8 +812,8 @@ pub fn v_fillarea(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         pattern: fill_patterns::select(vwk),
         mode,
     };
-    fill_polygon(backend, n, v, fill, clip);
-    if vwk.fill_per {
+    let shown = fill_polygon(backend, n, v, fill, clip);
+    if vwk.fill_per && (shown || !vwk.clip) {
         // Outline: the polygon closed back to the first vertex, in the
         // fill colour and the workstation writing mode (EmuTOS `polygon`
         // → `polyline(vwk, ..., vwk->fill_color)`, `vdi_fill.c:608`).
@@ -797,6 +829,15 @@ pub fn v_fillarea(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
 pub fn v_pline(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
     let raw = pb.contrl(1);
     if raw < 2 {
+        // Width 1: `polyline` of fewer than two points draws nothing but
+        // clears `LSTLIN`, and `arrow` finds no vector long enough for a
+        // head (`vdi_line.c:1014-1017,1106`, `draw_arrow` `:1524-1546`).
+        // Wider: `wideline` returns before anything (`:1397-1398`).
+        if vwk.line_width == 1 {
+            let mode = WriteMode::from_wrt_mode(vwk.wrt_mode);
+            let pt = |i: usize| (pb.ptsin(2 * i), pb.ptsin(2 * i + 1));
+            polyline(backend, raw.max(0) as usize, pt, vwk.line_color, mode, line_clip(vwk), line_mask(vwk));
+        }
         return;
     }
     // At most `MAX_VERTS`: the dispatcher caps `CONTRL[1]` (`GSX_ENTRY`).

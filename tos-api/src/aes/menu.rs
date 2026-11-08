@@ -398,7 +398,9 @@ pub fn menu_bar(pb: &Aespb) {
     // whole bar row (A87).
     install_bar_ctwait(tree);
     object::draw_obj(tree as *const Object, THEBAR, MAX_DEPTH, backend);
-    // Separator line under the bar (`gsx_cline(0, gl_hbox-1, …)`, gemmnlib.c:722).
+    // Separator line under the bar (`gsx_cline(0, gl_hbox-1, …)`, gemmnlib.c:722):
+    // a 2-point `v_pline` there, so `LSTLIN` is TRUE after it (TASK/V40).
+    crate::vdi::line::set_lstlin(true);
     backend.fill_rect(0, gl_hbox() - 1, sw, 1, BLACK, clip);
     pb.set_ret(1);
 }
@@ -3175,6 +3177,49 @@ mod popup_wait_tests {
         t.set_y(0, 0);
         clamp_ypos(t, 0, &RASTER);
         assert_eq!(t.y(0), 32, "0 → −16 → … until ≤ 480 − 500 = −20 (−32), then up to ≥ 19: 32 — the bar-row rule wins");
+    }
+
+    // ── V40: the AES's v_pline counterparts write LSTLIN ───────────────────
+
+    /// A `G_BOX` at (300,300) 20×20 with border thickness `th`, black border,
+    /// hollow white interior (`ob_spec` colour word `0x1100`).
+    fn v40_box(th: i8) -> *const Object {
+        let tree: Box<[Object; 1]> = Box::new([Object {
+            ob_next: NIL,
+            ob_head: NIL,
+            ob_tail: NIL,
+            ob_type: G_BOX,
+            ob_flags: LASTOB,
+            ob_state: 0,
+            ob_spec: ((th as u8 as u64) << 16) | 0x1100,
+            ob_x: 300,
+            ob_y: 300,
+            ob_width: 20,
+            ob_height: 20,
+        }]);
+        Box::leak(tree).as_ptr()
+    }
+
+    /// EmuTOS draws a box border with `gr_box` → `gsx_box` → `v_pline` of five
+    /// points (`aes/gemoblib.c:663-667`, `aes/gemgraf.c:264-268,813-832`), which
+    /// leaves `LSTLIN` TRUE (`vdi/vdi_line.c:1106-1108`); a box without border
+    /// draws no polyline and leaves it (oracle: probe L40V/L40W,
+    /// `measurements/measurement-2026-11-08-v40/RUNINFO.TXT`). Same for the
+    /// AES's other `v_pline`s, drawn by `draw_line` (the 3D outline here).
+    #[test]
+    fn v40_box_border_and_aes_lines_set_lstlin() {
+        use crate::vdi::line::{lstlin, set_lstlin};
+        set_lstlin(false);
+        object::draw_obj(v40_box(0), 0, 1, &RASTER);
+        assert!(!lstlin(), "a box without border draws no v_pline: LSTLIN unchanged (L40W)");
+        object::draw_obj(v40_box(1), 0, 1, &RASTER);
+        assert!(lstlin(), "gr_box's v_pline leaves LSTLIN TRUE (L40V)");
+        set_lstlin(false);
+        object::draw_obj(v40_box(-2), 0, 1, &RASTER);
+        assert!(lstlin(), "an outside border too");
+        set_lstlin(false);
+        RASTER.draw_line(10, 10, 20, 10, 1, WriteMode::Replace, ClipRect::full(640, 480), 0xFFFF);
+        assert!(lstlin(), "draw_line = the AES's v_pline (gsx_cline, gsx_xline): TRUE");
     }
 
     // ── A88 point 1: the BEG_MCTRL / END_MCTRL bracket ─────────────────────

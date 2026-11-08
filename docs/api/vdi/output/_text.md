@@ -178,9 +178,12 @@ nothing.
 - With `clip` on each line goes through `clip_line` first, with `clip` off it does
   not (`:519-534`).
 - The end pixel in XOR mode follows `abline`'s `LSTLIN`, which the last `polyline`
-  left behind: TRUE after one of two or more points, the normal case (probe TVJ,
-  and NewTOS always draws it), FALSE after a one-point `v_pline`, where EmuTOS
-  draws one pixel less (probe TVK; NewTOS keeps no `LSTLIN`, open).
+  left behind (`vdi_text.c:527,534` call `abline` directly): TRUE after one of two
+  or more points, the normal case (probe TVJ), FALSE after a one-point `v_pline`,
+  where a non-vertical rule loses its far end — the right one at 0 and 1800, as
+  `abline` draws left to right (probes TVK, L40X–L40Zb); a vertical rule at 900
+  and 2700 never does (L40Za). Who writes the flag:
+  [`_lines-markers.md`](_lines-markers.md) § `LSTLIN` (TASK/V40).
 
 ## Clipping off
 
@@ -194,7 +197,7 @@ the previous row (measured: `vdi-v18-t2.tsv` 70/76, controls 74/79; probes TUA-T
 T14B, T14C, T14G, T14H, TVB, TVC, TVD, TVR, TVS, TVT, TVV, TVW, TVY).
 
 `(UWORD)` makes a cell that lies wholly above row 0 land 65536 rows down, past any
-store. NewTOS keeps the cast (`glyph_unclipped`, `tos-api/src/vdi/line.rs:70@glyph_unclipped`)
+store. NewTOS keeps the cast (`glyph_unclipped`, `tos-api/src/vdi/line.rs:114@glyph_unclipped`)
 and drops every pixel outside the logical screen; EmuTOS writes the memory there, not
 measured for that reason (`docs/COMPATIBILITY.md`, "Text drawn with clipping off").
 

@@ -1160,7 +1160,7 @@ gsx_xline	aes/gemgraf.c	tos-api/src/aes/graf.rs	gsx_xline	mapped	per-segment use
 gsx_pline	aes/gemgraf.c	-	-	unmapped	no counterpart and no caller in aes/ at the pin: defined, never called
 gsx_cline	aes/gemgraf.c	tos-api/src/vdi/backend.rs	draw_line	mapped	one backend.draw_line; the gsx_moff/gsx_mon bracket is the caller's (hide_cursor_for_draw around the whole object draw / edit call, object.rs)
 gsx_bxpts	aes/gemgraf.c	tos-api/src/aes/graf.rs	gsx_bxpts	mapped	the five corner points of the box, clockwise from top-left
-gsx_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_border	mapped	gr_box's per-ring 5-point polyline; NewTOS fills the same 1-px rings as four fill_rect strips per thickness step (draw_border, called by draw_signed_border)
+gsx_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_border	mapped	gr_box's per-ring 5-point polyline; NewTOS fills the same 1-px rings as four fill_rect strips per thickness step (draw_border, called by draw_signed_border); sets LSTLIN TRUE as the v_pline does (V40)
 gsx_xbox	aes/gemgraf.c	tos-api/src/aes/graf.rs	gsx_xbox	mapped	gsx_bxpts + gsx_xline; shared by gr_rubwind/gr_dragbox/slidebox (window.rs, graf.rs)
 gsx_xcbox	aes/gemgraf.c	-	-	unmapped	no counterpart: the corner-only XOR box of gr_xor(clipped=TRUE) in the grow/shrink animation is not drawn; graf.rs animate draws full outlines
 gsx_blt	aes/gemgraf.c	tos-api/src/aes/object.rs	blit_plane_kernel	mapped	the mono-source path (fgcolor != -1: vrt_cpyfm MD_TRANS) as backend.blit_mono for icons and images; the screen-to-screen path (fgcolor == -1) is bb_screen
@@ -1187,6 +1187,7 @@ dither_mask	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	the 0x5555/
 gr_gicon	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	mono and colour icon; the WHITEBAK-with-white-background skip of mask and label background is applied only on the colour arm, not on the mono arm (gemgraf.c:735-748)
 gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_signed_border	mapped	th>0 inner rings, th<0 |th|+1 rings ending on the rect edge (gemgraf.c:813-832)
 gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_border	mapped	the ring strips themselves; the OUTLINED and SHADOW boxes of just_draw call it directly
+gr_box	aes/gemgraf.c	tos-api/src/aes/window.rs	rect_outline	mapped	the 1px border of a window frame gadget (just_draw's box arm, th = 1) as four fill_rect strips; sets LSTLIN TRUE as gsx_box's v_pline does (V40)
 gsx_mcalc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_mcalc	mapped	size of the menu/alert screen buffer: NewTOS = bb_save_words of the whole screen *4; EmuTOS = MENU_BUFFER_SIZE*gl_wchar*gl_hchar*gl_nplanes/8 (gemgsxif.c:98-105)
 gsx_malloc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_malloc	mapped	one page-rounded MX_PREFTTRAM block before the first process, kept for the boot; EmuTOS dos_alloc_anyram
 gsx_mfree	aes/gemgsxif.c	-	-	unmapped	no counterpart: the buffer is never freed (kept for the whole boot, gsxif.rs gsx_malloc)
@@ -1222,7 +1223,7 @@ gsx_textsize	aes/gemgsxif.c	tos-api/src/aes/graf.rs	gl_hchar	mapped	ptsout[3]: t
 gsx_fix_screen	aes/gemgsxif.c	-	-	unmapped	no counterpart: no FDB is built; the backend works on the screen directly (vdi::bb_save, backend.blit_mono, backend.copy_rect)
 gsx_fix	aes/gemgsxif.c	-	-	unmapped	no counterpart: no FDB is built for a raster form; blit_plane/blit_plane_kernel take address, stride and rect
 v_opnwk	aes/gemgsxif.c	tos-api/src/vdi/workstation.rs	v_opnwk	mapped	the VDI handler reached through gsx_init's ncode(OPEN_WORKSTATION); no AES-side work_out copy (gl_ws): ws_chminh is read from ptsout[1]
-v_pline	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	draw_line	mapped	the AES draws lines by backend.draw_line directly, not through the VDI trap
+v_pline	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	draw_line	mapped	the AES draws lines by backend.draw_line directly, not through the VDI trap; draw_line sets LSTLIN TRUE as the AES's 2/3-point polyline does (V40)
 vs_clip	aes/gemgsxif.c	-	-	unmapped	no counterpart: no VDI clip is set by the AES (clip is a per-call ClipRect); see gsx_sclip
 vst_height	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	vst_height	mapped	Gsx::vst_height: ptsin[0]=0, ptsin[1]=h, SET_CHAR_HEIGHT; only gsx_init uses it (gsx_tblt's font switch is the AesFont glyph choice)
 vr_recfl	aes/gemgsxif.c	tos-api/src/vdi/backend.rs	fill_rect	mapped	the AES fills rectangles by backend.fill_rect/fill_pattern directly
@@ -1315,7 +1316,7 @@ get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A
 get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	get_seed	mapped	Flood::get_seed: collision removal + draw, first hole, QSIZE overflow ends the fill (V21)
 no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
 pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill, no bounds check: truecolor device_to_rgb565(get_device_pixel_wrapped), palette read_pixel at the wrapped point; outside the logical screen 0, EmuTOS reads memory unchecked (V24, COMPATIBILITY)
-polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon; no minimum vertex count (1 vertex fills nothing, 2 a dotted stroke; V22)
+polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon; no minimum vertex count (1 vertex fills nothing, 2 a dotted stroke; V22); returns false when the y-extent misses the clip band: the callers then skip the perimeter (and its LSTLIN) as polygon returns early when vwk->clip (V40)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polyline	mapped	the closed perimeter (LN_MASK 0xffff, fill colour) when fill_per; drawn by v_fillarea, gdp curve/rbox and the wide-line helper
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polygon	mapped	polygon under the wide-line attribute environment (solid pattern, line colour, perimeter on)
 put_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel write: no NewTOS counterpart
@@ -1325,7 +1326,7 @@ search_to_right	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the rig
 search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the right walk in Flood::end_pts, truecolor words
 st_fl_ptr	vdi/vdi_fill.c	tos-api/src/vdi/fill_patterns.rs	select	mapped	pattern/mask choice; NewTOS derives it at draw time from fill_style/fill_index instead of caching patptr/patmsk in the Vwk
 vdi_v_contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	opcode 103
-vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0); any vertex count, 0 or negative draws nothing; count capped to MAX_VERTICES by dispatch_in (V23); of >= MAX_VERTICES the first 1024 closed cleanly where EmuTOS overruns local_ptsin (docs/COMPATIBILITY.md, V22)
+vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0); any vertex count, 0 or negative draws nothing (with fill_per the 1-point perimeter still clears LSTLIN unless clip is on and PTSIN[1] misses the band; V40); count capped to MAX_VERTICES by dispatch_in (V23); of >= MAX_VERTICES the first 1024 closed cleanly where EmuTOS overruns local_ptsin (docs/COMPATIBILITY.md, V22)
 vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105
 vdi_vqf_attributes	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	vqf_attributes	mapped	opcode 37
 vdi_vr_recfl	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	vr_recfl	mapped	opcode 114
@@ -1374,7 +1375,7 @@ linea_line	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Lin
 linea_polygon	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 6: no NewTOS counterpart
 linea_rect	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 5: no NewTOS counterpart
 perp_off	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	perp_off	mapped	-
-polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	polyline	mapped	segment loop with LSTLIN on the last segment; clip_line per segment runs inside the backend abline
+polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	polyline	mapped	segment loop; LSTLIN (line::set_lstlin) FALSE at the start for every count, TRUE before the last segment's clip test (V40); clip_line per segment runs inside the backend abline
 polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	line_clip	mapped	the if (vwk->clip) of the per-segment clip_line: ClipRect::OFF when clipping is off (V20)
 quad_xform	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	quad_xform	mapped	-
 r_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	NewTOS keeps no Vwk state to restore: colour, solid pattern and ends are arguments of wideline/polygon
@@ -1384,7 +1385,7 @@ swblit_rect_common	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar 
 swblit_rect_common16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	16-bit pattern fill through the active pseudo-palette; multifill patterns render monochrome as in EmuTOS
 swblit_rect_common16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	abline	mapped	the horizontal line of abline (draw_rect_common with the line mask as a one-row pattern, attr.clip = 0)
 swblit_vertical_line16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	vertical_line16	mapped	vertical line in 16-bit mode, never shortened by the XOR LSTLIN rule (V20)
-vdi_v_pline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	v_pline	mapped	opcode 6 (HAVE_BEZIER is 0); count capped to MAX_VERTICES by dispatch_in (V23), below 2 draws nothing
+vdi_v_pline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	v_pline	mapped	opcode 6 (HAVE_BEZIER is 0); count capped to MAX_VERTICES by dispatch_in (V23), below 2 draws nothing (width 1 still runs polyline: LSTLIN FALSE; wider leaves it; V40)
 vdi_vql_attributes	vdi/vdi_line.c	tos-api/src/vdi/inquiry.rs	vql_attributes	mapped	opcode 35
 vdi_vsl_color	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_color	mapped	opcode 17; MAP_COL folded to identity
 vdi_vsl_ends	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_ends	mapped	opcode 108
@@ -1526,7 +1527,7 @@ output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	outline_of	mapped	outline sta
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	step	mapped	JustInfo::step, the justified apply loop after each glyph
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	horz_step	mapped	DESTX += hor_table[temp] with F_HORZ_OFF (V33)
 output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline	mapped	horizontal underline: startx to DESTX inclusive (abline draws the endpoint), on the row DESTY + top + underline, with the outline shift (V30)
-output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline_lines	mapped	the F_UNDER loop for every chup: LN_MASK from lighten, carried by abline and rorw1 from line to line; clip off skips clip_line, the rule runs on (V30)
+output_text	vdi/vdi_text.c	tos-api/src/vdi/text.rs	underline_lines	mapped	the F_UNDER loop for every chup: LN_MASK from lighten, carried by abline and rorw1 from line to line; clip off skips clip_line, the rule runs on (V30); XOR end pixel follows the LSTLIN of the last polyline (line::lstlin, V40)
 setup_width_height	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	setup_width_height	mapped	-
 text_init	vdi/vdi_text.c	tos-api/src/vdi/workstation.rs	font_ring_fold	mapped	SIZ_TAB[0..3] and DEV_TAB[5] fold; the F_STDFORM byte swap does not exist
 text_init	vdi/vdi_text.c	tos-api/src/vdi/font.rs	text_init_def_font	mapped	the def_font walk (cell_height by V_REZ_VT, F_DEFAULT faces, form_height), evaluated for the live height instead of cached at v_opnwk (V32)
@@ -1779,7 +1780,7 @@ menu_select	aes/gemmnlib.c	tos-api/src/aes/menu.rs	rehilite	mapped	set/reset SEL
 menu_sr	aes/gemmnlib.c	tos-api/src/aes/menu.rs	sr_rect	mapped	save/restore rectangle of a drop-down: box grown by MENU_THICKNESS (:208-223); NewTOS grows by MENU_THICKNESS plus ADJ3DSTD on the right/bottom (the popup_blit shape) and clamps to the screen
 menu_sr	aes/gemmnlib.c	tos-api/src/aes/menu.rs	erase_box_inner	mapped	restore half (bb_restore) through the one AES screen buffer slot MENU_SAVE
 menu_down	aes/gemmnlib.c	tos-api/src/aes/menu.rs	open_box	mapped	title SELECTED + save under + ob_draw of the box (:229-244); a DISABLED title neither selects nor draws (A89)
-mn_bar	aes/gemmnlib.c	tos-api/src/aes/menu.rs	menu_bar	mapped	menu_bar show/hide (:703-737): gl_mnppd/gl_mntree, menu_fixup, THEBAR width, ctwait rect, ob_draw, separator line; NewTOS additionally fills the bar strip white before drawing and on hide (EmuTOS mn_bar(FALSE) draws nothing), and menu.rs has no post_keybd(ctl_pd->p_cda, 0) fake key (ctwait is set directly)
+mn_bar	aes/gemmnlib.c	tos-api/src/aes/menu.rs	menu_bar	mapped	menu_bar show/hide (:703-737): gl_mnppd/gl_mntree, menu_fixup, THEBAR width, ctwait rect, ob_draw, separator line (gsx_cline: sets LSTLIN TRUE, V40); NewTOS additionally fills the bar strip white before drawing and on hide (EmuTOS mn_bar(FALSE) draws nothing), and menu.rs has no post_keybd(ctl_pd->p_cda, 0) fake key (ctwait is set directly)
 mn_bar	aes/gemmnlib.c	tos-api/src/aes/menu.rs	remove_bar	mapped	state half of the hide path: gl_mntree = NULL, gl_ctwait = gl_rmenu (:726-727)
 mn_cleanup	aes/gemmnlib.c	tos-api/src/aes/menu.rs	mn_cleanup	mapped	AC_CLOSE to every registered DA (:740-748); the gl_submenu free (:751-756) is not done here, NewTOS clears the submenu table only in menu.rs reinit (AES restart)
 build_menuid_lookup	aes/gemmnlib.c	tos-api/src/aes/menu.rs	build_menuid_lookup	mapped	display-slot -> menu id table (:766-782)

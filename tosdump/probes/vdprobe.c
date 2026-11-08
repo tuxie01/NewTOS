@@ -49,6 +49,9 @@
  *
  * TASK/V37 appends cases T37* (function t37, after t35): the horizontal v_justified against max_x --
  * h_align 0/1/2 x effects, v_align with skew, interchar, a negative and a zero max_x.
+ *
+ * TASK/V40 appends cases L40*, L41* (function t40, after t37): LSTLIN, read by the XOR underline, written by
+ * every polyline (also the AES's) -- see the comment above t40.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -2779,6 +2782,136 @@ static void t37(void)
 	t37_height = 0;
 }
 
+/* ---- T40 (TASK/V40): LSTLIN, the one flag abline's XOR rule reads ---------------------------------------
+ * LSTLIN is one global WORD of the line-A variables (bios/lineavars.S:288), written only by polyline() --
+ * FALSE when it starts, TRUE before its last segment (vdi/vdi_line.c:1106-1108) -- and read by abline()
+ * (:2319): in XOR mode a non-vertical line drawn while it is FALSE loses its far x.  The underline
+ * (vdi_text.c:527,534) is drawn by abline() directly, so it shows whatever the last polyline() left; the
+ * AES's v_pline calls (gsx_box, gsx_cline, gsx_xline, the 3D outlines) are polylines too.  Every case sets the
+ * flag first (a 2-point v_pline TRUE, a 1-point one FALSE, both in replace and away from the grab), runs the
+ * call under test in replace mode at y >= 200, then draws the XOR underline 'ABCDEFGH' at (100,100): one
+ * pixel shorter iff LSTLIN is FALSE (TVJ/TVK).  L41* are XOR lines and markers, which set the flag themselves. */
+typedef struct {
+	int16_t ob_next, ob_head, ob_tail;
+	uint16_t ob_type, ob_flags, ob_state;
+	long ob_spec;
+	int16_t ob_x, ob_y, ob_width, ob_height;
+} T40OBJ;
+
+static const int16_t t40_two[] = { 10, 300, 20, 300 };
+static const int16_t t40_one[] = { 10, 300 };
+static const int16_t t40_tri[] = { 300, 300, 340, 300, 320, 340 };
+static const int16_t t40_same[] = { 300, 300, 300, 300 };
+static T40OBJ t40_box;
+
+static void t40_set(int lstlin)
+{
+	if (lstlin)
+		pline(2, t40_two);
+	else
+		pline(1, t40_one);
+}
+
+static void t40_under(const char *name)
+{
+	i1(106, 8);
+	i1(32, 3);
+	gtext(100, 100, "ABCDEFGH");
+	grab(name, 80, 80, 120, 40);
+}
+
+static void t40_objc(int th)
+{
+	t40_box.ob_next = t40_box.ob_head = t40_box.ob_tail = -1;
+	t40_box.ob_type = 20;			/* G_BOX */
+	t40_box.ob_flags = 0x0020;		/* LASTOB */
+	t40_box.ob_state = 0;
+	t40_box.ob_spec = ((long)(th & 0xFF) << 16) | 0x1100;	/* border 1, text 1, hollow, interior 0 */
+	t40_box.ob_x = 300; t40_box.ob_y = 300; t40_box.ob_width = 20; t40_box.ob_height = 20;
+	aes_int_in[0] = 0;
+	aes_int_in[1] = 1;
+	aes_int_in[2] = 0; aes_int_in[3] = 0; aes_int_in[4] = 640; aes_int_in[5] = 480;
+	aes_addr_in[0] = &t40_box;
+	aes(42, 6, 1, 1);			/* objc_draw */
+}
+
+static void t40(void)
+{
+	int16_t a = handle;
+
+	tbegin("L40A", "LSTLIN TRUE; v_pline CONTRL[1]=0 (width 1): XOR underline");
+	t40_set(1); vdi(6, 0, 0, 0); t40_under("L40A");
+	tbegin("L40B", "LSTLIN TRUE; v_pline 1 point, width 1, both ends arrowed: XOR underline");
+	t40_set(1); i2(108, 1, 1); pline(1, t40_one); i2(108, 0, 0); t40_under("L40B");
+	tbegin("L40C", "LSTLIN TRUE; v_pline 1 point, width 3: XOR underline");
+	t40_set(1); p1(16, 3, 0); pline(1, t40_one); p1(16, 1, 0); t40_under("L40C");
+	tbegin("L40D", "LSTLIN FALSE; v_pline 2 points (10,300)-(20,300), width 3: XOR underline");
+	t40_set(0); p1(16, 3, 0); pline(2, t40_two); p1(16, 1, 0); t40_under("L40D");
+	tbegin("L40E", "LSTLIN FALSE; v_pline 2 equal points (300,300), width 3 (closed, zero length): XOR underline");
+	t40_set(0); p1(16, 3, 0); pline(2, t40_same); p1(16, 1, 0); t40_under("L40E");
+	tbegin("L40F", "LSTLIN FALSE; v_pmarker 1 point (300,300): XOR underline");
+	t40_set(0); ptsin[0] = 300; ptsin[1] = 300; vdi(7, 0, 1, 0); t40_under("L40F");
+	tbegin("L40G", "LSTLIN FALSE; v_fillarea 3 points, perimeter on: XOR underline");
+	t40_set(0); fillarea(3, t40_tri); t40_under("L40G");
+	tbegin("L40H", "LSTLIN FALSE; v_fillarea 3 points, perimeter off: XOR underline");
+	t40_set(0); i1(104, 0); fillarea(3, t40_tri); t40_under("L40H");
+	tbegin("L40I", "LSTLIN TRUE; v_fillarea CONTRL[1]=0, perimeter on, clip off: XOR underline");
+	t40_set(1); fillarea(0, t40_tri); t40_under("L40I");
+	tbegin("L40J", "LSTLIN FALSE; clip (0,0)-(639,200), v_fillarea 3 points at y 300..340, perimeter on: XOR underline");
+	t40_set(0); clip(1, 0, 0, 639, 200); fillarea(3, t40_tri); t40_under("L40J");
+	tbegin("L40K", "LSTLIN FALSE; clip (0,0)-(639,200), v_pline 2 points at y 300 (wholly clipped): XOR underline");
+	t40_set(0); clip(1, 0, 0, 639, 200); pline(2, t40_two); t40_under("L40K");
+	tbegin("L40L", "LSTLIN FALSE; v_bar (300,300)-(340,340), perimeter on: XOR underline");
+	t40_set(0); bar(300, 300, 340, 340); t40_under("L40L");
+	tbegin("L40M", "LSTLIN FALSE; v_bar (300,300)-(340,340), perimeter off: XOR underline");
+	t40_set(0); i1(104, 0); bar(300, 300, 340, 340); t40_under("L40M");
+	tbegin("L40N", "LSTLIN FALSE; v_circle (320,320) r 20, perimeter on: XOR underline");
+	t40_set(0); gdp15(4, 3, 0, 320, 320, 20, 0, 0, 0, 0); t40_under("L40N");
+	tbegin("L40O", "LSTLIN FALSE; v_circle (320,320) r 20, perimeter off: XOR underline");
+	t40_set(0); i1(104, 0); gdp15(4, 3, 0, 320, 320, 20, 0, 0, 0, 0); t40_under("L40O");
+	tbegin("L40P", "LSTLIN FALSE; v_arc (320,320) r 20, 0..900: XOR underline");
+	t40_set(0); gdp15(2, 4, 2, 320, 320, 0, 0, 20, 0, 900); t40_under("L40P");
+	tbegin("L40Q", "LSTLIN FALSE; v_rbox (300,300)-(360,340): XOR underline");
+	t40_set(0); ptsin[0] = 300; ptsin[1] = 300; ptsin[2] = 360; ptsin[3] = 340; vdi(11, 8, 2, 0); t40_under("L40Q");
+	tbegin("L40R", "LSTLIN FALSE; v_rfbox (300,300)-(360,340), perimeter on: XOR underline");
+	t40_set(0); ptsin[0] = 300; ptsin[1] = 300; ptsin[2] = 360; ptsin[3] = 340; vdi(11, 9, 2, 0); t40_under("L40R");
+	tbegin("L40S", "LSTLIN FALSE; clip (0,0)-(639,200), v_circle (320,400) r 20 (wholly clipped): XOR underline");
+	t40_set(0); clip(1, 0, 0, 639, 200); gdp15(4, 3, 0, 320, 400, 20, 0, 0, 0, 0); t40_under("L40S");
+	tbegin("L40T", "LSTLIN FALSE; vr_recfl (300,300)-(340,340): XOR underline");
+	t40_set(0); recfl(300, 300, 340, 340); t40_under("L40T");
+	tbegin("L40U", "LSTLIN FALSE; v_pline 2 points on the AES's physical handle: XOR underline on ours");
+	t40_set(0); aes(77, 0, 5, 0); handle = aes_int_out[0]; pline(2, t40_two); handle = a; t40_under("L40U");
+	tbegin("L40V", "LSTLIN FALSE; objc_draw G_BOX border 1 at (300,300) 20x20: XOR underline");
+	t40_set(0); t40_objc(1); t40_under("L40V");
+	tbegin("L40W", "LSTLIN FALSE; objc_draw G_BOX border 0 at (300,300) 20x20: XOR underline");
+	t40_set(0); t40_objc(0); t40_under("L40W");
+	tbegin("L40X", "LSTLIN FALSE; XOR underline, v_justified interword 'AB CD EF' at (100,100), length 200");
+	t40_set(0); i1(106, 8); i1(32, 3); justified(100, 100, 200, 1, 0, "AB CD EF"); grab("L40X", 80, 80, 240, 40);
+	tbegin("L40Y", "LSTLIN FALSE; XOR underline, vst_height(26), 'ABCDEFGH' at (100,100)");
+	t40_set(0); i1(106, 8); i1(32, 3); p1(12, 0, 26); gtext(100, 100, "ABCDEFGH"); grab("L40Y", 80, 60, 220, 70);
+	tbegin("L40Z", "LSTLIN FALSE; XOR underline, rotation 1800, 'ABCDEFGH' at (300,100)");
+	t40_set(0); i1(106, 8); i1(32, 3); i1(13, 1800); gtext(300, 100, "ABCDEFGH"); grab("L40Z", 220, 80, 100, 40);
+	tbegin("L40Za", "LSTLIN FALSE; XOR underline, rotation 900 (vertical: never shortened), 'ABCDEFGH' at (100,300)");
+	t40_set(0); i1(106, 8); i1(32, 3); i1(13, 900); gtext(100, 300, "ABCDEFGH"); grab("L40Za", 70, 200, 60, 120);
+	tbegin("L40Zb", "LSTLIN FALSE; XOR underline twice, 'ABCDEFGH' at (100,100) and (100,110)");
+	t40_set(0); i1(106, 8); i1(32, 3); gtext(100, 100, "ABCDEFGH"); gtext(100, 110, "ABCDEFGH");
+	grab("L40Zb", 80, 80, 120, 40);
+	tbegin("L41A", "LSTLIN FALSE; XOR v_pline 3 points (100,100)-(140,100)-(140,120)");
+	{
+		static const int16_t z[] = { 100, 100, 140, 100, 140, 120 };
+		t40_set(0); i1(32, 3); pline(3, z); grab("L41A", 80, 80, 80, 60);
+	}
+	tbegin("L41B", "LSTLIN TRUE; XOR v_pline 3 points (100,100)-(140,100)-(140,120)");
+	{
+		static const int16_t z[] = { 100, 100, 140, 100, 140, 120 };
+		t40_set(1); i1(32, 3); pline(3, z); grab("L41B", 80, 80, 80, 60);
+	}
+	tbegin("L41C", "LSTLIN FALSE; XOR v_pmarker type 4 (square) and 2 (plus) at (120,110)");
+	t40_set(0); i1(32, 3); i1(18, 4); p1(7, 120, 110); i1(18, 2); p1(7, 120, 110); grab("L41C", 80, 80, 80, 60);
+	tbegin("L41D", "LSTLIN TRUE; XOR v_pmarker type 4 (square) and 2 (plus) at (120,110)");
+	t40_set(1); i1(32, 3); i1(18, 4); p1(7, 120, 110); i1(18, 2); p1(7, 120, 110); grab("L41D", 80, 80, 80, 60);
+}
+
 static void t2(void)
 {
 	t19();
@@ -2798,6 +2931,7 @@ static void t2(void)
 	t31();
 	t35();
 	t37();
+	t40();
 }
 
 

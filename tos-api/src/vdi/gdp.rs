@@ -251,8 +251,10 @@ fn curve(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, closed: bool, to_ce
         // Closed circle/ellipse/pieslice/ellpie: EmuTOS `polygon()` fills
         // the interior and (only when `fill_per`) draws the boundary as a
         // solid width-1 polyline in the **fill colour** (`vdi_fill.c:606-608`).
-        fill_polygon(backend, n, &pts, fill_of(vwk), clip);
-        if vwk.fill_per {
+        // A polygon outside the clip band returns before the perimeter, and
+        // its polyline (and `LSTLIN`) with it (`vdi_fill.c:584-588`, TASK/V40).
+        let shown = fill_polygon(backend, n, &pts, fill_of(vwk), clip);
+        if vwk.fill_per && (shown || !vwk.clip) {
             polyline(backend, n + 1, |i| pts[i % n], vwk.fill_color, mode, line_clip(vwk), 0xFFFF);
         }
     }
@@ -356,8 +358,8 @@ fn rbox(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend, filled: bool) {
     if filled {
         // v_rfbox: polygon() fills, plus the solid fill-colour perimeter
         // when fill_per (EmuTOS `:334-337`, `vdi_fill.c:606-608`).
-        fill_polygon(backend, RFBOX_POINTS, &pts, fill_of(vwk), clip);
-        if vwk.fill_per {
+        let shown = fill_polygon(backend, RFBOX_POINTS, &pts, fill_of(vwk), clip);
+        if vwk.fill_per && (shown || !vwk.clip) {
             polyline(
                 backend,
                 RFBOX_POINTS + 1,

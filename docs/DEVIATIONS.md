@@ -26,7 +26,6 @@ Rules:
 | `v_hardcopy` (escape 17) / `Scrdmp` | sets `dumpflg` to -1, prints nothing; `dump_vec` never called | VBL calls `dump_vec` when `dumpflg == 0` | gemessen (T18A) | ADR-031; [V34](../TASK/V34.md) |
 | Program hooks a trap vector (`Setexc(34, …)` etc.) | vector stored, never called | called on every trap | gemessen ([PORT12](../TASK/PORT12.md) stage 1) | ADR-031 |
 | `vst_effects` light (`F_LIGHT`) in truecolor | glyph cells lightened | glyph cells not lightened | gemessen | [V39](../TASK/V39.md) offen |
-| XOR underline right after a one-point `v_pline` | full length | one pixel shorter (`abline` follows `LSTLIN`) | gemessen | [V40](../TASK/V40.md) offen |
 | Skewed text in replace mode; `bold+skew+outline` | glyph damaged | correct | gemessen | [V41](../TASK/V41.md) offen, cause known |
 | More than 4096 characters in one call, unscaled 8x16 font | pen wraps | width check overflows `WORD`, direct blit runs on | gemessen | [V42](../TASK/V42.md) offen (P4) |
 | `vst_height` with clipping, also without effect | was: wholly clipped glyphs moved the DDA | skips `scale` for them | gemessen | [V45](../TASK/V45.md): ZG012 equal since [V31](../TASK/V31.md), rest of ZG013 is skew ([V41](../TASK/V41.md)); likely done, to be confirmed |
