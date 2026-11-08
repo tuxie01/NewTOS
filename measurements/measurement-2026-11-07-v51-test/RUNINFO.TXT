@@ -1,0 +1,83 @@
+V51 tester acceptance -- TASK/V51.md, run 2026-11-07, independent of the developer's run measurements/measurement-2026-11-07-v51/.
+Worktree branch v51, base abe8dae1 (V50 head), change 1197fed7 (head 08ab5d9c adds only run + ticket). No card, no Pi, no push,
+no product-code change (mutants ran in a scratch archive tree of 1197fed7, never in the worktree).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the card.img.manifest files of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (34 manifests)
+QEMU 11.0.2, raspi4b (serial=on, APFS clone of a fresh tools/mkcard.sh card per boot) and virt headless; one QEMU of mine at a time.
+Method: the developer's accept.sh copied (method/accept.sh) with M repointed to this run dir and its leak_check kill REMOVED (see
+INCIDENT), git archive trees of both commits in the session scratchpad. Own: method/mutants.py, method/vdprobe-x51.c (+ x51-cases.c,
+build-x51.sh, run-x51.sh, run-x51-both.sh).
+
+RESULTS
+ 1 PASS  ADR-036 by disassembly (analysis/copy_rect.disasm; llvm-objdump of the release kernel, kernel::raster_copy::copy_rect, which
+         holds all four asm kernels inlined). Mnemonics in the function: eor 38, and 37, ld1 30, st1 20, bsl 18, dup 8, ldp/stp q
+         (25/19 incl. scalar pairs), no f*, no sq*/uq*, no mla/fmov/msr; the three `mul` are scalar x-register address arithmetic.
+         V registers named: v0..v13 only. Copy kernels (2): stp q0-q3 on entry, ldp q0-q3 before the block ends; op kernels (2):
+         stp q0-q13 (7 stp), ldp q0-q13 (7 ldp) before the ret path. Equal to the lists in the source (copy v0-v3, op v0-v13). The
+         VSave frame lives in the 0x100 stack frame of copy_rect.
+         IRQ claim: blink_tick (kernel/src/fbcon.rs) -> alpha_blink -> blink -> neg_cell -> read_row_rgb565/write_row_rgb565/flush_cells;
+         grep over kernel/ and tos-api/src: copy_rect is called only from vro_cpyfm (raster.rs:880), VT52 scroll_up/scroll_down
+         (escape.rs:326, :340), AES bb_screen (window.rs:2085), all on the synchronous trap path. Confirmed: the blink never calls it.
+ 2 PASS  host tests: raster_kernel_copy 10 passed (0.44 s); cargo xtask test in the worktree 2289 passed / 0 failed / 1 ignored
+         (analysis/cargo-xtask-test-chg.txt) = claim. The scalar reference copy_rect_reference compared by eye with
+         `git show abe8dae1:kernel/src/vdi_backend.rs` copy_rect: same down/right choice (dy > src.y, dx > src.x), same row/column
+         walk order, same skip of rows/columns whose source is off screen, same raster_op; op 5 early return stays in the backend
+         before the box (vdi_backend.rs copy_rect unchanged at that spot); the adapter also skips nothing the old loop did not.
+         My 12 mutants (method/mutants.py, analysis/mutants.txt, each one edit, file restored, sha256 equal): 11 RED, 1 survived:
+           Q1 same-row right shift forward (backward only if dy != src_y)  RED (4 tests failed)
+           Q2 op 10 constant wrong  RED     Q3 op 7 bit 3 wrong  RED
+           Q4 op kernel restore of q10,q11 dropped  RED     Q5 copy kernel restore of q2,q3 dropped  RED
+           Q6 backward copy block stores before it loads  RED     Q7 backward op block stores S before loading D  RED
+           Q8 rows bottom-up only if dy > src_y+1  RED   Q9 source row clip one row too low  RED
+           Q10 16-pixel loop counter threshold 17  RED   Q12 op 7 taken as plain copy  RED
+           Q11 op 5 not an early return  GREEN: equivalent in pixels (the op kernel computes D' = D and stores the same value); not a gap.
+ 3 PASS  overlap extra (method/vdprobe-x51.c = the current vdprobe.c plus x51(), tosdump/ untouched; probe-x51/): 304 cases after
+         the standard 909 (1213 total). Backdrop = pseudo-random 16-bit memory form to the screen, then screen->screen vro_cpyfm:
+         X (224) ops 3, 6, 7, 10 x widths 16/17/64/65 x 7 rows, source x = 21 (odd), offset (ox, oy) in {-19,-3,0,3,19} x {-3,0,3}
+         without (0,0) = all 8 directions plus same row and same column; Y (72) ops 1,2,4,8,9,11,12,13,14 x widths 17/65 x 4 offsets;
+         W (8) 600-px wide, 9 rows, start x 11: scroll by one row up/down and 3 px left/right, ops 3 and 6.
+         base vs change: VDPROBE.BIN byte-identical (cmp exit 0), LOG identical, vdprobe-compare 1213 cases 0 differ.
+         Sensitivity: a scratch kernel with Q1+Q8 applied (sha 2ff7f75b...) differs from the base in 28 of 1213 cases (X 15, Y 9, W 4),
+         all extra cases: they reach the kernel and see a wrong direction. (Cases of <= 16 px do not differ: one block, direction
+         immaterial.)
+ 4 PASS  builds: both boards, fresh target per build, base / chg / base+raster-prof / chg+raster-prof, 20 steps rc 0
+         (analysis/builds-rc.txt, warnings.txt): rustc tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121 everywhere, delta 0;
+         hits in the touched files: only kernel/src/lib.rs:9:9 (missing_docs note) as on the base; no hit naming raster_copy.rs.
+         Feature-off (analysis/feature-off-check.txt): chg with line 821 of vdi_backend.rs (the cfg'd raster-prof copy_rect hook) blanked
+         builds to the same kernel8.img sha256 d212dde0... as chg. Boots: qemu-virt headless, own release builds, 100 s: base and change
+         "[desk] desktop up (0 drives)", 0 exception/panic lines. raspi4b serial=on: every BOOT-SERIAL.txt of the run 0 exception lines;
+         the Pi kernels chg and chg-prof reach "desktop up (1 drives)".
+ 5 PASS  base == change byte for byte: vdprobe (TRJ-TRM EQUAL; VDPROBE.BIN cmp 0, LOG identical, 909 cases 0 differ; change twice equal),
+         vdi-v18-t2 VDI.BIN d61803b2fd94beb3, vdi-all VDI.BIN e91b865b92b5dbf2, AES r2 3177719b8ba49866 / r3 3189d838b86b81fb /
+         r4 d106307edbc1d747 (kernel image size unchanged, so the address cell is equal too) (analysis/tables-bin-compare.txt).
+         Vs oracle, both sides alike: vdi-v18-t2 2/32 (V35), vdi-all 0/182, r2 78/78 and r3 39/39 (address cells), r4 no reference.
+         shprobe 12/12, shprobe-desk 2/2, desktop+injector 11/11 at 640x480 and 11/11 at 1920x1080, boot screen + console 6/6 at 640x480,
+         5/6 at 1920x1080: the shot at 18 s (02-t018) differs -- timed frame of a running APITEST: base shows the console some 30 lines
+         behind change (base at T32 BasePage line, change at BC07), both pages fully legible, the later 24/32/45 s frames are equal;
+         timing class, change merely ran further in the same time (analysis/shots-compare.txt).
+         slprobe (analysis/slprobe-compare.txt, slprobe-log-masked.txt): base/base2 4 differ, chg/chg2 4, base/chg 1, base2/chg2 5 --
+         only "held1" shots; SLPROBE.LOG with ticks, event counter and repeat count masked 0 lines differ in all four pairs.
+         Not noise-class evidence for anything else. Images kept: the differing held1 shots; all hashes in analysis/slprobe-shots.sha256.
+         Viewed by me: desk480-chg 04-04-window-drag-held (dragged C:\ window with dotted frame, icons and 12-char labels intact,
+         scrollbars and sizer drawn) and 05-05-slider-drag-held (window at its new place, slider, icon grid, text crisp), bc1080 02-t018
+         both sides (full-screen scrolled console text, glyphs intact).
+ 6 PASS  Pi kernels: sha256 of measurements/measurement-2026-11-07-v51/pi-kernels/ = RUNINFO v51 (base e07cbdbf, base+prof 6ea946d0,
+         chg d212dde0, chg+prof 5fdb50ee); my own fresh builds from abe8dae1 and 1197fed7, +/- raster-prof, in two further trees
+         (accept trees and the feature-off tree) give the same four sha256 (analysis/kernels.sha256, pi-kernels.sha256, feature-off-check.txt).
+
+INCIDENT (defect in the developer's script, not fixed here)
+  measurements/measurement-2026-11-07-v51/method/accept.sh leak_check() kills every QEMU whose command line names the scratch dir
+  ($S). Another job (the V18 t3 auditor) shared this scratchpad and its QEMU command lines contained $S. My first use of the copied
+  script therefore SIGTERMed foreign QEMUs: analysis/qemu-leak-check.txt lists PIDs 15947 (22:23:30) and 21034 (22:24:24) as "under
+  scratch" at those checks (killed by the script; ownership not provable, they were not started by me). On the coordinator's warning
+  I stopped my script, removed the kill from my copy (method/accept.sh now only lists) and reran slprobe, gui, pikernels; the earlier
+  phases (boots, tables, probe) had run with the kill active. The developer's boot-virt.sh also pattern-kills (pgrep -f
+  "qemu-system-aarch64.*$T/target", limited to its own tree path) instead of by PID.
+  Also my own slip: the first launch of accept.sh still had M = the developer's run dir for ~20 s; it rewrote three tracked files there
+  (analysis/build-base-rpi4.log, builds-rc.txt, qemu-leak-check.txt), restored byte for byte from HEAD with `git show HEAD:path > path`;
+  git status showed them clean afterwards.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime gain (ADR-036 point 5), cache behaviour of NEON stores/loads to the Non-Cacheable FB, HDMI -- not QEMU-reproducible,
+  for the user's HW test (TASK/V51.md "Uebergabe Pi"). Runtime check that EL0 V registers survive a kernel call: only host test of the
+  save lists plus my disassembly comparison, no run. Oracle side not rerun (base == change). Base cargo xtask test (2279) not re-run.

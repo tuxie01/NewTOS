@@ -1,0 +1,120 @@
+original kernel/src/raster_expand.rs sha256 1f70634cf5c152f8abdd88b92ca52bb1608cbf32be2ed222ed64efb9a3d9ca42
+
+== M1 Transparent/RevTransparent insert-if-true becomes insert-if-false (bit -> bif)
+   exit 101 -> RED
+   test glyph_matches_the_backend_loop ... FAILED
+   test md_erase_paints_the_background_colour_on_clear_bits ... FAILED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test result: FAILED. 5 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+   first message: thread 'glyph_matches_the_backend_loop' (5065141) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M2 the one-pixel tail of the Replace kernel is dropped
+   exit 101 -> RED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test glyph_matches_the_backend_loop ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'expand_matches_the_reference_at_every_start_bit_and_width' (5065262) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M3 start bit inside the first unit off by one
+   exit 101 -> RED
+   test md_erase_paints_the_background_colour_on_clear_bits ... FAILED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test glyph_matches_the_backend_loop ... FAILED
+   test result: FAILED. 5 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'md_erase_paints_the_background_colour_on_clear_bits' (5065510) panicked at tos-api/tests/raster_kernel_expand.rs:511:5:
+
+== M4 RevTransparent of the word source without the complement (behaves as Transparent)
+   exit 101 -> RED
+   test md_erase_paints_the_background_colour_on_clear_bits ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+   first message: thread 'md_erase_paints_the_background_colour_on_clear_bits' (5065755) panicked at tos-api/tests/raster_kernel_expand.rs:511:5:
+
+== M5 Replace: fg and bg swapped in the first four pixels of the block
+   exit 101 -> RED
+   test glyph_matches_the_backend_loop ... FAILED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'glyph_matches_the_backend_loop' (5065883) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M6 read-modify-write kernel: v13/v14 not saved (restore kept)
+   exit 101 -> RED
+   test every_v_register_used_is_saved_and_restored ... FAILED
+   test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.87s
+   first message: thread 'every_v_register_used_is_saved_and_restored' (5066170) panicked at tos-api/tests/raster_kernel_expand.rs:530:5:
+
+== M7 source row not advanced per row (both kernels; the pitch shifted out to 0)
+   exit 101 -> RED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test glyph_matches_the_backend_loop ... FAILED
+   test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   first message: thread 'mono_matches_the_backend_loop_at_every_source_column_and_width' (5066509) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M8 the 8-pixel tail of the read-modify-write kernel does not slide its masks
+   exit 101 -> RED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test glyph_matches_the_backend_loop ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test result: FAILED. 7 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+   first message: thread 'mono_matches_the_backend_loop_at_every_source_column_and_width' (5066737) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M9 refill reads a unit when it already holds the bits due (over-read past the row)
+   exit 101 -> RED
+   first message: process didn't exit successfully: `/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a86a976363716f766/target/debug/deps/raster_kernel_expand-eba968a682159b2e` (signal: 10, SIGBUS: access to undefined memory)
+
+== M10 a skipped no-op word does not step the destination
+   exit 101 -> RED
+   test expand_matches_the_reference_at_every_height_and_pitch ... FAILED
+   test expand_matches_the_reference_at_every_start_bit_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test glyph_matches_the_backend_loop ... FAILED
+   test result: FAILED. 6 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+   first message: thread 'expand_matches_the_reference_at_every_height_and_pitch' (5067130) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M11 MD_ERASE without the fg/bg swap
+   exit 101 -> RED
+   test md_erase_paints_the_background_colour_on_clear_bits ... FAILED
+   test mono_matches_the_backend_loop_at_every_source_column_and_width ... FAILED
+   test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... FAILED
+   test result: FAILED. 8 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+   first message: thread 'md_erase_paints_the_background_colour_on_clear_bits' (5067260) panicked at tos-api/tests/raster_kernel_expand.rs:497:5:
+
+== M12 glyph adapter: start bit taken modulo 8 of the cell column (wide cells clipped left)
+   exit 101 -> RED
+   test glyph_matches_the_backend_loop ... FAILED
+   test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+   first message: thread 'glyph_matches_the_backend_loop' (5067388) panicked at tos-api/tests/raster_kernel_expand.rs:149:9:
+
+== M13 mono adapter: the bounds check lets the last word through
+   exit 101 -> RED
+   test mono_refuses_a_short_raster_and_a_negative_origin ... FAILED
+   test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+   first message: thread 'mono_refuses_a_short_raster_and_a_negative_origin' (5067521) panicked at tos-api/tests/../../kernel/src/raster_expand.rs:611:19:
+
+== M14 glyph adapter: the short-glyph check is off by one
+   exit 101 -> RED
+   test glyph_refuses_a_short_glyph_and_a_box_outside_the_cell ... FAILED
+   test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+   first message: thread 'glyph_refuses_a_short_glyph_and_a_box_outside_the_cell' (5067781) panicked at tos-api/tests/raster_kernel_expand.rs:380:13:
+
+restored kernel/src/raster_expand.rs sha256 1f70634cf5c152f8abdd88b92ca52bb1608cbf32be2ed222ed64efb9a3d9ca42 (== original: True)

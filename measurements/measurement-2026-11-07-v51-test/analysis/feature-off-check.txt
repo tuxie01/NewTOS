@@ -1,0 +1,1 @@
+chg with line 821 of kernel/src/vdi_backend.rs (the raster-prof copy_rect hook, cfg'd out) blanked (same line count): rpi4 --release kernel8.img sha256 d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48 == chg (d212dde0...)

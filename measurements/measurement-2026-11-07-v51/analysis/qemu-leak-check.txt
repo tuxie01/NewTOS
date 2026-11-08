@@ -1,0 +1,43 @@
+21:30:24 after phase trees: qemu under scratch: none
+21:32:17 after phase builds: qemu under scratch: none
+21:34:08 after boot-virt-base: qemu under scratch: none
+21:35:58 after boot-virt-chg: qemu under scratch: none
+21:35:58 after phase boots: qemu under scratch: none
+21:37:19 after tab-chg-v18t2: qemu under scratch: none
+21:37:56 after tab-chg-all: qemu under scratch: none
+21:38:32 after tab-chg-r2: qemu under scratch: none
+21:39:07 after tab-chg-r3: qemu under scratch: none
+21:39:39 after tab-chg-r4: qemu under scratch: none
+21:40:26 after tab-base-v18t2: qemu under scratch: none
+21:40:57 after tab-base-all: qemu under scratch: none
+21:41:33 after tab-base-r2: qemu under scratch: none
+21:42:03 after tab-base-r3: qemu under scratch: none
+21:42:40 after tab-base-r4: qemu under scratch: none
+21:42:40 after phase tables: qemu under scratch: none
+21:43:39 after vdprobe-n-base: qemu under scratch: none
+21:44:20 after vdprobe-n-chg: qemu under scratch: none
+21:44:55 after vdprobe-n-chg2: qemu under scratch: none
+21:44:56 after phase probe: qemu under scratch: none
+21:48:29 after slprobe-base: qemu under scratch: none
+21:50:36 after slprobe-base2: qemu under scratch: none
+21:52:44 after slprobe-chg: qemu under scratch: none
+21:54:57 after slprobe-chg2: qemu under scratch: none
+21:54:59 after phase slprobe: qemu under scratch: none
+21:58:08 after shprobe-base: qemu under scratch: none
+21:58:46 after shprobe-desk-base: qemu under scratch: none
+22:00:02 after shprobe-chg: qemu under scratch: none
+22:00:10 after shprobe-desk-chg: qemu under scratch: none
+22:00:59 after desk480-base: qemu under scratch: none
+22:01:53 after bc480-base: qemu under scratch: none
+22:02:42 after desk480-chg: qemu under scratch: none
+22:03:36 after bc480-chg: qemu under scratch: none
+22:04:20 after desk1080-base: qemu under scratch: none
+22:05:14 after bc1080-base: qemu under scratch: none
+22:06:03 after desk1080-chg: qemu under scratch: none
+22:06:12 after bc1080-chg: qemu under scratch: none
+22:06:12 after phase gui: qemu under scratch: none
+22:06:40 after boot-rpi4-chg: qemu under scratch: none
+22:07:08 after boot-rpi4-chg-prof: qemu under scratch: none
+22:07:08 after phase pikernels: qemu under scratch: none
+22:08:15 after rerun shprobe-desk-chg: qemu under scratch: none
+22:09:09 after rerun bc1080-chg: qemu under scratch: none

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a76fdd16f4fbe1958/measurements/measurement-2026-11-07-v51/method/timed-shots.py", line 11, in <module>
+    s = socket.socket(socket.AF_UNIX); s.connect(sock_path); f = s.makefile("rw")
+                                       ~~~~~~~~~^^^^^^^^^^^
+ConnectionRefusedError: [Errno 61] Connection refused

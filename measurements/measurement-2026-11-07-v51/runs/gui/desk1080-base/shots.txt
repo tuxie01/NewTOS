@@ -1,0 +1,11 @@
+408 00-rest
+577 01-menu-file
+1109 02-dialog
+1804 03-rubberband-held
+2216 04-window-drag-held
+2607 05-slider-drag-held
+2998 06-sizer-drag-held
+3446 07-icon-drag-held
+3846 08-icon-top-edge-held
+4312 09-icon-bottom-edge-held
+4565 10-end

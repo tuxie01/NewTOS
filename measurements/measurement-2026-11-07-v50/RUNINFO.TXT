@@ -1,0 +1,89 @@
+V50 -- TASK/V50.md: NEON 1-bit-to-32-bit expansion kernel (raster kernel 2) for the VDI screen backend: the box
+path of draw_glyph_sized and blit_mono (vrt_cpyfm, AES icons/images), on the V49 frame (ADR-036). Developer run,
+2026-11-07. No card, no Pi, no push.
+Worktree branch v50 (agent worktree), base ce5e79c2 (the V49 head: kernel 87b2a9fd + raster-prof 8403f75b + run).
+Change = 3255df27 perf(vdi). Measured: base ce5e79c2 against chg 3255df27.
+Every QEMU/build side ran in a `git archive` tree of its commit in the session scratchpad (references/ linked);
+method/accept.sh holds the phases (trees builds boots tables probe gui pikernels; adapted from the V49 run's
+accept.sh), the other method/ files are the V49 run's helpers with REPO = this worktree, plus red-mutants.py and
+aes-bin-diff.py (new).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (27 manifests)
+QEMU 11.0.2: raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot, one QEMU
+at a time, killed by PID, QMP sockets by relative path in their own scratch dirs) and virt (qemu-virt, headless).
+
+KERNELS (rpi4 --release kernel8.img; also in pi-kernels/, gitignored)
+  base       ce5e79c2                         35b1d793d15c9ca1f29da50b3260e816a9531f5f56ae2e533827d03e8204b20a 1521896 B
+  base-prof  ce5e79c2 --features raster-prof  37ac5065fe6751520c870601ce04121d91a8389fe5ad78c37ccb0fdca6e72266 1530088 B
+  chg        3255df27                         e07cbdbfe0dcb7d210fcb513fc2e60e11c19a8066ab9b5b747dd7b2ccecc335f 1525992 B
+  chg-prof   3255df27 --features raster-prof  6ea946d09d04a29e17ace8a28fd19388a5f315e2a873b0e0287df9ceceedf96a 1534184 B
+  base and base-prof are byte-identical to the V49 run's "nachher" and "nachher + Profil" kernels (same sha256 in
+  measurements/measurement-2026-11-07-v49/RUNINFO.TXT): built here in another scratch tree, so the build reproduces.
+  analysis/kernels.sha256, analysis/pi-kernels.sha256.
+
+RESULTS
+ 1 PASS  host tests (tos-api/tests/raster_kernel_expand.rs, 11 tests, on this arm64 Mac = the instructions the Pi
+         runs; analysis/green.txt, 0.44 s): expand against expand_reference for bytes and words, all 4 modes, start
+         bits 0..40, widths 1..72,127..129,255..257, heights 1..20, source pitch minimal/+1/+2/+6/0, odd source
+         addresses; the glyph adapter against the pre-V50 draw_glyph_sized box loop (cell widths 1..24,31..33,40,64,
+         65,72, heights 1/6/8/16/20, cells partly off the store, clip cut on every side); the mono adapter against
+         the pre-V50 blit_mono loop incl. the MD_ERASE fg/bg swap (source columns 0..33, widths as above, source rows
+         0/1/5, word pitch minimal/+1/+3/narrower than a row/0, odd raster addresses, clipping); refusals (short
+         glyph, box outside the cell, short raster, negative source origin: false, store untouched); XOR twice;
+         empty area; the V-register save/restore check on the source (Replace v0-v10, the others v0-v8,v10-v14).
+         Every source ends at a page made inaccessible with mmap+mprotect, so an over-read crashes the test. The
+         whole store is compared. raster_kernel_fill.rs (V49, 7 tests) still green.
+         RED with 14 deliberately wrong kernels/adapters, each one textual edit, file restored byte for byte after
+         each (method/red-mutants.py, analysis/red-mutants.txt): bit->bif, Replace 1-pixel tail dropped, start bit
+         +1, word RevTransparent without complement, Replace fg/bg swapped, v13/v14 not saved, source row not
+         advanced, 8-pixel tail without mask slide, refill one unit early (SIGBUS at the guard page), skipped word
+         not stepping the destination, MD_ERASE without swap, glyph start bit modulo 8, mono bounds check off by one
+         word, glyph bounds check off by one byte -- all 14 fail.
+ 2 PASS  cargo xtask test (worktree, references/ and the two gitignored rsc inputs linked from the main checkout):
+         base ce5e79c2 2268 / 0 / 1, change 2279 / 0 / 1 (+11 = the new tests) (analysis/cargo-xtask-test-*.txt).
+ 3 PASS  builds, fresh target per build, both boards, base / base+raster-prof / chg / chg+raster-prof
+         (analysis/builds-rc.txt, build-*.log, clippy-*.txt, warnings.txt): rustc tos-api 64 / kernel 93, clippy
+         tos-api 73 / kernel 121 everywhere: delta 0. Hits in the touched files: only kernel/src/lib.rs:9:9, the
+         `missing_docs` "lint level defined here" note, as on the base. Host test target clippy: 0 warnings.
+ 4 PASS  boots: qemu-virt headless, each tree's own fresh release build, 100 s (runs/boot-virt-*/): base and change
+         "[desk] desktop up (0 drives)", 0 exception/panic lines. raspi4b serial=on: 27 BOOT-SERIAL.txt under runs/
+         and probe/, 0 exception/panic lines in all; 23 reach "desktop up", the 4 boot+console runs (bc*) stop in
+         APITEST.NCP in AUTO, which waits on Cconin, by design. The two Pi test kernels chg and chg-prof booted on their
+         own (method/pi-boot.sh, runs/boot-rpi4-{chg,chg-prof}/): "[desk] desktop up (1 drives)", 0 lines each.
+ 5 PASS  vdprobe (tosdump/probes/run-vdprobe.sh, probe/; text-heavy T14*, T31*, ZB/ZC/ZD/ZG included): n-base vs
+         n-chg VDPROBE.BIN byte-identical (cmp exit 0), VDPROBE.LOG identical, vdprobe-compare 909 cases 0 differ;
+         n-chg vs n-chg2 the same.
+ 6 PASS  tables via cargo xtask tosdump --tree <archive tree> with the pinned references (runs/tab-*,
+         analysis/tables-bin-compare.txt, analysis/aes-bin-diff.txt):
+           vdi-v18-t2 VDI.BIN base == chg byte-identical d61803b2fd94beb3; vs oracle 2 of 32 differ on both (V35)
+           vdi-all    VDI.BIN base == chg byte-identical e91b865b92b5dbf2; vs oracle 0 of 182 on both
+           aes-r2/r3/r4 AES.BIN: tosdiff base vs chg with the table 0 of 78 / 0 of 39 / 0 of 181 cases differ.
+             The raw files differ in exactly one 8-byte word per case (78/39/181 words), every one by +0x1000 in
+             the pointer cell (stored least significant word first): the address cell the table compares as an
+             address. The change's kernel image is 4096 bytes larger (1521896 -> 1525992 B), and that address moves
+             with it. V49's kernel kept the base size, so its AES.BIN stayed byte-identical. All other bytes equal.
+           vs oracle: r2 78 of 78, r3 39 of 39 on both sides (the address words, as in the sibling runs); r4 no
+           reference.
+ 7 PASS  pictures base vs change, PNG byte for byte (analysis/shots-compare.txt, runs/gui/; kernels: base/chg plain,
+         shprobe- and injector-armed builds of each commit, sha256 in the run.txt files; inputs
+         analysis/gui-inputs.txt):
+           shprobe 12/12 identical; shprobe-desk 2/2; desktop + IKBD injector (menu, dialog, rubberband,
+           window/slider/sizer/icon drags) 11/11 at 640x480 and 11/11 at 1920x1080; boot screen + AUTO console
+           (APITEST.NCP) 6/6 at 640x480, 5/6 at 1920x1080. The one difference, bc1080 02-t018 (screendump 18 s after
+           start), is the known timing shot: viewed by me, both show the same APITEST console text, the change's
+           run one line less far scrolled and caught in the middle of a scroll (one text row shows two half-moved
+           lines); the shots at 24/32/45 s are identical again. 0 exception/panic lines in every run.
+
+INFORMAL (not a result, not reproducible from this run)
+  An ad-hoc host micro-benchmark (test file written and deleted again, not committed) on the arm64 Mac, release:
+  8x16 glyph Transparent 26 ns kernel vs 139 ns plain scalar loop on a plain store, Replace 23 vs 102 ns; mono
+  64x64 Replace 346 ns vs 4.8 us, Transparent 326 ns vs 8.3 us. The backend's scalar path (dyn put_pixel,
+  volatile) is slower than that plain loop. Says nothing about the Pi; ADR-036 point 5 is decided by Fbench there.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime gain (ADR-036 point 5) -- plan in TASK/V50.md "Uebergabe Pi"; not touched (no card, no HW).
+  slprobe not run (known non-deterministic held1 frames). Oracle side not rerun: the records are base == change
+  (VDI byte-identical, AES equal up to the moved address cell), so the oracle comparison is the base's.
+  "Feature off = build without the feature" (CLAUDE.md "Testing") not applicable: raster-prof is not new here; its
+  one new hook line is part of the same commit as the kernel.
+  The clip-off run-on glyph path (glyph_unclipped) stays scalar, as the ticket says.

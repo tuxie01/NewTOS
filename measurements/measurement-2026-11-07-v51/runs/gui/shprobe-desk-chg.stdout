@@ -1,0 +1,9 @@
+qemu-system-aarch64: terminating on signal 15 from pid 91778 (<unknown process>)
+shprobe run, side newtos-desk  (2026-11-07T21:07:32Z)
+tree      1197fed7328baba278dc0bdfee16540173c9f165 2 dirty paths in the tree
+source    shprobe.c 98acd6fcb7207108dca3984687a7e59e03299074a510af45f1e7fc88bf74f9ca shprobe-shots.txt 22006f628741cbf8e192abd225e02e82a7b19754e3dd8c90a0c1fcbb74fa8d98 shprobe-clock.txt 7e7592eb2d0c99801754bc686655ad43f26c2ca2085579aae8990ca3de0774f3
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    d212dde0170969c6c32d04bc66216bc03bd547499eef86247ffe0a6914ca5c48 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v51/k/chg-rpi4-release.img
+card      d0d8eb6eab416d2864a6e68535a7570f47c0403fd4b2cb7e8923a9fbe1e488c4 (tools/mkcard.sh)
+qemu      done, 2 shots
+card      after d0d8eb6eab416d2864a6e68535a7570f47c0403fd4b2cb7e8923a9fbe1e488c4 (the booted clone)

@@ -532,6 +532,16 @@ impl<'a> MonoBits<'a> {
         // `read_unaligned` requires no alignment of its pointer.
         Some(unsafe { pair.as_ptr().cast::<u16>().read_unaligned() })
     }
+
+    /// The raster as the bytes it is: word `i` is bytes `2 * i .. 2 * i + 2`
+    /// in host order, at any alignment. For a backend that reads a run of
+    /// words in one go (the kernel's NEON expansion, TASK/V50) once it has
+    /// checked the whole run against the slice's length; [`word`](Self::word)
+    /// stays the checked per-word read.
+    #[inline]
+    pub fn as_bytes(&self) -> &'a [u8] {
+        self.bytes
+    }
 }
 
 /// A monochrome blit source (one plane). `bits` is the raster as 16-bit

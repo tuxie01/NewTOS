@@ -120,14 +120,14 @@ pub struct Fill<'a> {
 
 /// The sixteen lane masks `0x8000 >> i` of one 16-pixel block, lane `i` =
 /// the block's `i`-th pixel, in `ld1 {v4.4s-v7.4s}` order.
-static LANE_BITS: [u32; 16] = [
+pub(crate) static LANE_BITS: [u32; 16] = [
     0x8000, 0x4000, 0x2000, 0x1000, 0x0800, 0x0400, 0x0200, 0x0100, 0x0080, 0x0040, 0x0020, 0x0010,
     0x0008, 0x0004, 0x0002, 0x0001,
 ];
 
 /// The save area of one kernel call: room for `v0..v14`, 16 bytes each.
 #[repr(C, align(16))]
-struct VSave([u64; 30]);
+pub(crate) struct VSave([u64; 30]);
 
 /// The assembler switch back after a kernel: on the kernel target FP/SIMD
 /// assembly goes off again (module docs); a host test build keeps its own

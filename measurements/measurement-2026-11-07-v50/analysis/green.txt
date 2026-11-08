@@ -1,0 +1,22 @@
+     Running tests/raster_kernel_expand.rs (target/debug/deps/raster_kernel_expand-eba968a682159b2e)
+test md_erase_paints_the_background_colour_on_clear_bits ... ok
+test expand_of_an_empty_area_writes_nothing ... ok
+test expand_xor_twice_restores_the_store ... ok
+test glyph_refuses_a_short_glyph_and_a_box_outside_the_cell ... ok
+test every_v_register_used_is_saved_and_restored ... ok
+test mono_refuses_a_short_raster_and_a_negative_origin ... ok
+test expand_matches_the_reference_at_every_height_and_pitch ... ok
+test mono_matches_the_backend_loop_at_every_source_column_and_width ... ok
+test expand_matches_the_reference_at_every_start_bit_and_width ... ok
+test mono_matches_the_backend_loop_at_every_pitch_row_and_clip ... ok
+test glyph_matches_the_backend_loop ... ok
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+     Running tests/raster_kernel_fill.rs (target/debug/deps/raster_kernel_fill-02279412d41a0f5b)
+test an_empty_area_or_pattern_writes_nothing ... ok
+test xor_twice_restores_the_store ... ok
+test every_v_register_used_is_saved_and_restored ... ok
+test the_solid_fill_writes_its_colour_on_the_area_only ... ok
+test a_full_screen_row_set_matches_the_reference ... ok
+test every_phase_and_width_matches_the_reference ... ok
+test every_height_row_phase_and_stride_matches_the_reference ... ok
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s

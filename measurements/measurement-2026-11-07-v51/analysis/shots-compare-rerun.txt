@@ -1,0 +1,6 @@
+shprobe: 12 shots base, 12 chg, 0 differ: | exc/panic base 0 chg 0
+shprobe-desk: 2 shots base, 2 chg, 0 differ: | exc/panic base 0 chg 0
+desk480: 11 shots base, 11 chg, 0 differ: | exc/panic base 0 chg 0
+desk1080: 11 shots base, 11 chg, 0 differ: | exc/panic base 0 chg 0
+bc480: 6 shots base, 6 chg, 0 differ: | exc/panic base 0 chg 0
+bc1080: 6 shots base, 6 chg, 0 differ: | exc/panic base 0 chg 0
