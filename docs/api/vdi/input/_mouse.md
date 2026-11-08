@@ -395,7 +395,7 @@ by `tick_int`, which also chains the old system timer vector
   `vex_butv`/`motv`/`curv`/`timv` vector other than the VDI's default writes
   one `[hook] warning` per vector and process; the installing process owns the
   vector, and its `Pterm` puts the previous one back while the slot still
-  holds its vector (`tos-api/src/vdi/mouse.rs:1042@exchange_hook`). The
+  holds its vector (`tos-api/src/vdi/mouse.rs:1028@exchange_hook`). The
   values stored and returned are unchanged.
 - **Pointer drawing is deferred to the VBL on EmuTOS (VDI-WK-004, SPEC04).** The
   packet path `mouse_int` → `user_cur` = `mov_cur` stores the position and sets

@@ -19,12 +19,12 @@
 //! Those of [`crate::raster_kernel`] (module docs), unchanged: integer and
 //! bitwise SIMD only (`dup`, `and`, `eor`, `bsl`, loads and stores;
 //! `FPCR`/`FPSR` untouched), every V register used saved on entry and
-//! restored before the `asm!` block ends (the copy kernel `v0..v3`, the op
-//! kernel `v0..v13`), FP/SIMD assembly switched back off at the block's end on
-//! the kernel target. The kernels are leaves called from a backend method on
-//! the same trap path as kernels 1 and 2, so the finding of TASK/V49
-//! ("FP-Kontext") holds as it stands: nothing can switch the EL0 FP/SIMD
-//! context while one runs.
+//! restored before the `asm!` block ends (copy kernel `v0..v3`, op kernel
+//! `v0..v13`, [`copy_rows`] `v0..v3`), FP/SIMD assembly off again at the end on
+//! the kernel target. The kernels are leaves; the TASK/V49 finding
+//! ("FP-Kontext") holds: nothing can switch the EL0 FP/SIMD context while one
+//! runs ([`copy_area`] on the trap path; [`copy_rows`] also in the timer
+//! interrupt from EL0, see there).
 //!
 //! # Pixel semantics
 //!
@@ -416,6 +416,259 @@ pub unsafe fn copy_rect(
     // in `[0, scr_w)` of its row, `scr_w <= stride_px`); the directions are
     // the loop's.
     unsafe { copy_area(surface, (x0 - ox) as usize, (y0 - oy) as usize, area, op, backward, bottom_up) };
+}
+
+// ── Rectangle transfer between the screen and a buffer (TASK/V59) ──
+//
+// `copy_rows` moves a rectangle between the screen and a buffer with a pitch
+// of its own: `read_rect` and `write_rect` are the backend's
+// `read_device_rect` / `write_device_rect` as plain functions — the save-under
+// of the mouse pointer —, each the per-pixel `get_device_pixel` /
+// `put_device_pixel` definition with its off-the-screen rule
+// (`read_rect_reference`, `write_rect_reference`).
+//
+// FP context (ADR-036 point 3): `copy_rows` also runs inside the timer
+// interrupt when that interrupted EL0 — INPUT01 moves the pointer from there
+// (`kernel/src/host_env.rs:567@irq_input_pump`), as the pointer's 1x1 fills
+// through kernel 1 already did before TASK/V59. The V registers then hold
+// the interrupted program's live values; the save and restore hand them back
+// the same way, and no other kernel is running underneath (the pump returns
+// unless the interrupt came from EL0, and no trap is in progress there).
+
+/// The row loop of [`copy_rows`]: `row_loop!(fwd, copy)` with a pitch of
+/// its own for each side — `{h}` rows of `{w}` pixels, the source rows
+/// `{sstep}` bytes apart, the destination rows `{dstep}` bytes apart.
+macro_rules! xfer_loop {
+    () => {
+        concat!(
+            "2:\n",
+            row_start!(fwd),
+            "subs {n}, {w}, #16\n",
+            "b.lo 4f\n",
+            "3:\n",
+            chunk!(fwd, copy, "{{v0.4s, v1.4s, v2.4s, v3.4s}}", "", r4, "64"),
+            "subs {n}, {n}, #16\n",
+            "b.hs 3b\n",
+            "4:\n",
+            "tbz {n}, #3, 5f\n",
+            chunk!(fwd, copy, "{{v0.4s, v1.4s}}", "", r2, "32"),
+            "5:\n",
+            "tbz {n}, #2, 6f\n",
+            chunk!(fwd, copy, "{{v0.4s}}", "", r1, "16"),
+            "6:\n",
+            "tbz {n}, #1, 7f\n",
+            chunk!(fwd, copy, "{{v0.2s}}", "", r1, "8"),
+            "7:\n",
+            "tbz {n}, #0, 8f\n",
+            chunk!(fwd, copy, "{{v0.s}}[0]", "", r1, "4"),
+            "8:\n",
+            "add {src}, {src}, {sstep}\n",
+            "add {dst}, {dst}, {dstep}\n",
+            "subs {h}, {h}, #1\n",
+            "b.ne 2b",
+        )
+    };
+}
+
+/// Copy `h` rows of `w` pixels from `src` (rows `src_stride_px` pixels
+/// apart) to `dst` (rows `dst_stride_px` pixels apart), each row left to
+/// right in blocks of 16/8/4/2/1 pixels — the transfer kernel between the
+/// screen and a buffer (TASK/V59). V registers `v0..v3`, saved and restored.
+/// An empty rectangle copies nothing.
+///
+/// # Safety
+///
+/// Every pixel `src + r * src_stride_px + c` (`r < h`, `c < w`) must be valid
+/// for reads of a `u32`, every pixel `dst + r * dst_stride_px + c` valid for
+/// writes; the two sets must not share a byte; nothing else may access
+/// either during the call.
+pub unsafe fn copy_rows(src: *const u32, src_stride_px: usize, dst: *mut u32, dst_stride_px: usize, w: usize, h: usize) {
+    if w == 0 || h == 0 {
+        return;
+    }
+    let sstep = src_stride_px * 4;
+    let dstep = dst_stride_px * 4;
+    // Written by the asm before it is read; never read by Rust.
+    let mut save = core::mem::MaybeUninit::<VSave>::uninit();
+    let save = save.as_mut_ptr().cast::<u64>();
+    // SAFETY: the asm reads `h` rows of `w` pixels from `src` on at `sstep`
+    // bytes per row and writes as many to `dst` on at `dstep` bytes per row
+    // (contract), writes 64 of the save area's 240 bytes, does not touch the
+    // stack, saves `v0..v3` before their first use and restores them before
+    // it ends, and keeps FPCR/FPSR (loads and stores only).
+    unsafe {
+        core::arch::asm!(
+            ".arch armv8-a+simd",
+            "stp q0, q1, [{save}, #0]",
+            "stp q2, q3, [{save}, #32]",
+            xfer_loop!(),
+            "ldp q0, q1, [{save}, #0]",
+            "ldp q2, q3, [{save}, #32]",
+            simd_off!(),
+            src = inout(reg) src => _,
+            dst = inout(reg) dst => _,
+            sstep = in(reg) sstep,
+            dstep = in(reg) dstep,
+            w = in(reg) w,
+            h = inout(reg) h => _,
+            save = in(reg) save,
+            p = out(reg) _,
+            q = out(reg) _,
+            n = out(reg) _,
+            options(nostack),
+        )
+    };
+}
+
+/// The part of the `w` x `h` rectangle with top left `(x, y)` that lies on
+/// a `scr_w` x `scr_h` screen, in the rectangle's own coordinates: columns
+/// `c0..c1`, rows `r0..r1` (half-open); `None` if nothing of it does.
+fn on_screen(scr_w: i32, scr_h: i32, x: i32, y: i32, w: usize, h: usize) -> Option<(usize, usize, usize, usize)> {
+    let span = |p: i32, n: usize, scr: i32| {
+        let (p, n) = (p as i64, n as i64);
+        let lo = (-p).clamp(0, n);
+        let hi = (scr as i64 - p).clamp(lo, n);
+        (lo as usize, hi as usize)
+    };
+    let (c0, c1) = span(x, w, scr_w);
+    let (r0, r1) = span(y, h, scr_h);
+    (c0 < c1 && r0 < r1).then_some((c0, c1, r0, r1))
+}
+
+/// `read_device_rect`: the device pixels of the `w` x `h` rectangle with top
+/// left `(x, y)` of a `scr_w` x `scr_h` screen into `out`, row `r` at
+/// `out[r * w..]`; a position off the screen reads as `0` — exactly
+/// `get_device_pixel` per pixel ([`read_rect_reference`]). The on-screen
+/// part goes through [`copy_rows`], the rest is zero-filled.
+///
+/// # Safety
+///
+/// `scr_w <= surface.stride_px`, the store holds the `scr_h` rows of the
+/// screen, nothing else accesses it during the call. Panics if `out` holds
+/// fewer than `w * h` pixels.
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn read_rect(surface: Surface, scr_w: i32, scr_h: i32, x: i32, y: i32, w: usize, h: usize, out: &mut [u32]) {
+    let out = &mut out[..w * h];
+    let Some((c0, c1, r0, r1)) = on_screen(scr_w, scr_h, x, y, w, h) else {
+        out.fill(0);
+        return;
+    };
+    if (c0, c1, r0, r1) != (0, w, 0, h) {
+        for (r, row) in out.chunks_exact_mut(w).enumerate() {
+            if r < r0 || r >= r1 {
+                row.fill(0);
+            } else {
+                row[..c0].fill(0);
+                row[c1..].fill(0);
+            }
+        }
+    }
+    let (sx, sy) = ((x + c0 as i32) as usize, (y + r0 as i32) as usize);
+    // SAFETY: rows `sy..sy + (r1 - r0)` and columns `sx..sx + (c1 - c0)` lie
+    // on the screen (`on_screen`), so in the store (contract); the target
+    // rows lie in `out`, which is not the store (a `&mut` borrow of its own).
+    unsafe {
+        copy_rows(
+            surface.base.add(sy * surface.stride_px + sx),
+            surface.stride_px,
+            out.as_mut_ptr().add(r0 * w + c0),
+            w,
+            c1 - c0,
+            r1 - r0,
+        )
+    };
+}
+
+/// `write_device_rect`: the `w` x `h` device pixels of `src` (row `r` at
+/// `src[r * w..]`) onto the rectangle with top left `(x, y)` of a `scr_w` x
+/// `scr_h` screen; positions off the screen are dropped — exactly
+/// `put_device_pixel` per pixel ([`write_rect_reference`]). No cache
+/// maintenance (the caller flushes, as after `put_device_pixel`).
+///
+/// # Safety
+///
+/// As [`read_rect`]; `src` is not the store. Panics if `src` holds fewer
+/// than `w * h` pixels.
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn write_rect(surface: Surface, scr_w: i32, scr_h: i32, x: i32, y: i32, w: usize, h: usize, src: &[u32]) {
+    let src = &src[..w * h];
+    let Some((c0, c1, r0, r1)) = on_screen(scr_w, scr_h, x, y, w, h) else {
+        return;
+    };
+    let (dx, dy) = ((x + c0 as i32) as usize, (y + r0 as i32) as usize);
+    // SAFETY: as in `read_rect`, the other way round.
+    unsafe {
+        copy_rows(
+            src.as_ptr().add(r0 * w + c0),
+            w,
+            surface.base.add(dy * surface.stride_px + dx),
+            surface.stride_px,
+            c1 - c0,
+            r1 - r0,
+        )
+    };
+}
+
+/// The scalar reference of [`read_rect`]: `get_device_pixel` per pixel
+/// (bounds check, `0` off the screen) on a plain store. Host builds only.
+///
+/// # Safety
+///
+/// As [`read_rect`].
+#[cfg(not(target_os = "none"))]
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn read_rect_reference(
+    surface: Surface,
+    scr_w: i32,
+    scr_h: i32,
+    x: i32,
+    y: i32,
+    w: usize,
+    h: usize,
+    out: &mut [u32],
+) {
+    for r in 0..h {
+        for c in 0..w {
+            let (px, py) = (x + c as i32, y + r as i32);
+            out[r * w + c] = if px < 0 || py < 0 || px >= scr_w || py >= scr_h {
+                0
+            } else {
+                // SAFETY: on the screen, so in the store (contract).
+                unsafe { surface.base.add(py as usize * surface.stride_px + px as usize).read() }
+            };
+        }
+    }
+}
+
+/// The scalar reference of [`write_rect`]: `put_device_pixel` per pixel
+/// (bounds check, dropped off the screen) on a plain store. Host builds
+/// only.
+///
+/// # Safety
+///
+/// As [`write_rect`].
+#[cfg(not(target_os = "none"))]
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn write_rect_reference(
+    surface: Surface,
+    scr_w: i32,
+    scr_h: i32,
+    x: i32,
+    y: i32,
+    w: usize,
+    h: usize,
+    src: &[u32],
+) {
+    for r in 0..h {
+        for c in 0..w {
+            let (px, py) = (x + c as i32, y + r as i32);
+            if px < 0 || py < 0 || px >= scr_w || py >= scr_h {
+                continue;
+            }
+            // SAFETY: on the screen, so in the store (contract).
+            unsafe { surface.base.add(py as usize * surface.stride_px + px as usize).write(src[r * w + c]) };
+        }
+    }
 }
 
 /// The scalar reference of [`copy_area`]: per pixel in the walk's order,

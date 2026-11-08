@@ -11,7 +11,7 @@
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicI16, AtomicU16, AtomicU64, AtomicU8, AtomicUsize, Ordering};
 
-use super::backend::{ClipRect, RasterBackend};
+use super::backend::RasterBackend;
 use crate::bdos::process::hooks::{self, Cell, Hook, Via};
 use super::vwk::validate_color_index;
 use super::Vdipb;
@@ -809,43 +809,31 @@ pub fn previous_form(backend: &dyn RasterBackend) {
     install_form(&form, backend);
 }
 
-fn full_clip(backend: &dyn RasterBackend) -> ClipRect {
-    ClipRect::full(backend.width(), backend.height())
-}
-
 /// Save the 16×16 area under the cursor bit-exact, then draw the sprite.
 ///
 /// EmuTOS `cur_display`/`cur_display16` save the raw screen words under the
 /// sprite (`*save++ = *dst`, `vdi_mouse.c:983-985`) *before* overwriting
-/// them. We do the chunky-per-pixel equivalent: store the exact device
-/// pixel word via [`get_device_pixel`](RasterBackend::get_device_pixel),
-/// **not** the nearest-PEL round-trip `read_pixel` gives — the latter
-/// corrupts every pixel whose colour is not a palette entry (Falcon
-/// truecolor content), AUD-V6-001. The sprite paint itself keeps the PEL
-/// `fill_rect` path (mask → bg, data → fg), which is exact for the
-/// two-colour sprite. Order (save → draw) is unchanged.
+/// them. We do the chunky equivalent: store the exact device pixel words of
+/// the cell via [`read_device_rect`](RasterBackend::read_device_rect) (the
+/// per-pixel [`get_device_pixel`](RasterBackend::get_device_pixel)
+/// definition, `0` off the screen), **not** the nearest-PEL round-trip
+/// `read_pixel` gives — the latter corrupts every pixel whose colour is not
+/// a palette entry (Falcon truecolor content), AUD-V6-001. The sprite paint
+/// itself is [`draw_sprite`](RasterBackend::draw_sprite) with the PEL
+/// colours (mask → bg, data → fg), which is exact for the two-colour sprite.
+/// Order (save → draw) is unchanged; since TASK/V59 each is one backend call
+/// per cell instead of one per pixel.
 fn draw(backend: &dyn RasterBackend) {
     let ox = GCURX.load(Ordering::Relaxed) - HOT_X.load(Ordering::Relaxed);
     let oy = GCURY.load(Ordering::Relaxed) - HOT_Y.load(Ordering::Relaxed);
-    let clip = full_clip(backend);
     let fg = FG_COL.load(Ordering::Relaxed);
     let bg = BG_COL.load(Ordering::Relaxed);
+    let mask: [u16; 16] = core::array::from_fn(|i| MASK[i].load(Ordering::Relaxed));
+    let data: [u16; 16] = core::array::from_fn(|i| DATA[i].load(Ordering::Relaxed));
     // SAFETY: single trap path.
     let store = unsafe { &mut *BACK.px.get() };
-    for dy in 0..16i16 {
-        let mrow = MASK[dy as usize].load(Ordering::Relaxed);
-        let drow = DATA[dy as usize].load(Ordering::Relaxed);
-        for dx in 0..16i16 {
-            let (px, py) = (ox + dx, oy + dy);
-            store[(dy * 16 + dx) as usize] = backend.get_device_pixel(px, py);
-            let bit = 0x8000u16 >> dx;
-            if drow & bit != 0 {
-                backend.fill_rect(px, py, 1, 1, fg, clip);
-            } else if mrow & bit != 0 {
-                backend.fill_rect(px, py, 1, 1, bg, clip);
-            }
-        }
-    }
+    backend.read_device_rect(ox, oy, 16, 16, store);
+    backend.draw_sprite(ox, oy, &mask, &data, fg, bg);
     BACK.ox.store(ox, Ordering::Relaxed);
     BACK.oy.store(oy, Ordering::Relaxed);
     BACK.valid.store(1, Ordering::Relaxed);
@@ -855,14 +843,15 @@ fn draw(backend: &dyn RasterBackend) {
 ///
 /// EmuTOS `cur_replace`/`cur_replace16` write the saved screen words
 /// straight back (`*dst = *src++`, `vdi_mouse.c:1099`/`:1046`). We do the
-/// chunky-per-pixel equivalent: put each saved device pixel word back via
-/// [`put_device_pixel`](RasterBackend::put_device_pixel) — restoring the
-/// exact original colour, not the palette approximation `fill_rect` would
-/// (AUD-V6-001). `put_device_pixel` does not flush on its own, so the whole
-/// 16×16 box is flushed to the point of coherency once at the end. Cells
-/// off the screen edge are ignored by the backend, matching the clipping in
-/// `cur_replace`. Order (erase → restore) and the `BACK.valid` swap
-/// (guarding against a double restore) are unchanged.
+/// chunky equivalent: put the saved device pixel words of the cell back via
+/// [`write_device_rect`](RasterBackend::write_device_rect) (the per-pixel
+/// [`put_device_pixel`](RasterBackend::put_device_pixel) definition) —
+/// restoring the exact original colour, not the palette approximation
+/// `fill_rect` would (AUD-V6-001). It does not flush on its own, so the
+/// whole 16×16 box is flushed to the point of coherency once at the end.
+/// Cells off the screen edge are ignored by the backend, matching the
+/// clipping in `cur_replace`. Order (erase → restore) and the `BACK.valid`
+/// swap (guarding against a double restore) are unchanged.
 fn erase(backend: &dyn RasterBackend) {
     if BACK.valid.swap(0, Ordering::Relaxed) == 0 {
         return;
@@ -871,11 +860,7 @@ fn erase(backend: &dyn RasterBackend) {
     let oy = BACK.oy.load(Ordering::Relaxed);
     // SAFETY: single trap path.
     let store = unsafe { &*BACK.px.get() };
-    for dy in 0..16i16 {
-        for dx in 0..16i16 {
-            backend.put_device_pixel(ox + dx, oy + dy, store[(dy * 16 + dx) as usize]);
-        }
-    }
+    backend.write_device_rect(ox, oy, 16, 16, store);
     backend.flush_rect(ox, oy, ox + 15, oy + 15);
 }
 

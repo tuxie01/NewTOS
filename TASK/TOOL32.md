@@ -120,7 +120,7 @@ Lead: `"vdi/"` in `MAPPED_DIRS` (`tools/xtask/src/deps.rs:63@MAPPED_DIRS`), Meld
 
 Weitere Kandidaten (nicht gemessen; EmuTOS-Zeilen in `vdi/`):
 
-20. `vdi_asm.S:283,359,367`, `vdi_misc.c:83` gegen `tos-api/src/vdi/mouse.rs:1078@vex_butv`:
+20. `vdi_asm.S:283,359,367`, `vdi_misc.c:83` gegen `tos-api/src/vdi/mouse.rs:1064@vex_butv`:
     `vex_butv/motv/curv/timv` gespeichert, nie gerufen — ADR-031, bekannt.
 21. `vdi_mouse.c:565` gegen `mouse.rs:379@ensure_init`: EmuTOS setzt bei jedem `v_opnwk`
     Versteckzaehler 1, Mitte, Tasten 0, Standardform; NewTOS einmalig.

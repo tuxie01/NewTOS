@@ -35,6 +35,7 @@
 #[allow(dead_code)]
 #[path = "../../kernel/src/raster_kernel.rs"]
 mod raster_kernel;
+#[allow(dead_code)] // the pointer sprite (TASK/V59) is tested in raster_kernel_cell.rs
 #[path = "../../kernel/src/raster_expand.rs"]
 mod raster_expand;
 

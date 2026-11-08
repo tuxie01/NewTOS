@@ -30,7 +30,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwende
   - `Initmous` → Arm im XBIOS-Dispatcher `tos-api/src/xbios/mod.rs@dispatch`
     (keine Zeile in `mapping.tsv`); `mfpint` (`--up` 10 / 3) und `xbtimer`
     (7 / 2) **ohne Gegenstueck**.
-  - `vex_butv`/`motv`/`curv`/`timv` → `tos-api/src/vdi/mouse.rs:1078@vex_butv`,
+  - `vex_butv`/`motv`/`curv`/`timv` → `tos-api/src/vdi/mouse.rs:1064@vex_butv`,
     `:972@vex_motv`, `:977@vex_curv`, `:1025@vex_timv` (VDI-Schicht, ohne
     `mapping.tsv`-Zeilen).
   - `prt_stat`/`prt_vec`-Startwert →

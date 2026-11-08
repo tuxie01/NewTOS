@@ -100,7 +100,7 @@ dann `v_opnwk`.
   `v_show_c(0)` beide den Block), F2c. Karten `measurements/measurement-2026-11-07-v18-t3/probe/maps/14-F1b.txt`, `17-F2b.txt`.
 - EmuTOS: `vdi/vdi_mouse.c:450-492` (`set_mouse_form` speichert nur, `mouse_flag` hält den VBL fern; kein `cur_replace`/`cur_display`).
   Über die AES ist es nicht sichtbar: `gsx_mfset` klammert mit `gsx_moff`/`gsx_mon` (`aes/gemgsxif.c:407-420`).
-- NewTOS: `tos-api/src/vdi/mouse.rs:884@vsc_form` (erase, speichern, draw).
+- NewTOS: `tos-api/src/vdi/mouse.rs:870@vsc_form` (erase, speichern, draw).
 - **LOCALIZED: `vsc_form`.** `--down` (`linea_transform_mouse`, `set_mouse_form`, `validate_color_index`): Speicherung, Hotspot-Maske
   und Farbprüfung gleich (P2 mit Hotspot `0x17`, P3 mit Stift 300/−2), Zeichnen/Restaurieren gleich (P1–P6).
 - Retest (`vdi_vsc_form --up`, 184; die AES-Aufrufer `gsx_mfset`, `gr_mouse`, `ct_mouse` … gehen in NewTOS über
