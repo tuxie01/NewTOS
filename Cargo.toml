@@ -19,7 +19,7 @@ default-members = ["kernel"]
 # (`kernel/src/initinfo.rs` `VERSION_STRING`). It is not a TOS-visible
 # version: `_TOS`/OSHEADER, the `NTOS` cookie and `Sversion` do not move with
 # it. tools/xtask, a host build tool that does not ship, keeps its own.
-version = "0.7.1"
+version = "0.7.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["NewTOS / PiRusTOS contributors"]
