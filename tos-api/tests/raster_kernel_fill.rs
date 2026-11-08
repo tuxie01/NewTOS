@@ -285,3 +285,43 @@ fn flat(lines: &[&str], regs_in: impl Fn(&str) -> Vec<u32>) -> Vec<u32> {
     // Only the register list before the address operand.
     lines.iter().flat_map(|l| regs_in(l.split('[').next().unwrap())).collect()
 }
+
+/// `fill_span` (a line's horizontal run, TASK/V58) is the one-row fill with
+/// the dash word as its pattern, started at its own phase: against the
+/// reference on the area of the same row whose start column has that phase,
+/// every mode, phase, length (every tail, several blocks) and word.
+#[test]
+fn a_span_is_the_one_row_fill_at_its_phase() {
+    let mut rng = Rng(0x5635_3800_0000_0007);
+    let mut lens: Vec<usize> = (0..=72).collect();
+    lens.extend([127, 128, 129, 255, 256, 257]);
+    let mut words = vec![0xFFFFu16, 0x0000, 0x8000, 0x0001, 0xAAAA, 0xF391];
+    words.extend((0..4).map(|_| rng.u16()));
+    for mode in MODES {
+        for &word in &words {
+            for phase in 0u32..16 {
+                for &n in &lens {
+                    let x = 16 + phase as usize;
+                    let stride = x + n + 5;
+                    let init: Vec<u32> = (0..2 * stride).map(|_| rng.u32()).collect();
+                    let (fg, bg) = (rng.u32(), rng.u32());
+                    let mut got = init.clone();
+                    let mut want = init.clone();
+                    let pat = [word];
+                    let fill = Fill { pattern: &pat, mode, fg, bg };
+                    // SAFETY: row 1, columns `x .. x + n`, lies inside both
+                    // stores of two rows of `x + n + 5` pixels.
+                    unsafe {
+                        raster_kernel::fill_span(got.as_mut_ptr().add(stride + x), n, phase, word, mode, fg, bg);
+                        fill_pattern_reference(
+                            Surface { base: want.as_mut_ptr(), stride_px: stride },
+                            Area { x, y: 1, w: n, h: 1 },
+                            &fill,
+                        );
+                    }
+                    assert!(got == want, "mode {mode:?} word {word:04x} phase {phase} n {n}");
+                }
+            }
+        }
+    }
+}

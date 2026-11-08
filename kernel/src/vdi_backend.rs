@@ -630,18 +630,18 @@ impl RasterBackend for VdiScreen {
         let stride = fb.stride_px();
         let target = LineTarget { width: fb.width(), height: fb.height(), stride };
         // Which pixels, in which order, with which dash bit, is the shared
-        // walk's (`tos_api::vdi::line::abline`, EmuTOS `abline`); this only
-        // combines each into the store and remembers the rows and columns
-        // it touched for the cache clean below.
-        let mut touched: Option<(u32, u32, u32, u32)> = None;
-        let mask = tos_api::vdi::line::abline(&target, x0, y0, x1, y1, mode, clip, mask, last, |idx, set| {
-            Self::combine_index(fb, idx, set, mode, color, bg);
-            let (col, row) = ((idx % stride as usize) as u32, (idx / stride as usize) as u32);
-            touched = Some(match touched {
-                None => (col, row, col, row),
-                Some((c0, r0, c1, r1)) => (c0.min(col), r0.min(row), c1.max(col), r1.max(row)),
-            });
-        });
+        // walk's (`tos_api::vdi::line::abline`, EmuTOS `abline`). Its run
+        // form hands them over as one span, one column or single pixels,
+        // with the store rows and columns they touched for the cache clean
+        // below; `raster_line` combines them into the store, the pixel
+        // store, colours and mode resolved once (TASK/V58).
+        let seg = (x0, y0, x1, y1);
+        // SAFETY: the pixel store holds `height * stride_px` pixels, every
+        // index the run form hands out lies in it, and the single IRQ-off
+        // VDI trap path is the only writer — `raster_line::abline`'s
+        // contract.
+        let (mask, touched) =
+            unsafe { crate::raster_line::abline(fb.pixels(), &target, seg, mode, clip, mask, last, color, bg) };
         if let Some((c0, r0, c1, r1)) = touched {
             Self::clean(fb, c0, r0, c1, r1);
         }
