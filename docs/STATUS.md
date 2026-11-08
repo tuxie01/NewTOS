@@ -57,8 +57,8 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
   `b744febc` (sha256 `e788dc58…`, Szenario "Uebergabe Pi" in V55), danach Push (Anwender 2026-11-08).
   (c) [V38](../TASK/V38.md) Anwender 2026-11-08: Grenze hoeher, Wert erst nach Pi-Messung des 5x3-Endlosfalls
   bei 16 (Tester-Szenario). (d) [V41](../TASK/V41.md) D1–D4 entschieden 2026-11-08
-  (D1 nachbilden, D2 sauber clippen, D3 Toleranz, D4 [V39](../TASK/V39.md) mit aufnehmen). (e) Push nach GitHub
-  (82 lokale Commits, Stand 2026-11-08).
+  (D1 nachbilden, D2 sauber clippen, D3 Toleranz, D4 [V39](../TASK/V39.md) mit aufnehmen). (e) Push erledigt 2026-11-08 (`cb33f3fc`). (f) [REL072](../TASK/REL072.md) Testrelease 0.7.2 (Anwender 2026-11-08):
+  Version, Texte, Paket, dann Pi-Abnahme aus dem ZIP; Veroeffentlichung nach Go.
 - **Offen beim Anwender (Stand 2026-11-07, nach Release 0.7.1):** (1) Ticket fuer die
   47 AES-Kandidaten aus [TOOL33](../TASK/TOOL33.md) (Messung am Orakel wie
   [V18](../TASK/V18.md)), ans Ende der Warteschlange: ja oder nein. (2) Namen der
