@@ -53,9 +53,9 @@ nennt seine Vorher-/Nachher-Zahl in seiner Zeile unter *Recent Decisions*.
 **Offen (Stand 2026-10-26, aus der Statuszeile der Tickets ohne DONE-Quittung):**
 
 - **Offen beim Anwender (Stand 2026-11-08):** (a) erledigt 2026-11-08: Pi-Lauf V58 + V59 bestanden, beide in `main`
-  (Merges `b2ba4981`, `64bf181e`; `measurements/measurement-2026-11-08-v58-v59-pi/RUNINFO.TXT`). (b) [V55](../TASK/V55.md) Zeiger im
-  Bildtakt oder sanktionieren (Empfehlung Lead: sanktionieren). (c) [V38](../TASK/V38.md) Grenzhoehe der
-  Notbremse (Empfehlung: 16 Spannen je Pixel lassen). (d) [V41](../TASK/V41.md) D1–D4. (e) Push nach GitHub
+  (Merges `b2ba4981`, `64bf181e`; `measurements/measurement-2026-11-08-v58-v59-pi/RUNINFO.TXT`). (b) [V55](../TASK/V55.md) entschieden 2026-11-08: (a), Zeichnen im Bildtakt wie EmuTOS.
+  (c) [V38](../TASK/V38.md) Anwender 2026-11-08: Grenze der Notbremse hoeher, Wert offen. (d) [V41](../TASK/V41.md) D1–D4 entschieden 2026-11-08
+  (D1 nachbilden, D2 sauber clippen, D3 Toleranz, D4 [V39](../TASK/V39.md) mit aufnehmen). (e) Push nach GitHub
   (65 lokale Commits, Stand 2026-11-08).
 - **Offen beim Anwender (Stand 2026-11-07, nach Release 0.7.1):** (1) Ticket fuer die
   47 AES-Kandidaten aus [TOOL33](../TASK/TOOL33.md) (Messung am Orakel wie
