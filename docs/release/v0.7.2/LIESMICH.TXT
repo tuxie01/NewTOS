@@ -146,8 +146,7 @@ neuen Zeichenroutinen zeichnen genau dieselben Pixel wie die alten
 - VDI: Der Mauszeiger wird einmal je Bild gezeichnet (60-mal in der
   Sekunde), wie bei EmuTOS, statt sofort bei jeder Mausbewegung. Die
   Position, die ein Programm abfragt, ist immer die aktuelle; das Bild
-  folgt hoechstens ein Bild spaeter. Wie bisher bewegt sich der Zeiger
-  weiter, waehrend ein Programm rechnet.
+  folgt hoechstens ein Bild spaeter.
 - VDI: Kleinere Korrekturen, jede an EmuTOS gemessen; sie betreffen
   Programme, die diese Funktionen direkt benutzen: vergroesserter Text,
   der ueber den Fensterrand ragt, ausgerichteter Text (v_justified), das

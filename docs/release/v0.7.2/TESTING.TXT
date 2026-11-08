@@ -31,8 +31,8 @@ New in 0.7.2, please try:
   a selection frame, move and resize windows, drag scroll bar sliders;
   click buttons and text fields in dialogs. The pointer should follow
   smoothly and leave no traces or holes. While a program is busy
-  (e.g. Doom starting), the pointer should keep moving; it may stand
-  still for a moment while a file is read from the card.
+  (e.g. Doom starting): does the pointer keep moving, or does it stand
+  still until the program is ready? Please tell us which.
 - Use the mouse for a few minutes: no hang, no freeze.
 
 What we are especially interested in:

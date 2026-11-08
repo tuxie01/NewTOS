@@ -32,8 +32,8 @@ Neu in 0.7.2, bitte ausprobieren:
   und in der Groesse aendern, Rollbalken-Schieber ziehen; in Dialogen
   Knoepfe und Textfelder anklicken. Der Zeiger soll fluessig folgen und
   keine Spuren oder Loecher hinterlassen. Waehrend ein Programm
-  beschaeftigt ist (z. B. Doom beim Start), soll er sich weiter bewegen;
-  waehrend eine Datei von der Karte gelesen wird, darf er kurz stehen.
+  beschaeftigt ist (z. B. Doom beim Start): Bewegt sich der Zeiger
+  weiter, oder steht er, bis das Programm bereit ist? Bitte melden.
 - Einige Minuten mit der Maus arbeiten: kein Haenger, kein Einfrieren.
 
 Was uns besonders interessiert:

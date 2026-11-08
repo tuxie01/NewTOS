@@ -139,8 +139,7 @@ by picture).
 - VDI: the mouse pointer is drawn once per screen frame (60 times a
   second), as in EmuTOS, instead of right away with every mouse
   movement. The position a program asks for is always the current one;
-  the picture follows at most one frame later. As before, the pointer
-  keeps moving while a program is busy computing.
+  the picture follows at most one frame later.
 - VDI: smaller corrections, each measured against EmuTOS; they matter to
   programs that use these functions directly: enlarged text that
   reaches over the window edge, aligned text (v_justified), the end
