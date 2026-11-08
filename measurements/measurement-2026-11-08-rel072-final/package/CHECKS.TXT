@@ -1,0 +1,19 @@
+PASS NAMES_REMOVED/NAMES_ADDED declared against NewTOS-0.7.1
+PASS name list = NewTOS-0.7.1 minus [KARTE/APPS/HYPVIEW/CHANGES.TXT KARTE/APPS/COREMARK/CHANGES.TXT] plus [] (apart from the version, case-sensitive)
+PASS no AppleDouble/.DS_Store/__MACOSX entries
+PASS kernel8.img carries "NewTOS 0.7.2"
+PASS kernel8.img carries build rev (d35670d6)
+PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+PASS every TOS-visible name on KARTE is 8.3
+PASS packaged release texts free of TODO-REL markers
+PASS FILES.TSV lists every file of the ZIP
+PASS ZIP unpacks byte-identical to NewTOS-0.7.2/
+version 0.7.2  commit d35670d6ae02af05568a389fdd7d53d2811ce080  tree_dirty_build=no  tree_dirty_docs=no
+packager tools/release/package-release.sh 75b227fa319105a6c41002598d846d92bec3e6feae4bee8549ffa5fc32469b5b (committed)
+previous zip 801ed08ac7ef3b562ed83f4f89c1054b8e5a3867907dcbd69f38f0cdf8a0ce82 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/prev071/NewTOS-0.7.1.zip
+names_removed KARTE/APPS/HYPVIEW/CHANGES.TXT KARTE/APPS/COREMARK/CHANGES.TXT
+names_added none
+kernel_features crash-walk
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+zip 06142b32ff8ab70d10a8f676ffb1b7ced58e19d49f175fbb872845e79da6e90b 6643054 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/pk2/rel072/NewTOS-0.7.2.zip
+entries 70

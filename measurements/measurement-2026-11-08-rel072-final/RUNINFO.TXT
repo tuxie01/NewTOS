@@ -1,0 +1,25 @@
+REL072 final package for publication -- NewTOS 0.7.2. Date 2026-11-08.
+Why: user 2026-11-08: "wir haben ja nur den kernel geaendert, aender einfach die versionsnummer und pushe es, wir haben das
+schon mehrfach getestet" -- publish 0.7.2 without a separate Pi acceptance of the ZIP.
+Who: lead (package, publication). No worker, no card, no Pi in this run.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+No image was booted in this run (the package's KARTE was booted in QEMU raspi4b in
+measurements/measurement-2026-11-08-rel072-package/RUNINFO.TXT, from ae22f4fc; this rebuild differs only in four release texts).
+
+WHAT CHANGED AGAINST measurements/measurement-2026-11-08-rel072-package/
+  d35670d6 docs(release): the unverified sentence "the pointer keeps moving while a program is busy" removed from
+  LIESMICH/README; TESTING/TESTANLEITUNG now ask the testers instead (not measured on the Pi; qemu-virt does not drain USB
+  during a trap-free compute run, measurements/measurement-2026-11-08-v55-test/RUNINFO.TXT).
+
+PACKAGE (method/package-call.sh; previous = GitHub asset v0.7.1 sha256 801ed08ac7ef3b56...)
+  NewTOS-0.7.2.zip sha256 06142b32ff8ab70d10a8f676ffb1b7ced58e19d49f175fbb872845e79da6e90b, 6643054 B, 70 entries,
+  built from d35670d6 (tree_dirty_build=no, tree_dirty_docs=no), kernel features crash-walk.
+  package/CHECKS.TXT: all 10 checks PASS. Name list = 0.7.1 minus the two CHANGES.TXT (HYPVIEW, COREMARK), nothing added.
+
+KERNEL AGAINST THE PI TEST
+  git diff b744febc d35670d6 over kernel/, tos-api/, tos-types/, programs/, sdk/, tools/, boot/, keyboards/, Cargo.*:
+  only the version (Cargo.toml, Cargo.lock, programs/Cargo.lock). The user ran the b744febc release kernel (sha256
+  e788dc5811fb7ffb...) on the real Pi 4 on 2026-11-08 (mouse scenario of TASK/V55.md, everyday use; one finding, parked as
+  TASK/A148.md P4, likely older). The Fbench run of that test is still on the card, not yet copied.
+
+PUBLICATION: tag v0.7.2 on d35670d6, GitHub pre-release "NewTOS 0.7.2 (Alpha)" with the ZIP, notes method/release-notes.md.
