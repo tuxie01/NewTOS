@@ -1,0 +1,67 @@
+V58 + V59 Pi run (user's real Raspberry Pi 4) -- Fbench with the line path (V58) and the pointer cell (V59). Date 2026-11-08.
+Why: ADR-036 point 5 -- a raster change lands only if Fbench on the real Pi shows it faster than the code it replaces.
+Who: user ran Fbench (complete) and everyday use (mouse, dragging windows, rubber band) on the Pi and reported no defect;
+the lead of the previous session built the kernel and wrote it to the card; this lead copied the results. No worker touched
+card or Pi.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1)
+No image was booted from this run: the card is the user's hand-kept test card; only kernel8.img was written (config.txt
+unchanged since measurements/measurement-2026-11-08-v50-v51-pi/, sha256 equal: eafa3a8e9ec952dc...).
+
+KERNEL
+  Branch pitest2-2026-11-08 = 81370f2a = main 6821179c + merge of v58 at ea4a8996 (V58 code 1c1c71a3) + merge of v59 at
+  d86b55fa (V59 code 5a3052ec), worktree .claude/worktrees/pitest2: cargo xtask build --board rpi4 --release.
+  kernel8.img sha256 69487a4ec308ae8767914f44cd2c33d35ec7734988dee9502b255937c5fabb1e (1538288 B), build string
+  "Built2026-11-08 (81370f2a)"; card kernel8.img sha256 equal (re-read 2026-11-08).
+  The tester commits on top (v58 3711dd00, v59 2d58115d) touch only TASK/ and measurements/. main after merging both
+  branch tips (b2ba4981, 64bf181e) has the same tree as 81370f2a in kernel/, tos-api/, tos-types/, programs/, tools/,
+  sdk/, boot/, keyboards/, Cargo.toml, Cargo.lock (git diff empty), so the measured product code is main's.
+  Rebuilt from main 64bf181e (cargo xtask build --board rpi4 --release): kernel8.img sha256 de04e5df1249f356... (1538288 B),
+  differs from the card kernel in exactly 16 bytes: the embedded commit id "64bf181e" vs "81370f2a", twice (cmp -l).
+  Profile kernels (raster-prof) from TASK/V58.md were not run.
+
+FILES (card:C:\APPS\FBENCH\, copied with cp -X; the user saved this run as profile OPTIMIZE)
+  card/OPTIMIZE.TXT  82015e074a4a07a8a6f66ddc66cfc79b6a75d349ea621a65e5f282d46f7a2c56  this run, report
+  card/OPTIMIZE.PDF  b027b90c7056da31e70ca51aac04c940752375d9386fd087647d6a45ba584b45  this run, report
+  card/OPTIMIZE.FBP  01c7f2ed846502ebdb3839099641b22af2ef611572bff1e01059a1baefea5c1a  this run, profile
+  card/COMPARE.PDF   86496ef4e34b99a137253ad0cd2e8db0fba46c12495f8f80ee088f6ccba46c33  Fbench comparison MACHINE.FBP vs OPTIMIZE.FBP
+  card/MACHINE.FBP   aaa110c73d747669a34796111e9d724b2b0dfd1ed76cd5c10df56ee38b1415ad  profile of 2026-11-06 (before V49), comparison base
+  card/config.txt    eafa3a8e9ec952dc9e9995843aa1f8d6df3d3a198970833928c18e395dd6b62d  state of the run
+  FAT stamps 2026-11-08 00:03 = build date + uptime (no RTC), same as the previous run; the run is identified by its
+  values (Hide/show mouse 111346, only possible with V59). LATEST.TXT on the card is still the previous run (sha256 equal
+  to measurements/measurement-2026-11-08-v50-v51-pi/card/LATEST.TXT).
+  Note: measurements/measurement-2026-11-08-v50-v51-pi/card/COMPARE.PDF (71611 B) is an older comparison file, not the
+  one of that run; that run directory stays as committed.
+
+RESULT -- Fbench 1.1.1 complete run, 115 of 115 tests, 1.0 s each. "Before" = measurements/measurement-2026-11-08-v50-v51-pi/card/LATEST.TXT
+(main with V49-V51, same card); "V49" = measurements/measurement-2026-11-07-v49-pi/card/FBNEU.TXT. ops/s before -> after (change):
+  V59 rows (pointer):
+    Hide/show mouse            20377 -> 111346 (x5.46)   graf_mouse off+on        19319 -> 87063  (x4.51)
+    form_dial redraw 64x48    5768.0 -> 11206  (x1.94)   Menu bar redraw         4829.2 -> 5935.2 (+23 %)
+    Set slider pos+size       2026.7 -> 2425.5 (+20 %)   Window resize/top/title/info  +8 .. +10 %
+  V58 rows (lines, abline):
+    XOR line                   13114 -> 20572  (+57 %)   User line style          19139 -> 22649  (+18 %)
+    Polyline, 32 points        699.5 -> 791.4  (+13 %)   Rounded box              42504 -> 44830  (+5 %)
+    Markers x16                22967 -> 23743  (+3 %)    Line, 2 points           23404 -> 23516  (+0.5 %)
+    Dashed line                21152 -> 21152  (0)       Arc 21870 -> 21251 (-3 %), Polygon 8 points 17894 -> 17553 (-2 %)
+  Control rows (paths V58/V59 do not touch): Filled rect 32x32 +2 %, Fill 64x64 aligned -1 % / x+3 +1 %, Text 84 chars 0,
+    Blit 64x64 aligned +8 % / src+3 dst+11 -2 %, Wide line (7px, round; polygon fill) 4494.6 -> 4034.4 (-10 %, V49 run 4014.7).
+    Run-to-run spread of untouched rows is therefore up to about 10 %.
+  The five rows 9-17 % lower in the previous run, against the V49 run: Polyline 32 769.4 -> 791.4 (+3 %), User line style
+    21870 -> 22649 (+4 %), Filled ellipse 2996.0 -> 2870.0 (-4 %), Window create+delete 151702 -> 146721 (-3 %), Event poll
+    141783 -> 141105 (-0.5 %). Filled ellipse, Window create+delete and Event poll are untouched by V58/V59 and came back
+    within 5 % of V49: the previous drop was run spread, not a regression.
+  Fbench COMPARE.PDF, raw speed against MACHINE.FBP (2026-11-06, before the NEON series): VDI primitives 234 %, AES windows &
+    events 239 %, Alignment (blitter) 311 %, Full-screen windows 442 %, GDOS fonts 186 %.
+
+VERDICT ADR-036 point 5:
+  V59 met -- both pointer rows x4.5-5.5, far beyond the spread; rows that hide the pointer gain with them.
+  V58 met -- XOR line, User line style and Polyline 32 are faster beyond the spread of the control rows; no line row is
+  slower beyond it. Line, 2 points and Dashed line did not move: the long-line saving of V58 does not show in these two
+  rows (cost per call outside the pixel loop is a hypothesis, not measured; the raster-prof kernels of TASK/V58.md would
+  split kernel and clean).
+  Merged into main: v58 b2ba4981, v59 64bf181e.
+Against the V4SA (user's PDF, values as cited in measurements/measurement-2026-11-08-v50-v51-pi/RUNINFO.TXT): NewTOS now
+leads in Hide/show mouse (111346 vs 52202), graf_mouse off+on (87063 vs 26921) and XOR line (20572 vs 15602); still behind
+in Line 2 points (23516 vs 43531), Polyline 32 (791.4 vs 1372.6), Dashed line (21152 vs 27436), User line style (22649 vs
+27176).
+OPEN: profile kernels of V58 not run; V59 "EL0 test with live V registers" (TASK/V59.md) not covered by this run.
