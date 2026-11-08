@@ -453,6 +453,85 @@ pub trait RasterBackend: Sync {
     /// display controller. Coordinates are clamped to the screen; a no-op
     /// on a Non-Cacheable framebuffer.
     fn flush_rect(&self, x0: i16, y0: i16, x1: i16, y1: i16);
+
+    /// Read the **raw device pixel words** of the `w` × `h` rectangle with
+    /// top left `(x, y)` into `out`, row by row: `out[r * w + c] =
+    /// get_device_pixel(x + c, y + r)` for every `r < h`, `c < w`, including
+    /// the out-of-bounds rule — a position off the screen (or beyond the
+    /// `i16` coordinate range) reads as `0`. Panics if `out` holds fewer than
+    /// `w * h` words. The default implementation is exactly that per-pixel
+    /// definition; an override must return the identical words.
+    ///
+    /// The save half of the mouse pointer's save-under (EmuTOS
+    /// `cur_display`, `vdi_mouse.c:983-985`): one call per cell instead of
+    /// 256 dynamically dispatched reads (TASK/V59).
+    fn read_device_rect(&self, x: i16, y: i16, w: u16, h: u16, out: &mut [u32]) {
+        let (w, h) = (w as usize, h as usize);
+        let out = &mut out[..w * h];
+        for r in 0..h {
+            for c in 0..w {
+                let (xi, yi) = (x as i32 + c as i32, y as i32 + r as i32);
+                out[r * w + c] = if xi > i16::MAX as i32 || yi > i16::MAX as i32 {
+                    0
+                } else {
+                    self.get_device_pixel(xi as i16, yi as i16)
+                };
+            }
+        }
+    }
+
+    /// Write `w * h` **raw device pixel words** from `src` (row `r` at
+    /// `src[r * w..]`) onto the rectangle with top left `(x, y)`:
+    /// `put_device_pixel(x + c, y + r, src[r * w + c])` for every `r < h`,
+    /// `c < w`; positions off the screen are ignored. Like
+    /// [`put_device_pixel`](Self::put_device_pixel) it does not flush — the
+    /// caller calls [`flush_rect`](Self::flush_rect) once. Panics if `src`
+    /// holds fewer than `w * h` words. The default implementation is exactly
+    /// that per-pixel definition; an override must store the identical words.
+    ///
+    /// The restore half of the mouse pointer's save-under (EmuTOS
+    /// `cur_replace`, `vdi_mouse.c:1046`/`:1099`, TASK/V59).
+    fn write_device_rect(&self, x: i16, y: i16, w: u16, h: u16, src: &[u32]) {
+        let (w, h) = (w as usize, h as usize);
+        let src = &src[..w * h];
+        for r in 0..h {
+            for c in 0..w {
+                let (xi, yi) = (x as i32 + c as i32, y as i32 + r as i32);
+                if xi <= i16::MAX as i32 && yi <= i16::MAX as i32 {
+                    self.put_device_pixel(xi as i16, yi as i16, src[r * w + c]);
+                }
+            }
+        }
+    }
+
+    /// Draw the mouse pointer's two-colour 16 × 16 form with its top left at
+    /// `(x, y)`: for row `r` and column `c` (bit `0x8000 >> c` of `data[r]` /
+    /// `mask[r]`), a set data bit paints `fg`, else a set mask bit paints
+    /// `bg`, else the pixel is untouched; pixels off the screen are dropped.
+    /// The pixels reach the point of coherency before it returns, as with
+    /// [`fill_rect`](Self::fill_rect).
+    ///
+    /// The default implementation is the pointer paint before TASK/V59: per
+    /// painted pixel a 1 × 1 [`fill_rect`](Self::fill_rect) with the whole
+    /// screen as clip. An override must leave the identical pixels (the
+    /// kernel's: two expansions and one cache maintenance per call).
+    fn draw_sprite(&self, x: i16, y: i16, mask: &[u16; 16], data: &[u16; 16], fg: Pel, bg: Pel) {
+        let clip = ClipRect::full(self.width(), self.height());
+        for r in 0..16usize {
+            for c in 0..16usize {
+                let (xi, yi) = (x as i32 + c as i32, y as i32 + r as i32);
+                if xi > i16::MAX as i32 || yi > i16::MAX as i32 {
+                    continue;
+                }
+                let bit = 0x8000u16 >> c;
+                if data[r] & bit != 0 {
+                    self.fill_rect(xi as i16, yi as i16, 1, 1, fg, clip);
+                } else if mask[r] & bit != 0 {
+                    self.fill_rect(xi as i16, yi as i16, 1, 1, bg, clip);
+                }
+            }
+        }
+    }
 }
 
 /// A rectangle in device coordinates (top-left + size).

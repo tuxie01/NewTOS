@@ -1,0 +1,28 @@
+== kernel::raster_copy::read_rect
+ save blocks 1 restore blocks 1
+ region 0: saved [0, 1, 2, 3] restored [0, 1, 2, 3] used-in-between [0, 1, 2, 3] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+== <kernel::vdi_backend::VdiScreen as tos_api::vdi::backend::RasterBackend>::write_device_rect
+ save blocks 1 restore blocks 1
+ region 0: saved [0, 1, 2, 3] restored [0, 1, 2, 3] used-in-between [0, 1, 2, 3] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+== kernel::raster_expand::expand
+ save blocks 8 restore blocks 8
+ region 0: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 1: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 2: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 3: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 4: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 5: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 6: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 7: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+== kernel::raster_copy::copy_rect
+ save blocks 4 restore blocks 4
+ region 0: saved [0, 1, 2, 3] restored [0, 1, 2, 3] used-in-between [0, 1, 2, 3] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 1: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 2: saved [0, 1, 2, 3] restored [0, 1, 2, 3] used-in-between [0, 1, 2, 3] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 3: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+== kernel::raster_kernel::fill_pattern
+ save blocks 4 restore blocks 4
+ region 0: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 1: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 2: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0
+ region 3: saved [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] restored [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] used-in-between [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14] | used⊆saved True saved==restored True calls/ret/msr in between: 0

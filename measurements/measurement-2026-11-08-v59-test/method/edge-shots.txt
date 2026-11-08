@@ -1,0 +1,5 @@
+300 e0-topleft
+560 e1-botright
+820 e2-topright
+1080 e3-botleft
+1260 e4-bottom-slide

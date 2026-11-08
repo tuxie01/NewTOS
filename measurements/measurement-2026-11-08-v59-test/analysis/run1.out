@@ -1,0 +1,20 @@
+=== phase boots 03:43:52
+qemu-system-aarch64: terminating on signal 15 from pid 9447 (<unknown process>)
+kernel 00b90c2b5b2bbd602b329ca2e3795bb38566a750b86160371dd6298c6e62f06c
+exception-panic-lines 0
+[desk] desktop up (0 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 9447 (<unknown process>)
+kernel a3d67b7f4466bae09b5c2865ec27af0ab2075927ce8beccb3a7e99e1ac71260b
+exception-panic-lines 0
+[desk] desktop up (0 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 9447 (<unknown process>)
+kernel a17613afb0eab0a06ab1d2f94446a34a4c8e9934f22f00d0c3c641f794ffa080
+exception-panic-lines 0
+[desk] desktop up (1 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 9447 (<unknown process>)
+kernel eb708adddb7de9ea32e96fef2fb1e7342f0e60b138f0a11a066a8dbeb44f0543
+exception-panic-lines 0
+[desk] desktop up (1 drives)
+=== done boots 03:45:32
+=== phase tables 03:45:32
+=== done tables 03:52:11

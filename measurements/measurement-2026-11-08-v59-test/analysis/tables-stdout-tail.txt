@@ -1,0 +1,70 @@
+== tab-base-all
+tosdump: VDI.LOG 370 bytes, sha256 e138df3d37c4c17b4bcfa9c943ebd130fd45debabe0382cc09643f57dbb8343f
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 182 records of 1592 bytes, build ----, case CRC D135ADAF
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 182 cases differ
+tosdump: total     58 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-chg-all
+tosdump: VDI.LOG 370 bytes, sha256 e138df3d37c4c17b4bcfa9c943ebd130fd45debabe0382cc09643f57dbb8343f
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 182 records of 1592 bytes, build ----, case CRC D135ADAF
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 182 cases differ
+tosdump: total     54 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-base-t2
+tosdump: VDI.LOG 365 bytes, sha256 605e57fa9be5adbad3e9e1aca665850377de60b3df3d1694d433945b922e1f8c
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 32 records of 1592 bytes, build ----, case CRC BEFB79A7
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 32 cases differ
+tosdump: total     38 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-chg-t2
+tosdump: VDI.LOG 365 bytes, sha256 605e57fa9be5adbad3e9e1aca665850377de60b3df3d1694d433945b922e1f8c
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 32 records of 1592 bytes, build ----, case CRC BEFB79A7
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 32 cases differ
+tosdump: total     36 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-base-r2
+tosdump: AES.LOG 298 bytes, sha256 c9952d3a378f131d81906a726cd5b7b86f801731acef27b04db50fa08f838aed
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 78 records of 120 bytes, build ----, case CRC AFB11C9F
+tosdump: tosdiff EMUTOS-1a7484ab-AES-r2wind.BIN vs NEWTOS.BIN: exit 1, 78 of 78 cases differ
+tosdump: total     37 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-chg-r2
+tosdump: AES.LOG 298 bytes, sha256 ca5d02323bbcc95be49327574c68ad1557c16d688b5af91268a91c9a52bb939f
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 78 records of 120 bytes, build ----, case CRC AFB11C9F
+tosdump: tosdiff EMUTOS-1a7484ab-AES-r2wind.BIN vs NEWTOS.BIN: exit 1, 78 of 78 cases differ
+tosdump: total     31 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-base-r3
+tosdump: AES.LOG 298 bytes, sha256 a9f6936227a555ac45c7576ff0f1de812966a6ab28d15c70cafbb04b6fb5a924
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 39 records of 120 bytes, build ----, case CRC 979FAC60
+tosdump: tosdiff EMUTOS-1a7484ab-AES-r3.BIN vs NEWTOS.BIN: exit 1, 39 of 39 cases differ
+tosdump: total     36 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-chg-r3
+tosdump: AES.LOG 298 bytes, sha256 5f94c8e3668a85ef56d33ec917baf9e75956344bb981e22759e4abae0b9899d9
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 39 records of 120 bytes, build ----, case CRC 979FAC60
+tosdump: tosdiff EMUTOS-1a7484ab-AES-r3.BIN vs NEWTOS.BIN: exit 1, 39 of 39 cases differ
+tosdump: total     31 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-base-r4
+tosdump: AES.BIN 21752 bytes, sha256 d106307edbc1d747a2c8cf95bd362aab002d2e31226da480c238ff9eaa93329e
+tosdump: AES.LOG 303 bytes, sha256 23c7a4a827172c47fe2c3c4920e1ec0fde38a36ed767bbfe1abfb9dc164703b6
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 181 records of 120 bytes, build ----, case CRC 227422B2
+tosdump: total     36 s
+tosdump: result    run complete (differences above are findings, not failures)
+== tab-chg-r4
+tosdump: AES.BIN 21752 bytes, sha256 eac49f689c0148ecacf244003584071aee9233414232f8a175c0a687f8d53b00
+tosdump: AES.LOG 303 bytes, sha256 77d3b422c6bfcedb603f1eb61db527b05118a8c41cdcdcb6e636b66968745bd4
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/tosdump/host/build/tosdiff sha256 2ff18f7efa516d49245cf9620af68d29a50fbc0a7459866932a48038972cfe6a
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 181 records of 120 bytes, build ----, case CRC 227422B2
+tosdump: total     36 s
+tosdump: result    run complete (differences above are findings, not failures)

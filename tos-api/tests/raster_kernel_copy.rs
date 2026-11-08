@@ -32,6 +32,7 @@
 #[allow(dead_code)]
 #[path = "../../kernel/src/raster_kernel.rs"]
 mod raster_kernel;
+#[allow(dead_code)] // the screen/buffer transfer (TASK/V59) is tested in raster_kernel_cell.rs
 #[path = "../../kernel/src/raster_copy.rs"]
 mod raster_copy;
 
@@ -416,7 +417,7 @@ fn copy_area_xor_twice_restores_the_store() {
 /// end: every V/Q register the file's assembler names is one of `v0..v13`,
 /// and each kernel's save list (`stp` to `{save}`) names exactly the
 /// registers of its restore list (`ldp` from `{save}`): the copy kernel
-/// v0..v3, the op kernel v0..v13.
+/// v0..v3, the op kernel v0..v13, the transfer kernel `copy_rows` v0..v3.
 #[test]
 fn every_v_register_used_is_saved_and_restored() {
     let src = include_str!("../../kernel/src/raster_copy.rs");
@@ -427,16 +428,18 @@ fn every_v_register_used_is_saved_and_restored() {
     assert!(all.iter().all(|&r| r <= 13), "V registers named: {all:?}");
     let saves: Vec<Vec<u32>> = blocks(&code, &["\"stp q", "\"str q"]).iter().map(|b| flat(b)).collect();
     let loads: Vec<Vec<u32>> = blocks(&code, &["\"ldp q", "\"ldr q"]).iter().map(|b| flat(b)).collect();
-    assert_eq!(saves.len(), 2, "two kernels");
+    assert_eq!(saves.len(), 3, "three kernels");
     assert_eq!(saves, loads, "save list == restore list per kernel");
     let sorted = |v: &Vec<u32>| {
         let mut v = v.clone();
         v.sort();
         v
     };
-    // `copy_kernel!` is defined before `rop_kernel!`.
+    // `copy_kernel!` is defined before `rop_kernel!`, `copy_rows` (the
+    // screen/buffer transfer kernel of TASK/V59) after both.
     assert_eq!(sorted(&saves[0]), (0..=3).collect::<Vec<u32>>());
     assert_eq!(sorted(&saves[1]), (0..=13).collect::<Vec<u32>>());
+    assert_eq!(sorted(&saves[2]), (0..=3).collect::<Vec<u32>>());
 }
 
 /// V/Q register numbers named in one line.

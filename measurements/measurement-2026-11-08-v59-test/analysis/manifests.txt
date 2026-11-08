@@ -1,0 +1,140 @@
+### gui/bc1080-base/card.img.manifest
+image_sha256 004696f2c960186103ea9c531ee6eefe0b2a0b043f14055ad4d6608c44bd1d2b
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/bc1080-chg/card.img.manifest
+image_sha256 e787525e8988b76010e5c77ce9dab2af286cea02623d254a6c5ef3aae2cb97d6
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/bc480-base/card.img.manifest
+image_sha256 fe3e915336370e8419158cb1f2cc7a86a478c6b2a115e91ff3803a93762c06f9
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/bc480-chg/card.img.manifest
+image_sha256 6e0d603b4bbf27c48f37967a11dbd094a333d6fc0a65b1fb607c64a5ae866898
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/desk1080-base/card.img.manifest
+image_sha256 98676f2d8249a75420813449dbd6f815bfe3f1531d9a4ddef30655768b8d2cd7
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/desk1080-chg/card.img.manifest
+image_sha256 d798a778e28d1d641ce90a5fdc667dd0bf3cff6024cd8832abc43a5263748d87
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/desk480-base/card.img.manifest
+image_sha256 f7a357577e4a487094ffa45438beabba898040cfc6c3cc54fe681737c08cadbf
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/desk480-chg/card.img.manifest
+image_sha256 eaa4d8f43ce77535b822c8512ce5e71133ece93668e40183dc06045442f73e56
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/edge1080-base/card.img.manifest
+image_sha256 5618f2e8e5b244d2dd68e765803a77c531443ddd7c26cb5df3b2e86d538540ca
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/edge1080-chg/card.img.manifest
+image_sha256 332ed39ad7173c93bc844d05fb613216350c3c92b852c79e555bc94bd22b2cbe
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/edge480-base/card.img.manifest
+image_sha256 2159b11ed6bb5165a052715b415b2e172be3332a3e968af7bf61398c201137d4
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### gui/edge480-chg/card.img.manifest
+image_sha256 ea25b188b35204b6fc1c27c1b5cca181115528cd0ca2850e7ffae0e75573585e
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### shprobe/d-base/card.img.manifest
+image_sha256 74fee667590ef0f8c71b1f0ecb6294d80d643e03cd456544dfeccede0f1c52dd
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### shprobe/d-chg/card.img.manifest
+image_sha256 2e75d1de4b89135e4700aafc167efaac153f408f9d54da8f6bed0b66359079f1
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### shprobe/n-base/card.img.manifest
+image_sha256 826e4924440ad4d237139a0e29b27e0205c5e73f1448e259627fbbb9cb459144
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### shprobe/n-chg/card.img.manifest
+image_sha256 2b88d11ffd4fd083c28ce5d21d622b6e02d982993cf553077a53ff27236ce3a3
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-base-all/card.img.manifest
+image_sha256 fb5d55a179f206863c3de33960a1109bc2054465f46843566ec1f74688acdf14
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-base-r2/card.img.manifest
+image_sha256 e445e4298b21fac70657c3e9dd77822f485dfa32dc481ab4f3e635f32475d4cd
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-base-r3/card.img.manifest
+image_sha256 cab2d97ec012fd29bcb7a11172ad53d2871dbe49399f60054829fee8f147a974
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-base-r4/card.img.manifest
+image_sha256 73ffe71d1338be66c6dbace10c01dfb921547e70ae505f70668c040498ea9650
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-base-t2/card.img.manifest
+image_sha256 e3f87fa2b900a24adf5a36203ad675f27f0d6ffa303619e093f47f93515ea61f
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-chg-all/card.img.manifest
+image_sha256 ca9c069a39878651d1ca47497065e926ac1bf52427c6d438e7670a24ee1833a0
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-chg-r2/card.img.manifest
+image_sha256 8bfa5a1d3cfd3c5ab4c267bd15ffb2b97fad0c06189482beffd01b6238494153
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-chg-r3/card.img.manifest
+image_sha256 12dd0459072b2531e7a444fd2474afa1289211d80f60af1959af054bcad4a388
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-chg-r4/card.img.manifest
+image_sha256 a0f31da877f8f8a1bc40ea3a49d01749dc7db81dc11db395d086bea73af55572
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### tab-chg-t2/card.img.manifest
+image_sha256 0c48649879391079cc3b7a32aec33003c997ac39222ac529876aafd0b0fcb848
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### vdprobe/n-base/card.img.manifest
+image_sha256 8778ac74a226e475a5f7b80bceddf7e5cc03da8de9d9da46a8b565652cb2227e
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### vdprobe/n-chg/card.img.manifest
+image_sha256 0636563ed70badf85b809b286377e4f3d095b81393a043946c7804664133acae
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### wkprobe/n-base/card.img.manifest
+image_sha256 7ec5ed05a535ee98dcb6cedba1a0a090a4b60097f52740167cbe675b8e2a3a2f
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### wkprobe/n-chg/card.img.manifest
+image_sha256 47ad6cc4e8043e9d21c1674230137e8a3a73696494b654406b0527ccfac8c96f
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### wkprobe/n-chg2/card.img.manifest
+image_sha256 29dd8c92ee73325e2e6b672023c1595dea6154fb4f033a092ff761b28906c6ac
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/measurements/measurement-2026-11-08-v59-test/runs/boot-rpi4-base/card.img.manifest
+image_sha256 81526351c30d32bfa6e7e850ddab651803629fb7134724d88f6156e3533358cb
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/measurements/measurement-2026-11-08-v59-test/runs/boot-rpi4-chg/card.img.manifest
+image_sha256 3c62522ee08f918bf2fcaea4aaaf38842d9a817cd196d896d0d1c95b4f5a77ec
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/measurements/measurement-2026-11-08-v59-test/runs/vdprobe-card.img.manifest
+image_sha256 0636563ed70badf85b809b286377e4f3d095b81393a043946c7804664133acae
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none
+### /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a194b0b2cc3f6d929/measurements/measurement-2026-11-08-v59-test/runs/wkprobe-card.img.manifest
+image_sha256 47ad6cc4e8043e9d21c1674230137e8a3a73696494b654406b0527ccfac8c96f
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+optional_missing none

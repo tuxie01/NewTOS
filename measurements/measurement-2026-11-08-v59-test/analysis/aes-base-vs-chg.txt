@@ -1,0 +1,6 @@
+== r2 tosdiff base vs chg exit 0: 0 of 78 cases differ
+   sizes 9392/9392; 78 differing 8-byte words; deltas: {'0x1000000000': 78}
+== r3 tosdiff base vs chg exit 0: 0 of 39 cases differ
+   sizes 4712/4712; 39 differing 8-byte words; deltas: {'0x1000000000': 39}
+== r4 tosdiff base vs chg exit 0: 0 of 181 cases differ
+   sizes 21752/21752; 181 differing 8-byte words; deltas: {'0x1000000000': 181}

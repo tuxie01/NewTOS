@@ -621,6 +621,96 @@ pub unsafe fn mono(
     true
 }
 
+/// `draw_sprite`: the two-colour 16 x 16 pointer sprite with its cell at
+/// `(x, y)`, drawn into the clipped box `bx` (inclusive, from
+/// `ClipRect::clamp_to`: the cell on the screen) — per pixel, a set `data`
+/// bit paints `fg`, else a set `mask` bit paints `bg`, else the pixel stays
+/// (TASK/V59; [`sprite_reference`], the VDI pointer's per-pixel paint
+/// before). Two [`expand`] passes in `Transparent`: the mask rows with `bg`,
+/// then the data rows with `fg` over them, so a data pixel ends `fg`
+/// wherever its mask bit stands. Row `r` of the cell is word `r` of each
+/// array (bit 15 leftmost, host order); every row reads that one word.
+///
+/// Unlike the text and blit paths, this one also runs inside the timer
+/// interrupt when that interrupted EL0 (INPUT01's pointer motion; the FP
+/// context note before `crate::raster_copy::copy_rows`): the kernel's save
+/// and restore of every V register it uses covers that case unchanged.
+///
+/// # Safety
+///
+/// `bx` lies in the store of `surface` (as [`glyph`]), nothing else
+/// accesses it during the call. Panics if `bx` is not inside the cell.
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn sprite(
+    surface: Surface,
+    x: i32,
+    y: i32,
+    mask: &[u16; 16],
+    data: &[u16; 16],
+    bx: (i32, i32, i32, i32),
+    fg: u32,
+    bg: u32,
+) {
+    let Some(area) = box_area(bx) else { return };
+    let (x0, y0, x1, y1) = bx;
+    assert!(x0 >= x && y0 >= y && x1 - x < 16 && y1 - y < 16, "sprite box outside its cell");
+    let (c0, r0) = ((x0 - x) as usize, (y0 - y) as usize);
+    let rows = |words: &[u16; 16]| Bits {
+        base: words[r0..].as_ptr().cast::<u8>(),
+        stride_bytes: 2,
+        bit: c0,
+        unit: Unit::Word,
+    };
+    // SAFETY: the area lies in the store (contract); row `r < area.h` reads
+    // word `r0 + r <= 15` of each array, the bits `c0 .. c0 + area.w <= 16`
+    // of it, and the arrays are borrowed, so not the store.
+    unsafe {
+        expand(surface, area, rows(mask), &Expand { mode: WriteMode::Transparent, fg: bg, bg: 0 });
+        expand(surface, area, rows(data), &Expand { mode: WriteMode::Transparent, fg, bg: 0 });
+    }
+}
+
+/// The scalar reference of [`sprite`]: the VDI pointer's paint before
+/// TASK/V59 (`tos-api/src/vdi/mouse.rs` `draw`: per cell pixel a 1 x 1
+/// `fill_rect` with the whole screen as clip — `fg` on a data bit, else `bg`
+/// on a mask bit), on a plain `scr_w` x `scr_h` store. Host builds only.
+///
+/// # Safety
+///
+/// The store holds the `scr_h` rows of the screen, `scr_w <= stride_px`.
+#[cfg(not(target_os = "none"))]
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn sprite_reference(
+    surface: Surface,
+    scr_w: i32,
+    scr_h: i32,
+    x: i32,
+    y: i32,
+    mask: &[u16; 16],
+    data: &[u16; 16],
+    fg: u32,
+    bg: u32,
+) {
+    for dy in 0..16 {
+        for dx in 0..16 {
+            let (px, py) = (x + dx, y + dy);
+            if px < 0 || py < 0 || px >= scr_w || py >= scr_h {
+                continue;
+            }
+            let bit = 0x8000u16 >> dx;
+            // SAFETY: on the screen, so in the store (contract).
+            let p = unsafe { surface.base.add(py as usize * surface.stride_px + px as usize) };
+            if data[dy as usize] & bit != 0 {
+                // SAFETY: as above.
+                unsafe { p.write(fg) };
+            } else if mask[dy as usize] & bit != 0 {
+                // SAFETY: as above.
+                unsafe { p.write(bg) };
+            }
+        }
+    }
+}
+
 /// One pixel of the scalar paths on a plain store: `VdiScreen::combine`.
 ///
 /// # Safety

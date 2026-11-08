@@ -1,0 +1,10 @@
+tab-base-all rc 0
+tab-base-t2 rc 0
+tab-base-r2 rc 0
+tab-base-r3 rc 0
+tab-base-r4 rc 0
+tab-chg-all rc 0
+tab-chg-t2 rc 0
+tab-chg-r2 rc 0
+tab-chg-r3 rc 0
+tab-chg-r4 rc 0

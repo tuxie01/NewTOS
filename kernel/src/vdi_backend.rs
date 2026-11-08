@@ -841,6 +841,72 @@ impl RasterBackend for VdiScreen {
         Self::clean(fb, tx0 as u32, ty0 as u32, tx1 as u32, ty1 as u32);
     }
 
+    // ── The mouse pointer's cell (TASK/V59) ──
+    //
+    // Save-under and paint of the pointer, one call per 16x16 cell instead of
+    // one dynamically dispatched call per pixel: the rectangle read and write
+    // through the NEON row copy (`raster_copy::read_rect` / `write_rect`), the
+    // form through two expansions (`raster_expand::sprite`) and one `clean`.
+
+    fn read_device_rect(&self, x: i16, y: i16, w: u16, h: u16, out: &mut [u32]) {
+        let fb = active_fb();
+        // SAFETY: the store holds the `height` rows of the screen and
+        // `width <= stride_px` (`read_rect` reads only on-screen pixels);
+        // `out` is a buffer of the caller's, not the store.
+        unsafe {
+            raster_copy::read_rect(
+                kernel_surface(fb),
+                fb.width() as i32,
+                fb.height() as i32,
+                x as i32,
+                y as i32,
+                w as usize,
+                h as usize,
+                out,
+            )
+        };
+    }
+
+    fn write_device_rect(&self, x: i16, y: i16, w: u16, h: u16, src: &[u32]) {
+        let fb = active_fb();
+        // SAFETY: as in `read_device_rect`; `write_rect` writes only
+        // on-screen pixels. No flush — the caller cleans once (`flush_rect`).
+        unsafe {
+            raster_copy::write_rect(
+                kernel_surface(fb),
+                fb.width() as i32,
+                fb.height() as i32,
+                x as i32,
+                y as i32,
+                w as usize,
+                h as usize,
+                src,
+            )
+        };
+    }
+
+    fn draw_sprite(&self, x: i16, y: i16, mask: &[u16; 16], data: &[u16; 16], fg: Pel, bg: Pel) {
+        let fb = active_fb();
+        // The cell on the screen — what the 1x1 `fill_rect`s with the whole
+        // screen as clip reached before.
+        let cell = ClipRect {
+            xmn: x,
+            ymn: y,
+            xmx: (x as i32 + 15).min(i16::MAX as i32) as i16,
+            ymx: (y as i32 + 15).min(i16::MAX as i32) as i16,
+        };
+        let Some((x0, y0, x1, y1)) = cell.clamp_to(fb.width() as u16, fb.height() as u16) else {
+            return;
+        };
+        let (fg_rgb, bg_rgb) = (Self::pel_to_rgb(fg), Self::pel_to_rgb(bg));
+        // SAFETY: the clamped box lies on the screen in the pixel store and
+        // inside the cell at `(x, y)`; the form rows are the caller's arrays.
+        unsafe {
+            raster_expand::sprite(kernel_surface(fb), x as i32, y as i32, mask, data, (x0, y0, x1, y1), fg_rgb, bg_rgb)
+        };
+        Self::clean(fb, x0 as u32, y0 as u32, x1 as u32, y1 as u32);
+    }
+
     fn get_device_pixel(&self, x: i16, y: i16) -> u32 {
         let fb = active_fb();
         if x < 0 || y < 0 || x as u32 >= fb.width() || y as u32 >= fb.height() {

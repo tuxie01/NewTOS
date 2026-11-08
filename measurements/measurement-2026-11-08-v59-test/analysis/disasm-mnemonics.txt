@@ -1,0 +1,3 @@
+read_rect {'stp': 2, 'ld1': 5, 'st1': 5, 'ldp': 2} | msr/mrs in function: 0
+write_device_rect {'stp': 2, 'ld1': 5, 'st1': 5, 'ldp': 2} | msr/mrs in function: 0
+expand {'stp': 52, 'str': 2, 'ld1': 38, 'dup': 24, 'cmtst': 56, 'bsl': 8, 'st1': 40, 'mov': 24, 'ext': 8, 'ldp': 52, 'ldr': 2, 'eor': 18, 'bit': 36} | msr/mrs in function: 0
