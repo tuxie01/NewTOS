@@ -1,0 +1,41 @@
+46,47c46,47
+< N   waited 1934 ticks, 2000000 polls
+<   packet f8 20 8: vq_mouse 0 200 350 -> 0 200 350 (unchanged)
+---
+> N   waited 1980 ticks, 1942399 polls
+>   packet f8 20 8: vq_mouse 0 200 350 -> 0 220 358 (changed)
+51,52c51,52
+< N   waited 37 ticks, 37690 polls
+<   packet f8 30 0: vq_mouse 0 350 350 -> 0 370 358 (changed)
+---
+> N   waited 390 ticks, 387173 polls
+>   packet f8 30 0: vq_mouse 0 350 350 -> 0 380 350 (changed)
+56,57c56,57
+< N   waited 390 ticks, 397138 polls
+<   packet f8 10 10: vq_mouse 0 500 350 -> 0 530 350 (changed)
+---
+> N   waited 390 ticks, 382167 polls
+>   packet f8 10 10: vq_mouse 0 500 350 -> 0 510 360 (changed)
+61,63c61,63
+< N   waited 390 ticks, 396301 polls
+<   packet fa 0 0: vq_mouse 0 100 100 -> 0 110 110 (changed)
+<   W1 before: vq_mouse 0 110 110
+---
+> N   waited 390 ticks, 380854 polls
+>   packet fa 0 0: vq_mouse 0 100 100 -> 1 100 100 (changed)
+>   W1 before: vq_mouse 1 100 100
+78,79c78,79
+< N   waited 379 ticks, 387609 polls
+<   packet f8 0 0: vq_mouse 0 319 239 -> 1 319 239 (changed)
+---
+> N   waited 778 ticks, 770763 polls
+>   packet f8 0 0: vq_mouse 0 319 239 -> 0 359 259 (changed)
+96c96
+< N   waited 2003 ticks, 2000000 polls
+---
+> N   waited 1971 ticks, 2000000 polls
+130c130
+< T03 end hz_200 8283
+---
+> T03 end hz_200 9056
+diff LOG exit 1

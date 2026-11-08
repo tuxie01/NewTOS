@@ -1,0 +1,10 @@
+wkprobe run, side newtos (2026-11-08T09:22:06Z)
+tree      721e044173c1f89c7ec77a0c23f921c54e777440 0 dirty paths in tosdump/probes
+source    wkprobe.c e9030e3c6fa35bf85c8c9d9e88e7deb35a9759fca8f8b0eb4401dbe4cd2c80ec wkprobe-mouse.txt 1a08bf54230f8d5b8f12ef59354ddb341717996ee7024d1c186da8dc05167f63
+probes    WKPROBE.PRG ff0fa5c2dfa065e5a80154570269b93e161b8b18109698f10cbcf90e6cd74f12 WKPROBE.NAP 5b0a3189f4cf74dd15371dc3a7b2d0aeb6a2c81cc97696145ea9a253c41dfae4
+clang     Apple clang version 21.0.0 (clang-2100.4.1.1)
+kernel    ae6cf6d9c60ab0f4c0d13f0e56bf29f162a0a40dae8603b6d2f4b476f3e87689 /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/v54/k/wk-base.img
+card      369c0c3aff4cb064b83071055ab83933990d182f63f2d105c2da9171132e6f68 (tools/mkcard.sh, C:\WKPROBE.NAP, #Z autorun)
+qemu-pid  29828
+qemu      done
+card      after 8c5ffedd6a22d4b659580c9ca2ffe737ba871dfb5043cedd045bcc3b6513b8d0 (the booted clone)

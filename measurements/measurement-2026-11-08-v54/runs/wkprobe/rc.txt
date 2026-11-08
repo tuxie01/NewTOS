@@ -1,0 +1,7 @@
+wk oracle e2 rc 0
+wk kernel base rc 0
+wk kernel chg rc 0
+wk run n-base rc 0
+wk run n-chg rc 0
+wk run n-chg2 rc 0
+wk run n-base2 rc 0 (rerun: n-base's first packet wait hit the 2000000-poll cap at 1934 ticks)
