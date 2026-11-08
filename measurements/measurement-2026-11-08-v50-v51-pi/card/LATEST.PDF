@@ -1,0 +1,1330 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+   /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 10740 >>
+stream
+0.125 0.250 0.501 rg
+0 836 595 6 re f
+0.125 0.250 0.501 rg
+BT /F2 9 Tf 40 812 Td (Fbench 1.1.1) Tj ET
+0.352 0.352 0.352 rg
+BT /F1 9 Tf 480 812 Td (Benchmark results) Tj ET
+0.705 0.705 0.705 RG
+1 w 40 804 m 555 804 l S
+0.470 0.470 0.470 rg
+BT /F1 8 Tf 285 17 Td (Page 1) Tj ET
+0.078 0.078 0.078 rg
+BT /F2 22 Tf 40 760 Td (Benchmark results) Tj ET
+0.125 0.250 0.501 rg
+BT /F2 13 Tf 40 742 Td (NewTOS on Raspberry PI 4) Tj ET
+0.274 0.274 0.274 rg
+BT /F1 11 Tf 40 726 Td (unknown AArch64 TOS 4.04 1920x1080 256c blit none) Tj ET
+0.196 0.196 0.196 rg
+BT /F1 9 Tf 40 708 Td (115 of 115 tests run, 1.0 s each. Values are operations per second \(higher is better\). Bars compare tests within each group.) Tj ET
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 687 Td (Groups) Tj ET
+0.117 0.117 0.117 rg
+BT /F1 10 Tf 40 673 Td (VDI primitives) Tj ET
+0.235 0.235 0.235 rg
+BT /F1 9 Tf 190 673 Td (38 tests run) Tj ET
+0.117 0.117 0.117 rg
+BT /F1 10 Tf 40 657 Td (AES windows & events) Tj ET
+0.235 0.235 0.235 rg
+BT /F1 9 Tf 190 657 Td (21 tests run) Tj ET
+0.117 0.117 0.117 rg
+BT /F1 10 Tf 40 641 Td (Alignment \(blitter\)) Tj ET
+0.235 0.235 0.235 rg
+BT /F1 9 Tf 190 641 Td (20 tests run) Tj ET
+0.117 0.117 0.117 rg
+BT /F1 10 Tf 40 625 Td (Full-screen windows) Tj ET
+0.235 0.235 0.235 rg
+BT /F1 9 Tf 190 625 Td (17 tests run) Tj ET
+0.117 0.117 0.117 rg
+BT /F1 10 Tf 40 609 Td (GDOS fonts) Tj ET
+0.235 0.235 0.235 rg
+BT /F1 9 Tf 190 609 Td (14 tests run) Tj ET
+0.125 0.250 0.501 rg
+BT /F2 15 Tf 40 579 Td (VDI primitives) Tj ET
+0.125 0.250 0.501 RG
+1 w 40 573 m 555 573 l S
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 40 557 Td (Test) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 249 557 Td (ops/s) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 385 557 Td (Note) Tj ET
+0.784 0.784 0.784 RG
+1 w 40 552 m 555 552 l S
+0.964 0.972 0.988 rg
+38 537 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 541 Td (Line, 2 points) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 541 Td (23404) Tj ET
+0.121 0.466 0.705 rg
+280 539 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 541 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 528 Td (Polyline, 32 points) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 528 Td (699.5) Tj ET
+0.121 0.466 0.705 rg
+280 526 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 528 Td () Tj ET
+0.964 0.972 0.988 rg
+38 511 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 515 Td (Wide line \(7px, round\)) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 515 Td (4494.6) Tj ET
+0.121 0.466 0.705 rg
+280 513 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 515 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 502 Td (Dashed line) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 502 Td (21152) Tj ET
+0.121 0.466 0.705 rg
+280 500 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 502 Td () Tj ET
+0.964 0.972 0.988 rg
+38 485 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 489 Td (User line style) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 489 Td (19139) Tj ET
+0.121 0.466 0.705 rg
+280 487 3 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 489 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 476 Td (XOR line) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 476 Td (13114) Tj ET
+0.121 0.466 0.705 rg
+280 474 2 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 476 Td () Tj ET
+0.964 0.972 0.988 rg
+38 459 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 463 Td (Markers x16) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 463 Td (22967) Tj ET
+0.121 0.466 0.705 rg
+280 461 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 463 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 450 Td (Filled rect 32x32) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 450 Td (90111) Tj ET
+0.121 0.466 0.705 rg
+280 448 17 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 450 Td () Tj ET
+0.964 0.972 0.988 rg
+38 433 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 437 Td (Filled rect, full window) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 437 Td (578.2) Tj ET
+0.121 0.466 0.705 rg
+280 435 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 437 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 424 Td (Bar, hatched + border) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 424 Td (50954) Tj ET
+0.121 0.466 0.705 rg
+280 422 10 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 424 Td () Tj ET
+0.964 0.972 0.988 rg
+38 407 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 411 Td (Pattern fill rect) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 411 Td (91444) Tj ET
+0.121 0.466 0.705 rg
+280 409 18 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 411 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 398 Td (User pattern fill) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 398 Td (90601) Tj ET
+0.121 0.466 0.705 rg
+280 396 17 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 398 Td () Tj ET
+0.964 0.972 0.988 rg
+38 381 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 385 Td (XOR filled rect) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 385 Td (118723) Tj ET
+0.121 0.466 0.705 rg
+280 383 23 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 385 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 372 Td (Polygon, 8 points) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 372 Td (17894) Tj ET
+0.121 0.466 0.705 rg
+280 370 3 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 372 Td () Tj ET
+0.964 0.972 0.988 rg
+38 355 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 359 Td (Filled circle) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 359 Td (2414.1) Tj ET
+0.121 0.466 0.705 rg
+280 357 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 359 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 346 Td (Filled ellipse) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 346 Td (2472.4) Tj ET
+0.121 0.466 0.705 rg
+280 344 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 346 Td () Tj ET
+0.964 0.972 0.988 rg
+38 329 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 333 Td (Arc) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 333 Td (21870) Tj ET
+0.121 0.466 0.705 rg
+280 331 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 333 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 320 Td (Pie slice) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 320 Td (2508.8) Tj ET
+0.121 0.466 0.705 rg
+280 318 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 320 Td () Tj ET
+0.964 0.972 0.988 rg
+38 303 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 307 Td (Elliptical arc) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 307 Td (21977) Tj ET
+0.121 0.466 0.705 rg
+280 305 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 307 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 294 Td (Elliptical pie) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 294 Td (2981.5) Tj ET
+0.121 0.466 0.705 rg
+280 292 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 294 Td () Tj ET
+0.964 0.972 0.988 rg
+38 277 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 281 Td (Rounded box) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 281 Td (42504) Tj ET
+0.121 0.466 0.705 rg
+280 279 8 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 281 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 268 Td (Filled rounded box) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 268 Td (10333) Tj ET
+0.121 0.466 0.705 rg
+280 266 2 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 268 Td () Tj ET
+0.964 0.972 0.988 rg
+38 251 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 255 Td (Contour fill 64x40) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 255 Td (7278.6) Tj ET
+0.121 0.466 0.705 rg
+280 253 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 255 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 242 Td (Text, 15 chars) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 242 Td (30414) Tj ET
+0.121 0.466 0.705 rg
+280 240 6 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 242 Td () Tj ET
+0.964 0.972 0.988 rg
+38 225 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 229 Td (Text, 84 chars) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 229 Td (5388.5) Tj ET
+0.121 0.466 0.705 rg
+280 227 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 229 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 216 Td (Text with effects) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 216 Td (19050) Tj ET
+0.121 0.466 0.705 rg
+280 214 3 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 216 Td () Tj ET
+0.964 0.972 0.988 rg
+38 199 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 203 Td (Text rotated 90) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 203 Td (32282) Tj ET
+0.121 0.466 0.705 rg
+280 201 6 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 203 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 190 Td (Justified text) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 190 Td (18962) Tj ET
+0.121 0.466 0.705 rg
+280 188 3 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 190 Td () Tj ET
+0.964 0.972 0.988 rg
+38 173 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 177 Td (Text extent query) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 177 Td (396263) Tj ET
+0.121 0.466 0.705 rg
+280 175 78 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 177 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 164 Td (Blit scr->scr 64x64) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 164 Td (37925) Tj ET
+0.121 0.466 0.705 rg
+280 162 7 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 164 Td () Tj ET
+0.964 0.972 0.988 rg
+38 147 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 151 Td (Blit scroll window) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 151 Td (237.8) Tj ET
+0.121 0.466 0.705 rg
+280 149 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 151 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 138 Td (Blit mem->scr 64x64) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 138 Td (27835) Tj ET
+0.121 0.466 0.705 rg
+280 136 5 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 138 Td () Tj ET
+0.964 0.972 0.988 rg
+38 121 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 125 Td (Blit scr->mem 64x64) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 125 Td (24765) Tj ET
+0.121 0.466 0.705 rg
+280 123 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 125 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 112 Td (Mono blit \(vrt_cpyfm\)) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 112 Td (45721) Tj ET
+0.121 0.466 0.705 rg
+280 110 9 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 112 Td () Tj ET
+0.964 0.972 0.988 rg
+38 95 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 99 Td (Transform form 64x64) Tj ET
+0.705 0.078 0.078 rg
+BT /F3 8 Tf 256 99 Td (n/a) Tj ET
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 99 Td (not supported here) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 86 Td (Get pixel) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 86 Td (504122) Tj ET
+0.121 0.466 0.705 rg
+280 84 100 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 86 Td () Tj ET
+0.964 0.972 0.988 rg
+38 69 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 73 Td (Hide/show mouse) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 73 Td (20377) Tj ET
+0.121 0.466 0.705 rg
+280 71 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 73 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 60 Td (Attribute calls x3) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 60 Td (170021) Tj ET
+0.121 0.466 0.705 rg
+280 58 33 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 60 Td () Tj ET
+
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+   /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 11126 >>
+stream
+0.125 0.250 0.501 rg
+0 836 595 6 re f
+0.125 0.250 0.501 rg
+BT /F2 9 Tf 40 812 Td (Fbench 1.1.1) Tj ET
+0.352 0.352 0.352 rg
+BT /F1 9 Tf 480 812 Td (Benchmark results) Tj ET
+0.705 0.705 0.705 RG
+1 w 40 804 m 555 804 l S
+0.470 0.470 0.470 rg
+BT /F1 8 Tf 285 17 Td (Page 2) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 770 Td (Open/close workstation) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 770 Td (47034) Tj ET
+0.121 0.466 0.705 rg
+280 768 9 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 770 Td () Tj ET
+0.125 0.250 0.501 rg
+BT /F2 15 Tf 40 743 Td (AES windows & events) Tj ET
+0.125 0.250 0.501 RG
+1 w 40 737 m 555 737 l S
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 40 721 Td (Test) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 249 721 Td (ops/s) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 385 721 Td (Note) Tj ET
+0.784 0.784 0.784 RG
+1 w 40 716 m 555 716 l S
+0.964 0.972 0.988 rg
+38 701 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 705 Td (Window create+delete) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 705 Td (135279) Tj ET
+0.121 0.466 0.705 rg
+280 703 39 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 705 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 692 Td (Window open+close) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 692 Td (217.5) Tj ET
+0.121 0.466 0.705 rg
+280 690 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 692 Td () Tj ET
+0.964 0.972 0.988 rg
+38 675 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 679 Td (Window move) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 679 Td (657.0) Tj ET
+0.121 0.466 0.705 rg
+280 677 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 679 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 666 Td (Window resize) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 666 Td (831.0) Tj ET
+0.121 0.466 0.705 rg
+280 664 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 666 Td () Tj ET
+0.964 0.972 0.988 rg
+38 649 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 653 Td (Window top \(2 windows\)) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 653 Td (425.7) Tj ET
+0.121 0.466 0.705 rg
+280 651 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 653 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 640 Td (Set window title) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 640 Td (1441.3) Tj ET
+0.121 0.466 0.705 rg
+280 638 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 640 Td () Tj ET
+0.964 0.972 0.988 rg
+38 623 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 627 Td (Set info line) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 627 Td (1441.3) Tj ET
+0.121 0.466 0.705 rg
+280 625 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 627 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 614 Td (Set slider pos+size) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 614 Td (2026.7) Tj ET
+0.121 0.466 0.705 rg
+280 612 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 614 Td () Tj ET
+0.964 0.972 0.988 rg
+38 597 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 601 Td (Scroll window content) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 601 Td (222.3) Tj ET
+0.121 0.466 0.705 rg
+280 599 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 601 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 588 Td (wind_get work area) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 588 Td (338447) Tj ET
+0.121 0.466 0.705 rg
+280 586 99 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 588 Td () Tj ET
+0.964 0.972 0.988 rg
+38 571 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 575 Td (Rectangle list walk) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 575 Td (155297) Tj ET
+0.121 0.466 0.705 rg
+280 573 45 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 575 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 562 Td (wind_calc) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 562 Td (279536) Tj ET
+0.121 0.466 0.705 rg
+280 560 82 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 562 Td () Tj ET
+0.964 0.972 0.988 rg
+38 545 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 549 Td (wind_update pair) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 549 Td (158298) Tj ET
+0.121 0.466 0.705 rg
+280 547 46 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 549 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 536 Td (objc_draw dialog) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 536 Td (4131.8) Tj ET
+0.121 0.466 0.705 rg
+280 534 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 536 Td () Tj ET
+0.964 0.972 0.988 rg
+38 519 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 523 Td (objc_find) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 523 Td (294911) Tj ET
+0.121 0.466 0.705 rg
+280 521 86 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 523 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 510 Td (form_dial redraw 64x48) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 510 Td (5768.0) Tj ET
+0.121 0.466 0.705 rg
+280 508 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 510 Td () Tj ET
+0.964 0.972 0.988 rg
+38 493 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 497 Td (Menu bar redraw) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 497 Td (4829.2) Tj ET
+0.121 0.466 0.705 rg
+280 495 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 497 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 484 Td (graf_mkstate) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 484 Td (340044) Tj ET
+0.121 0.466 0.705 rg
+280 482 100 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 484 Td () Tj ET
+0.964 0.972 0.988 rg
+38 467 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 471 Td (graf_mouse off+on) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 471 Td (19319) Tj ET
+0.121 0.466 0.705 rg
+280 469 5 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 471 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 458 Td (Event poll \(evnt_multi\)) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 458 Td (127874) Tj ET
+0.121 0.466 0.705 rg
+280 456 37 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 458 Td () Tj ET
+0.964 0.972 0.988 rg
+38 441 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 445 Td (Message round trip) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 445 Td (58236) Tj ET
+0.121 0.466 0.705 rg
+280 443 17 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 445 Td () Tj ET
+0.125 0.250 0.501 rg
+BT /F2 15 Tf 40 418 Td (Alignment \(blitter\)) Tj ET
+0.125 0.250 0.501 RG
+1 w 40 412 m 555 412 l S
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 40 396 Td (Test) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 249 396 Td (ops/s) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 385 396 Td (Note) Tj ET
+0.784 0.784 0.784 RG
+1 w 40 391 m 555 391 l S
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 380 Td (Fill 64x64, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 380 Td (117027) Tj ET
+0.121 0.466 0.705 rg
+280 378 100 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 380 Td () Tj ET
+0.964 0.972 0.988 rg
+38 363 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 367 Td (Fill 64x64, x+3) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 367 Td (45935) Tj ET
+0.121 0.466 0.705 rg
+280 365 39 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 367 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 354 Td (Blit 64x64, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 354 Td (53342) Tj ET
+0.121 0.466 0.705 rg
+280 352 45 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 354 Td () Tj ET
+0.964 0.972 0.988 rg
+38 337 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 341 Td (Blit 64x64, src+3 dst+11) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 341 Td (36318) Tj ET
+0.121 0.466 0.705 rg
+280 339 31 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 341 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 328 Td (Mem->scr 64x64, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 328 Td (28387) Tj ET
+0.121 0.466 0.705 rg
+280 326 24 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 328 Td () Tj ET
+0.964 0.972 0.988 rg
+38 311 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 315 Td (Mem->scr 64x64, x+3) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 315 Td (27436) Tj ET
+0.121 0.466 0.705 rg
+280 313 23 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 315 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 302 Td (Mono blit, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 302 Td (47034) Tj ET
+0.121 0.466 0.705 rg
+280 300 40 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 302 Td () Tj ET
+0.964 0.972 0.988 rg
+38 285 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 289 Td (Mono blit, x+3) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 289 Td (44171) Tj ET
+0.121 0.466 0.705 rg
+280 287 37 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 289 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 276 Td (Text, x on 8 px) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 276 Td (35963) Tj ET
+0.121 0.466 0.705 rg
+280 274 30 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 276 Td () Tj ET
+0.964 0.972 0.988 rg
+38 259 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 263 Td (Text, x+3) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 263 Td (30414) Tj ET
+0.121 0.466 0.705 rg
+280 261 25 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 263 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 250 Td (Scroll up, aligned edges) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 250 Td (220.7) Tj ET
+0.121 0.466 0.705 rg
+280 248 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 250 Td () Tj ET
+0.964 0.972 0.988 rg
+38 233 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 237 Td (Scroll up, edges x+5) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 237 Td (208.4) Tj ET
+0.121 0.466 0.705 rg
+280 235 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 237 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 224 Td (Scroll left 16 px) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 224 Td (186.3) Tj ET
+0.121 0.466 0.705 rg
+280 222 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 224 Td () Tj ET
+0.964 0.972 0.988 rg
+38 207 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 211 Td (Scroll left 3 px) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 211 Td (186.3) Tj ET
+0.121 0.466 0.705 rg
+280 209 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 211 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 198 Td (Move window, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 198 Td (635.8) Tj ET
+0.121 0.466 0.705 rg
+280 196 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 198 Td (work x mod 16 = 0) Tj ET
+0.964 0.972 0.988 rg
+38 181 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 185 Td (Move window, off-grid) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 185 Td (620.3) Tj ET
+0.121 0.466 0.705 rg
+280 183 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 185 Td (work x mod 16 = 5) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 172 Td (Open/close win, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 172 Td (224.4) Tj ET
+0.121 0.466 0.705 rg
+280 170 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 172 Td (work x mod 16 = 0) Tj ET
+0.964 0.972 0.988 rg
+38 155 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 159 Td (Open/close win, off-grid) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 159 Td (219.7) Tj ET
+0.121 0.466 0.705 rg
+280 157 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 159 Td (work x mod 16 = 5) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 146 Td (Scroll window, aligned) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 146 Td (783.9) Tj ET
+0.121 0.466 0.705 rg
+280 144 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 146 Td (work x mod 16 = 0) Tj ET
+0.964 0.972 0.988 rg
+38 129 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 133 Td (Scroll window, off-grid) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 133 Td (733.9) Tj ET
+0.121 0.466 0.705 rg
+280 131 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 133 Td (work x mod 16 = 5) Tj ET
+
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+   /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 10383 >>
+stream
+0.125 0.250 0.501 rg
+0 836 595 6 re f
+0.125 0.250 0.501 rg
+BT /F2 9 Tf 40 812 Td (Fbench 1.1.1) Tj ET
+0.352 0.352 0.352 rg
+BT /F1 9 Tf 480 812 Td (Benchmark results) Tj ET
+0.705 0.705 0.705 RG
+1 w 40 804 m 555 804 l S
+0.470 0.470 0.470 rg
+BT /F1 8 Tf 285 17 Td (Page 3) Tj ET
+0.125 0.250 0.501 rg
+BT /F2 15 Tf 40 762 Td (Full-screen windows) Tj ET
+0.125 0.250 0.501 RG
+1 w 40 756 m 555 756 l S
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 40 740 Td (Test) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 249 740 Td (ops/s) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 385 740 Td (Note) Tj ET
+0.784 0.784 0.784 RG
+1 w 40 735 m 555 735 l S
+0.964 0.972 0.988 rg
+38 720 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 724 Td (Open/close full window) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 724 Td (131.7) Tj ET
+0.121 0.466 0.705 rg
+280 722 34 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 724 Td (work 1896x1018) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 711 Td (Full <-> normal size) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 711 Td (235.4) Tj ET
+0.121 0.466 0.705 rg
+280 709 62 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 711 Td () Tj ET
+0.964 0.972 0.988 rg
+38 694 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 698 Td (Top full / test window) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 698 Td (273.3) Tj ET
+0.121 0.466 0.705 rg
+280 696 72 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 698 Td (work 1896x1018) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 685 Td (Fill full window) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 685 Td (377.3) Tj ET
+0.121 0.466 0.705 rg
+280 683 100 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 685 Td (work 1896x1018) Tj ET
+0.964 0.972 0.988 rg
+38 668 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 672 Td (Scroll up 1 line) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 672 Td (176.0) Tj ET
+0.121 0.466 0.705 rg
+280 670 46 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 672 Td (work 1896x1018) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 659 Td (Scroll left 16 px) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 659 Td (174.1) Tj ET
+0.121 0.466 0.705 rg
+280 657 46 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 659 Td (work 1896x1018) Tj ET
+0.964 0.972 0.988 rg
+38 642 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 646 Td (Scroll left 8 px) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 646 Td (127.6) Tj ET
+0.121 0.466 0.705 rg
+280 644 33 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 646 Td (work 1896x1018) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 633 Td (Scroll left 3 px) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 633 Td (122.7) Tj ET
+0.121 0.466 0.705 rg
+280 631 32 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 633 Td (work 1896x1018) Tj ET
+0.964 0.972 0.988 rg
+38 616 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 620 Td (Scroll text 8pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 620 Td (169.0) Tj ET
+0.121 0.466 0.705 rg
+280 618 44 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 620 Td (system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 607 Td (Scroll text 10pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 607 Td (173.2) Tj ET
+0.121 0.466 0.705 rg
+280 605 45 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 607 Td (system font) Tj ET
+0.964 0.972 0.988 rg
+38 590 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 594 Td (Scroll text 12pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 594 Td (173.2) Tj ET
+0.121 0.466 0.705 rg
+280 592 45 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 594 Td (got 10pt, system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 581 Td (Scroll text 14pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 581 Td (173.2) Tj ET
+0.121 0.466 0.705 rg
+280 579 45 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 581 Td (got 10pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 564 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 568 Td (Scroll text 18pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 568 Td (171.5) Tj ET
+0.121 0.466 0.705 rg
+280 566 45 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 568 Td (system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 555 Td (Scroll text 24pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 555 Td (180.1) Tj ET
+0.121 0.466 0.705 rg
+280 553 47 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 555 Td (got 20pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 538 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 542 Td (Scroll text 36pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 542 Td (180.1) Tj ET
+0.121 0.466 0.705 rg
+280 540 47 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 542 Td (got 20pt, system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 529 Td (Scroll text 48pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 529 Td (180.1) Tj ET
+0.121 0.466 0.705 rg
+280 527 47 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 529 Td (got 20pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 512 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 516 Td (Scroll, size per line) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 516 Td (175.0) Tj ET
+0.121 0.466 0.705 rg
+280 514 46 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 516 Td (system font) Tj ET
+0.125 0.250 0.501 rg
+BT /F2 15 Tf 40 489 Td (GDOS fonts) Tj ET
+0.125 0.250 0.501 RG
+1 w 40 483 m 555 483 l S
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 40 467 Td (Test) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 249 467 Td (ops/s) Tj ET
+0.313 0.313 0.313 rg
+BT /F2 8 Tf 385 467 Td (Note) Tj ET
+0.784 0.784 0.784 RG
+1 w 40 462 m 555 462 l S
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 451 Td (Text 6pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 451 Td (47719) Tj ET
+0.121 0.466 0.705 rg
+280 449 11 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 451 Td (got 8pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 434 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 438 Td (Text 8pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 438 Td (47952) Tj ET
+0.121 0.466 0.705 rg
+280 436 12 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 438 Td (system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 425 Td (Text 10pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 425 Td (23183) Tj ET
+0.121 0.466 0.705 rg
+280 423 5 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 425 Td (system font) Tj ET
+0.964 0.972 0.988 rg
+38 408 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 412 Td (Text 12pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 412 Td (23075) Tj ET
+0.121 0.466 0.705 rg
+280 410 5 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 412 Td (got 10pt, system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 399 Td (Text 14pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 399 Td (22967) Tj ET
+0.121 0.466 0.705 rg
+280 397 5 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 399 Td (got 10pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 382 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 386 Td (Text 18pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 386 Td (16220) Tj ET
+0.121 0.466 0.705 rg
+280 384 4 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 386 Td (system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 373 Td (Text 24pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 373 Td (8612.1) Tj ET
+0.121 0.466 0.705 rg
+280 371 2 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 373 Td (got 20pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 356 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 360 Td (Text 36pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 360 Td (8454.1) Tj ET
+0.121 0.466 0.705 rg
+280 358 2 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 360 Td (got 20pt, system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 347 Td (Text 48pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 347 Td (8776.1) Tj ET
+0.121 0.466 0.705 rg
+280 345 2 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 347 Td (got 20pt, system font) Tj ET
+0.964 0.972 0.988 rg
+38 330 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 334 Td (Text 72pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 334 Td (8532.4) Tj ET
+0.121 0.466 0.705 rg
+280 332 2 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 334 Td (got 20pt, system font) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 321 Td (Text 10pt bold) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 321 Td (22303) Tj ET
+0.121 0.466 0.705 rg
+280 319 5 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 321 Td (system font) Tj ET
+0.964 0.972 0.988 rg
+38 304 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 308 Td (vst_point, 8 sizes) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 308 Td (398114) Tj ET
+0.121 0.466 0.705 rg
+280 306 100 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 308 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 295 Td (Font switch + vst_point) Tj ET
+0.705 0.078 0.078 rg
+BT /F3 8 Tf 256 295 Td (n/a) Tj ET
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 295 Td (not supported here) Tj ET
+0.964 0.972 0.988 rg
+38 278 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 282 Td (Arbitrary size + text) Tj ET
+0.705 0.078 0.078 rg
+BT /F3 8 Tf 256 282 Td (n/a) Tj ET
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 282 Td (not supported here) Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 269 Td (Scroll, mixed sizes) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 246 269 Td (202.9) Tj ET
+0.121 0.466 0.705 rg
+280 267 1 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 269 Td (system font) Tj ET
+0.964 0.972 0.988 rg
+38 252 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 256 Td (Text extent at 12pt) Tj ET
+0.078 0.078 0.078 rg
+BT /F3 8 Tf 241 256 Td (396263) Tj ET
+0.121 0.466 0.705 rg
+280 254 99 7 re f
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 256 Td () Tj ET
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 243 Td (Enumerate font names) Tj ET
+0.705 0.078 0.078 rg
+BT /F3 8 Tf 256 243 Td (n/a) Tj ET
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 243 Td (not supported here) Tj ET
+0.964 0.972 0.988 rg
+38 226 519 13 re f
+0.078 0.078 0.078 rg
+BT /F1 8 Tf 40 230 Td (Load+unload fonts \(x3\)) Tj ET
+0.705 0.078 0.078 rg
+BT /F3 8 Tf 256 230 Td (n/a) Tj ET
+0.431 0.431 0.431 rg
+BT /F1 7 Tf 385 230 Td (not supported here) Tj ET
+0.125 0.250 0.501 rg
+BT /F2 15 Tf 40 203 Td (Configuration) Tj ET
+0.125 0.250 0.501 RG
+1 w 40 197 m 555 197 l S
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 171 Td (Machine) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 157 Td (Description     : NewTOS on Raspberry PI 4) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 147 Td (Machine type    : unknown) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 137 Td (CPU             : AArch64 \(native\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 127 Td (FPU             : none reported) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 117 Td (Blitter         : not present) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 107 Td (ST RAM          : 14336 KB total) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 97 Td (TT/Fast RAM     : 729088 KB total) Tj ET
+
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R /F4 6 0 R >> >>
+   /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 3138 >>
+stream
+0.125 0.250 0.501 rg
+0 836 595 6 re f
+0.125 0.250 0.501 rg
+BT /F2 9 Tf 40 812 Td (Fbench 1.1.1) Tj ET
+0.352 0.352 0.352 rg
+BT /F1 9 Tf 480 812 Td (Benchmark results) Tj ET
+0.705 0.705 0.705 RG
+1 w 40 804 m 555 804 l S
+0.470 0.470 0.470 rg
+BT /F1 8 Tf 285 17 Td (Page 4) Tj ET
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 766 Td (Operating system) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 752 Td (TOS             : 4.04  \(11/08/2026 m/d/y\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 742 Td (Country / video : USA, NTSC) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 732 Td (GEMDOS          : 0.48) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 722 Td (MiNT            : not running) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 712 Td (Largest free    : ST 10240 KB) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 702 Td (                  TT/Fast 715424 KB) Tj ET
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 682 Td (AES / environment) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 668 Td (AES version     : 3.40) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 658 Td (Multitasking    : no \(max apps 1\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 648 Td (Theme pens      : green 166, red 122, blue 149, cyan 155, highlight 106) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 638 Td (Application id  : 0) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 628 Td (appl_getinfo    : not available) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 618 Td (Desktop area    : 0,19 1920x1061) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 608 Td (AES char / box  : 8x16 / 19x19) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 598 Td (Current dir     : C:\\APPS\\FBENCH) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 588 Td (PATH            : /dev/c/) Tj ET
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 568 Td (Display) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 554 Td (Resolution      : 1920x1080, Getrez 4 \(TT Medium\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 544 Td (Colours         : 256 on screen, 16 planes) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 534 Td (Palette         : 0 \(direct colour\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 524 Td (Lookup table    : no \(true colour\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 514 Td (Pixel size      : 278 x 278 microns) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 504 Td (Screen memory   : 4147200 bytes at $3dbf5000) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 494 Td (VDI handles     : physical 1, ui 3 \(bench ws opened only for runs\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 484 Td (VDI max vertices: 1024) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 474 Td (Text rotation   : 90 degree steps) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 464 Td (Writing modes   : 4) Tj ET
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 444 Td (GDOS / fonts) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 430 Td (GDOS            : none \(system font only\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 420 Td (Fonts           : 1 \(0 loaded by GDOS\)) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 410 Td (  > id     1  6x6 system font                  ) Tj ET
+0.156 0.156 0.156 rg
+BT /F2 11 Tf 40 390 Td (Cookie jar) Tj ET
+0.117 0.117 0.117 rg
+BT /F3 7 Tf 40 376 Td (NTOS _MCH _IDT _AKP EdDI ) Tj ET
+
+endstream
+endobj
+2 0 obj
+<< /Type /Pages /Count 4 /Kids [7 0 R 9 0 R 11 0 R 13 0 R] >>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000036712 00000 n 
+0000000064 00000 n 
+0000000161 00000 n 
+0000000263 00000 n 
+0000000358 00000 n 
+0000000458 00000 n 
+0000000620 00000 n 
+0000011413 00000 n 
+0000011576 00000 n 
+0000022756 00000 n 
+0000022920 00000 n 
+0000033357 00000 n 
+0000033521 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R /Info << /Producer (Fbench) >> >>
+startxref
+36789
+%%EOF

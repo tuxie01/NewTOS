@@ -1,0 +1,49 @@
+V50 + V51 Pi run (user's real Raspberry Pi 4) -- Fbench with the NEON expansion and copy kernels. Date 2026-11-08.
+Why: ADR-036 point 5 -- a raster kernel lands only if Fbench on the real Pi shows it faster than the code it replaces.
+Who: user ran Fbench and everyday use on the Pi; lead built the kernel, wrote the card and copied the results. No worker
+touched card or Pi.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1)
+No image was booted from this run: the card is the user's hand-kept test card; only kernel8.img and config.txt line 9 were written.
+
+KERNEL
+  Built by the lead from branch pitest-2026-11-08 = main 5be660c2 (all up to V40) + merge of v51 (V50 3255df27, V51 1197fed7),
+  merge commit b5b6eaee, in worktree .claude/worktrees/pitest: cargo xtask build --board rpi4 --release.
+  kernel8.img sha256 6cd6eb5727b9961790697c33432512e3886fdfc86c0fb528d17fae6bb81bd795 (1526000 B); also built with
+  --features raster-prof (6c07940eb0e939fc..., not written to the card).
+  Host tests on that branch (cargo xtask test --fast): 2331 passed; 8 failed = worktree artefacts (doc_check, rsc_* without
+  the untracked inputs), none in tos-api.
+  The same tree merged into main (20c23349) builds to a kernel8.img that differs from the card kernel in exactly 16 bytes:
+  the embedded commit id "b5b6eaee" vs "20c23349" (strings: "Built2026-11-08 (…)"), so the measured product code is main's.
+  Card: kernel8.img replaced (was the 0.7.1 release kernel b0543dd4837cb3a5..., recoverable from the release zip), config.txt
+  line 9 "kernel=V49CHGP.IMG" -> "kernel=kernel8.img" (user: "bitte als kernel8.img drauf kopieren"); re-read after a forced
+  remount, sha256 equal. card/config.txt is the state of the run.
+
+RESULT -- Fbench 1.1.1 complete run (card/LATEST.TXT sha256 eafa3a8e9ec952dc..., card/LATEST.PDF, card/COMPARE.PDF; FAT stamps
+2026-11-08 00:03 = build date + uptime, no RTC). "Before" is the V49 run measurements/measurement-2026-11-07-v49-pi/card/FBNEU.TXT
+(same card, V49 kernel). ops/s before -> after (factor):
+  V50 rows (text, 1-to-32 expansion):
+    Text, 15 chars            17225 -> 30414 (x1.77)    Text, 84 chars          2870.0 -> 5388.5 (x1.88)
+    Text with effects        7455.3 -> 19050 (x2.56)    Text rotated 90          15359 -> 32282  (x2.10)
+    Justified text            10137 -> 18962 (x1.87)    Mono blit (vrt_cpyfm)    13460 -> 45721  (x3.40)
+    Mono blit aligned / x+3   13114 -> 47034 (x3.59) / 13523 -> 44171 (x3.27)
+    Text x on 8 px / x+3      18069 -> 35963 (x1.99) / 16831 -> 30414 (x1.81)
+    Text 6..72pt (system font, no GDOS) x1.33 .. x2.51; objc_draw dialog x1.11; Menu bar redraw x1.14
+  V51 rows (rectangle copy):
+    Blit scr->scr 64x64       22414 -> 37925 (x1.69)    Blit 64x64 aligned       24211 -> 53342  (x2.20)
+    Blit 64x64 src+3 dst+11   21251 -> 36318 (x1.71)    Blit scroll window       119.2 -> 237.8  (x1.99)
+    Scroll window content     118.4 -> 222.3 (x1.88)    Window move              368.2 -> 657.0  (x1.78)
+    Scroll up 1 line (full)    81.6 -> 176.0 (x2.16)    Scroll left 16/8/3 px (full) x2.16 / x1.60 / x1.54
+    Scroll text 8..48pt (full) x2.07 .. x2.26           Move/Scroll window aligned, off-grid x1.77 .. x1.96
+  Unchanged within 8 %: 52 of 108 rows, among them all fill rows of V49.
+  Lower by 9-17 % (not explained, single run each; paths V50/V51 do not touch): Polyline 32 points 769.4 -> 699.5,
+  User line style 21870 -> 19139, Filled ellipse 2996.0 -> 2472.4, Window create+delete 151702 -> 135279,
+  Event poll 141783 -> 127874. Between the two runs main also gained V31..V40 (V35 PTSIN copy per VDI call, V40 LSTLIN
+  writes per polyline, V53, V56); a repeat run is needed before calling any of these a regression.
+
+VERDICT ADR-036 point 5: met for V50 and V51 -- every text, mono-blit, copy and scroll row is faster on the real Pi.
+Merged into main as 20c23349.
+Against the V4SA (user's PDF) NewTOS now leads in text, mono blit, copy, scroll and fill; still behind: lines
+(Line 2 points 23404 vs 43531, Polyline 32 699.5 vs 1372.6, dashed/user/XOR lines) and Hide/show mouse (20377 vs 52202),
+graf_mouse off+on (19319 vs 26921).
+OPEN: user's everyday checks (USB mouse after a program switch, V53; desktop wheel, V56) not reported in this run;
+a second Fbench run to settle the -9..-17 % rows.

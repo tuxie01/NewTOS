@@ -1,4 +1,6 @@
-# V50 — Quittung: UMGESETZT, Tester und Pi offen
+# V50 — Quittung DONE (2026-11-08)
+
+Tester PASS (`e6763ca4`, `measurements/measurement-2026-11-07-v50-test/RUNINFO.TXT`). Pi des Anwenders mit `main` + V50 + V51: Text x1,8-2,6, Mono blit 13 460 -> 45 721/s (`measurements/measurement-2026-11-08-v50-v51-pi/RUNINFO.TXT`), ADR-036 Punkt 5 erfuellt. In `main` mit Merge `20c23349`.
 
 Datum 2026-11-07 · Zweig `v50`, Basis `ce5e79c2` (V49-Kopf) · Commit `3255df27` (Kern) · Beleg
 `measurements/measurement-2026-11-07-v50/RUNINFO.TXT`

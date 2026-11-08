@@ -1,4 +1,6 @@
-# V51 — Quittung: UMGESETZT, Tester und Pi offen
+# V51 — Quittung DONE (2026-11-08)
+
+Tester PASS (`fe527625`, `measurements/measurement-2026-11-07-v51-test/RUNINFO.TXT`). Pi des Anwenders mit `main` + V50 + V51: Kopieren und Scrollen x1,5-2,3, Scroll up 1 line 81,6 -> 176,0/s (`measurements/measurement-2026-11-08-v50-v51-pi/RUNINFO.TXT`), ADR-036 Punkt 5 erfuellt. In `main` mit Merge `20c23349`. Offen, klein: Kopfkommentar in `kernel/src/raster_copy.rs` ("rows never share a byte") stimmt nicht woertlich (Tester).
 
 Datum 2026-11-07 · Zweig `v51`, Basis `abe8dae1` (V50-Kopf) · Commits `1197fed7` (Kern), `8940791d` (Lauf) · Beleg
 `measurements/measurement-2026-11-07-v51/RUNINFO.TXT`

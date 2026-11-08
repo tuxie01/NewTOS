@@ -1,0 +1,194 @@
+Fbench 1.1.1 - GEM VDI / AES / GDOS benchmark report
+==========================================================
+Date      : 2026-11-08 00:03
+Machine   : NewTOS on Raspberry PI 4
+Profile   : unknown AArch64 TOS 4.04 1920x1080 256c blit none
+Blitter   : not present
+Duration  : 1.0 s per test
+GDOS font : 6x6 system font (id 1)
+
+
+-- Machine --
+  Description     : NewTOS on Raspberry PI 4
+  Machine type    : unknown
+  CPU             : AArch64 (native)
+  FPU             : none reported
+  Blitter         : not present
+  ST RAM          : 14336 KB total
+  TT/Fast RAM     : 729088 KB total
+
+-- Operating system --
+  TOS             : 4.04  (11/08/2026 m/d/y)
+  Country / video : USA, NTSC
+  GEMDOS          : 0.48
+  MiNT            : not running
+  Largest free    : ST 10240 KB
+                    TT/Fast 715424 KB
+
+-- AES / environment --
+  AES version     : 3.40
+  Multitasking    : no (max apps 1)
+  Theme pens      : green 166, red 122, blue 149, cyan 155, highlight 106
+  Application id  : 0
+  appl_getinfo    : not available
+  Desktop area    : 0,19 1920x1061
+  AES char / box  : 8x16 / 19x19
+  Current dir     : C:\APPS\FBENCH
+  PATH            : /dev/c/
+
+-- Display --
+  Resolution      : 1920x1080, Getrez 4 (TT Medium)
+  Colours         : 256 on screen, 16 planes
+  Palette         : 0 (direct colour)
+  Lookup table    : no (true colour)
+  Pixel size      : 278 x 278 microns
+  Screen memory   : 4147200 bytes at $3dbf5000
+  VDI handles     : physical 1, ui 3 (bench ws opened only for runs)
+  VDI max vertices: 1024
+  Text rotation   : 90 degree steps
+  Writing modes   : 4
+
+-- GDOS / fonts --
+  GDOS            : none (system font only)
+  Fonts           : 1 (0 loaded by GDOS)
+    > id     1  6x6 system font                  
+
+-- Cookie jar --
+  NTOS _MCH _IDT _AKP EdDI 
+
+-- Baselines --
+  (none loaded)
+
+-- Results (operations per second, higher is better) --
+
+Test                             This
+
+[ VDI primitives ]
+Line, 2 points                  23404
+Polyline, 32 points             699.5
+Wide line (7px, round)         4494.6
+Dashed line                     21152
+User line style                 19139
+XOR line                        13114
+Markers x16                     22967
+Filled rect 32x32               90111
+Filled rect, full window        578.2
+Bar, hatched + border           50954
+Pattern fill rect               91444
+User pattern fill               90601
+XOR filled rect                118723
+Polygon, 8 points               17894
+Filled circle                  2414.1
+Filled ellipse                 2472.4
+Arc                             21870
+Pie slice                      2508.8
+Elliptical arc                  21977
+Elliptical pie                 2981.5
+Rounded box                     42504
+Filled rounded box              10333
+Contour fill 64x40             7278.6
+Text, 15 chars                  30414
+Text, 84 chars                 5388.5
+Text with effects               19050
+Text rotated 90                 32282
+Justified text                  18962
+Text extent query              396263
+Blit scr->scr 64x64             37925
+Blit scroll window              237.8
+Blit mem->scr 64x64             27835
+Blit scr->mem 64x64             24765
+Mono blit (vrt_cpyfm)           45721
+Transform form 64x64              n/a  (not supported here)
+Get pixel                      504122
+Hide/show mouse                 20377
+Attribute calls x3             170021
+Open/close workstation          47034
+
+[ AES windows & events ]
+Window create+delete           135279
+Window open+close               217.5
+Window move                     657.0
+Window resize                   831.0
+Window top (2 windows)          425.7
+Set window title               1441.3
+Set info line                  1441.3
+Set slider pos+size            2026.7
+Scroll window content           222.3
+wind_get work area             338447
+Rectangle list walk            155297
+wind_calc                      279536
+wind_update pair               158298
+objc_draw dialog               4131.8
+objc_find                      294911
+form_dial redraw 64x48         5768.0
+Menu bar redraw                4829.2
+graf_mkstate                   340044
+graf_mouse off+on               19319
+Event poll (evnt_multi)        127874
+Message round trip              58236
+
+[ Alignment (blitter) ]
+Fill 64x64, aligned            117027
+Fill 64x64, x+3                 45935
+Blit 64x64, aligned             53342
+Blit 64x64, src+3 dst+11        36318
+Mem->scr 64x64, aligned         28387
+Mem->scr 64x64, x+3             27436
+Mono blit, aligned              47034
+Mono blit, x+3                  44171
+Text, x on 8 px                 35963
+Text, x+3                       30414
+Scroll up, aligned edges        220.7
+Scroll up, edges x+5            208.4
+Scroll left 16 px               186.3
+Scroll left 3 px                186.3
+Move window, aligned            635.8  (work x mod 16 = 0)
+Move window, off-grid           620.3  (work x mod 16 = 5)
+Open/close win, aligned         224.4  (work x mod 16 = 0)
+Open/close win, off-grid        219.7  (work x mod 16 = 5)
+Scroll window, aligned          783.9  (work x mod 16 = 0)
+Scroll window, off-grid         733.9  (work x mod 16 = 5)
+
+[ Full-screen windows ]
+Open/close full window          131.7  (work 1896x1018)
+Full <-> normal size            235.4
+Top full / test window          273.3  (work 1896x1018)
+Fill full window                377.3  (work 1896x1018)
+Scroll up 1 line                176.0  (work 1896x1018)
+Scroll left 16 px               174.1  (work 1896x1018)
+Scroll left 8 px                127.6  (work 1896x1018)
+Scroll left 3 px                122.7  (work 1896x1018)
+Scroll text 8pt                 169.0  (system font)
+Scroll text 10pt                173.2  (system font)
+Scroll text 12pt                173.2  (got 10pt, system font)
+Scroll text 14pt                173.2  (got 10pt, system font)
+Scroll text 18pt                171.5  (system font)
+Scroll text 24pt                180.1  (got 20pt, system font)
+Scroll text 36pt                180.1  (got 20pt, system font)
+Scroll text 48pt                180.1  (got 20pt, system font)
+Scroll, size per line           175.0  (system font)
+
+[ GDOS fonts ]
+Text 6pt                        47719  (got 8pt, system font)
+Text 8pt                        47952  (system font)
+Text 10pt                       23183  (system font)
+Text 12pt                       23075  (got 10pt, system font)
+Text 14pt                       22967  (got 10pt, system font)
+Text 18pt                       16220  (system font)
+Text 24pt                      8612.1  (got 20pt, system font)
+Text 36pt                      8454.1  (got 20pt, system font)
+Text 48pt                      8776.1  (got 20pt, system font)
+Text 72pt                      8532.4  (got 20pt, system font)
+Text 10pt bold                  22303  (system font)
+vst_point, 8 sizes             398114
+Font switch + vst_point           n/a  (not supported here)
+Arbitrary size + text             n/a  (not supported here)
+Scroll, mixed sizes             202.9  (system font)
+Text extent at 12pt            396263
+Enumerate font names              n/a  (not supported here)
+Load+unload fonts (x3)            n/a  (not supported here)
+
+Notes: timings use the 200 Hz system timer. Under MultiTOS other
+applications keep running and can lower the scores; close them for
+repeatable results. Fbench holds the screen (wind_update) while each
+test runs. NVDI and other accelerated VDIs may ignore the blitter switch.
