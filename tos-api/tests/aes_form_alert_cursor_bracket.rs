@@ -579,7 +579,7 @@ fn bb_save_does_not_capture_the_cursor() {
 
     reset_cursor(b);
     slate(b);
-    mouse::set_state(CUR_X, CUR_Y, 0, b);
+    mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
     let words = bb_save_words(SAVE_W, SAVE_H);
@@ -640,7 +640,7 @@ fn bb_save_bb_restore_round_trip_leaves_no_ghost() {
     reset_cursor(b);
     slate(b);
     let before = b.snapshot();
-    mouse::set_state(CUR_X, CUR_Y, 0, b);
+    mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
     let words = bb_save_words(SAVE_W, SAVE_H);
@@ -697,7 +697,7 @@ fn form_alert_leaves_no_ghost_arrow_at_the_opening_position() {
     reset_cursor(b);
     slate(b);
     let before = b.snapshot();
-    mouse::set_state(CUR_X, CUR_Y, 0, b);
+    mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
     // Enter fires the DEFAULT button (`modal_loop`); the string ends in NUL for

@@ -193,10 +193,12 @@ impl GicV2 {
 /// IRQ entry point. Acknowledges the IRQ, dispatches to the board's
 /// peripheral handler, then EOIs.
 ///
-/// After a timer tick it runs the INPUT01 input pump
-/// ([`crate::host_env::irq_input_pump`]) — which itself pumps only when the
-/// tick interrupted a program at EL0 — after the EOI, still with IRQs masked
-/// (the exception entry masked them; nothing on the pump path opens them).
+/// After a timer tick it runs the frame tick ([`crate::vbl::irq_tick`],
+/// TASK/V55) and the INPUT01 input pump
+/// ([`crate::host_env::irq_input_pump`]) — each of which does its work only
+/// when the tick interrupted a program at EL0 — after the EOI, still with
+/// IRQs masked (the exception entry masked them; nothing on either path opens
+/// them).
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_irq_handler(frame: &mut crate::arch::aarch64::exceptions::ExceptionFrame) {
     let gic = board_gic();
@@ -221,6 +223,9 @@ pub extern "C" fn rust_irq_handler(frame: &mut crate::arch::aarch64::exceptions:
     gic.end_of_interrupt(intid);
 
     if tick {
+        // The frame tick (TASK/V55): EmuTOS' VBL routine `vb_draw`, once per
+        // frame, only when the tick interrupted a program at EL0.
+        crate::vbl::irq_tick(frame.spsr);
         crate::host_env::irq_input_pump(frame.spsr);
         // The VT52 text cursor's blink (EmuTOS: `blink()` per VBL,
         // `bios/vectors.S:355`); a no-op unless a flashing cursor is shown.

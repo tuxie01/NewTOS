@@ -428,12 +428,14 @@ pub unsafe fn copy_rect(
 // (`read_rect_reference`, `write_rect_reference`).
 //
 // FP context (ADR-036 point 3): `copy_rows` also runs inside the timer
-// interrupt when that interrupted EL0 — INPUT01 moves the pointer from there
-// (`kernel/src/host_env.rs:567@irq_input_pump`), as the pointer's 1x1 fills
-// through kernel 1 already did before TASK/V59. The V registers then hold
-// the interrupted program's live values; the save and restore hand them back
-// the same way, and no other kernel is running underneath (the pump returns
-// unless the interrupt came from EL0, and no trap is in progress there).
+// interrupt when that interrupted EL0 — the frame tick redraws the pointer
+// from there (`crate::vbl::irq_tick`, TASK/V55; before V55 INPUT01's motion
+// drew it in the same place, `crate::host_env::irq_input_pump`), as the
+// pointer's 1x1 fills through kernel 1 already did before TASK/V59. The V
+// registers then hold the interrupted program's live values; the save and
+// restore hand them back the same way, and no other kernel is running
+// underneath (the tick draws only when the interrupt came from EL0, and no
+// trap is in progress there).
 
 /// The row loop of [`copy_rows`]: `row_loop!(fwd, copy)` with a pitch of
 /// its own for each side — `{h}` rows of `{w}` pixels, the source rows

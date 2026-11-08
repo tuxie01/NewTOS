@@ -60,7 +60,7 @@ pub mod mouse;
 /// state (used by the IKBD self-test).
 pub use mouse::{
     buttons as mouse_buttons, feed_relative, hide as cursor_hide, position as mouse_position,
-    show as cursor_show, show_reset as cursor_show_reset,
+    show as cursor_show, show_reset as cursor_show_reset, vb_draw,
 };
 mod primitives;
 mod raster;

@@ -517,6 +517,10 @@ static PUMP: crate::input_gate::PumpLock = crate::input_gate::PumpLock::new();
 /// which by construction never happens: the interrupt pumps only from EL0,
 /// every other site runs in kernel code at EL1.
 fn pump_devices() {
+    // The frame that fell due since the last tick first (TASK/V55): a pointer
+    // that moved is redrawn now, before this pump decodes the next report —
+    // whose own redraw is the next frame's, as on EmuTOS.
+    crate::vbl::pump_tick();
     let Some(_pump) = PUMP.try_enter() else {
         return;
     };

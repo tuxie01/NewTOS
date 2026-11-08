@@ -57,8 +57,9 @@
 //! decoder, and then looks at it ([`pure_motion`]):
 //!
 //! * nothing but relative-mouse packets that keep the current button state —
-//!   pointer motion — is decoded at once: the cursor moves, the AES sees the
-//!   motion (`user_mot`, EmuTOS `mchange`);
+//!   pointer motion — is decoded at once: the cursor moves (its position at
+//!   once, its image in the next frame, `crate::vbl`, TASK/V55), the AES sees
+//!   the motion (`user_mot`, EmuTOS `mchange`);
 //! * anything else — a button change, a wheel detent, a key make or break —
 //!   stays **held**, and the interrupt drains nothing more (the following
 //!   reports wait in the USB controller, as before INPUT01) until the next

@@ -988,7 +988,7 @@ int_illegal	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt
 int_priv	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 int_timerc	bios/vectors.S	tos-api/src/bios/tick.rs	advance	mapped	the 200 Hz counter
 int_unimpint	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
-int_vbl	bios/vectors.S	-	-	unmapped	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+int_vbl	bios/vectors.S	kernel/src/vbl.rs	run_if_due	mapped	the vblqueue[0] = vb_draw part only, once per ~60 Hz frame of the Vsync frame clock, from the timer IRQ over EL0 (irq_tick) and the trap-side input pump (pump_tick) (V55); frclock/vbclock, palette, screenpt, flopvbl, dump and the program-visible vblqueue have no counterpart (ADR-031); the VT52 blink is crate::fbcon::blink_tick per tick
 just_rte	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 keyclick	bios/vectors.S	-	-	design:hardware:ym2149	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 mfp_rs232_rx_interrupt	bios/vectors.S	kernel/src/drivers/gic.rs	rust_irq_handler	mapped	the receive interrupt entry (vectors.S: registers saved, mfp_rs232_rx_interrupt_handler, rte): the PL011 INTID arm of the IRQ entry calls pl011_rx_drain (XBIOS15, TOOL17)
@@ -1294,9 +1294,9 @@ ob_fs	aes/gemoblib.c	tos-api/src/aes/form.rs	ob_fs	mapped	(state, flags) of an o
 GSX_ENTRY	vdi/vdi_asm.S	tos-api/src/vdi/mod.rs	dispatch_in	mapped	VDI front end: parameter block and CONTRL read, the CONTRL[1] cap to MAX_VERTICES (signed; 1024) for every opcode and the unconditional write-back of the caller's count, then screen(); the local PTSIN copy: CONTRL[1] pairs (capped; a negative count fills the buffer) into one static buffer every handler reads (lcl_ptsin_copy, V35); its overrun for a negative count, the overlay with text scratch and contourfill queue, and the handlers' own writes into it are not reproduced (docs/COMPATIBILITY.md, V23/V35)
 call_user_but	vdi/vdi_asm.S	tos-api/src/aes/mod.rs	user_but	mapped	the button vector call: NewTOS calls the AES handler directly; a vex_butv-installed vector is stored and never called (ADR-031)
 call_user_wheel	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	call_user_wheel	mapped	wheel vector call (AES handler directly, EL0 handler as upcall)
-mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	feed_relative	mapped	relative mouse packet: button merge, user_but, clipped position, user_mot, cursor move
+mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	feed_relative	mapped	relative mouse packet: button merge, user_but, and only for a packet with motion the clipped position, user_mot and user_cur = mov_cur (V55)
 mouse_int	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	update_ms_stat	mapped	the cur_ms_stat bookkeeping of mouse_int
-mov_cur	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	set_state	mapped	cursor move and redraw; NewTOS draws inline here, EmuTOS defers the draw to vb_draw on VBL; mouse.rs MOV_CUR is only the vex_curv address token (a one-byte static since V56, token_va)
+mov_cur	vdi/vdi_asm.S	tos-api/src/vdi/mouse.rs	mov_cur	mapped	newx/newy + draw_flag unless hidden (one atomic word DRAW_REQ); the draw is vb_draw's in the next frame (V55); mouse.rs MOV_CUR is only the vex_curv address token (a one-byte static since V56, token_va)
 vditrap	vdi/vdi_asm.S	kernel/src/arch/aarch64/exceptions.rs	sync_handler	mapped	the GEM trap arm: selector 115 = VDI; -1 answers 0 (documented deviation: no jsr-able address); other selectors (-2, vq_gdos) leave x0 untouched
 wheel_int	vdi/vdi_asm.S	-	-	design:hardware:ikbd-acia	decodes the IKBD status packet 05 00.. of a wheel; NewTOS has no IKBD packets (a wheel arrives as HID scancodes in mouse.rs mousex_handler -> call_user_wheel)
 fast_bit_blt	vdi/vdi_blit.S	tos-api/src/vdi/raster.rs	planar_mem_to_mem	mapped	planar BitBlt for plane_ct <= 8 (cpy_raster): per plane and destination WORD, op of the 16-entry table, end masks, overlap direction by start address (vdi_blit.S:942-946); only memory to memory reaches it (the screen is 16 planes, ADR-024); V19; addressed linearly as EmuTOS, fd_w no limit, cut at the fd_h rows (V26)
@@ -1583,12 +1583,12 @@ vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	close_all_virtual	mapped	Mf
 vdi_v_clrwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clrwk	mapped	opcode 3; truecolor fills 0xffff words, else pen 0 through RasterBackend (EmuTOS memset 0xff / 0x00 over v_lin_wr*V_REZ_VT bytes)
 vdi_vq_extnd	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	opcode 102; EdDI vq_scrninfo rides on 102 in eddi.rs
 screen	vdi/vdi_main.c	tos-api/src/vdi/mod.rs	screen	mapped	VDI entry; NewTOS dispatch is one match, not jmptb1/jmptb2; does not mirror CUR_FONT/WRT_MODE/CLIP/CUR_WORK into line-A variables
-dis_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	dis_cur	mapped	hide count 1 -> 0 draws the cursor, otherwise decrements, floor 0
-hide_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	HIDE_CNT++, erase on 0 -> 1; also mouse::hide for kernel callers
+dis_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	dis_cur	mapped	hide count 1 -> 0 draws the cursor (drawn before the count reaches 0) and drops a pending frame redraw (draw_flag = 0, V55), otherwise decrements, floor 0
+hide_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	HIDE_CNT++ first, then erase on 0 -> 1 and drop a pending frame redraw (draw_flag = 0, V55); also mouse::hide for kernel callers
 linea_show_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_show_c	mapped	INTIN[0]==0 resets the hide count to 1, then dis_cur
 linea_hide_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	hide_cur
 linea_transform_mouse	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	set_mouse_form on INTIN
-set_mouse_form	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	hotspot & 0x0f, colours through validate_color_index, mask/data into the cursor definition
+set_mouse_form	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	hotspot & 0x0f, colours through validate_color_index, mask/data into the cursor definition, under the mouse_flag bracket (MouseFlag, V55)
 vdi_vsc_form	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vsc_form	mapped	opcode 111
 vdi_v_show_c	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_show_c	mapped	opcode 122
 vdi_v_hide_c	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	opcode 123
@@ -1602,11 +1602,11 @@ vdi_vex_motv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_motv	mapped	opcode 126
 vdi_vex_curv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_curv	mapped	opcode 127; stored, never called (ADR-031); NewTOS draws the cursor itself
 vdi_vex_wheelv	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vex_wheelv	mapped	opcode 134, CONF_WITH_EXTENDED_MOUSE; ADR-031 lists vex_wheelv as served; NewTOS classifies the new vector (AES / EL0 / none) and delivers EL0 vectors as an upcall
 vdi_mousex_handler	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	mousex_handler	mapped	CONF_WITH_EXTENDED_MOUSE; buttons 3-5 and the four wheel scancodes
-vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vdimouse_init	mapped	every v_opnwk (V53): hide count 1 without restore, centre, vectors, arrow, MOUSE_BT/cur_ms_stat 0, mousexvec, packets on; the request modes in input.rs reset_input_modes; no vblqueue/statvec (no VBL draw path)
+vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vdimouse_init	mapped	every v_opnwk (V53): hide count 1 without restore, centre, vectors, arrow, MOUSE_BT/cur_ms_stat 0, mouse_flag/draw_flag/newx/newy 0 (V55), mousexvec, packets on; the request modes in input.rs reset_input_modes; vblqueue[0] = vb_draw is the kernel's frame tick (kernel/src/vbl.rs), no statvec
 vdimouse_init	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	ensure_init	mapped	the power-up seeding before the first v_opnwk (NewTOS only: EmuTOS has no mouse before it); keeps hide count and buttons
 vdimouse_exit	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vdimouse_exit	mapped	v_clswk (V53): user_but/mot/cur/wheel = just_rts, packets dropped in feed_relative (Initmous(0)); the AES's direct user_but/user_mot calls stop with it; no statvec restore (no wheel_int)
-vb_draw	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	set_state	mapped	EmuTOS defers the redraw to the VBL (newx/newy, draw_flag); NewTOS erases and redraws synchronously on each mouse event
-cur_display	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	draws the 16x16 sprite saving the background; NewTOS per pixel through RasterBackend, EmuTOS per plane into the bit-planes with MCS save area
+vb_draw	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vb_draw	mapped	once per frame (V55): nothing while mouse_flag or HIDE_CNT, else take draw_flag with newx/newy, erase + draw_at; called by kernel/src/vbl.rs run_if_due
+cur_display	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw_at	mapped	draws the 16x16 sprite at (x, y) saving the background (draw = draw_at(GCURX, GCURY)); NewTOS through RasterBackend read_device_rect/draw_sprite, EmuTOS per plane into the bit-planes with MCS save area
 cur_display16	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	CONF_WITH_VDI_16BIT truecolor path; NewTOS has the one RasterBackend path
 cur_display_clip	vdi/vdi_mouse.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar left/right-clipped word update; NewTOS has no bit-planes (ADR-024) and clips per pixel in the backend
 cur_replace	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	erase	mapped	restores the saved background; NewTOS saves 16x16 pel in BACK

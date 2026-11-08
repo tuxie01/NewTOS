@@ -601,7 +601,7 @@ fn run(op: Op, outer_bracket: bool) -> Vec<u32> {
 
     // 2. the cursor onto the row, then visible — this `draw` takes the
     //    save-under copy of the *white* row.
-    mouse::set_state(CUR_X, CUR_Y, 0, b);
+    mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
     // 3. the operation under test, drawing straight through the save-under box.
@@ -620,9 +620,10 @@ fn run(op: Op, outer_bracket: bool) -> Vec<u32> {
     }
 
     // 4. one cursor step: `erase` writes the save-under back, `draw` re-takes it
-    //    two pixels on — `mouse::set_state`, reached from the IKBD decoder
-    //    through `feed_relative`.
+    //    two pixels on — the packet through `feed_relative` (the IKBD
+    //    decoder's entry), drawn in the next frame by `vb_draw` (TASK/V55).
     tos_api::vdi::feed_relative(2, 0, 0, b);
+    tos_api::vdi::vb_draw(b);
 
     // 5. sprite away again, so what is left on the screen is only the damage.
     cursor_hide(b);
@@ -706,7 +707,7 @@ fn the_save_under_box_is_sixteen_wide_and_sixteen_minus_k_tall() {
     objc_draw(&mut pb, &t);
     let unselected = b.snapshot();
 
-    mouse::set_state(CUR_X, CUR_Y, 0, b);
+    mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
     // Invert the row with the very write `just_draw`'s solid fill ends up

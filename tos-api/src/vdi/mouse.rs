@@ -3,10 +3,11 @@
 //!
 //! The cursor **sprite** machinery (form, hide-count, save/restore draw)
 //! is complete here. The cursor **position** and **button** state come
-//! from the input subsystem (the IKBD mouse packets), which is not yet
-//! wired; per the spec this means a *parked* cursor and zero buttons —
-//! a documented limitation, not fabricated motion. When the mouse driver
-//! lands it calls [`set_state`] and the same sprite code animates.
+//! from the input subsystem: the kernel's IKBD decoder hands every relative
+//! mouse packet to [`feed_relative`] (EmuTOS `mouse_int`). A packet with
+//! motion only records where the pointer is to be drawn ([`mov_cur`]); the
+//! drawing itself happens once per frame in [`vb_draw`], which the kernel's
+//! frame tick calls (`kernel/src/vbl.rs`, TASK/V55).
 
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicI16, AtomicU16, AtomicU64, AtomicU8, AtomicUsize, Ordering};
@@ -34,6 +35,24 @@ static MOUSE_BT: AtomicU8 = AtomicU8::new(0);
 static CUR_MS_STAT: AtomicU8 = AtomicU8::new(0);
 /// Cursor hide depth: 0 = shown, ≥1 = hidden. GEM powers up hidden.
 static HIDE_COUNT: AtomicI16 = AtomicI16::new(1);
+
+// ── the frame redraw (EmuTOS `mov_cur` → `vb_draw`, TASK/V55) ──
+//
+// EmuTOS draws a pointer that follows a packet in the next VBL, not in the
+// packet: `mov_cur` (`vdi/vdi_asm.S:496-532`) stores `newx`/`newy` and sets
+// `draw_flag` with interrupts masked; `vb_draw` (`vdi/vdi_mouse.c:668-686`,
+// `vblqueue[0]`, `:602`) takes both atomically and redraws. Here the three
+// live in one word, so the store and the take are single atomic operations
+// without masking: bits 0..15 `newy`, bits 16..31 `newx`, bit 32 `draw_flag`.
+
+/// EmuTOS `draw_flag` (bit 32) with `newx`/`newy` (`vdi/vdi_defs.h:290-292`).
+static DRAW_REQ: AtomicU64 = AtomicU64::new(0);
+/// The `draw_flag` bit of [`DRAW_REQ`].
+const DRAW_PENDING: u64 = 1 << 32;
+/// EmuTOS `mouse_flag` (`vdi/vdi_defs.h:293`): non-zero while the cursor form
+/// is being changed; [`vb_draw`] does nothing then (`vdi/vdi_mouse.c:673`).
+/// Raised by [`MouseFlag`].
+static MOUSE_FLAG: AtomicU8 = AtomicU8::new(0);
 
 // ── the mouse driver's state across `v_opnwk` / `v_clswk` ──
 //
@@ -129,7 +148,12 @@ struct Backing {
     oy: AtomicI16,
     valid: AtomicU8,
 }
-// SAFETY: touched only from the single-CPU, IRQ-off VDI trap path.
+// SAFETY: single CPU. Touched by the VDI trap path (IRQs masked, or open only
+// inside an input pump, where no cursor operation is in progress) and by
+// [`vb_draw`], which the kernel runs only where no cursor operation is in
+// progress either: from the timer interrupt when it interrupted EL0, or at
+// the start of a trap-side input pump (`kernel/src/vbl.rs`). The two never
+// overlap.
 unsafe impl Sync for Backing {}
 static BACK: Backing = Backing {
     px: UnsafeCell::new([0; 256]),
@@ -179,21 +203,70 @@ pub const PRESET_FORMS: [(i16, i16, [u16; 16], [u16; 16]); 8] = [
      [0x0000, 0x03C0, 0x0240, 0x0240, 0x0240, 0x0240, 0x7E7E, 0x4002, 0x4002, 0x7E7E, 0x0240, 0x0240, 0x0240, 0x0240, 0x03C0, 0x0000]),
 ];
 
-/// Update the mouse position + button state from the input subsystem.
-/// Redraws the cursor at the new position if it is currently shown.
-///
-/// The integration point for the IKBD mouse driver (relative-mouse
-/// packets); unused until that driver is wired — see the module note.
-#[allow(dead_code)]
-pub fn set_state(x: i16, y: i16, buttons: u8, backend: &dyn RasterBackend) {
-    if shown() {
-        erase(backend);
+/// EmuTOS `mov_cur` (`vdi/vdi_asm.S:496-532`), the default `user_cur`: the
+/// pointer is to be drawn at `(x, y)`. Nothing while it is hidden
+/// (`tst.w _HIDE_CNT`, `:497-498`) — the next `v_show_c` draws it at
+/// `GCURX`/`GCURY` itself; otherwise store the place and raise `draw_flag`
+/// (`:519-529`). The drawing is [`vb_draw`]'s, in the next frame: several
+/// packets in one frame give one redraw at the last place.
+fn mov_cur(x: i16, y: i16) {
+    if !shown() {
+        return;
     }
-    GCURX.store(x, Ordering::Relaxed);
-    GCURY.store(y, Ordering::Relaxed);
-    MOUSE_BT.store(buttons, Ordering::Relaxed);
-    if shown() {
-        draw(backend);
+    DRAW_REQ.store(DRAW_PENDING | ((x as u16 as u64) << 16) | (y as u16 as u64), Ordering::Relaxed);
+}
+
+/// Drop a pending frame redraw — what `dis_cur` and `hide_cur` do with
+/// `draw_flag = 0` after they drew or removed the pointer themselves
+/// (`vdi/vdi_mouse.c:139`, `:167`).
+fn cancel_redraw() {
+    DRAW_REQ.fetch_and(!DRAW_PENDING, Ordering::Relaxed);
+}
+
+/// EmuTOS `vb_draw` (`vdi/vdi_mouse.c:668-686`), the VDI's routine in
+/// `vblqueue[0]` (`:602`, `:631`): once per frame, redraw a pointer that moved.
+///
+/// Nothing while the form is being changed (`mouse_flag`, [`MOUSE_FLAG`]) or
+/// the pointer is hidden (`HIDE_CNT`) — `:673`. Otherwise, if [`mov_cur`]
+/// raised `draw_flag`, take and clear it together with `newx`/`newy` in one
+/// step (`:676-681`, there with interrupts masked), remove the old image
+/// (`cur_replace`, [`erase`]) and draw the form at `newx`/`newy`
+/// (`cur_display`, [`draw_at`]).
+///
+/// NewTOS has no VBL interrupt; the kernel calls this once per frame of the
+/// frame clock `Vsync` waits on — from the timer interrupt when it
+/// interrupted a program at EL0, and at the start of every trap-side input
+/// pump (`kernel/src/vbl.rs`). Neither interrupts a cursor operation.
+pub fn vb_draw(backend: &dyn RasterBackend) {
+    if MOUSE_FLAG.load(Ordering::Relaxed) != 0 || !shown() {
+        return;
+    }
+    let req = DRAW_REQ.fetch_and(!DRAW_PENDING, Ordering::Relaxed);
+    if req & DRAW_PENDING == 0 {
+        return;
+    }
+    let x = (req >> 16) as u16 as i16;
+    let y = req as u16 as i16;
+    erase(backend);
+    draw_at(x, y, backend);
+}
+
+/// EmuTOS' `mouse_flag += 1` … `-= 1` bracket around a form change
+/// (`set_mouse_form`, `vdi/vdi_mouse.c:458`, `:491`): [`vb_draw`] keeps away
+/// while it is held. Also held by the NewTOS-only [`display_at`], which
+/// replaces a shown pointer without going through the hide count.
+struct MouseFlag;
+
+impl MouseFlag {
+    fn begin() -> MouseFlag {
+        MOUSE_FLAG.fetch_add(1, Ordering::Relaxed);
+        MouseFlag
+    }
+}
+
+impl Drop for MouseFlag {
+    fn drop(&mut self) {
+        MOUSE_FLAG.fetch_sub(1, Ordering::Relaxed);
     }
 }
 
@@ -201,7 +274,9 @@ pub fn set_state(x: i16, y: i16, buttons: u8, backend: &dyn RasterBackend) {
 /// IKBD mouse-packet decoder). `dx`/`dy` are signed pixel deltas;
 /// `buttons` is already in VDI convention (bit 0 = left, bit 1 = right).
 /// Accumulates onto the current cursor position, clamps it to the
-/// screen, and updates the cursor + the `vq_mouse`/AES-event state.
+/// screen, and updates the `vq_mouse`/AES-event state at once; a pointer
+/// that is shown is redrawn at the new place in the next frame ([`mov_cur`],
+/// [`vb_draw`]), as on EmuTOS (TASK/V55, wkprobe M1, M2).
 ///
 /// This is the API-level half of the mouse driver: it owns the cursor
 /// semantics. The hardware packet decode lives in the kernel — see
@@ -220,9 +295,7 @@ pub fn feed_relative(dx: i16, dy: i16, buttons: u8, backend: &dyn RasterBackend)
     // Maintain `cur_ms_stat` for the locator input device (`v_locator` /
     // `gloc_key`), byte-for-byte as EmuTOS `mouse_int` (`vdi_asm.S:240-328`):
     // the raw deltas decide the motion bit, the button transition sets the
-    // change bits. This touches only `cur_ms_stat`; the cursor draw, `MOUSE_BT`
-    // and `GCURX`/`GCURY` (via `set_state` below) are unchanged, so the normal
-    // cursor/desktop path stays byte-identical.
+    // change bits. This touches only `cur_ms_stat`.
     update_ms_stat(dx, dy, buttons);
     // "keep additional mouse button states" (`vdi/vdi_asm.S:270-277`): the
     // packet carries only buttons 1/2, so `mouse_int` merges its two bits into
@@ -237,18 +310,23 @@ pub fn feed_relative(dx: i16, dy: i16, buttons: u8, backend: &dyn RasterBackend)
     // position is touched (`vdi/vdi_asm.S:261-284`). `b_click` itself filters
     // out non-changes, as `mouse_int` does.
     crate::aes::user_but(merged);
-    let max_x = backend.width() as i16 - 1;
-    let max_y = backend.height() as i16 - 1;
-    let (cx, cy) = position();
-    let nx = (cx + dx).clamp(0, max_x);
-    let ny = (cy + dy).clamp(0, max_y);
-    // `user_mot` — the AES's motion vector (`far_mcha` → `mchange`), called
-    // only for a packet that carried movement and with the **clipped** new
-    // position (`vdi/vdi_asm.S:305-362`).
+    // Only a packet that carried movement goes on (`xy_update`, `vdi/vdi_asm.S:
+    // 302-311`): a button change alone neither moves nor redraws the pointer.
     if dx != 0 || dy != 0 {
+        let max_x = backend.width() as i16 - 1;
+        let max_y = backend.height() as i16 - 1;
+        let (cx, cy) = position();
+        let nx = (cx + dx).clamp(0, max_x);
+        let ny = (cy + dy).clamp(0, max_y);
+        // `user_mot` — the AES's motion vector (`far_mcha` → `mchange`),
+        // called with the **clipped** new position (`vdi/vdi_asm.S:322-362`).
         crate::aes::user_mot(nx, ny);
+        GCURX.store(nx, Ordering::Relaxed);
+        GCURY.store(ny, Ordering::Relaxed);
+        // `user_cur` = `mov_cur` (`:365-368`): the redraw is the next frame's.
+        mov_cur(nx, ny);
     }
-    set_state(nx, ny, merged, backend);
+    MOUSE_BT.store(merged, Ordering::Relaxed);
 }
 
 /// Update [`CUR_MS_STAT`] from one relative-mouse event, reproducing EmuTOS
@@ -432,9 +510,10 @@ pub(crate) fn timer_init() {
 ///   [`feed_relative`] again ([`MOUSE_ON`]).
 ///
 /// The four request modes (`:575-578`) are reset by the `v_opnwk` handler
-/// itself (`input::reset_input_modes`). `mouse_flag`, `draw_flag`,
-/// `newx`/`newy` and `vblqueue[0] = vb_draw` belong to EmuTOS' VBL draw path,
-/// which NewTOS does not have (the pointer is drawn in the packet). Neither
+/// itself (`input::reset_input_modes`). `mouse_flag = draw_flag = 0`,
+/// `newx = newy = 0` (`:597-600`): no frame redraw is pending ([`DRAW_REQ`],
+/// [`MOUSE_FLAG`]); `vblqueue[0] = vb_draw` (`:602`) is the kernel's frame
+/// tick, which always calls [`vb_draw`] (`kernel/src/vbl.rs`). Neither
 /// the AES's tracked forms (`gl_prevmouse`, `p_mouse`: [`PREV_FORM`],
 /// [`SAVED_FORM`]) nor the save-under buffer are touched, as in EmuTOS.
 pub(crate) fn vdimouse_init(backend: &dyn RasterBackend) {
@@ -457,6 +536,8 @@ pub(crate) fn vdimouse_init(backend: &dyn RasterBackend) {
     }
     MOUSE_BT.store(0, Ordering::Relaxed);
     CUR_MS_STAT.store(0, Ordering::Relaxed);
+    MOUSE_FLAG.store(0, Ordering::Relaxed);
+    DRAW_REQ.store(0, Ordering::Relaxed);
     WHEEL_INIT_DONE.store(1, Ordering::Relaxed);
     crate::bios::vectors::set_mousexvec(mousex_handler);
     MOUSE_STATE.store(MOUSE_ON, Ordering::Relaxed);
@@ -499,9 +580,10 @@ fn aes_mouse_vectors_live() -> bool {
 static JUST_RTS: AtomicU8 = AtomicU8::new(0);
 
 /// EmuTOS `mov_cur` (`vdi_asm.S:496`): the default cursor-draw vector. EmuTOS'
-/// `mouse_int` calls it to redraw the sprite after a move; NewTOS redraws the
-/// cursor inline in [`feed_relative`], so this is a pure address sentinel for
-/// the `vex_curv` save/restore contract — never invoked ([`token_va`]).
+/// `mouse_int` calls it through `user_cur` after a move; NewTOS calls
+/// [`mov_cur`] directly from [`feed_relative`], so this is a pure address
+/// sentinel for the `vex_curv` save/restore contract — never invoked
+/// ([`token_va`]).
 static MOV_CUR: AtomicU8 = AtomicU8::new(0);
 
 // ── extended mouse: buttons 3-5 and the wheel ──────────────────────────────
@@ -766,7 +848,14 @@ fn install_form(form: &MForm, backend: &dyn RasterBackend) {
     // EmuTOS `gsx_mfset`: gl_prevmouse = gl_mouse before installing the new form.
     // SAFETY: single trap path.
     unsafe { *PREV_FORM.form.get() = current_form() };
+    // `gsx_moff` + `vsc_form` + `gsx_mon` (`aes/gemgsxif.c:407-420`): the
+    // form change under `mouse_flag`, and a shown pointer is taken off and put
+    // back at once, which drops a pending frame redraw (`hide_cur`/`dis_cur`).
+    let _flag = MouseFlag::begin();
     let was_shown = shown();
+    if was_shown {
+        cancel_redraw();
+    }
     if was_shown {
         erase(backend);
     }
@@ -824,8 +913,14 @@ pub fn previous_form(backend: &dyn RasterBackend) {
 /// Order (save → draw) is unchanged; since TASK/V59 each is one backend call
 /// per cell instead of one per pixel.
 fn draw(backend: &dyn RasterBackend) {
-    let ox = GCURX.load(Ordering::Relaxed) - HOT_X.load(Ordering::Relaxed);
-    let oy = GCURY.load(Ordering::Relaxed) - HOT_Y.load(Ordering::Relaxed);
+    draw_at(GCURX.load(Ordering::Relaxed), GCURY.load(Ordering::Relaxed), backend);
+}
+
+/// [`draw`] with the hotspot at `(x, y)` instead of `GCURX`/`GCURY` — EmuTOS
+/// `cur_display(…, x, y)`, which [`vb_draw`] calls with `newx`/`newy`.
+fn draw_at(x: i16, y: i16, backend: &dyn RasterBackend) {
+    let ox = x - HOT_X.load(Ordering::Relaxed);
+    let oy = y - HOT_Y.load(Ordering::Relaxed);
     let fg = FG_COL.load(Ordering::Relaxed);
     let bg = BG_COL.load(Ordering::Relaxed);
     let mask: [u16; 16] = core::array::from_fn(|i| MASK[i].load(Ordering::Relaxed));
@@ -872,12 +967,15 @@ fn erase(backend: &dyn RasterBackend) {
 /// (`vdi/vdi_mouse.c:450-492`) copies the form between `mouse_flag += 1` and
 /// `-= 1` and calls neither `cur_replace` nor `cur_display`, so a shown
 /// pointer keeps its old image (shape and hotspot) and its save-under
-/// ([`BACK`], with the place it was taken at) until the next redraw — a
-/// packet ([`set_state`]/[`feed_relative`]) or `v_hide_c` + `v_show_c`
-/// (wkprobe F1, F2). The AES's own installs ([`install_form`], EmuTOS
-/// `gsx_mfset`) bracket theirs with a hide/show and redraw at once.
+/// ([`BACK`], with the place it was taken at) until the next redraw — the
+/// frame after a packet ([`vb_draw`]) or `v_hide_c` + `v_show_c`
+/// (wkprobe F1, F2). The store is bracketed like `mouse_flag`
+/// ([`MouseFlag`]), so a frame redraw never sees half a form. The AES's own
+/// installs ([`install_form`], EmuTOS `gsx_mfset`) bracket theirs with a
+/// hide/show and redraw at once.
 pub fn vsc_form(pb: &Vdipb, backend: &dyn RasterBackend) {
     ensure_init(backend);
+    let _flag = MouseFlag::begin();
     // Hotspot constrained to 0..15 by masking (EmuTOS `set_mouse_form`
     // `& 0x0f`): values above 15 wrap, they never overflow the 16×16 sprite.
     HOT_X.store(pb.intin(0) & 0x0f, Ordering::Relaxed);
@@ -896,14 +994,18 @@ pub fn vsc_form(pb: &Vdipb, backend: &dyn RasterBackend) {
 
 /// EmuTOS `dis_cur`: the counted-show core. Decrement the hide depth,
 /// underflow-clamped to 0, and physically draw the cursor on the 1 → 0
-/// transition (`vdi_mouse.c:127-141`).
+/// transition (`vdi_mouse.c:127-141`) — drawn while the count still says
+/// hidden, then `draw_flag = 0` (`:139`, a pending frame redraw is dropped:
+/// the pointer now stands at `GCURX`/`GCURY`), then the count goes to 0.
 fn dis_cur(backend: &dyn RasterBackend) {
     let prev = HIDE_COUNT.load(Ordering::Relaxed);
-    let new = (prev - 1).max(0);
-    HIDE_COUNT.store(new, Ordering::Relaxed);
-    if prev > 0 && new == 0 {
-        draw(backend);
+    if prev != 1 {
+        HIDE_COUNT.store((prev - 1).max(0), Ordering::Relaxed);
+        return;
     }
+    draw(backend);
+    cancel_redraw();
+    HIDE_COUNT.store(0, Ordering::Relaxed);
 }
 
 /// Opcode 122 — `v_show_c`: counted show. `INTIN[0] == 0` is a **force-show**
@@ -932,14 +1034,12 @@ pub fn force_show(backend: &dyn RasterBackend) {
     dis_cur(backend);
 }
 
-/// Opcode 123 — `v_hide_c`: erase the cursor (if shown) and increment the
-/// hide depth.
+/// Opcode 123 — `v_hide_c`: increment the hide depth and erase the cursor if
+/// it was shown — EmuTOS `hide_cur` (`vdi_mouse.c:157-169`), in its order:
+/// the count first, so the frame redraw keeps away while the pointer comes
+/// off, then `cur_replace` and `draw_flag = 0` (`:167`).
 pub fn v_hide_c(backend: &dyn RasterBackend) {
-    if shown() {
-        erase(backend);
-    }
-    let c = HIDE_COUNT.load(Ordering::Relaxed);
-    HIDE_COUNT.store(c + 1, Ordering::Relaxed);
+    hide(backend);
 }
 
 // ── Direct (non-trap) cursor control for kernel code ──
@@ -950,12 +1050,13 @@ pub fn v_hide_c(backend: &dyn RasterBackend) {
 // which bracketed each repaint with `hide` + `show` — use the same machinery
 // as `v_hide_c`/`v_show_c`, without a `Vdipb`.
 
-/// Erase the cursor and increment the hide depth (kernel `v_hide_c`).
+/// Erase the cursor and increment the hide depth (kernel `v_hide_c`): EmuTOS
+/// `hide_cur`, see [`v_hide_c`].
 pub fn hide(backend: &dyn RasterBackend) {
-    if shown() {
+    if HIDE_COUNT.fetch_add(1, Ordering::Relaxed) + 1 == 1 {
         erase(backend);
+        cancel_redraw();
     }
-    HIDE_COUNT.fetch_add(1, Ordering::Relaxed);
 }
 
 /// Decrement the hide depth; draw the cursor when it becomes shown (kernel
@@ -968,15 +1069,20 @@ pub fn show(backend: &dyn RasterBackend) {
 /// Force the cursor visible (hide depth 0) and draw it — the initial unhide.
 pub fn show_reset(backend: &dyn RasterBackend) {
     ensure_init(backend);
-    let prev = HIDE_COUNT.swap(0, Ordering::Relaxed);
-    if prev > 0 {
+    // Drawn before the count reaches 0, as `dis_cur` does.
+    if HIDE_COUNT.load(Ordering::Relaxed) > 0 {
         draw(backend);
+        cancel_redraw();
     }
+    HIDE_COUNT.store(0, Ordering::Relaxed);
 }
 
 /// Show the graphics cursor at `(x, y)` (VDI `v_dspcur` escape).
 pub fn display_at(x: i16, y: i16, backend: &dyn RasterBackend) {
     ensure_init(backend);
+    // The frame redraw keeps away while the pointer is replaced; it stands at
+    // `(x, y)` afterwards, so a pending redraw is dropped (`dis_cur`).
+    let _flag = MouseFlag::begin();
     if shown() {
         erase(backend);
     }
@@ -984,14 +1090,18 @@ pub fn display_at(x: i16, y: i16, backend: &dyn RasterBackend) {
     GCURY.store(y, Ordering::Relaxed);
     HIDE_COUNT.store(0, Ordering::Relaxed);
     draw(backend);
+    cancel_redraw();
 }
 
 /// Remove the graphics cursor (VDI `v_rmcur` escape).
 pub fn remove(backend: &dyn RasterBackend) {
-    if shown() {
-        erase(backend);
-    }
+    // The count first, as `hide_cur` does; a pending redraw is dropped.
+    let was_shown = shown();
     HIDE_COUNT.store(1, Ordering::Relaxed);
+    if was_shown {
+        erase(backend);
+        cancel_redraw();
+    }
 }
 
 /// Opcode 124 — `vq_mouse`: report the button bitmask + cursor position.

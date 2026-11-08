@@ -71,7 +71,7 @@ Abweichungs-Kandidaten aus dem Lesen (nicht gemessen; EmuTOS-Zeilen in `aes/`):
 15. `gemobed.c:236-240,272-274` gegen `edit_char`: leeres `te_pvalid` nimmt jedes Zeichen.
 16. `gemgsxif.c:98-105` gegen `tos-api/src/aes/gsxif.rs:358@gsx_mcalc`: Puffergroesse ganzer
     Schirm statt `MENU_BUFFER_SIZE`-Formel (sichtbar ueber `wind_get(WF_SCREEN)`).
-17. `gemgsxif.c:440-446` gegen `tos-api/src/vdi/mouse.rs:966@hide`: AES verbirgt die Maus bei
+17. `gemgsxif.c:440-446` gegen `tos-api/src/vdi/mouse.rs:1055@hide`: AES verbirgt die Maus bei
     jedem Aufruf statt nur beim ersten (`gl_moff`).
 18. `gemgraf.c:413-416` gegen `graf.rs`: `gl_wbox` fest 19 statt Formel.
 19. `gemgsxif.c:238-252` gegen `tos-api/src/aes/gsxif.rs:252@gsx_graphic`: Mausvektoren werden nicht

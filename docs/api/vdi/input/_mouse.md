@@ -27,8 +27,9 @@
 > `draw_flag`, `vdi/vdi_asm.S:496-534`; `vb_draw` redraws, `vdi/vdi_mouse.c:668-686`,
 > installed `vblqueue[0] = vb_draw` at `:602`). A program that reads the screen between
 > packet and VBL sees the pointer at the old place while `vq_mouse` already reports the
-> new one; NewTOS draws in the packet (measured, wkprobe M1/M2, VDI-WK-004; decision open,
-> [V55](../../../../TASK/V55.md)).
+> new one (measured, wkprobe M1/M2, VDI-WK-004). User decision 2026-11-08
+> ([V55](../../../../TASK/V55.md)): this is contract, NewTOS draws in the next frame too
+> (NewTOS implementation notes, "Pointer drawing is deferred to the frame").
 
 | Op | Fn | Input | Output | Effect |
 |----|----|-------|--------|--------|
@@ -405,22 +406,35 @@ by `tick_int`, which also chains the old system timer vector
   `vex_butv`/`motv`/`curv`/`timv` vector other than the VDI's default writes
   one `[hook] warning` per vector and process; the installing process owns the
   vector, and its `Pterm` puts the previous one back while the slot still
-  holds its vector (`tos-api/src/vdi/mouse.rs:1028@exchange_hook`). The
+  holds its vector (`tos-api/src/vdi/mouse.rs:1140@exchange_hook`). The
   values stored and returned are unchanged.
-- **Pointer drawing is deferred to the VBL on EmuTOS (VDI-WK-004, SPEC04).** The
-  packet path `mouse_int` → `user_cur` = `mov_cur` stores the position and sets
-  `draw_flag` only when the pointer is not hidden (`vdi/vdi_asm.S:496-534`); several
-  packets in one frame give one redraw at the last position. `vb_draw` (`vdi/vdi_mouse.c:668-686`)
-  returns at once while `mouse_flag` (a `vsc_form` in progress) or `HIDE_CNT` is set,
-  otherwise it takes the position atomically, `cur_replace`s the old image and
-  `cur_display`s the new one. `dis_cur` and `hide_cur` draw/erase **at once** and clear
-  `draw_flag` (`:127-171`), `set_mouse_form` only stores (`:450-492`). Measured effect
-  (≤ 1 frame, end state equal): right after a packet `vq_mouse` is new and the screen
-  old on EmuTOS, both new on NewTOS; `v_show_c`/`v_hide_c` are synchronous on both
+- **Pointer drawing is deferred to the VBL on EmuTOS (VDI-WK-004, SPEC04) — contract since
+  V55.** `mouse_int` calls `user_cur` = `mov_cur` only for a packet that carried motion
+  (`vdi/vdi_asm.S:302-322` `xy_update`/`new_coord`, call at `:367-368`), after storing the
+  clipped `GCURX`/`GCURY`. `mov_cur` (`:496-532`) does nothing while `HIDE_CNT != 0`;
+  otherwise, with interrupts masked, it stores `newx`/`newy` and sets `draw_flag` — several
+  packets in one frame give one redraw at the last position. `vb_draw`
+  (`vdi/vdi_mouse.c:668-686`, `vblqueue[0]`, `:602`, `:631`) returns at once while
+  `mouse_flag` (a `set_mouse_form` in progress, `:458`, `:491`) or `HIDE_CNT` is set,
+  otherwise takes and clears `draw_flag` with `newx`/`newy` atomically, `cur_replace`s the
+  old image and `cur_display`s the form at `newx`/`newy`. `dis_cur` and `hide_cur` draw /
+  erase **at once** and clear `draw_flag` (`:139`, `:167`); `vdimouse_init` clears
+  `mouse_flag`, `draw_flag`, `newx`, `newy` (`:597-600`). A packet without motion (a button
+  change only) redraws nothing. Measured effect (≤ 1 frame, end state equal): right after a
+  packet `vq_mouse` is new and the screen old; `v_show_c`/`v_hide_c` are synchronous
   (`docs/audits/2026-11-07-v18-t3-vdi-workstation.md`, VDI-WK-004, probe M1-M3/D1/P1;
-  `measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`). Which side is the contract
-  is the open user decision [V55](../../../../TASK/V55.md); until then the VBL path is
-  **observable**, not a free internal.
+  `measurements/measurement-2026-11-07-v18-t3/RUNINFO.TXT`).
+  **NewTOS (V55):** `tos-api/src/vdi/mouse.rs` `mov_cur` (called by `feed_relative` for a
+  packet with motion) and `vb_draw` reproduce the pair; the hide/show/form paths clear the
+  pending redraw as `dis_cur`/`hide_cur` do, and `vsc_form` brackets its store with the
+  `mouse_flag` counterpart. NewTOS has no VBL interrupt: the frame is the ~60 Hz frame
+  clock `Vsync` waits on, and `kernel/src/vbl.rs` runs `vb_draw` once per frame — from
+  the 200 Hz timer interrupt when it interrupted a program at EL0, and at the start of
+  every trap-side input pump (the AES wait loops, the blocking console reads,
+  `Bconstat`). It never runs inside other kernel code: traps run with IRQs masked, and a
+  timer interrupt taken at EL1 skips it. So the pointer moves at most one frame (plus at
+  most one 5 ms tick) after the packet, and not during a long trap — as before, see
+  `kernel/src/input_gate.rs`. There is no program-visible `vblqueue` (ADR-031).
 - **Workstation open and close (V53).** Every `v_opnwk` runs `timer_init` +
   `vdimouse_init` (`vdi/vdi_control.c:562-563`): hide count 1 without
   restoring a visible pointer, the centre, buttons 0, `cur_ms_stat` 0, the

@@ -632,8 +632,9 @@ pub unsafe fn mono(
 /// array (bit 15 leftmost, host order); every row reads that one word.
 ///
 /// Unlike the text and blit paths, this one also runs inside the timer
-/// interrupt when that interrupted EL0 (INPUT01's pointer motion; the FP
-/// context note before `crate::raster_copy::copy_rows`): the kernel's save
+/// interrupt when that interrupted EL0 (the frame tick's pointer redraw,
+/// `crate::vbl`, TASK/V55; the FP context note before
+/// `crate::raster_copy::copy_rows`): the kernel's save
 /// and restore of every V register it uses covers that case unchanged.
 ///
 /// # Safety

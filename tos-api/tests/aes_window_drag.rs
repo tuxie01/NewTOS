@@ -395,6 +395,10 @@ impl Host for ScriptHost {
         self.clock.load(Ordering::Relaxed)
     }
     fn pump_input(&self) {
+        // The kernel's trap-side pump starts with the frame tick
+        // (`kernel/src/vbl.rs`, TASK/V55): a pointer moved by the previous
+        // packet is drawn now. Here every pump stands for a new frame.
+        tos_api::vdi::vb_draw(&self.raster);
         if self.filming.load(Ordering::Relaxed) {
             let s = self.raster.snapshot();
             let (mx, my) = tos_api::vdi::mouse_position();
@@ -533,6 +537,9 @@ fn move_to(host: &'static ScriptHost, pb: &mut Aespb, tx: i16, ty: i16, buttons:
         host.push(Packet { dx, dy, buttons });
         pb.call(79, 0, 5, 0); // graf_mkstate — ends in dsptch() → pump_input()
     }
+    // The frame after the last packet draws the pointer where it now is
+    // (`vb_draw`, TASK/V55).
+    tos_api::vdi::vb_draw(&host.raster);
 }
 
 /// A GEM `OBJECT` at the kernel/LP64 record width (`tos-api/src/aes/object.rs:31`).

@@ -1343,3 +1343,7 @@ pub mod raster_copy;
 /// Lines without a per-pixel detour (spans on kernel 1, stride columns,
 /// index-stepped Bresenham) for the VDI screen backend (TASK/V58, ADR-036).
 pub mod raster_line;
+
+/// The frame tick: EmuTOS' VBL pointer redraw `vb_draw`, once per frame of
+/// the `Vsync` frame clock (TASK/V55).
+pub mod vbl;

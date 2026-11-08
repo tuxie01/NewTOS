@@ -255,9 +255,10 @@ fn f2_vsc_form_hotspot_while_shown_keeps_the_old_place() {
     assert_eq!(differing(&grab(280, 240, 64, 64), &ground), 0, "and leaves no remnant");
 }
 
-/// The next redraw after a stored form is the pointer's move: the old image
-/// comes off (its save-under is still the one taken when it was drawn), the
-/// new form goes on at the new place. Afterwards nothing of either remains.
+/// The next redraw after a stored form is the pointer's move — in the frame
+/// after the packet (`vb_draw`, TASK/V55): the old image comes off (its
+/// save-under is still the one taken when it was drawn), the new form goes on
+/// at the new place. Afterwards nothing of either remains.
 #[test]
 fn packet_after_vsc_form_redraws_in_the_new_form_without_remnant() {
     let _guard = harness::VDI_LOCK.lock().unwrap_or_else(|e| e.into_inner());
@@ -272,6 +273,7 @@ fn packet_after_vsc_form_redraws_in_the_new_form_without_remnant() {
 
     tos_api::vdi::feed_relative(20, 10, 0, backend());
     assert_eq!(tos_api::vdi::mouse_position(), (420, 270));
+    tos_api::vdi::vb_draw(backend());
     assert!(form_at(420, 270, 4, 4, &bm, &bd, 2, 3), "the block at the new place");
     let (am, ad) = (PRESET_FORMS[0].2, PRESET_FORMS[0].3);
     assert!(!form_at(400, 260, 0, 0, &am, &ad, 0, 1), "the arrow is gone from the old place");

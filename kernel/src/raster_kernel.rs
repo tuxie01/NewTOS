@@ -33,9 +33,9 @@
 //!   no wait inside the `asm!` block; the only exception that can arrive
 //!   inside one is an IRQ, and an IRQ taken at EL1 never switches a context
 //!   (`rust_irq_handler`, `kernel/src/drivers/gic.rs:201@rust_irq_handler`:
-//!   timer, PL011 drain, `irq_input_pump`, which returns at once unless the
-//!   IRQ came from EL0, and the cursor blink, which draws through the scalar
-//!   row methods). `save_fp_context` / `restore_fp_context` run only on the
+//!   timer, PL011 drain, the frame tick `crate::vbl::irq_tick` and
+//!   `irq_input_pump`, both of which return at once unless the IRQ came from
+//!   EL0, and the cursor blink, which draws through the scalar row methods). `save_fp_context` / `restore_fp_context` run only on the
 //!   synchronous `svc` paths after a dispatch has returned, and only the boot
 //!   core runs.
 //! - The assembler's FP/SIMD feature is switched on for the block only and
