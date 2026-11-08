@@ -305,15 +305,18 @@ pub unsafe fn fill_pattern(surface: Surface, area: Area, fill: &Fill<'_>) {
     // SAFETY: the caller guarantees the area lies in the store (function
     // contract), so `base + y * stride + x` is in bounds.
     let dst = unsafe { surface.base.add(area.y * surface.stride_px + area.x) };
-    let stride = surface.stride_px * 4;
-    let w = area.w;
-    let h = area.h;
-    let pat = fill.pattern.as_ptr();
-    let pmask = fill.pattern.len() - 1;
-    let prow = area.y;
-    let shift = 16 - (area.x & 15) as u32;
-    let fg = fill.fg;
-    let bg = fill.bg;
+    let rows = Rows { stride: surface.stride_px * 4, w: area.w, h: area.h, pat: fill.pattern.as_ptr(),
+        pmask: fill.pattern.len() - 1, prow: area.y, phase: area.x & 15 };
+    // SAFETY: the rows are the area (function contract), `& pmask` < `len`.
+    unsafe { fill_rows(dst, &rows, fill.mode, fill.fg, fill.bg) };
+}
+
+/// Kernel 1 proper over `rows` from `dst` ([`fill_pattern`], [`fill_span`]).
+/// `# Safety`: as [`fill_pattern`], for the pixels and pattern words of `rows`.
+#[inline(always)]
+unsafe fn fill_rows(dst: *mut u32, rows: &Rows, mode: WriteMode, fg: u32, bg: u32) {
+    let (stride, w, h, pat, pmask, prow) = (rows.stride, rows.w, rows.h, rows.pat, rows.pmask, rows.prow);
+    let shift = 16 - rows.phase as u32;
     // Written by the asm before it is read; never read by Rust.
     let mut save = core::mem::MaybeUninit::<VSave>::uninit();
     let save = save.as_mut_ptr().cast::<u64>();
@@ -325,7 +328,7 @@ pub unsafe fn fill_pattern(surface: Surface, area: Area, fill: &Fill<'_>) {
     // register it uses before its first use and restores it before it ends
     // (module docs), and keeps FPCR/FPSR (integer/bitwise SIMD only).
     unsafe {
-        match fill.mode {
+        match mode {
             WriteMode::Replace => core::arch::asm!(
                 // V registers: `v0..v3` pixels, `v4..v7` lane bits, `v8` fg,
                 // `v9` bg, `v10` row word — saved and restored.
@@ -467,4 +470,39 @@ pub unsafe fn fill_pattern_reference(surface: Surface, area: Area, fill: &Fill<'
             }
         }
     }
+}
+
+/// Fill the `n` pixels `dst[0..n]` with the 16-bit dash `word` in `mode` —
+/// one span of a horizontal line (TASK/V58, `crate::raster_line`): pixel `i`
+/// takes bit `0x8000 >> ((phase + i) & 15)` of `word` and combines as in
+/// [`fill_pattern`] (module docs table). Kernel 1 on one row whose pattern
+/// is `word`, started at `phase` instead of `x & 15`. `n == 0` draws
+/// nothing.
+///
+/// # Safety
+///
+/// `dst[0..n]` must be valid for reads and writes of `u32`s and not be
+/// accessed by anything else during the call.
+pub unsafe fn fill_span(dst: *mut u32, n: usize, phase: u32, word: u16, mode: WriteMode, fg: u32, bg: u32) {
+    if n == 0 {
+        return;
+    }
+    let pat = [word];
+    let rows = Rows { stride: 0, w: n, h: 1, pat: pat.as_ptr(), pmask: 0, prow: 0, phase: phase as usize & 15 };
+    // SAFETY: one row of `n` pixels from `dst` (function contract); with
+    // `pmask` 0 the kernel reads only `pat[0]`, alive for the call.
+    unsafe { fill_rows(dst, &rows, mode, fg, bg) };
+}
+
+/// The geometry of one kernel-1 call: `h >= 1` rows of `w >= 1` pixels,
+/// `stride` bytes apart; row `i` takes pattern word `pat[(prow + i) & pmask]`,
+/// its first pixel bit `0x8000 >> phase` (`phase < 16`).
+struct Rows {
+    stride: usize,
+    w: usize,
+    h: usize,
+    pat: *const u16,
+    pmask: usize,
+    prow: usize,
+    phase: usize,
 }

@@ -1,0 +1,79 @@
+V58 tester run (TASK/V58.md "Abnahme (Tester, 2026-11-08)"): independent acceptance of the V58 line path in QEMU and against the
+base. Base 6821179c (main with V49-V51) against change 1c1c71a3 (tip ea4a8996 adds only the run dir and the ticket text).
+No product code changed, no card, no Pi, no push. Written by the tester; every number below comes from a command run in this run.
+Worktree .claude/worktrees/agent-a88c9f69bef56fa4d, branch v58. Both kernels built/booted from `git archive` trees of the two
+commits in the session scratchpad (references/ linked); one QEMU at a time, each stopped
+only by the PID its starter recorded (method/*.sh, cargo xtask tosdump, tosdump/probes/run-*.sh).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest, 35 manifests)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (35 of 35)
+QEMU 11.0.2: raspi4b (-append serial=on, APFS clone of a fresh tools/mkcard.sh card) and virt (headless).
+Helpers method/{boot-virt,pi-boot,boot-console,desk-inj}.sh, timed-shots.py, aes-diff.sh, desk-*.txt are copies of the developer run's
+measurements/measurement-2026-11-08-v58/method/ files with the run-dir path changed (pi-boot.sh not run); accept.sh was NOT reused:
+method/tests.sh and method/builds.sh are this run's own, method/mutants.py and method/lnprobe/ are new.
+
+RESULTS
+ 1 PASS  Code read. abline_runs (tos-api/src/vdi/line.rs) against abline: same clip_segment, same left-endpoint order, same XOR rule
+         (`bx -= 1` on !last, only after the vertical branch, which never gets it), horizontal = index range y*stride+ax..=y*stride+bx cut once
+         to the store with phase (ax + cut) & 15, vertical = first + k*(+-stride), k range by two divisions, phase klo & 15, mask returned
+         rotl(count % 16), diagonal = draw_line16's WORD terms; fast path (both ends on screen, width<=stride<=16384) has no wrap, slow path
+         carries col/row and checks the row only. Unit tests (4) walk every direction -70..70 x edge lengths, padded stride, Replace/Xor,
+         last true/false, 3 masks, clip off/on; phases 0..33; clip off with wild endpoints up to +-32767 on five tiny stores (run-on,
+         cuts, wrapped deltas) and random clips; empty store. The kernel asm: `diff` of raster_kernel.rs base/change shows only the
+         fill_pattern header and the new Rows/fill_rows/fill_span; 0 changed lines containing asm!/instruction strings/operand bindings
+         (git diff hunks inspected). fill_span: Rows{stride 0,w n,h 1,pat [word],pmask 0,prow 0,phase&15}, shift = 16 - phase, as
+         fill_pattern for x&15 = phase.
+ 2 PASS  Host tests. `cargo xtask test` in the worktree (HEAD ea4a8996): 204 result lines, 2350 passed / 0 failed / 6 ignored
+         (claim 2350/0/6). Delta against the base measured with `cargo test -p tos-api -p tos-types` in both archive trees: base 2095/0/6,
+         change 2106/0/6 = +11 (4 unit + 6 raster_kernel_line + 1 fill_span); the xtask share 244 is the same on both (2339 + 11 = 2350).
+         (`cargo xtask test` in an archive tree fails 11 xtask doc_check/rsc tests: no .git and gitignored inputs there -- environment,
+         not the change.)
+         The three target files run: raster_kernel_line 6 ok, raster_kernel_fill 8 ok, lib vdi::line ok.
+ 3 PASS  Mutants (method/mutants.py, analysis/mutants.txt): 11 own mutants, one textual edit each in a scratch archive tree, file restored
+         and mtime touched after each (first attempt left a stale build because the restored file had an older mtime than the artifact
+         -- it showed "restored 101 101"; fixed, rerun: baseline 0/0, restored 0/0). All 11 RED: span phase +1, vertical stride sign,
+         last=false end pixel kept (runs), run-on column not wrapped (2 tests red), span box one short, fill_span phase +1,
+         column dash phase +1, vertical cut phase +1, diagonal fast-path box y, column step sign lost on upward walk (SIGBUS at the
+         guard page), Xor keeps the stored pixel.
+ 4 PASS  Builds, fresh target per build, both boards, archive trees (method/builds.sh, analysis/builds-rc.txt, warnings.txt):
+         all 12 builds/clippy runs rc 0. rustc warnings tos-api 64 / kernel 93, clippy tos-api 73 / kernel 121, on base AND change,
+         both boards: delta 0. rpi4 --release kernel8.img sha256 (analysis/kernels.sha256): base a17613af...fa080 and change
+         2d7ceb72...920bbf = the sha256 in the developer's RUNINFO, rebuilt byte-equal from the archive of 1c1c71a3.
+         pi-kernels/ in the developer run: all four files hash as quoted (base-prof f8e8869a..., chg-prof 4377e910...; the two prof kernels
+         were not rebuilt).
+ 5 PASS  Boots: qemu-virt headless, each tree's own release ELF (runs/boot-virt-*): base and change "[desk] desktop up (0 drives)",
+         exception/panic lines 0/0. raspi4b serial=on: every run below boots the kernel to the desktop/probe, every BOOT-SERIAL.txt
+         0 exception/panic lines.
+ 6 PASS  Tables (cargo xtask tosdump --tree <archive>, runs/tab-*, analysis/tables-bin-compare.txt, aes-diff.txt):
+         vdi-all, vdi-v18, vdi-v18-t2, vdi-v18-t3 VDI.BIN base == change byte-identical (e91b865b..., af6163c9..., a26589ee...,
+         52c406c4...); against the oracle on both sides 0/182, 0/19, 0/32, 1/2 (v18t3: 1 of 2 differs on base and change alike).
+         AES r2/r3/r4: tosdiff base vs change 0 of 78 / 0 of 39 / 0 of 181 cases differ; raw AES.BIN differs in exactly one byte per
+         record (78/39/181 records), always offset 68 of the 120-byte record, octal 132 -> 152 (0x5a -> 0x6a): the address cell +0x1000
+         = the 4096 bytes the kernel image grew (as developer and TASK/V50).
+ 7 PASS  vdprobe (tosdump/probes/run-vdprobe.sh newtos, probe/n-*): base, change, change again: VDPROBE.BIN sha256 identical on all three
+         (0a13c757...; the 28 MB files deleted after, hashes in analysis/vdprobe-bin.sha256), VDPROBE.LOG diff exit 0, vdprobe-compare 986
+         cases, differing 0 (base/change and change/change2). 119 log lines of K1-K5, L40*, L41* among them.
+ 8 PASS  Random lines (method/lnprobe/lnprobe.c, new probe, not a vdprobe edit): per case 300 v_pline calls on a coloured background,
+         endpoints inside +-150 px around the screen, lengths 0..300, octants + axis/diagonal specials, vsl_type 1..7 (7 = user style, random
+         udsty, random colour), 4 writing modes x clip {off, inner rectangle, whole screen} x {2-point lines, 3-point polylines
+         (XOR LSTLIN false)} = 24 cases = 7200 calls; screen read back with vro_cpyfm and hashed FNV-1a 64 per case (probe/ln-*/LNPROBE.LOG).
+         base == change == base again, byte for byte (sha256 d9760237...). Sensitivity: a scratch kernel with "last=false end pixel kept"
+         (the only edit) differs in exactly the three XOR polyline cases 15/19/23 (probe/ln-mutant-lastfalse).
+ 9 PASS  Pictures base vs change, PNG byte for byte (analysis/shots-compare.txt): shprobe 12/12, shprobe-desk 2/2, desktop + IKBD injector
+         (menu, dialog, rubber band, window drag, slider drag, sizer drag, icon drags) 11/11 at 640x480 and 11/11 at 1920x1080, boot screen
+         + AUTO console (APITEST.NCP) 6/6 at both sizes; 0 exception/panic lines in all 12 runs. Two images looked at
+         (runs/gui/desk480-chg/shots/03-03-rubberband-held.png, runs/gui/desk1080-chg/shots/06-06-sizer-drag-held.png): green desktop,
+         dotted XOR rubber band and the C:\ window frame drawn; both byte-equal to base. (The 1080 sizer shot shows the window unchanged in
+         size and a small dotted rectangle; identical on the base, not a V58 matter.)
+10 DATA  Vertical XOR cost, QEMU raspi4b with -icount shift=0,align=off,sleep=off (virtual time = executed instructions; 1 tick of
+         _hz_200 = 5e6 instr), probe method/lnprobe/lnbench.c: 20000 v_pline calls of 400 px each, whole trap path included
+         (zero-length calls: 13-14 ticks = trap overhead only). analysis/icount-bench.txt, two runs of each kernel byte-identical.
+         Ticks base -> change: horizontal 82-87 -> 14-19 (Replace), 80-85 -> 14-15 (Xor); vertical Replace 97 -> 49, vertical XOR 99 -> 53,
+         vertical XOR upward 100 -> 53, vertical XOR dashed 94 -> 49; diagonal 268-271 -> 214-218; shallow 132-136 -> 78-82.
+         So in executed instructions the vertical path is about half of the base, XOR not slower than Replace by more than the base's
+         own ratio; the Mac's 390 vs 240 ns is not an instruction-count effect. QEMU does not model cache/latency: whether the
+         column loop's ldr/mvn/str chain is slower than the base on a Cortex-A72 is only decided on the Pi (ADR-036 point 5). Not fixed.
+
+NOT DRIVEN / OPEN
+  Real Pi 4 (runtime, ADR-036 point 5; cache clean cost of the touched box, HDMI/cache coherence). raster-prof kernels not rebuilt or run.
+  slprobe, hkprobe and other probes without a line path of their own. Oracle side not rerun (the records are base == change).
+  A third board configuration (qemu-virt desktop pictures) was not compared; qemu-virt was boot-checked only.

@@ -1,0 +1,178 @@
+original kernel/src/raster_kernel.rs sha256 0f4c7a3d1ae0cba1658aa265144703ee6bf968ab7a73b2193a24a7cbdda00eae
+original kernel/src/raster_line.rs sha256 bed0fc07dbf54be47e59cc32b74621a5057df18fe542cdb4d3905b9dabb140af
+original tos-api/src/vdi/line.rs sha256 5321b64a8a09d35119252d592e3cccfabde18fea8df07fa0973310bb59cca873
+RED   M1 span: phase one pixel late (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8264017) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8264019) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8264020) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8264021) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_for_spans_and_columns_at_every_phase' (8264349) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_in_every_direction_and_length' (8264350) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8264352) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 14 passed; 3 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.00s
+RED   M2 span: cut one pixel past the end of the store (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'empty_cases_match_the_reference' (8264717) panicked at tos-api/src/vdi/line.rs:466:21:
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8264716) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.22s
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_on_an_empty_store' (8265377) panicked at tos-api/src/vdi/line.rs:466:21:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8265378) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 15 passed; 2 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.34s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M3 span: run-on rectangle keeps the first row's column (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8265753) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.39s
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8266336) panicked at tos-api/src/vdi/line.rs:916:9:
+        test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.35s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M4 column: dash phase of a cut column restarts at 0 (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8266627) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.24s
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8267195) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.35s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M5 column: one pixel short (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'empty_cases_match_the_reference' (8267464) panicked at tos-api/tests/raster_kernel_line.rs:348:13:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8267467) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8267463) panicked at tos-api/tests/raster_kernel_line.rs:168:13:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8267465) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_for_spans_and_columns_at_every_phase' (8267843) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_on_an_empty_store' (8267845) panicked at tos-api/src/vdi/line.rs:915:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_in_every_direction_and_length' (8267844) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8267846) panicked at tos-api/src/vdi/line.rs:915:9:
+RED   M6 column: upward cut at the store end off by one (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8268225) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.29s
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8269197) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.36s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M7 XOR rule left out of the run form (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8269593) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8269595) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8269596) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8269597) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_in_every_direction_and_length' (8269989) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8269991) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_for_spans_and_columns_at_every_phase' (8269988) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 14 passed; 3 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.17s
+RED   M8 diagonal fast path taken with only the first end on the screen (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+        process didn't exit successfully: `/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a88c9f69bef56fa4d/target/debug/deps/raster_kernel_line-64cbc8eaed12935e` (signal: 10, SIGBUS: access to u
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8270688) panicked at tos-api/src/vdi/line.rs:916:9:
+        test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.40s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M9 diagonal fast path: minor y step always downwards (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+        process didn't exit successfully: `/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a88c9f69bef56fa4d/target/debug/deps/raster_kernel_line-64cbc8eaed12935e` (signal: 10, SIGBUS: access to u
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_in_every_direction_and_length' (8271380) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8271382) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 15 passed; 2 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.31s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M10 diagonal fast path: rectangle ends on the far y, not the larger (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8271777) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8271779) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        thread 'full_screen_lines_match_the_reference' (8271780) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        test result: FAILED. 3 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.15s
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_in_every_direction_and_length' (8272202) panicked at tos-api/src/vdi/line.rs:916:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8272204) panicked at tos-api/src/vdi/line.rs:916:9:
+        test result: FAILED. 15 passed; 2 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.32s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M11 diagonal fast path: dash rotated the wrong way (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8272632) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8272630) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8272633) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        test result: FAILED. 3 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.21s
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_in_every_direction_and_length' (8273051) panicked at tos-api/src/vdi/line.rs:914:9:
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8273053) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 15 passed; 2 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.31s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M12 diagonal general path: column wraps one late (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8273377) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.32s
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8274044) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.35s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M13 diagonal general path: one row past the store let through (tos-api/src/vdi/line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8274323) panicked at tos-api/tests/raster_kernel_line.rs:169:13:
+        test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.25s
+        error: test failed, to rerun pass `-p tos-api --test raster_kernel_line`
+      lib vdi::line: exit 101
+        thread 'vdi::line::tests::runs_walk_as_abline_with_clipping_off_and_wild_endpoints' (8275156) panicked at tos-api/src/vdi/line.rs:914:9:
+        test result: FAILED. 16 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.35s
+        error: test failed, to rerun pass `-p tos-api --lib`
+RED   M14 store column: dash bit rotated the wrong way (kernel/src/raster_line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8275430) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8275432) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8275434) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        test result: FAILED. 3 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+RED   M15 store span: always Replace (kernel/src/raster_line.rs)
+      raster_kernel_line: exit 101
+        thread 'xor_twice_restores_the_store' (8275544) panicked at tos-api/tests/raster_kernel_line.rs:324:13:
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8275539) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8275541) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8275542) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+RED   M16 store Replace: fg and bg swapped (kernel/src/raster_line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8275655) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8275657) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8275659) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8275658) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+RED   M17 store Xor: low bit kept (kernel/src/raster_line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8275759) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8275761) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8275762) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8275763) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+RED   M18 store RevTransparent: fg on the set bits (kernel/src/raster_line.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8275932) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8275934) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8275935) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8275936) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+RED   M19 fill_span: phase ignored (kernel/src/raster_kernel.rs)
+      raster_kernel_line: exit 101
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8276204) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8276206) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8276207) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8276208) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+RED   M20 fill_span: one pixel short (kernel/src/raster_kernel.rs)
+      raster_kernel_line: exit 101
+        thread 'spans_and_columns_at_every_phase_and_length_match_the_reference' (8276314) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'full_screen_lines_match_the_reference' (8276313) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'clipping_off_run_on_and_wild_endpoints_match_the_reference' (8276310) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+        thread 'every_direction_length_mode_and_mask_matches_the_reference' (8276312) panicked at tos-api/tests/raster_kernel_line.rs:157:17:
+after restore: raster_kernel_line exit 0 ['test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.19s']; lib vdi::line exit 0 ['test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.35s']
+20 of 20 mutants red
+restored kernel/src/raster_kernel.rs sha256 0f4c7a3d1ae0cba1658aa265144703ee6bf968ab7a73b2193a24a7cbdda00eae
+restored kernel/src/raster_line.rs sha256 bed0fc07dbf54be47e59cc32b74621a5057df18fe542cdb4d3905b9dabb140af
+restored tos-api/src/vdi/line.rs sha256 5321b64a8a09d35119252d592e3cccfabde18fea8df07fa0973310bb59cca873

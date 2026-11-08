@@ -1,0 +1,7 @@
+qemu-system-aarch64: terminating on signal 15 from pid 24021 (<unknown process>)
+qemu pid 24351
+state done kernel a17613afb0eab0a06ab1d2f94446a34a4c8e9934f22f00d0c3c641f794ffa080 nap 17b0e7f26fdc6110cbd7d86cd2586c2c92d32ff64bde27915358f2be579f401e
+exception-panic-lines 0
+23 mode 3 clip 2 poly 1 lines 300 hash b98a26ecfe053724
+24 mode 4 clip 2 poly 1 lines 300 hash e1d347cd7bf84290
+END

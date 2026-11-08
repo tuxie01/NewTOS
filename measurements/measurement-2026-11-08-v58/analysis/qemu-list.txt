@@ -1,0 +1,39 @@
+03:03:27 after phase builds: qemu naming the scratch: none
+03:04:16 after boot-virt-base: qemu naming the scratch: none
+03:04:42 after boot-virt-chg: qemu naming the scratch: none
+03:04:42 after phase boots: qemu naming the scratch: none
+03:05:54 after tab-chg-all: qemu naming the scratch: none
+03:06:29 after tab-chg-v18: qemu naming the scratch: none
+03:07:05 after tab-chg-v18t2: qemu naming the scratch: none
+03:07:40 after tab-chg-v18t3: qemu naming the scratch: none
+03:08:16 after tab-chg-r2: qemu naming the scratch: none
+03:08:59 after tab-chg-r3: qemu naming the scratch: none
+03:09:36 after tab-chg-r4: qemu naming the scratch: none
+03:10:42 after tab-base-all: qemu naming the scratch: none
+03:11:19 after tab-base-v18: qemu naming the scratch: none
+03:11:55 after tab-base-v18t2: qemu naming the scratch: none
+03:12:31 after tab-base-v18t3: qemu naming the scratch: none
+03:13:07 after tab-base-r2: qemu naming the scratch: none
+03:13:43 after tab-base-r3: qemu naming the scratch: none
+03:14:14 after tab-base-r4: qemu naming the scratch: none
+03:14:14 after phase tables: qemu naming the scratch: none
+03:15:24 after vdprobe-n-base: qemu naming the scratch: none
+03:16:13 after vdprobe-n-chg: qemu naming the scratch: none
+03:17:01 after vdprobe-n-chg2: qemu naming the scratch: none
+03:17:03 after phase probe: qemu naming the scratch: none
+03:20:54 after shprobe-base: qemu naming the scratch: none
+03:21:39 after shprobe-desk-base: qemu naming the scratch: none
+03:22:54 after shprobe-chg: qemu naming the scratch: none
+03:23:38 after shprobe-desk-chg: qemu naming the scratch: none
+03:24:27 after desk480-base: qemu naming the scratch: none
+03:25:21 after bc480-base: qemu naming the scratch: none
+03:26:10 after desk480-chg: qemu naming the scratch: none
+03:27:03 after bc480-chg: qemu naming the scratch: none
+03:27:52 after desk1080-base: qemu naming the scratch: none
+03:28:46 after bc1080-base: qemu naming the scratch: none
+03:29:35 after desk1080-chg: qemu naming the scratch: none
+03:30:29 after bc1080-chg: qemu naming the scratch: none
+03:30:29 after phase gui: qemu naming the scratch: none
+03:30:57 after boot-rpi4-chg: qemu naming the scratch: none
+03:31:20 after boot-rpi4-chg-prof: qemu naming the scratch: none
+03:31:20 after phase pikernels: qemu naming the scratch: none

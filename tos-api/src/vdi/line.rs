@@ -363,6 +363,257 @@ fn draw_line16(x1: i16, y1: i16, x2: i16, y2: i16, mask: u16, put: &mut impl FnM
     linemask
 }
 
+// ── The same walk as runs (TASK/V58) ────────────────────────────────────
+
+/// The store rectangle a segment touched, `(c0, r0, c1, r1)`: the smallest
+/// one holding `(index % stride, index / stride)` of every store index
+/// [`abline`] hands out for it — columns `c0..=c1`, rows `r0..=r1`, columns
+/// counted in the stride, so a clipping-off run-on can reach into the pitch
+/// padding. What a backend cleans to the point of coherency after a line.
+pub type Touched = (u32, u32, u32, u32);
+
+/// The receiver of [`abline_runs`]: the pixels of one segment, the very
+/// store indices and dash bits [`abline`] hands to its `plot`, in the same
+/// order, grouped into the runs a store can draw at once (TASK/V58). Every
+/// index lies in the store (`< height * stride`); a run is never empty.
+///
+/// A segment arrives as exactly one [`span`](Self::span) (horizontal), one
+/// [`column`](Self::column) (vertical) or a sequence of
+/// [`pixel`](Self::pixel)s (any other), or as nothing at all.
+pub trait LineRuns {
+    /// Store pixels `idx`, `idx + 1`, … `idx + n - 1`: a horizontal segment,
+    /// one row, or with clipping off a run on across row ends. Pixel `i`'s
+    /// dash bit is `mask & (0x8000 >> ((phase + i) & 15)) != 0` (`phase` =
+    /// the first pixel's `x & 15`, the mask screen-aligned).
+    fn span(&mut self, idx: usize, n: usize, phase: u32, mask: u16);
+    /// `n` store pixels from `idx` on, each `step` (`stride` or `-stride`)
+    /// after the one before: a vertical segment in walk order. Pixel `i`'s
+    /// dash bit is `mask & (0x8000 >> ((phase + i) & 15)) != 0` (`phase` =
+    /// the walk pixels before the first one in the store, modulo 16).
+    fn column(&mut self, idx: usize, n: usize, step: isize, phase: u32, mask: u16);
+    /// One pixel of a segment that is neither, in walk order.
+    fn pixel(&mut self, idx: usize, set: bool);
+}
+
+/// [`abline`] as runs: the same clipping, XOR rule, pixels, order, dash
+/// bits and returned `LN_MASK`, handed to `runs` as a span, a column or
+/// single pixels instead of one `plot` per pixel — so a backend can draw a
+/// horizontal segment as one span and a vertical one as one stride loop,
+/// with its pixel store, colours and mode resolved once (TASK/V58). Returns
+/// `LN_MASK` and the store rectangle touched (`None`: no pixel).
+///
+/// The walks are [`abline`]'s, rewritten over store indices: a horizontal
+/// segment is the index range `y * stride + ax ..= y * stride + bx`, cut to
+/// the store once, its dash bit the mask bit of the absolute `x`; a vertical
+/// one `dy + 1` indices `stride` apart, cut to the store once, pixel `k`'s
+/// dash bit `rotl(mask, k + 1) & 1` = `mask & (0x8000 >> (k & 15))`
+/// ([`vertical_line16`]); any other `draw_line16`'s Bresenham in its `WORD`
+/// terms, stepping the index by `1` and `±stride` — when both endpoints lie
+/// on a screen of at most 16384 × 16384 every pixel does and no term can
+/// wrap, so no pixel needs a check; otherwise each pixel is checked against
+/// the store and its column and row are carried along (a column past the
+/// stride starts the next row), so no pixel needs a division. Tests compare
+/// the two walks pixel for pixel.
+///
+/// Read for technique only (ADR-035): fVDI's 16-bit line steps the
+/// address by one "one step" and one "both steps" offset per Bresenham
+/// decision, one routine per write mode
+/// (`references/fvdi/fvdi/drivers/16_bit/16b_line.c:33-63`, `:709-841`).
+#[allow(clippy::too_many_arguments)]
+pub fn abline_runs(
+    target: &LineTarget,
+    x0: i16,
+    y0: i16,
+    x1: i16,
+    y1: i16,
+    mode: WriteMode,
+    clip: ClipRect,
+    mask: u16,
+    last: bool,
+    runs: &mut impl LineRuns,
+) -> (u16, Option<Touched>) {
+    let Some((x0, y0, x1, y1)) = clip_segment(target, clip, (x0, y0, x1, y1)) else {
+        return (mask, None);
+    };
+    let s = target.stride as i64;
+    let len = target.height as i64 * s;
+    if x0 == x1 {
+        return vertical_runs(x0, y0, y1, s, len, mask, runs);
+    }
+    // `abline:2299-2325`: from the left endpoint, the XOR rule.
+    let (ax, ay, mut bx, by) = if x1 < x0 { (x1, y1, x0, y0) } else { (x0, y0, x1, y1) };
+    if mode == WriteMode::Xor && !last {
+        bx = bx.wrapping_sub(1);
+    }
+    if ay == by {
+        let first = ay as i64 * s + ax as i64;
+        let (lo, hi) = (first.max(0), (ay as i64 * s + bx as i64).min(len - 1));
+        if lo > hi {
+            return (mask, None);
+        }
+        // The first pixel in the store has `x = ax + (lo - first)`.
+        let phase = ((ax as i64 + (lo - first)) & 15) as u32;
+        runs.span(lo as usize, (hi - lo + 1) as usize, phase, mask);
+        return (mask, Some(span_touched(lo, hi, s)));
+    }
+    diagonal_runs(target, (ax, ay, bx, by), s, len, mask, runs)
+}
+
+/// The rectangle of the store indices `lo..=hi` (`0 <= lo <= hi`, `s > 0`):
+/// one row, or a run on across row ends, which holds column `s - 1` of its
+/// first row and column 0 of its last.
+fn span_touched(lo: i64, hi: i64, s: i64) -> Touched {
+    let (r0, r1) = (lo / s, hi / s);
+    if r0 == r1 {
+        ((lo % s) as u32, r0 as u32, (hi % s) as u32, r1 as u32)
+    } else {
+        (0, r0 as u32, (s - 1) as u32, r1 as u32)
+    }
+}
+
+/// [`vertical_line16`] as one column: walk pixel `k` (`0..dy + 1`) is store
+/// index `first + k * step`, which is monotonic in `k`, so the pixels in the
+/// store are one range `klo..=khi` of `k`, found with two divisions.
+fn vertical_runs(
+    x: i16,
+    y1: i16,
+    y2: i16,
+    s: i64,
+    len: i64,
+    mask: u16,
+    runs: &mut impl LineRuns,
+) -> (u16, Option<Touched>) {
+    let mut dy = y2.wrapping_sub(y1);
+    let mut yinc = 1i64;
+    if dy < 0 {
+        dy = dy.wrapping_neg();
+        yinc = -1;
+    }
+    // `dy + 1` pixels; none when the negation leaves `dy` negative (-32768).
+    let count = if dy >= 0 { dy as i64 + 1 } else { 0 };
+    let after = mask.rotate_left((count % 16) as u32);
+    if count == 0 || len == 0 {
+        return (after, None);
+    }
+    let first = y1 as i64 * s + x as i64;
+    let step = yinc * s;
+    let ceil_div = |a: i64| (a + s - 1) / s;
+    let (klo, khi) = if step > 0 {
+        (if first >= 0 { 0 } else { ceil_div(-first) }, if first < len { (len - 1 - first) / s } else { -1 })
+    } else {
+        (if first < len { 0 } else { ceil_div(first - (len - 1)) }, if first >= 0 { first / s } else { -1 })
+    };
+    let khi = khi.min(count - 1);
+    if klo > khi {
+        return (after, None);
+    }
+    let (idx, end) = (first + klo * step, first + khi * step);
+    runs.column(idx as usize, (khi - klo + 1) as usize, step as isize, (klo & 15) as u32, mask);
+    let col = (idx % s) as u32;
+    (after, Some((col, (idx.min(end) / s) as u32, col, (idx.max(end) / s) as u32)))
+}
+
+/// [`draw_line16`] over store indices, from the left endpoint `(x1, y1)` of
+/// `seg` — the same `WORD` terms in the same order, the index stepped by
+/// `1` for `x` and `±stride` for `y`.
+fn diagonal_runs(
+    t: &LineTarget,
+    (x1, y1, x2, y2): (i16, i16, i16, i16),
+    s: i64,
+    len: i64,
+    mask: u16,
+    runs: &mut impl LineRuns,
+) -> (u16, Option<Touched>) {
+    let dx = x2.wrapping_sub(x1);
+    let mut dy = y2.wrapping_sub(y1);
+    let mut yinc = 1i64;
+    if dy < 0 {
+        dy = dy.wrapping_neg();
+        yinc = -1;
+    }
+    let xmajor = dx >= dy;
+    let (major, minor) = if xmajor { (dx, dy) } else { (dy, dx) };
+    let e1 = minor.wrapping_mul(2);
+    let e2 = major.wrapping_mul(2);
+    let mut eps = major.wrapping_neg();
+    // `loopcnt` runs from `major` down to 0: `major + 1` pixels, or none.
+    let count = if major >= 0 { major as u32 + 1 } else { 0 };
+    let after = mask.rotate_left(count % 16);
+    if count == 0 || len == 0 {
+        return (after, None);
+    }
+    let mut linemask = mask;
+    let on = |x: i16, y: i16| x >= 0 && (x as u32) < t.width && y >= 0 && (y as u32) < t.height;
+    if t.width <= t.stride && t.width <= 16384 && t.height <= 16384 && on(x1, y1) && on(x2, y2) {
+        // Both ends on the screen: `0 <= dx, |dy| < 16384`, so no term wraps;
+        // the walk stays in the ends' bounding box — after `j` steps the
+        // minor axis has moved `floor((2 * minor * j + major) / (2 * major))`
+        // <= `minor` — and ends on `(x2, y2)`. Every pixel is on the screen,
+        // its column its `x`, its row its `y`. As no term wraps, they are
+        // carried in `i32`, and the mask as two copies in one `u32`, whose
+        // rotation by one is the `WORD` rotation in each half.
+        let (major_step, minor_step) =
+            if xmajor { (1isize, (yinc * s) as isize) } else { ((yinc * s) as isize, 1isize) };
+        let mut idx = (y1 as i64 * s + x1 as i64) as isize;
+        let (e1, e2, mut eps) = (e1 as i32, e2 as i32, eps as i32);
+        let mut m = mask as u32 * 0x0001_0001;
+        for _ in 0..count {
+            m = m.rotate_left(1);
+            runs.pixel(idx as usize, m & 1 != 0);
+            idx = idx.wrapping_add(major_step);
+            eps += e1;
+            if eps >= 0 {
+                eps -= e2;
+                idx = idx.wrapping_add(minor_step);
+            }
+        }
+        return (after, Some((x1 as u32, y1.min(y2) as u32, x2 as u32, y1.max(y2) as u32)));
+    }
+    // Anywhere else (clipping off): the index `y * stride + x` and its store
+    // column and row, carried along; a pixel is in the store when its row is.
+    let mut idx = y1 as i64 * s + x1 as i64;
+    let (mut row, mut col) = (idx.div_euclid(s), idx.rem_euclid(s));
+    let rows = t.height as i64;
+    let mut touched: Option<(i64, i64, i64, i64)> = None;
+    let step_x = |idx: &mut i64, col: &mut i64, row: &mut i64| {
+        *idx += 1;
+        *col += 1;
+        if *col == s {
+            *col = 0;
+            *row += 1;
+        }
+    };
+    let step_y = |idx: &mut i64, row: &mut i64| {
+        *idx += yinc * s;
+        *row += yinc;
+    };
+    for _ in 0..count {
+        linemask = linemask.rotate_left(1);
+        if (0..rows).contains(&row) {
+            runs.pixel(idx as usize, linemask & 1 != 0);
+            touched = Some(match touched {
+                None => (col, row, col, row),
+                Some((c0, r0, c1, r1)) => (c0.min(col), r0.min(row), c1.max(col), r1.max(row)),
+            });
+        }
+        if xmajor {
+            step_x(&mut idx, &mut col, &mut row);
+        } else {
+            step_y(&mut idx, &mut row);
+        }
+        eps = eps.wrapping_add(e1);
+        if eps >= 0 {
+            eps = eps.wrapping_sub(e2);
+            if xmajor {
+                step_y(&mut idx, &mut row);
+            } else {
+                step_x(&mut idx, &mut col, &mut row);
+            }
+        }
+    }
+    (after, touched.map(|(c0, r0, c1, r1)| (c0 as u32, r0 as u32, c1 as u32, r1 as u32)))
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -604,6 +855,172 @@ mod tests {
                 let got: Vec<(i32, i32, bool)> = px.iter().map(|p| (p.0 as i32, p.1 as i32, p.2)).collect();
                 assert_eq!(got, want, "({sx},{sy})-({tx},{ty})");
                 assert_eq!(m, wm, "mask after ({sx},{sy})-({tx},{ty})");
+            }
+        }
+    }
+
+    // ── abline_runs: the same walk as runs (TASK/V58) ────────────────────
+
+    /// What [`abline_runs`] hands out, expanded to `(index, dash bit)` in
+    /// order, and which kinds of run it used.
+    #[derive(Default)]
+    struct Expand {
+        px: Vec<(usize, bool)>,
+        spans: usize,
+        columns: usize,
+        pixels: usize,
+    }
+    impl LineRuns for Expand {
+        fn span(&mut self, idx: usize, n: usize, phase: u32, mask: u16) {
+            assert!(n > 0, "empty span");
+            self.spans += 1;
+            for i in 0..n {
+                self.px.push((idx + i, mask & (0x8000u16 >> ((phase as usize + i) & 15)) != 0));
+            }
+        }
+        fn column(&mut self, idx: usize, n: usize, step: isize, phase: u32, mask: u16) {
+            assert!(n > 0, "empty column");
+            self.columns += 1;
+            for i in 0..n {
+                let at = idx as isize + i as isize * step;
+                self.px.push((at as usize, mask & (0x8000u16 >> ((phase as usize + i) & 15)) != 0));
+            }
+        }
+        fn pixel(&mut self, idx: usize, set: bool) {
+            self.pixels += 1;
+            self.px.push((idx, set));
+        }
+    }
+
+    /// [`abline`] and [`abline_runs`] on one segment: the same indices, dash
+    /// bits and order, the same mask, and the rectangle of the indices.
+    #[allow(clippy::too_many_arguments)]
+    fn same_walk(t: &LineTarget, seg: (i16, i16, i16, i16), mode: WriteMode, c: ClipRect, mask: u16, last: bool) {
+        let (x0, y0, x1, y1) = seg;
+        let mut want = Vec::new();
+        let wm = abline(t, x0, y0, x1, y1, mode, c, mask, last, |i, set| want.push((i, set)));
+        let mut box_want: Option<Touched> = None;
+        let s = t.stride as usize;
+        for &(i, _) in &want {
+            let (col, row) = ((i % s) as u32, (i / s) as u32);
+            box_want = Some(match box_want {
+                None => (col, row, col, row),
+                Some((c0, r0, c1, r1)) => (c0.min(col), r0.min(row), c1.max(col), r1.max(row)),
+            });
+        }
+        let mut got = Expand::default();
+        let (gm, gbox) = abline_runs(t, x0, y0, x1, y1, mode, c, mask, last, &mut got);
+        let what = std::format!("{t:?} {seg:?} {mode:?} {c:?} mask {mask:04x} last {last}");
+        assert_eq!(got.px, want, "pixels of {what}");
+        assert_eq!(gm, wm, "mask after {what}");
+        assert_eq!(gbox, box_want, "touched rectangle of {what}");
+        assert!(got.spans + got.columns <= 1, "one span or column: {what}");
+        assert!(got.pixels == 0 || got.spans + got.columns == 0, "runs and pixels mixed: {what}");
+    }
+
+    const MODES: [WriteMode; 4] = [WriteMode::Replace, WriteMode::Transparent, WriteMode::Xor, WriteMode::RevTransparent];
+
+    /// xorshift64*, deterministic.
+    struct Rng(u64);
+    impl Rng {
+        fn next(&mut self) -> u64 {
+            self.0 ^= self.0 >> 12;
+            self.0 ^= self.0 << 25;
+            self.0 ^= self.0 >> 27;
+            self.0.wrapping_mul(0x2545_F491_4F6C_DD1D)
+        }
+        fn i16_in(&mut self, lo: i32, hi: i32) -> i16 {
+            (lo + (self.next() >> 33) as i32 % (hi - lo + 1)) as i16
+        }
+    }
+
+    /// Every direction and length 0..=70 from a centre, horizontal and
+    /// vertical included, both ways round, XOR with and without `last`, on
+    /// the oracle's screen and on a padded pitch, clipping off and on.
+    #[test]
+    fn runs_walk_as_abline_in_every_direction_and_length() {
+        let padded = LineTarget { width: 200, height: 160, stride: 211 };
+        for t in [FALCON, padded] {
+            for d in -70i16..=70 {
+                for e in [-70i16, -64, -33, -17, -16, -15, -2, -1, 0, 1, 2, 15, 16, 17, 33, 64, 70] {
+                    for (dx, dy) in [(d, e), (e, d)] {
+                        let seg = (100, 80, 100 + dx, 80 + dy);
+                        for mode in [WriteMode::Replace, WriteMode::Xor] {
+                            for last in [true, false] {
+                                for mask in [0xFFFF, 0xF391, 0x8001] {
+                                    same_walk(&t, seg, mode, ClipRect::OFF, mask, last);
+                                    same_walk(&t, seg, mode, clip(60, 50, 140, 120), mask, last);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Horizontal and vertical segments at every start phase and length, the
+    /// mask advanced or not, every write mode.
+    #[test]
+    fn runs_walk_as_abline_for_spans_and_columns_at_every_phase() {
+        for mode in MODES {
+            for x in 0i16..=33 {
+                for n in 0i16..=70 {
+                    for mask in [0xFFFF, 0x0000, 0x8000, 0x0001, 0xAAAA, 0xF391] {
+                        for last in [true, false] {
+                            same_walk(&FALCON, (x, 7, x + n, 7), mode, ClipRect::OFF, mask, last);
+                            same_walk(&FALCON, (x + n, 7, x, 7), mode, ClipRect::OFF, mask, last);
+                            same_walk(&FALCON, (x, 9 + n, x, 9), mode, ClipRect::OFF, mask, last);
+                            same_walk(&FALCON, (x, 9, x, 9 + n), mode, clip(0, 20, 639, 50), mask, last);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Clipping off with endpoints anywhere in `WORD` range on small stores,
+    /// padded and not: run-on into the neighbouring rows, cuts at both ends
+    /// of the store, `WORD`-wrapped deltas; and clip rectangles anywhere.
+    #[test]
+    fn runs_walk_as_abline_with_clipping_off_and_wild_endpoints() {
+        let mut rng = Rng(0x5635_3800_0000_0001);
+        let targets = [
+            LineTarget { width: 7, height: 5, stride: 7 },
+            LineTarget { width: 7, height: 5, stride: 9 },
+            LineTarget { width: 40, height: 30, stride: 48 },
+            LineTarget { width: 1, height: 1, stride: 1 },
+            LineTarget { width: 640, height: 4, stride: 648 },
+        ];
+        for t in targets {
+            for round in 0..4000 {
+                let r = match round % 4 {
+                    0 => 12,
+                    1 => 100,
+                    2 => 3000,
+                    _ => 32767,
+                };
+                let mut p = || rng.i16_in(-r, r);
+                let seg = (p(), p(), p(), p());
+                let c = if round % 3 == 0 {
+                    let (a, b, c2, d) = (p(), p(), p(), p());
+                    clip(a.min(c2), b.min(d), a.max(c2), b.max(d))
+                } else {
+                    ClipRect::OFF
+                };
+                let mode = MODES[round % 4];
+                let mask = (rng.next() >> 48) as u16;
+                same_walk(&t, seg, mode, c, mask, round % 5 != 0);
+            }
+        }
+    }
+
+    /// A store of no pixels takes nothing and still rotates the mask.
+    #[test]
+    fn runs_walk_as_abline_on_an_empty_store() {
+        for t in [LineTarget { width: 0, height: 0, stride: 0 }, LineTarget { width: 8, height: 0, stride: 8 }] {
+            for seg in [(0, 0, 5, 0), (0, 0, 0, 5), (0, 0, 5, 3), (-3, 2, 9, -4)] {
+                same_walk(&t, seg, WriteMode::Replace, ClipRect::OFF, 0x1234, true);
             }
         }
     }

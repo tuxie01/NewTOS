@@ -1,0 +1,21 @@
+scenario (20000 calls, 400 px)           base_ticks chg_ticks  chg/base   [1 tick = 5e6 instr; zero-length calls base/chg]
+horizontal 400         mode 1 style 1       87    19  0,22
+vertical 400           mode 1 style 1       97    49  0,51
+vertical 400 up        mode 1 style 1       96    48  0,50
+diagonal 400           mode 1 style 1      268   215  0,80
+shallow 400x100        mode 1 style 1      133    80  0,60
+horizontal 400         mode 1 style 3       82    14  0,17
+vertical 400           mode 1 style 3       97    49  0,51
+vertical 400 up        mode 1 style 3       96    49  0,51
+diagonal 400           mode 1 style 3      268   215  0,80
+shallow 400x100        mode 1 style 3      133    79  0,59
+horizontal 400         mode 3 style 1       85    14  0,16
+vertical 400           mode 3 style 1       99    53  0,54
+vertical 400 up        mode 3 style 1      100    53  0,53
+diagonal 400           mode 3 style 1      271   218  0,80
+shallow 400x100        mode 3 style 1      136    82  0,60
+horizontal 400         mode 3 style 3       80    15  0,19
+vertical 400           mode 3 style 3       94    49  0,52
+vertical 400 up        mode 3 style 3       94    49  0,52
+diagonal 400           mode 3 style 3      266   214  0,80
+shallow 400x100        mode 3 style 3      132    78  0,59

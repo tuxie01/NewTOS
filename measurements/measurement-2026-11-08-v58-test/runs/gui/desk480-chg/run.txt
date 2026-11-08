@@ -1,0 +1,8 @@
+desk-inj run newtos (2026-11-08T03:11:07Z)
+kernel d013601fd33de8ab6f43d827e93b92d8eee1fa11d99909315ea5ee447f87ecc4
+card 8760283b5e2adb36ca040292d6f16fa116f44f4b8525d57dea16b39a65af58b8
+shots cca83e83759bb8b8532ddb170a2173e8194f2a1bf42d84e40b5477316d2354c4
+qemu-extra []
+qemu pid 52002
+shots 11
+exception-panic-lines 0

@@ -1,0 +1,7 @@
+qemu-system-aarch64: terminating on signal 15 from pid 57925 (<unknown process>)
+qemu pid 58018
+state done kernel 2d7ceb72487124e21d6ef3cb4425a49af456f5f443c8017df477e00958920bbf nap 75a10225ebf06d160a9a7424d70439b447d9cb265c163adee79da1731861f867
+exception-panic-lines 0
+diagonal 400           mode 3 style 3    214 ticks of 5 ms for 20000 calls; zero-length calls    13 ticks
+shallow 400x100        mode 3 style 3     78 ticks of 5 ms for 20000 calls; zero-length calls    14 ticks
+END

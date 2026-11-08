@@ -1339,3 +1339,7 @@ pub mod raster_expand;
 /// NEON rectangle copy within the screen, all 16 BitBlt ops, for the VDI
 /// screen backend (TASK/V51, ADR-036).
 pub mod raster_copy;
+
+/// Lines without a per-pixel detour (spans on kernel 1, stride columns,
+/// index-stepped Bresenham) for the VDI screen backend (TASK/V58, ADR-036).
+pub mod raster_line;

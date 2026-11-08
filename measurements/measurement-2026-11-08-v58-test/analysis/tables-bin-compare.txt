@@ -1,0 +1,7 @@
+all VDI.BIN identical e91b865b92b5dbf2
+v18 VDI.BIN identical af6163c916e63f70
+v18t2 VDI.BIN identical a26589eede1a4da4
+v18t3 VDI.BIN identical 52c406c4dbc753be
+r2 AES.BIN DIFFER
+r3 AES.BIN DIFFER
+r4 AES.BIN DIFFER
