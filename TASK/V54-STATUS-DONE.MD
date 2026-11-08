@@ -1,4 +1,6 @@
-# V54 — Quittung UNFINISHED (2026-11-08)
+# V54 — Quittung DONE (2026-11-08)
+
+Tester PASS (`2869dcfc`, `measurements/measurement-2026-11-08-v54-test/RUNINFO.TXT`): F1, F2 orakelgleich, AES-Weg G1/G2 orakelgleich und unveraendert, alles andere bytegleich zur Basis; `cargo xtask test` 2362/0/6. Pi: nichts V54-Spezifisches (kein Kartenprogramm ruft `vsc_form` direkt). Nebenfunde als [A147](A147.md) und [TOOL38](TOOL38.md).
 
 Datum 2026-11-08 · `main`, Basis `67874e27` · Commits `61989b6d` (Probe G1/G2), `721e0441` (Fix, Hosttest, Spec,
 DEVIATIONS) und der Folgecommit mit Lauf und Tickets · Beleg `measurements/measurement-2026-11-08-v54/RUNINFO.TXT`
