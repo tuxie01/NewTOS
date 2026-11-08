@@ -1,0 +1,236 @@
+NewTOS 0.7.2 — Alpha-Testversion
+================================
+
+(English: see README.TXT)
+
+NewTOS ist das Atari-TOS (GEMDOS, BIOS, XBIOS, VDI, AES) als eigenes
+Betriebssystem fuer den Raspberry Pi 4 — kein Emulator. Atari-Programme
+werden aus ihren Quellen fuer ARM neu uebersetzt und laufen nativ.
+Vorbild und Messlatte ist EmuTOS (Falcon/TOS-4-Profil).
+
+Das ist eine ALPHA-Version. Sie ist zum Ausprobieren und Fehlerfinden da,
+nicht fuer den Alltag. Bitte eine eigene SD-Karte verwenden — nichts
+darauf, das du noch brauchst.
+
+
+WICHTIG fuer 0.7 und 0.6.1 — Datenverlust beim Kopieren/Verschieben
+-------------------------------------------------------------------
+
+NewTOS 0.7 (und 0.6.1) kann Dateiinhalte ohne jede Fehlermeldung
+verlieren: Wer eine Datei auf ein ANDERES Laufwerk kopiert oder
+verschiebt (z. B. von C: nach D:) und dort eine gleichnamige Datei
+ersetzt, konnte eine leere Kopie (0 Byte) bekommen; beim Verschieben
+wurde zusaetzlich das Original geloescht, beide Inhalte waren weg. Das
+passierte nur zufaellig (es haengt davon ab, wo die Dateien in ihren
+Ordnern stehen). Gesehen im NewTOS-Desktop; TeraDesk geht denselben
+Weg. Behoben seit 0.7.1 (also auch in 0.7.2).
+
+Wenn du 0.7 oder 0.6.1 mit mehr als einem Laufwerk benutzt hast: Pruefe
+die Dateien, die du auf ein anderes Laufwerk ueber eine vorhandene Datei
+kopiert oder verschoben hast. Ist eine davon 0 Byte gross? Nach dem
+Verschieben fehlt auch das Original — dann aus einer Sicherung holen.
+Kopien innerhalb eines Laufwerks und Kopien, die keine Datei ersetzt
+haben, sind nicht betroffen.
+
+
+1. Was du brauchst
+------------------
+
+- Raspberry Pi 4 Model B (RAM-Groesse bitte im Feedback angeben)
+- Monitor an HDMI 0 (die Buchse neben dem USB-C-Strom), Full HD
+- USB-Tastatur und USB-Maus (deutsche oder US-Belegung); Funk-Sets mit
+  einem USB-Empfaenger fuer Tastatur und Maus gehen auch
+- eine microSD-Karte, die du komplett loeschen darfst (2 GB reichen)
+- ein Netzteil fuer den Pi 4
+
+
+2. Installation
+---------------
+
+WICHTIG — so muss die Karte aussehen:
+
+- Partitionstabelle: MBR (nicht GPT).
+- Erste Partition: FAT16, HOECHSTENS 2 GB. Darauf kommt NewTOS (Laufwerk C:).
+- FAT32 und exFAT erkennt NewTOS noch nicht. Der Raspberry Pi Imager und
+  das normale Formatieren unter Windows/macOS erzeugen FAT32 oder exFAT —
+  das funktioniert NICHT.
+- Die Grenze von 2 GB ist hart: FAT16 mit mehr als 2 GB braucht 64-KB-
+  Cluster (Windows erlaubt das bis 4 GB), NewTOS nimmt hoechstens
+  32-KB-Cluster an — wie das Atari-TOS.
+- Optional: weitere Partitionen (primaer oder logisch), ebenfalls FAT16
+  bis 2 GB, erscheinen als Laufwerke D:, E:, ... bis P:. Der Rest der
+  Karte darf einfach frei bleiben.
+
+macOS (Terminal, DISK durch die Karte ersetzen, z. B. disk4 —
+mit "diskutil list" pruefen, sonst loeschst du die falsche Platte):
+
+    diskutil partitionDisk /dev/DISK 2 MBR "MS-DOS FAT16" NEWTOS 2G "Free Space" FREI R
+
+Windows (Eingabeaufforderung als Administrator; N = Nummer der Karte aus
+"list disk" — genau pruefen, "clean" loescht die ganze Platte!):
+
+    diskpart
+    list disk
+    select disk N
+    clean
+    convert mbr
+    create partition primary size=2000
+    format fs=fat quick label=NEWTOS
+    assign
+    exit
+
+Linux (sdX = die Karte, mit "lsblk" pruefen):
+
+    sudo parted /dev/sdX --script mklabel msdos mkpart primary fat16 1MiB 2000MiB
+    sudo mkfs.fat -F 16 -n NEWTOS /dev/sdX1
+
+Dann den INHALT dieses ZIP-Ordners "KARTE" auf die Partition kopieren
+(die Dateien muessen direkt im Wurzelverzeichnis liegen, nicht in einem
+Unterordner), Karte auswerfen, in den Pi stecken, einschalten.
+
+Nach einigen Sekunden erscheint der Startbildschirm, danach der Desktop.
+
+Tastatur: Voreingestellt ist die deutsche Belegung (Datei KEYBOARD.KBD).
+Fuer eine US-Tastatur KEYBOARD.KBD von der Karte loeschen.
+
+
+3. Was drauf ist
+----------------
+
+    kernel8.img, config.txt,        NewTOS selbst und die Startdateien
+    start4.elf, fixup4.dat,         der Raspberry-Pi-Firmware
+    bcm2711-rpi-4-b.dtb
+    ACC\SYSACC.NAC                  Accessory "NewTOS System Information"
+                                    (Desk-Menue)
+    APPS\TERADESK\DESKTOP.NAP       TeraDesk (alternativer Desktop)
+    APPS\QED\QED.NAP                QED (Texteditor)
+    APPS\ZVIEW\ZVIEW.NAP            zView (Bildbetrachter, 10 Formate)
+    APPS\DOOM\DOOM.NAP              Doom (Shareware-Episode)
+    APPS\COREMARK\CORE.NCP          CoreMark (CPU-Benchmark, Textprogramm)
+    APPS\HYPVIEW\HYP_VIEW.NAP       HypView (Hypertext-Betrachter)
+
+Die Hilfetexte von QED, zView und TeraDesk liegen als .HYP-Datei im
+jeweiligen Programmordner (z. B. APPS\QED\QED.HYP) und lassen sich mit
+HypView oeffnen.
+
+Programmendungen: .NAP = GEM-Programm, .NCP = Textprogramm,
+.NTP = Textprogramm mit Parametern, .NAC = Accessory. Die Atari-Endungen
+.PRG/.TOS/.TTP/.ACC bleiben fuer echte 68000-Programme reserviert —
+die laufen in dieser Version noch NICHT.
+
+
+4. Neu in 0.7.2
+---------------
+
+0.7.2 ist ein Tempo- und Treue-Release: Die Bildschirmausgabe ist viel
+schneller, und eine Reihe kleiner Unterschiede zu EmuTOS ist weg. Die
+neuen Zeichenroutinen zeichnen genau dieselben Pixel wie die alten
+(Bild fuer Bild geprueft).
+
+4.1 Betriebssystem (NewTOS)
+
+- VDI: Die grundlegenden Zeichenroutinen nutzen jetzt die Vektoreinheit
+  des Pi (NEON): Flaechen fuellen, Text und Icons, Bildschirmbereiche
+  kopieren (Scrollen, Fenster verschieben), Linien und der Mauszeiger.
+  Gemessen mit Fbench auf einem Raspberry Pi 4 gegen den Zeichencode
+  von 0.7.1:
+    - ganzes Fenster fuellen: etwa 16-mal so schnell
+    - Fenster oeffnen und schliessen: etwa 8-mal so schnell
+    - Text: etwa 1,8- bis 2,6-mal so schnell
+    - Vollbildfenster scrollen, Fenster verschieben: etwa doppelt so
+      schnell
+    - Mauszeiger zeigen und verbergen: etwa 5-mal so schnell
+  In der Fbench-Zusammenfassung: VDI-Zeichnen etwa 2,3-mal,
+  AES-Fensterarbeit etwa 2,4-mal, Vollbildfenster etwa 4,4-mal so
+  schnell.
+- VDI: Der Mauszeiger wird einmal je Bild gezeichnet (60-mal in der
+  Sekunde), wie bei EmuTOS, statt sofort bei jeder Mausbewegung. Die
+  Position, die ein Programm abfragt, ist immer die aktuelle; das Bild
+  folgt hoechstens ein Bild spaeter. Wie bisher bewegt sich der Zeiger
+  weiter, waehrend ein Programm rechnet.
+- VDI: Kleinere Korrekturen, jede an EmuTOS gemessen; sie betreffen
+  Programme, die diese Funktionen direkt benutzen: vergroesserter Text,
+  der ueber den Fensterrand ragt, ausgerichteter Text (v_justified), das
+  Ende einer XOR-Unterstreichung, die Koordinaten, die eine Funktion
+  sieht, wenn ein Programm weniger uebergibt, als sie liest, die Maus,
+  wenn ein Programm die Bildschirm-Workstation oeffnet oder schliesst,
+  ein Wechsel der Zeigerform mit vsc_form, und das Flag fuer die
+  Bildschirm-Hardcopy (Scrdmp, v_hardcopy; gedruckt wird weiterhin
+  nicht).
+- VDI: Eine Flutfuellung (v_contourfill), die bei EmuTOS nie endet,
+  hoert jetzt nach einer grosszuegigen Grenze auf, statt den Rechner
+  anzuhalten.
+- VDI: Das Mausrad im Desktop faellt nicht mehr aus, nachdem ein
+  Programm den Rad-Handler ausgeliehen und zurueckgegeben hat. Keines
+  der mitgelieferten Programme tut das.
+
+4.2 SDK (Bibliotheken fuer portierte Programme)
+
+- Keine Aenderungen seit 0.7.1.
+
+Die mitgelieferten Programme sind dieselben wie in 0.7.1 (unveraenderte
+Quellen); in dieser Version haben sie keine CHANGES.TXT. Was sich an
+ihnen in 0.7.1 geaendert hat, steht in den Versionshinweisen von 0.7.1.
+
+Fruehere Versionen: siehe https://github.com/tuxie01/NewTOS/releases
+
+
+5. Bekannte Einschraenkungen
+----------------------------
+
+- Keine 68000-Programme (.PRG/.TOS/.TTP/.ACC) — nur fuer NewTOS neu
+  uebersetzte Programme laufen.
+- Nur ein Programm gleichzeitig (plus Desktop und Accessories), wie
+  beim Atari ohne MiNT.
+- Kein Ton, kein Netzwerk, keine Uhr mit Batterie (nach dem Einschalten
+  beginnt das Datum beim Baudatum des Kerns).
+- Nur FAT16; nur Raspberry Pi 4.
+- Drucken und serielle Schnittstelle fehlen.
+- "Shutdown" in TeraDesk haelt den Pi absichtlich an (wie das Original):
+  danach Strom aus und wieder an.
+- Ein Programm, das in einer Endlosschleife haengt, laesst sich nicht
+  per Ctrl+Alt+Del beenden — dann Strom aus und wieder an.
+- Waehrend eines einzelnen langen Systemaufrufs (z. B. wenn eine
+  Programmdatei von der Karte geladen wird) steht der Mauszeiger fuer
+  diesen Moment still; EmuTOS zeichnet ihn weiter. Wie in frueheren
+  Versionen.
+- Mausrad mancher Kabelmaeuse (Logitech B100, Raspberry-Pi-Maus): scrollt
+  noch nicht; die mittlere Taste wird noch nicht genutzt (GitHub #8).
+- Menues: Ein Tester meldete fuer 0.7, dass ein Menueeintrag mehrere
+  Klicks brauchte und die schwarze Markierung stehen blieb. Wir koennen
+  es nicht nachstellen; falls du es in 0.7.2 noch siehst, bitte in
+  GitHub #19 melden (ein kurzes Video hilft).
+- Ausschalten: Warten, bis ein Programm fertig gespeichert hat. Was ein
+  Programm geschrieben, aber noch nicht geschlossen hat, geht verloren,
+  wie beim Atari.
+- Doom kann im Menue haengen bleiben, wenn das Accessory X-Shot
+  installiert ist.
+- Stuerzt ein Programm ab, erscheint ein Absturzbericht; nach einer
+  Taste geht es zurueck zum Desktop. Der Bericht endet mit einem
+  Diagnoseblock (Zeilen mit "crash-walk", "model" und "ladder"). Bitte
+  ein Foto vom GANZEN Bildschirm machen, bevor du eine Taste drueckst!
+
+
+6. Rueckmeldung
+---------------
+
+Einfach ausprobieren (Anregungen in TESTANLEITUNG.TXT) und auf GitHub
+melden: https://github.com/tuxie01/NewTOS/issues -> New issue -> Bug
+report (Deutsch oder Englisch). FEEDBACK.TXT nennt, was uns hilft. Fotos
+von Absturzberichten bitte anhaengen. Jede Rueckmeldung hilft, auch
+"alles lief".
+
+
+7. Lizenz und Quellen
+---------------------
+
+NewTOS steht unter der GNU GPL v2 oder spaeter. Die enthaltenen Programme
+stehen unter ihren eigenen Lizenzen (TeraDesk, QED, zView, HypView, Doom: GPL).
+Die vollstaendigen Quelltexte (NewTOS, SDK und die Anpassungen der
+Programme) liegen auf https://github.com/tuxie01/NewTOS, Tag v0.7.2.
+Die Raspberry-Pi-Firmware (start4.elf, fixup4.dat, .dtb) stammt von der
+Raspberry Pi Foundation und steht unter deren Lizenz (LICENCE.broadcom,
+liegt dem ZIP bei). DOOM1.WAD ist die frei weitergebbare Shareware-
+Episode von id Software.
+
+Projekt und Fehlermeldungen: https://github.com/tuxie01/NewTOS

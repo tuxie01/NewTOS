@@ -1,0 +1,49 @@
+NewTOS 0.7.2 — Wie testen?
+==========================
+
+Ganz einfach: Benutze NewTOS so, wie du einen Atari benutzen wuerdest.
+Es gibt keine Pflichtliste. Die meisten Fehler findet man beim normalen
+Arbeiten und Ausprobieren — genau das brauchen wir.
+
+Ein paar Anregungen, falls du nicht weisst, wo du anfangen sollst:
+
+- Mit dem Desktop arbeiten: Fenster, Ordner, Dateien kopieren, umbenennen,
+  loeschen, Einstellungen, "Desktop sichern".
+- Die Programme ausprobieren: QED (Texte schreiben), zView (eigene Bilder
+  ansehen), Doom, TeraDesk, CoreMark, HypView (QED.HYP oeffnen).
+- Das Accessory im Desk-Menue oeffnen, waehrend etwas anderes laeuft.
+- Neustart mit Ctrl+Alt+Del.
+- Alles, was dir vom echten Atari vertraut ist: sieht es gleich aus,
+  verhaelt es sich gleich?
+
+Neu in 0.7.2, bitte ausprobieren:
+
+- Tempo: Fenster oeffnen, schliessen, verschieben und in der Groesse
+  aendern, lange Texte in QED und HypView scrollen, Ordner mit vielen
+  Dateien oeffnen, Bilder in zView ansehen. Fuehlt es sich schneller an
+  als 0.7.1?
+- Sieht alles noch so aus wie in 0.7.1? Die neuen Zeichenroutinen
+  muessen genau dieselben Pixel zeichnen. Achte auf falsche Farben,
+  fehlende oder ueberzaehlige Linien, Luecken im Text, Reste nach dem
+  Verschieben eines Fensters.
+- Der Mauszeiger: langsam und schnell ueber Desktop, Symbole,
+  Menueleiste und Fenster fuehren; Menues aufklappen und waehlen,
+  Symbole ziehen, einen Auswahlrahmen aufziehen, Fenster verschieben
+  und in der Groesse aendern, Rollbalken-Schieber ziehen; in Dialogen
+  Knoepfe und Textfelder anklicken. Der Zeiger soll fluessig folgen und
+  keine Spuren oder Loecher hinterlassen. Waehrend ein Programm
+  beschaeftigt ist (z. B. Doom beim Start), soll er sich weiter bewegen;
+  waehrend eine Datei von der Karte gelesen wird, darf er kurz stehen.
+- Einige Minuten mit der Maus arbeiten: kein Haenger, kein Einfrieren.
+
+Was uns besonders interessiert:
+
+- Absturzbericht (Text mit "pc=", Registern und einem Diagnoseblock am
+  Ende): bitte ein FOTO vom ganzen Bildschirm machen, dann eine Taste
+  druecken.
+- Haenger: was hast du kurz vorher gemacht?
+- Alles, was anders aussieht oder sich anders anfuehlt als auf einem
+  Atari mit TOS 4 / EmuTOS — auch Kleinigkeiten.
+
+Rueckmeldung als Issue auf GitHub (https://github.com/tuxie01/NewTOS/issues
+-> New issue -> Bug report); FEEDBACK.TXT nennt, was uns hilft. Danke!

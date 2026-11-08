@@ -1,0 +1,48 @@
+NewTOS 0.7.2 - How to test
+==========================
+
+(Deutsch: siehe TESTANLEITUNG.TXT)
+
+Simple: use NewTOS the way you would use an Atari. There is no checklist.
+Most bugs show up during normal work and trying things out - that is
+exactly what we need.
+
+Some ideas if you don't know where to start:
+
+- Work with the desktop: windows, folders, copy, rename and delete files,
+  settings, "Save desktop".
+- Try the programs: QED (write texts), zView (look at your own pictures),
+  Doom, TeraDesk, CoreMark, HypView (open QED.HYP).
+- Open the accessory from the Desk menu while something else runs.
+- Restart with Ctrl+Alt+Del.
+- Everything you know from a real Atari: does it look the same, does it
+  behave the same?
+
+New in 0.7.2, please try:
+
+- Speed: open, close, move and resize windows, scroll long texts in QED
+  and HypView, open folders with many files, look at pictures in zView.
+  Does it feel faster than 0.7.1?
+- Does everything still look the same as in 0.7.1? The new drawing
+  routines must draw exactly the same pixels. Watch for wrong colours,
+  missing or extra lines, gaps in text, leftovers after moving a window.
+- The mouse pointer: move it slowly and fast over the desktop, icons,
+  menu bar and windows; open menus and choose entries, drag icons, drag
+  a selection frame, move and resize windows, drag scroll bar sliders;
+  click buttons and text fields in dialogs. The pointer should follow
+  smoothly and leave no traces or holes. While a program is busy
+  (e.g. Doom starting), the pointer should keep moving; it may stand
+  still for a moment while a file is read from the card.
+- Use the mouse for a few minutes: no hang, no freeze.
+
+What we are especially interested in:
+
+- Crash report (text with "pc=", registers and a diagnosis block at the
+  end): please take a PHOTO of the whole screen, then press a key.
+- Hangs: what did you do just before?
+- Anything that looks or feels different from an Atari with TOS 4 /
+  EmuTOS - small things too.
+
+Report as a GitHub issue (https://github.com/tuxie01/NewTOS/issues ->
+New issue -> Bug report); FEEDBACK-EN.TXT lists what helps us.
+Thank you!
