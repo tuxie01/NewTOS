@@ -1,0 +1,15 @@
+V55: functions of the rpi4 release kernel ELF (main checkout at 9c72d3ec0, cargo xtask build --board rpi4 --release,
+llvm-objdump -d) whose instructions name a V/Q register; count = such instructions. Same set as TASK/V59.md
+(+ raster_line::abline from V58); vbl::run_if_due, tos_api vb_draw and rust_irq_handler name none.
+360 _RNvNtCseoQfelENTIq_6kernel13raster_expand6expand
+184 _RNvNtCseoQfelENTIq_6kernel11raster_copy9copy_rect
+165 _RNvNtCseoQfelENTIq_6kernel11raster_line6abline
+165 _RNvNtCseoQfelENTIq_6kernel13raster_kernel12fill_pattern
+16 _RNvNtNtNtCseoQfelENTIq_6kernel4arch7aarch6410exceptions12apply_switch
+16 _RNvNtNtNtCseoQfelENTIq_6kernel4arch7aarch6410exceptions12handle_pexec
+16 _RNvNtNtNtCseoQfelENTIq_6kernel4arch7aarch6410exceptions12handle_pwait
+16 _RNvNtNtNtCseoQfelENTIq_6kernel4arch7aarch6410exceptions16finish_terminate
+16 _RNvNtNtNtCseoQfelENTIq_6kernel4arch7aarch6410exceptions26yield_after_completed_call
+16 rust_sync_handler
+14 _RNvNtCseoQfelENTIq_6kernel11raster_copy9read_rect
+14 _RNvXs_NtCseoQfelENTIq_6kernel11vdi_backendNtB4_9VdiScreenNtNtNtCs1AAKZLtbR7B_7tos_api3vdi7backend13RasterBackend17write_device_rect

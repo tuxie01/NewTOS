@@ -1,0 +1,2 @@
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-08-v55/runs/wkprobe/n-base/WKPROBE.BIN /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-08-v55/runs/wkprobe/n-chg/WKPROBE.BIN differ: char 155673, line 2
+cmp BIN exit 1

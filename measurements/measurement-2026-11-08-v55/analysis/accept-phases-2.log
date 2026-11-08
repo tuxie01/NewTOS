@@ -1,0 +1,16 @@
+=== phase wkprobe 11:39:47
+=== done wkprobe 11:44:58
+=== phase tables 11:44:58
+=== done tables 11:50:11
+=== phase vdprobe 11:50:11
+=== done vdprobe 11:51:40
+=== phase gui 11:51:40
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 77797 (<unknown process>)
+=== done gui 11:59:59

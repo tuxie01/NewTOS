@@ -1,0 +1,92 @@
+V55 -- TASK/V55.md: the mouse pointer that follows a packet is drawn in the next frame (EmuTOS mov_cur + vb_draw,
+vdi/vdi_asm.S:496-532, vdi/vdi_mouse.c:668-686), vq_mouse reports the new place at once; audit VDI-WK-004 (wkprobe M1,
+M2). User decision 2026-11-08: (a), match EmuTOS. Developer run, 2026-11-08. No card, no Pi, no push.
+Main checkout, branch main. Base e160f507 (main before V55). Change 9c72d3ec fix(vdi) (tos-api mouse.rs mov_cur/vb_draw,
+kernel/src/vbl.rs frame tick, host tests, spec, mapping, DEVIATIONS, moved line cites).
+Every build/QEMU side ran in a `git archive` tree of its commit (base e160f507, chg 9c72d3ec) in the session scratchpad,
+references/ linked from the main checkout; method/accept.sh holds the phases (trees builds virtimg boots virtmouse
+wkprobe tables vdprobe gui), copied from measurements/measurement-2026-11-08-v54/method/accept.sh with one new phase,
+virtmouse (method/virt-mouse.py). The probes ran from the main checkout at 9c72d3ec (wkprobe.c sha256 e9030e3c...,
+version 2, unchanged since V54), so base and change kernels meet the same probe.
+Every QEMU was started by accept.sh or a committed probe runner and killed by the PID recorded at its launch
+(analysis/qemu-pids.txt: 12 started by accept.sh, 12 gone, 0 still alive; the probe runners kill their own by PID,
+run.txt qemu-pid); 0 qemu-system processes alive after the run. Phase logs: analysis/accept-phases-1.log, -2.log.
+Inputs reused from committed runs (read, not copied): measurements/measurement-2026-11-07-v51/method/desk-mouse.txt,
+desk-shots.txt, desk-NEWDESK.INF, timed-shots.py.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 21 card.img.manifest of this run)
+optional_missing, verbatim, in all 21 card.img.manifest of this run: optional_missing none
+QEMU 11.0.2: raspi4b (-append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot, one QEMU at a time) and
+virt (headless; flat image; usb-kbd + usb-mouse on qemu-xhci).
+Oracle: EmuTOS 1a7484ab, ROM tools/oracle/etos512de-1a7484ab.img sha256
+323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c, Hatari 2.6.1, tools/oracle/hatari.cfg sha256
+c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46, profile falcontc (run-wkprobe.sh's command line).
+
+KERNELS (analysis/kernels.sha256; scratch only, not kept)
+  rpi4 --release   base d5162a79... (= the V54 change kernel: same product code)  chg 208e1187...
+  qemu-virt flat   base 4c02752f... (= V54 chg)                                   chg 8b7dffe3...
+  armed (injector) wkprobe: runs/wkprobe/kernels.sha256 (wk-base 0a081e81... = V54 wk-chg, wk-chg 1b7e6f44...);
+                   desktop: runs/gui/armed-kernels.sha256
+
+RESULTS
+ 1 PASS  host test tos-api/tests/vdi_v55_pointer_frame_redraw.rs (6 tests): M1 and M2 as the probe runs them on the
+         harness raster (immediate: screen unchanged, vq_mouse new; after the frame: pointer at newx/newy, the M2
+         "crumb" from the old save-under), several packets in one frame (one redraw at the last place), a packet while
+         hidden (the next show draws), hide/show drop a pending redraw, a button-only packet redraws nothing.
+         RED on the base (analysis/test-v55-red-before.txt): a scratch `git archive` of e160f507 with the test and a
+         no-op `vb_draw` shim in mouse.rs/mod.rs only so that it compiles (the base has no frame redraw); 4 of 6 fail --
+         M1a 194 px and M2a 353 px (the audit's numbers), packets-in-one-frame 194, button packet 256 (the base
+         erased and redrew on a button change, punching the hole into the bar). The two that pass there pin what
+         must not change (hidden packet, hide/show). GREEN after (analysis/test-v55-green-after.txt).
+         Adjusted existing tests (the packet no longer draws by itself): vdi_v54_vsc_form_no_redraw (one vb_draw after
+         its packet), aes_object_cursor_bracket (same, + set_locator_pos for the removed set_state),
+         aes_form_alert_cursor_bracket (set_locator_pos for set_state on a hidden pointer), aes_window_drag (its script
+         host's pump_input starts with vb_draw, as the kernel's pump does; move_to ends with one frame). Assertions
+         unchanged.
+ 2 PASS  cargo xtask test on the change (main checkout at 9c72d3ec): 2368 / 0 / 6 (analysis/cargo-xtask-test-chg.txt).
+         Base not re-run here: the lead's baseline 2362 / 0 / 6; +6 = the new tests.
+ 3 PASS  builds, fresh target per build, both boards, base / chg (analysis/builds-rc.txt, build-*.log, clippy-*.txt,
+         warnings.txt): rustc tos-api 64 / kernel 93 everywhere; clippy -p kernel 73 + 121 on both boards, clippy -p
+         tos-api 73, clippy -p tos-api --tests sum 87 (23 -> 24 lines: the new test target reports only the 2 harness
+         warnings every vdi_reference/harness.rs user reports, "2 duplicates") -- delta 0. Hits in the touched files
+         (mouse.rs, vbl.rs, gic.rs, the new test): the 8 existing `Vdipb` private-type warnings of mouse.rs, base = chg.
+ 4 PASS  boots: qemu-virt headless 100 s, base and chg (runs/boot-virt-*): "[desk] desktop up (0 drives)", 0
+         exception/panic lines; every raspi4b run below: 0 exception/panic lines.
+ 5 PASS  qemu-virt, USB mouse (runs/virtmouse-*, method/virt-mouse.py): QMP input-send-event relative motion to the
+         usb-mouse after "desktop up": 00-rest pointer at (959,539), 8 x (+20,+15) -> 01-moved at (1119,659), 8 x
+         (-10,+5) -> 02-moved2 at (1039,699) (viewed: arrow only, no trail on the desktop). base == chg PNG byte for
+         byte for all three (analysis/virtmouse-compare.txt).
+ 6 PASS  wkprobe version 2 (runs/wkprobe; compare = tosdump/probes/wkprobe-compare.py, maps in maps-*):
+         e1 == e2 byte for byte (BIN fcc49cf4... = the V54 oracle BIN, LOG identical): the oracle is reproducible.
+         e1 vs n-chg: 42 records, 1 differs -- P0 (the audit's out-of-scope AES launch form). M1a and M2a EQUAL
+         (acceptance), M1b, M2b, M3a/b and every other record EQUAL.
+         e1 vs n-base: 3 differ -- P0, M1a (194 px), M2a (353 px): the finding, unchanged from the audit and V54.
+         n-base vs n-chg: exactly M1a and M2a differ, LOG 122/122 lines equal (N/T0 lines left out by the script).
+         n-chg == n-chg2 byte for byte (BIN eee2e2a8...), LOG equal. n-base BIN = V54's n-chg BIN (82e9e690...).
+         First-packet wait (TOOL38): 1979 / 1981 / 1979 ticks with 1.50 / 1.91 / 1.95 M polls (cap 2 M) on n-base /
+         n-chg / n-chg2 -- every packet arrived alone ("changed" lines, deltas as on the oracle); no run aborted, none
+         rerun.
+         LOG differences e1 vs n-chg (the same 21 lines as e1 vs n-base): W1/C1 "vector before" lines (V53 side
+         finding), the W1 button-up packet line (NewTOS' wait catches the C1 packet; as in V54/V59), Z geometry/Getrez
+         (ADR-017 Rev. 2 / audit), W9 (EmuTOS hangs, VDI-WK-005).
+         BINs: e1, n-base, n-chg kept gzip -n with WKPROBE.BIN.sha256; e2, n-chg2 only in bin.sha256.
+ 7 PASS  vdprobe (runs/vdprobe): VDPROBE.BIN base == chg byte for byte (0a13c757..., = the V54/V59 runs), LOG
+         identical, 986 cases 0 differ. BINs (27 MB) not kept; bin.sha256.
+ 8 PASS  tables via cargo xtask tosdump --tree (runs/tab-*, analysis/tables-bin-compare.txt): vdi-all, AES r2, r3, r4
+         -- every BIN base == chg byte for byte. vdi-all vs oracle 0 of 182 on both; r2 78/78, r3 39/39 vs oracle on
+         both (the address cells, as in the sibling runs); r4 no reference.
+ 9 PASS  pictures base vs chg, PNG byte for byte (analysis/shots-compare.txt, runs/gui; inputs analysis/gui-inputs.txt):
+         desktop + IKBD injector (rest, menu, dialog, rubberband, window/slider/sizer/icon drags) 11/11 at 640x480 and
+         11/11 at 1920x1080; boot screen + AUTO console (APITEST.NCP) 6/6 at both sizes. Viewed: desk480-chg
+         04-window-drag-held shows the arrow over the window with the drag outline.
+10 PASS  ADR-036 point 3 at the release kernel (analysis/neon-functions-release.txt; rpi4 --release built in the main
+         checkout at 9c72d3ec, llvm-objdump -d): the functions naming a V/Q register are the set of TASK/V59 (+
+         raster_line::abline from V58): expand, copy_rect, abline, fill_pattern, read_rect,
+         VdiScreen::write_device_rect and the six context-switch functions. The frame tick (vbl::run_if_due), vb_draw
+         and rust_irq_handler name none: the redraw reaches the NEON kernels only through those out-of-line calls,
+         whose stack save areas cover the interrupt case (kernel/src/vbl.rs, "FP/SIMD context").
+
+NOT DRIVEN / OPEN
+  Real Pi 4: nothing run (no card, no HW). The frame tick runs inside the timer interrupt there too; the scenario is
+  "Uebergabe Pi" in TASK/V55.md. `input=aes` (boot argument) not booted here: with it the frame tick runs only in the
+  trap-side pump (kernel/src/vbl.rs irq_tick).
+  The tester's independent acceptance.

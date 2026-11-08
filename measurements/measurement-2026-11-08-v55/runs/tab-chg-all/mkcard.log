@@ -1,0 +1,8 @@
+mkcard: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/acc/xt-chg/tosdump-88257/card.img (64 MiB, MBR + FAT16, label NTCARD)
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+  + C:\DUMPVDI.NAP <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/acc/xt-chg/tosdump-88257/DUMPVDI.NAP
+  + C:\VDI.TSV <- /Volumes/Daten/Development/PiRusTOS/tosdump/cases/vdi-all.tsv
+  + C:\NEWDESK.INF <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/acc/xt-chg/tosdump-88257/NEWDESK.INF
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/acc/xt-chg/tosdump-88257/card.img
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/acc/xt-chg/tosdump-88257/card.img.manifest (3 files; copy it into the measurement run, RUNINFO.TXT cites it)
