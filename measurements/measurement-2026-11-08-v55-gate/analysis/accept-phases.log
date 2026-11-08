@@ -1,0 +1,30 @@
+=== phase trees 12:55:04
+tree base = 8f19602e8ae84d8d5eb2549fb85d17fa03e96065
+tree chg = 8ef6cf961f0272600a50746627510d1fc65e5a09
+=== done trees 12:55:22
+=== phase builds 12:55:22
+208e1187babaaf586f88ccc1a0d04831a20f6f6c05cb961af04662ef9ae4be88  base-rpi4.img
+60dee450165e4d1f39e3412abfa6ec117ecf05c9b55ac9c7059b4dbc3e1831cb  chg-rpi4.img
+=== done builds 12:56:49
+=== phase virtimg 12:56:49
+8b7dffe365614b5c9010180da2fc23a5b77d6b17a1b6e052504e0433dfc50df3  base-virt.img
+56ba8540d31c455b1a724bec0a6cc792ecf321e7b37ef5d1e3119b795069ab84  chg-virt.img
+=== done virtimg 12:57:07
+=== phase boots 12:57:07
+qemu-system-aarch64: terminating on signal 15 from pid 44705 (<unknown process>)
+exception-panic-lines 0
+[desk] desktop up (0 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 44705 (<unknown process>)
+exception-panic-lines 0
+[desk] desktop up (0 drives)
+=== done boots 13:00:29
+=== phase virtmouse 13:00:29
+qemu-system-aarch64: terminating on signal 15 from pid 44705 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 44705 (<unknown process>)
+=== done virtmouse 13:00:52
+=== phase rpiboot 13:00:52
+qemu-system-aarch64: terminating on signal 15 from pid 44705 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 44705 (<unknown process>)
+=== done rpiboot 13:02:40
+=== phase wkprobe 13:02:40
+=== done wkprobe 13:07:46

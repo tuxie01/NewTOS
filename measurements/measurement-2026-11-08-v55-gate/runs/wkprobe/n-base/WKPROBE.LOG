@@ -1,0 +1,131 @@
+H00 graf_handle 1 handle 2 xres 639 yres 479 colours 256
+T01 start hz_200 3023
+01 CAL    pens 0..15, 8x8 each, vr_recfl solid; x 128..135 untouched
+  rec 01 CAL (0,0 136x8)
+02 P0     the form left installed by the AES, v_show_c(0) at (60,60)
+  rec 02 P0 (52,52 32x32)
+03 P1     AES arrow via vsc_form at (100,100) on the cleared screen, read right after v_show_c(0)
+  rec 03 P1 (96,96 32x32)
+  v_get_pixel (100,100) ffdf (mask)  (101,101) 0000 (data)  (99,99) ffff (outside)
+04 P2     block form, hotspot 0x17,0x17, mask pen 2, data pen 3, at (200,150) on a pattern
+  rec 04 P2 (176,126 64x64)
+05 P3     block form, mask pen 300, data pen -2 (both out of range), hotspot 0,0 at (300,150)
+  rec 05 P3 (292,142 32x32)
+06 P4     arrow at (632,472): clipped right and bottom
+  rec 06 P4 (600,440 40x40)
+07 P5     cross, hotspot 15,15, at (3,3): clipped left and top
+  rec 07 P5 (0,0 40x40)
+08 P6     save-under: pattern, block form shown at (400,150), hidden again
+  rec 08 P6a (380,130 64x64)
+  rec 09 P6b (380,130 64x64)
+09 P7     hide count 3 (two v_hide_c more), then v_show_c(1) three times at (500,150)
+  rec 10 P7a (492,142 32x32)
+  rec 11 P7b (492,142 32x32)
+  rec 12 P7c (492,142 32x32)
+10 F1     K24: vsc_form while the pointer is shown (arrow -> block) at (110,260) on a pattern
+  rec 13 F1a (90,240 64x64)
+  rec 14 F1b (90,240 64x64)
+  rec 15 F1c (90,240 64x64)
+  rec 16 F1d (90,240 64x64)
+11 F2     K24: only the hotspot changes while shown (arrow 0,0 -> 8,8) at (300,260) on a pattern
+  rec 17 F2b (280,240 64x64)
+  rec 18 F2c (280,240 64x64)
+12 G1     V54: graf_mouse(USER_DEF, block, pens 0/1) while the pointer is shown at (110,360) on a pattern
+  rec 19 G1b (90,340 64x64)
+  rec 20 G1c (90,340 64x64)
+  rec 21 G1d (90,340 64x64)
+13 G2     V54: graf_mouse(USER_DEF, arrow, hotspot 8,8) while shown at (300,360) on a pattern
+  rec 22 G2b (280,340 64x64)
+  rec 23 G2c (280,340 64x64)
+14 D1     v_bar pen 2 over the shown arrow at (450,260), then v_hide_c, then v_show_c(0)
+  rec 24 D1a (432,244 56x56)
+  rec 25 D1b (432,244 56x56)
+  rec 26 D1c (432,244 56x56)
+T02 before the packets hz_200 3042
+15 M1     K9/K24: arrow shown at (200,350), packet +20,+8 (immediate, settled)
+N   waited 1980 ticks, 1948306 polls
+  packet f8 20 8: vq_mouse 0 200 350 -> 0 220 358 (changed)
+  rec 27 M1a (192,344 64x40)
+  rec 28 M1b (192,344 64x40)
+16 M2     K9/K24: arrow shown at (350,350), v_bar pen 2 over it, packet +30,0
+N   waited 389 ticks, 385625 polls
+  packet f8 30 0: vq_mouse 0 350 350 -> 0 380 350 (changed)
+  rec 29 M2a (336,336 96x56)
+  rec 30 M2b (336,336 96x56)
+17 M3     arrow hidden at (500,350), packet +10,+10, settled; then v_show_c(0)
+N   waited 389 ticks, 386740 polls
+  packet f8 10 10: vq_mouse 0 500 350 -> 0 510 360 (changed)
+  rec 31 M3a (492,344 40x40)
+  rec 32 M3b (492,344 40x40)
+18 W1     K21: cross at (100,100), hide count 3, own vex vectors, left button down, v_clswk + v_opnwk
+N   waited 392 ticks, 388488 polls
+  packet fa 0 0: vq_mouse 0 100 100 -> 1 100 100 (changed)
+  W1 before: vq_mouse 1 100 100
+  W1 v_clswk on the graf_handle handle
+  W1 v_opnwk(1): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  W1 old handle after: vq_extnd nintout 0 nptsout 0 intout[0] 30583
+  W1 new handle == old handle 1
+  W1 after: vq_mouse 0 319 239
+  W1 after: vqin_mode(1) 0
+  W1 vex_butv after: old == own 0, old == vector before W1 1
+  W1 vex_motv after: old == own 0, old == vector before W1 1
+  W1 vex_curv after: old == own 0, old == vector before W1 1
+  W1 vex_timv after: old == own 0, old == vector before W1 1 (ms 20)
+  W1 vex_wheelv after: old == own 0, old == vector before W1 0
+  rec 33 W1a (80,80 256x176)
+  rec 34 W1b (80,80 256x176)
+  rec 35 W1c (80,80 256x176)
+N   waited 778 ticks, 763904 polls
+  packet f8 0 0: vq_mouse 0 319 239 -> 0 359 259 (changed)
+19 W2     K21: cross shown at (100,100) on a pattern, v_clswk + v_opnwk while shown
+  W2 v_clswk on the graf_handle handle
+  W2 v_opnwk(1): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  rec 36 W2a (80,80 256x176)
+  rec 37 W2b (80,80 256x176)
+  rec 38 W2c (80,80 256x176)
+  W2 after: vq_mouse 0 319 239
+20 C1     K22: arrow shown at (150,150) on a pattern, own butv/motv/timv/wheelv, then v_clswk
+  C1 v_clswk on the graf_handle handle
+  rec 39 C1a (120,120 128x128)
+  C1 vex_butv after v_clswk: old == own 0, old == vector before C1 1
+  C1 vex_motv after v_clswk: old == own 0, old == vector before C1 1
+  C1 vex_curv after v_clswk: old == cursor vector before 0, == own 0
+  C1 vex_timv after v_clswk: old == own 1, old == vector before C1 0
+  C1 vex_wheelv after v_clswk: old == own 0, old == vector before C1 0
+  C1 after v_clswk: vq_mouse 0 150 150
+N   waited 2015 ticks, 2000000 polls
+  packet f8 40 20: vq_mouse 0 150 150 -> 0 150 150 (unchanged)
+  rec 40 C1b (120,120 128x128)
+  rec 41 C1c (120,120 128x128)
+  rec 42 C1d (120,120 128x128)
+21 Z      K23: v_opnwk work_in[0] = 1, 2, 3, 4, 5 (0x1C), 5 (0x1B), 1, 5 (0x1C)
+  Z1 v_opnwk(1): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z1 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z2 v_clswk on the graf_handle handle
+  Z2 v_opnwk(2): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z2 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z3 v_clswk on the graf_handle handle
+  Z3 v_opnwk(3): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z3 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z4 v_clswk on the graf_handle handle
+  Z4 v_opnwk(4): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z4 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z5 v_clswk on the graf_handle handle
+  Z5 v_opnwk(5): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z5 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z6 v_clswk on the graf_handle handle
+  Z6 v_opnwk(5): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z6 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z7 v_clswk on the graf_handle handle
+  Z7 v_opnwk(1): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z7 vq_extnd(1): planes 16 lut 0; Getrez 4
+  Z8 v_clswk on the graf_handle handle
+  Z8 v_opnwk(5): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  Z8 vq_extnd(1): planes 16 lut 0; Getrez 4
+22 W9     v_opnwk while the physical workstation is open (no v_clswk)
+  W9 before
+  W9 v_opnwk(1): handle 1 nintout 45 nptsout 6 work_out[0] 639 [1] 479 [13] 256 [35] 1 [39] 0 ptsout[1] 4
+  W9 v_opnwk returned
+  W9 three Vsync returned, hz_200 advanced 1
+T03 end hz_200 9099
+END

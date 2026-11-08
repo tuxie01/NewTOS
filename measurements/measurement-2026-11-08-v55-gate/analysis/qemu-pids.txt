@@ -1,0 +1,12 @@
+12:57:07 boot-virt-base pid 47437 started
+12:58:48 boot-virt-base pid 47437 gone
+12:58:48 boot-virt-chg pid 56821 started
+13:00:29 boot-virt-chg pid 56821 gone
+13:00:29 virtmouse-base pid 78237 started
+13:00:41 virtmouse-base pid 78237 gone
+13:00:41 virtmouse-chg pid 81453 started
+13:00:52 virtmouse-chg pid 81453 gone
+13:01:00 bc480-base pid 87449 started
+13:01:46 bc480-base pid 87449 gone
+13:01:54 bc480-chg pid 98861 started
+13:02:40 bc480-chg pid 98861 gone

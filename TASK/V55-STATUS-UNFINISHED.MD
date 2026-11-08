@@ -12,7 +12,7 @@ Timer-Interrupt).
 | Datei | was |
 |---|---|
 | `tos-api/src/vdi/mouse.rs` | `set_state` ersetzt durch `mov_cur` (nur Ort + `draw_flag`) und `vb_draw` (Neuzeichnen je Bild); `MOUSE_FLAG`; EmuTOS-Reihenfolge in `hide`/`dis_cur`; nur Pakete mit Bewegung bewegen |
-| `kernel/src/vbl.rs` (neu) | Bildtakt: `vb_draw` einmal je Bild des `Vsync`-Bildzaehlers, aus dem Timer-IRQ ueber EL0 und am Anfang der Trap-Pumpe |
+| `kernel/src/vbl.rs` (neu) | Bildtakt: `vb_draw` einmal je Bild des `Vsync`-Bildzaehlers, aus dem Timer-IRQ im Kontext der INPUT01-Pumpe (EL0, kein Upcall, AES-Faser nicht ausgesetzt; Nachtrag) und am Anfang der Trap-Pumpe |
 | `kernel/src/drivers/gic.rs`, `kernel/src/host_env.rs`, `kernel/src/lib.rs` | Aufrufe `vbl::irq_tick` / `vbl::pump_tick`, Modul |
 | `kernel/src/raster_copy.rs`, `raster_expand.rs`, `raster_kernel.rs`, `input_gate.rs` | Begruendungstexte (FP-Kontext, Zeigerbewegung) auf den Bildtakt nachgezogen |
 | `tos-api/tests/vdi_v55_pointer_frame_redraw.rs` (neu) | 6 Hosttests: M1, M2, mehrere Pakete je Bild, verdeckt, hide/show verwerfen, Tastenpaket |
@@ -39,3 +39,12 @@ Timer-Interrupt).
 - Tester: unabhaengige Abnahme (Uebergabe in `TASK/V55.md`).
 - Echte Pi mit USB-Maus: Tester-Szenario "Uebergabe Pi" in `TASK/V55.md`.
 - `docs/STATUS.md` nicht angefasst (Lead).
+
+## Nachtrag (2026-11-08)
+
+Tester-Befund zur Sicherheitsbegruendung bestaetigt und behoben: `vbl::irq_tick` hatte nur "EL0 + Modus" geprueft,
+lief also auch waehrend eines EL0-Upcalls ueber einer ruhenden Kernoperation. Jetzt `input_gate::frame_tick_allowed`
+= `irq_pump_allowed` (Commit `8ef6cf96`; Hosttest `frame_tick_needs_the_pump_context`, rot mit der alten Bedingung;
+`cargo xtask test` 2369/0/6, Warnungen Delta 0, beide Boards booten, wkprobe und qemu-virt-Maus unveraendert gut). Begruendung in
+`TASK/V55.md` berichtigt. Beleg `measurements/measurement-2026-11-08-v55-gate/RUNINFO.TXT`. Offen bleiben Tester und
+echte Pi.

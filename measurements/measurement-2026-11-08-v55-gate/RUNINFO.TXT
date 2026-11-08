@@ -1,0 +1,51 @@
+V55 gate addendum -- TASK/V55.md "Nachtrag (Developer, 2026-11-08)": the tester's finding (TASK/V55.md "Abnahme (Tester,
+2026-11-08)", measurements/measurement-2026-11-08-v55-test/RUNINFO.TXT) that vbl::irq_tick checked only "interrupted EL0
+and Irq mode" while INPUT01's pump also requires no upcall in flight and an idle AES fiber. Confirmed from the code and
+fixed: irq_tick now runs only when input_gate::frame_tick_allowed (= irq_pump_allowed) holds. Developer run, 2026-11-08.
+No card, no Pi, no push. The V55 run (measurements/measurement-2026-11-08-v55/) stays as it was; this is a new run.
+Main checkout, branch main. Base 8f19602e (V55 as the tester accepted it; product code = 9c72d3ec). Change 8ef6cf96
+fix(vbl) (kernel/src/vbl.rs irq_tick, kernel/src/input_gate.rs frame_tick_allowed + host test).
+Builds and QEMU sides ran in `git archive` trees of both commits in the session scratchpad, references/ linked;
+method/accept.sh = the V55 run's accept.sh with this run directory, the committed virt-mouse.py of the V55 run, and a new
+phase rpiboot (the gui phase's boot screen + console at 640x480 only). Phases run: trees builds virtimg boots virtmouse
+rpiboot wkprobe (tables, vdprobe and the desktop injector were not asked for and not run). Every QEMU killed by the PID
+recorded at its launch (analysis/qemu-pids.txt: 6 started, 6 gone; the probe runners kill their own); 0 qemu-system
+processes alive after the run. Phase log analysis/accept-phases.log.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 5 card.img.manifest of this run)
+optional_missing, verbatim, in all 5 card.img.manifest of this run: optional_missing none
+QEMU 11.0.2 raspi4b (-append serial=on, APFS clone per boot) and virt (headless, usb-kbd + usb-mouse). Oracle as in the V55
+run: EmuTOS 1a7484ab, ROM sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c, Hatari 2.6.1, profile
+falcontc.
+
+KERNELS (analysis/kernels.sha256; scratch only)
+  rpi4 --release   base 208e1187... (= the V55 run's chg kernel)  chg 60dee450...
+  qemu-virt flat   base 8b7dffe3... (= V55 chg)                   chg 56ba8540...
+  armed wkprobe    runs/wkprobe/kernels.sha256 (wk-base 1b7e6f44... = V55 wk-chg, wk-chg b74ab165...)
+
+RESULTS
+ 1 PASS  host test kernel/src/input_gate.rs frame_tick_needs_the_pump_context (run by tools/xtask, which includes the file
+         by path). RED with the old condition as a mutant in place (frame_tick_allowed = `mode == Irq && from_el0`,
+         analysis/test-gate-red-mutant.txt: panics at the upcall assertion), GREEN with the gate
+         (analysis/test-gate-green.txt). The mutant was edited back from a copy, not via git. The tos-api harness cannot
+         drive this decision: it is kernel IRQ code; the decision itself is the pure function under test, and
+         vbl::irq_tick calls nothing else to decide.
+ 2 PASS  cargo xtask test on the change (main checkout at 8ef6cf96): 2369 / 0 / 6 (analysis/cargo-xtask-test-chg.txt);
+         V55 2368 / 0 / 6, +1 = the new test.
+ 3 PASS  builds, fresh target per build, both boards, base / chg (analysis/builds-rc.txt, warnings.txt): rustc 64 / 93,
+         clippy -p kernel 73 + 121 on both boards, clippy -p tos-api 73, --tests sum 87 (24 lines) -- delta 0. Hits in the
+         touched files (mouse.rs, vbl.rs, input_gate.rs, the V55 test): the 8 existing mouse.rs warnings, base = chg.
+ 4 PASS  boots: qemu-virt headless 100 s, base and chg: "[desk] desktop up (0 drives)", 0 exception/panic lines.
+         raspi4b plain release kernels, boot screen + AUTO console (runs/rpiboot, analysis/shots-compare.txt): 6/6 PNG
+         base == chg, 0 exception/panic lines; armed raspi4b in the wkprobe runs: 0 exception/panic lines.
+ 5 PASS  qemu-virt usb-mouse via QMP (runs/virtmouse-*): the pointer follows (00-rest, 01-moved, 02-moved2), base == chg
+         byte for byte, and equal to the V55 run's PNGs (sha256 prefixes 2e0f487f, 5a4671bc, dfe559b8).
+ 6 PASS  wkprobe v2 (runs/wkprobe): e1 == e2 (BIN fcc49cf4..., = V55/V54 oracle). e1 vs n-chg: 1 of 42 differs, P0 (known);
+         M1a, M2a and all others EQUAL. n-base vs n-chg: 0 records, LOG 122/122 equal; n-chg == n-chg2; all three NewTOS
+         BINs eee2e2a8... = the V55 run's n-chg. First-packet wait 1980 / 1980 / 1965 ticks at 1.95 / 1.90 / 1.41 M polls
+         (cap 2 M): no run aborted, none rerun. LOG e1 vs n-chg: the same 21 known lines as in the V55 run.
+         BINs e1, n-base, n-chg kept gzip -n with WKPROBE.BIN.sha256; e2, n-chg2 only in bin.sha256.
+
+NOT DRIVEN / OPEN
+  The gated case itself (a timer interrupt during an EL0 upcall: kbdvec hook, G_USERDEF callout) was not provoked in QEMU --
+  no such program in the run; covered by the host test of the decision and by reading irq_tick. Real Pi 4: nothing run.
+  The tester's acceptance of the addendum.
