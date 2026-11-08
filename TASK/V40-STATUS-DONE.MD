@@ -1,6 +1,6 @@
-# V40 — Quittung UNFINISHED (2026-11-08)
+# V40 — Quittung DONE (2026-11-08)
 
-Umgesetzt und gegen das Orakel gemessen; **UNFINISHED heisst hier: die Tester-Abnahme fehlt**, nicht die Umsetzung.
+Umgesetzt, gegen das Orakel gemessen und vom Tester abgenommen (PASS, `da2aad51`, `measurements/measurement-2026-11-08-v40-test/RUNINFO.TXT`): 34/34 Faelle orakelgleich, Basis gegen Fix genau 16 Faelle (Endpixel der Unterstreichung), AES/Desktop bytegleich. Testluecke: der Schreiber der Menue-Trennlinie hat keinen Test (Mutant ueberlebt).
 
 `LSTLIN` wird wie in EmuTOS als ein globales Flag gefuehrt (`bios/lineavars.S:288`): `polyline` schreibt es fuer jede
 Punktzahl (FALSE beim Start, TRUE vor dem letzten Segment, `vdi/vdi_line.c:1106-1108`), die Unterstreichung liest es

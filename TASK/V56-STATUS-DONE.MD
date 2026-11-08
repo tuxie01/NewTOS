@@ -1,6 +1,6 @@
-# V56 — Quittung UNFINISHED (2026-11-08)
+# V56 — Quittung DONE (2026-11-08)
 
-Umgesetzt und gemessen, Tester-Abnahme offen. Die drei `vex_*`-Vorgaben `just_rts`, `mov_cur` und das AES-Radtoken waren leere
+Umgesetzt, gemessen und vom Tester abgenommen (PASS, `f064a5cf`, `measurements/measurement-2026-11-08-v56-test/RUNINFO.TXT`: Symbole und Disassembly bestaetigt, Radszene Basis tot / Fix scrollt / Orakel wie Fix, Regression bytegleich, qemu-virt gebootet). Offen: USB-Rad auf der echten Pi im Sammelszenario. Die drei `vex_*`-Vorgaben `just_rts`, `mov_cur` und das AES-Radtoken waren leere
 Funktionen; LLVMs MergeFunctions legte sie im Release-Kern auf eine Adresse (Gegenbau mit `-Z merge-functions=disabled`: drei
 Adressen), und `vex_wheelv` verlor den AES-Zweig. Jetzt sind es drei Ein-Byte-`static`s im `.bss` (`token_va`), die weder LLVM noch
 ein Linker zusammenlegen darf.
