@@ -1,0 +1,28 @@
+=== phase boots 12:10:40
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+exception-panic-lines 0
+[desk] desktop up (0 drives)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+exception-panic-lines 0
+[desk] desktop up (0 drives)
+=== done boots 12:14:02
+=== phase virtmouse 12:14:02
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+=== done virtmouse 12:14:25
+=== phase wkprobe 12:14:25
+=== done wkprobe 12:19:35
+=== phase tables 12:19:35
+=== done tables 12:24:41
+=== phase vdprobe 12:24:41
+=== done vdprobe 12:25:58
+=== phase gui 12:25:58
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+qemu-system-aarch64: terminating on signal 15 from pid 5234 (<unknown process>)
+=== done gui 12:33:55

@@ -1,0 +1,88 @@
+V55 tester run -- independent acceptance of TASK/V55.md (mouse pointer drawn in the next frame, vb_draw; kernel/src/vbl.rs frame tick).
+2026-11-08. Base e160f507, change 9c72d3ec (fix), 356e3c00 (developer run + receipt). Main checkout, branch main, clean tree at start.
+No card, no Pi, no push. The developer's results were NOT used as evidence: every number below comes from this run's own files.
+Method: method/accept.sh = the developer's phase script (measurements/measurement-2026-11-08-v55/method/accept.sh) with only the run
+directory changed; phases trees builds virtimg boots virtmouse wkprobe tables vdprobe gui. Every build/QEMU side ran in a `git archive` tree
+of its commit (scratchpad), references/ linked; probes (tosdump/probes) from the main checkout. Own scenarios: method/virt-spin.py+spin.sh,
+virt-spin2.py+spin2.sh, spin2-inputaes.sh, virt-rubber.py. Every QEMU was killed by the PID recorded at launch (analysis/qemu-pids.txt: 26
+started, 26 gone, 0 STILL ALIVE; pgrep qemu-system-aarch64 after the run: 0). Hatari runs belong to run-wkprobe.sh (own PID kill).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of all 8 card.img.manifest of runs/gui)
+optional_missing, verbatim, in all 8 card.img.manifest of this run: optional_missing none
+QEMU 11.0.2 (raspi4b -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot; virt headless, usb-kbd + usb-mouse on qemu-xhci).
+Oracle: EmuTOS 1a7484ab, profile falcontc (run-wkprobe.sh), Hatari 2.6.1 (tools/hatari-oracle.sh through run-wkprobe.sh).
+
+RESULTS
+ 1 PASS  host test vdi_v55_pointer_frame_redraw, change: 6/6 ok (cargo test -p tos-api --test ... in the main checkout).
+         Base: scratch archive of e160f507 + the new test + a no-op `vb_draw(_backend)` shim (mouse.rs, mod.rs re-export, nothing else) so that it
+         compiles (analysis/test-v55-red-base.txt): 4 of 6 FAIL (button_packet_redraws_nothing, m1_packet_while_shown_is_drawn_in_the_next_frame,
+         m2_bar_over_the_pointer_stays_whole_until_the_frame, packets_in_one_frame_give_one_redraw_at_the_last_place), 2 ok (the two that pin
+         unchanged behaviour: hide/show drop a pending redraw, packet while hidden). Judgement: the red is meaningful -- the shim does nothing,
+         so the base keeps drawing inside feed_relative, which is exactly the behaviour under test (draw in the packet vs in the frame); the
+         shim cannot make a frame-redraw test fail by itself.
+ 2 PASS  cargo xtask test, change (analysis/cargo-xtask-test-chg.txt): 2368 passed / 0 failed / 6 ignored, exit 0.
+         Base: `cargo xtask test` in an archive tree (no .git) fails 11 xtask doc_check/rsc tests that need the git repo (tree artifact, not the
+         code); `cargo test --no-fail-fast` there (analysis/cargo-test-base-nofailfast.txt): 2351 passed / 11 failed (those) / 6 ignored =
+         2362 + 6 ignored; change 2368 -> delta +6 = the 6 new tests, no test lost.
+ 3 PASS  builds + warnings, fresh target per build, both boards, base and change (analysis/builds-rc.txt, warnings.txt): all rc 0;
+         rustc tos-api 64 / kernel 93 on all six builds; clippy -p kernel 73+121 (sum 194) on both boards both sides; clippy -p tos-api 73,
+         clippy -p tos-api --tests sum 87 (23 -> 24 lines, the new test target) -- delta 0. Kernel images sha256 identical to the
+         developer's (analysis/kernels.sha256: rpi4 release base d5162a79 chg 208e1187; virt base 4c02752f chg 8b7dffe3).
+ 4 PASS  boot to desktop: qemu-virt headless 100 s base and change "[desk] desktop up (0 drives)", 0 exception/panic lines
+         (runs/boot-virt-*); every raspi4b run (runs/gui, serial=on) 0 exception/panic lines.
+ 5 PASS  wkprobe v2 (runs/wkprobe, tosdump/probes/run-wkprobe.sh + wkprobe-compare.py): oracle e1 == e2 byte for byte (BIN, LOG);
+         e1 vs n-chg: 42 cases, 1 differs = P0 (known separate finding); M1a and M2a EQUAL (64x40 at 192,344; 96x56 at 336,336), M1b, M2b and the
+         rest EQUAL. e1 vs n-base: 3 differ P0, M1a (194 px), M2a (353 px). n-base vs n-chg: exactly M1a and M2a differ (194/353 px), LOG 122/122
+         lines equal. n-chg vs n-chg2: BIN byte-identical; LOG differs only in the tick/poll counters. First-packet wait (TOOL38): n-base 1980
+         ticks/1.92 M polls, n-chg 1976/1.95 M, n-chg2 1979/1.97 M (cap 2 M; close to it but under, every packet arrived alone); no run aborted,
+         none rerun. The three LOG lines "waited N ticks, 2000000 polls" (C1 after v_clswk, "unchanged") occur on base and change alike and are
+         the old C1 behaviour of V54/V59, not counted.
+ 6 PASS  tables via cargo xtask tosdump --tree (runs/tab-*, analysis/tables-bin-compare.txt): vdi-all, AES r2, r3, r4: BIN base == change
+         byte for byte (VDI.BIN e91b865b.., r2 1095be59.., r3 9dc31c23.., r4 c3361057..). vdi-all vs oracle 0 of 182 on both; r2 78/78 and r3
+         39/39 differ vs oracle on BOTH sides identically (the known address cells), r4 has no reference. vdprobe (runs/vdprobe): VDPROBE.BIN
+         base == change (sha256 0a13c757..), LOG diff exit 0, 986 cases 0 differ.
+ 7 PASS  desktop + IKBD injector, raspi4b armed kernels, base vs change, PNG byte for byte (analysis/shots-compare.txt): 640x480 11/11,
+         1920x1080 11/11 (menu, dialog, rubber band, window/slider/sizer/icon drags); boot screen + AUTO console 6/6 at both sizes;
+         0 exceptions. Viewed: desk480-chg 04-window-drag-held (arrow over the window, drag outline), 03-rubberband-held (band, no pointer --
+         as base).
+ 8 PASS  qemu-virt, real USB path (usb-mouse via QMP input-send-event), base == change PNG for PNG: runs/virtmouse-* 00-rest (959,539),
+         01-moved, 02-moved2 (viewed: arrow follows, no trail); runs/rubber-{chg,base}: left button held, 2 x 8 moves, release, move on --
+         6/6 PNG identical base/change (viewed 03-band-held2: band follows, gone after release, pointer back).
+ 9 PASS  IRQ-over-EL0 path (own scenario, scratch-patched desktop, TESTER-TEMP only in a scratchpad tree; method/spin2.sh):
+         key 'c' = trap-free spin ~5 s, ONE pump pass (evnt_multi MU_TIMER) that decodes the queued USB report, trap-free spin ~5 s, FLATHAND.
+         Screendump every 0.8 s (runs/spin2-*): change AND base show the pointer at the new place from s006 (the pass) through the whole second
+         spin (s006..s012) -- identical timelines; MUTANT (scratch kernel with irq_tick made a no-op, runs/spin2-mut) shows NO change in
+         s006..s012 and the pointer only after the spin ends (s013). So the redraw in the second spin is the timer-IRQ frame tick over EL0 and
+         the scenario discriminates. With `-append input=aes` (runs/spin2-chg-inputaes): no change through s012 either, as designed (frame
+         tick trap-side only; serial: "[input] keyboard/mouse pump: AES waits and console reads only (input=aes)").
+10 PASS  hide/show (key 'b' = graf_mouse(M_OFF), trap-free spin, M_ON; runs/spin-{chg,base}-b): during the hidden spin the only screen
+         difference to rest is the erased pointer cell (959,539,969,555); after M_ON + the queued moves the pointer is at the final place; the
+         old place equals a clean shifted background area (no stale image), no other difference to the rest picture outside the two pointer
+         cells; final PNG change == base.
+11 PASS  FP/IRQ-safety, the part that can be confirmed (release rpi4 kernel of 9c72d3ec, llvm-objdump, analysis/neon-functions-release.txt):
+         functions naming V/Q registers = raster_copy::{copy_rect, read_rect}, raster_line::abline, raster_expand::expand,
+         raster_kernel::fill_pattern, VdiScreen::write_device_rect, apply_switch, handle_pexec, handle_pwait, finish_terminate,
+         yield_after_completed_call, rust_sync_handler (save_fp_context inlined) -- NOT vbl::run_if_due/irq_tick/pump_tick, NOT
+         tos_api vb_draw, NOT rust_irq_handler. Each NEON kernel has as many `stp q` to its own frame as `ldp q` back (copy_rect 18/18, read_rect
+         2/2, abline 27/27, expand 54/54, fill_pattern 27/27, write_device_rect 2/2). Exception entry: IRQ vector -> EXC_BODY rust_irq_handler
+         (exception_vectors.s:137), hardware masks DAIF.I on entry; vb_draw runs after the EOI with IRQs masked.
+12 SEE   IRQ-safety argument, the part that is NOT confirmed as written: see FINDING.
+
+FINDING (not a failure of any run, a gap between the argument and the code)
+  TASK/V55.md and kernel/src/vbl.rs say vb_draw from the timer IRQ "interrupts no kernel code" because it runs only over EL0, and that the
+  path is "the one of INPUT01/V59". vbl::irq_tick checks only `spsr_is_el0 && mode == Irq`. INPUT01's own pump (host_env::irq_input_pump ->
+  input_gate::irq_pump_allowed) additionally requires a running process, upcall_depth == 0 and !aes_suspended, with the stated reason that
+  an EL0 upcall (kbdvec hook, G_USERDEF callout inside an AES draw, wheel vector) runs while a kernel operation is suspended underneath it.
+  irq_tick does not make that check, so vb_draw can run in an IRQ over such an upcall, i.e. between the start and the end of a suspended AES
+  call (mid objc_draw). The VDI guards keep it off while HIDE_CNT or MOUSE_FLAG is set, and no backend lock exists (kernel/src/vdi_backend.rs
+  has atomics only), so a hang is not to be expected; the open question is whether the pointer is hidden while a G_USERDEF callout runs
+  (EmuTOS' VBL has the same exposure; NewTOS' INPUT01 deliberately excluded the case). Not driven: no G_USERDEF app was run, nothing in the
+  harness exercises it. Routed to the lead/developer: either gate irq_tick with the same context as irq_pump_allowed, or correct the argument.
+
+NOT DRIVEN / OPEN
+  Real Pi 4 (all of "Uebergabe Pi": USB-HID, HDMI, cache-sensitive rendering, QUIRK-001): nothing run.
+  G_USERDEF / kbdvec upcall over an IRQ with a pointer pending (FINDING). raspi4b has no input path, so the IRQ-over-EL0 path ran on qemu-virt only;
+  the injector scenes on raspi4b feed from the trap-side pump.
+OUT-OF-SCOPE OBSERVATION
+  qemu-virt: with a trap-free EL0 spin and a QMP usb-mouse move (runs/spin-{base,chg}-a, spin2-*), the USB report is not drained by the
+  INPUT01 timer-IRQ pump -- the pointer stays until the next trap-side pump, on the base kernel as well (same screen timeline). INPUT01 was
+  measured with the injector on raspi4b; whether the real xhci/USB path is drained from the IRQ on silicon is a Pi item (V55 unrelated).

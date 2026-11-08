@@ -1,0 +1,39 @@
+6.32 screendump 00-rest {'return': {}}
+6.32 key a down=True {'return': {}}
+6.42 key a down=False {'return': {}}
+8.06 screendump 01-spin-rest {'return': {}}
+8.06 rel 20 15 {'return': {}}
+8.12 rel 20 15 {'return': {}}
+8.17 rel 20 15 {'return': {}}
+8.22 rel 20 15 {'return': {}}
+8.28 rel 20 15 {'return': {}}
+8.33 rel 20 15 {'return': {}}
+8.39 rel 20 15 {'return': {}}
+8.44 rel 20 15 {'return': {}}
+9.53 screendump 02-spin-moved {'return': {}}
+9.53 rel 30 -10 {'return': {}}
+9.58 rel 30 -10 {'return': {}}
+9.64 rel 30 -10 {'return': {}}
+9.70 rel 30 -10 {'return': {}}
+9.75 rel 30 -10 {'return': {}}
+9.81 rel 30 -10 {'return': {}}
+9.86 rel 30 -10 {'return': {}}
+9.92 rel 30 -10 {'return': {}}
+11.01 screendump 03-spin-moved2 {'return': {}}
+16.05 screendump t01 {'return': {}}
+21.09 screendump t02 {'return': {}}
+26.13 screendump t03 {'return': {}}
+31.16 screendump t04 {'return': {}}
+36.20 screendump t05 {'return': {}}
+41.24 screendump t06 {'return': {}}
+46.27 screendump t07 {'return': {}}
+51.31 screendump t08 {'return': {}}
+56.35 screendump t09 {'return': {}}
+61.39 screendump t10 {'return': {}}
+66.43 screendump t11 {'return': {}}
+71.46 screendump t12 {'return': {}}
+76.50 screendump t13 {'return': {}}
+81.54 screendump t14 {'return': {}}
+86.58 screendump t15 {'return': {}}
+91.61 screendump t16 {'return': {}}
+96.65 screendump t17 {'return': {}}

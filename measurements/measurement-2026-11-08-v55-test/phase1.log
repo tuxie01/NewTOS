@@ -1,0 +1,12 @@
+=== phase trees 12:05:59
+tree base = e160f5075ffc0c1ce7999f2b62f7b0e739d4f276
+tree chg = 9c72d3ec07da3a3904ffce6b34fc815c616293cd
+=== done trees 12:06:17
+=== phase builds 12:06:17
+d5162a7999f3c77537bb45c760bd5548a73eae1c38c1aee5ca427d8700c80279  base-rpi4.img
+208e1187babaaf586f88ccc1a0d04831a20f6f6c05cb961af04662ef9ae4be88  chg-rpi4.img
+=== done builds 12:07:58
+=== phase virtimg 12:07:58
+4c02752ffba0cc094e91861cec0fc2ad6991368cfe19ffe8b818dfe5fed5f0c5  base-virt.img
+8b7dffe365614b5c9010180da2fc23a5b77d6b17a1b6e052504e0433dfc50df3  chg-virt.img
+=== done virtimg 12:08:41

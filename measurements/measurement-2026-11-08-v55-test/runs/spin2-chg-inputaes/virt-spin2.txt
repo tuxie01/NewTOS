@@ -1,0 +1,37 @@
+6.31 screendump rest {'return': {}}
+6.52 key c sent
+7.96 8 moves sent
+7.99 screendump s000 {'return': {}}
+8.82 screendump s001 {'return': {}}
+9.66 screendump s002 {'return': {}}
+10.50 screendump s003 {'return': {}}
+11.33 screendump s004 {'return': {}}
+12.17 screendump s005 {'return': {}}
+13.01 screendump s006 {'return': {}}
+13.84 screendump s007 {'return': {}}
+14.68 screendump s008 {'return': {}}
+15.52 screendump s009 {'return': {}}
+16.36 screendump s010 {'return': {}}
+17.20 screendump s011 {'return': {}}
+18.04 screendump s012 {'return': {}}
+18.87 screendump s013 {'return': {}}
+19.71 screendump s014 {'return': {}}
+20.55 screendump s015 {'return': {}}
+21.39 screendump s016 {'return': {}}
+22.23 screendump s017 {'return': {}}
+23.07 screendump s018 {'return': {}}
+23.90 screendump s019 {'return': {}}
+24.74 screendump s020 {'return': {}}
+25.58 screendump s021 {'return': {}}
+26.42 screendump s022 {'return': {}}
+27.25 screendump s023 {'return': {}}
+28.09 screendump s024 {'return': {}}
+28.93 screendump s025 {'return': {}}
+29.77 screendump s026 {'return': {}}
+30.61 screendump s027 {'return': {}}
+31.45 screendump s028 {'return': {}}
+32.28 screendump s029 {'return': {}}
+33.12 screendump s030 {'return': {}}
+33.95 screendump s031 {'return': {}}
+34.79 screendump s032 {'return': {}}
+35.63 screendump s033 {'return': {}}
