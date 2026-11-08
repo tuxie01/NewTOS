@@ -1,0 +1,3 @@
+EMUTOS-1a7484ab-VDI-v18-falcontc.BIN vs NEWTOS.BIN -- area VDI, 19 cases from vdi-v18.tsv
+
+0 of 19 cases differ

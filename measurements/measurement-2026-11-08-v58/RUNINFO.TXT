@@ -1,0 +1,110 @@
+V58 -- TASK/V58.md: raster kernel 4, lines. The kernel backend's abline draws the shared walk's pixels as one
+span (horizontal, on kernel 1's NEON row path), one stride column (vertical) or index-stepped Bresenham pixels
+(any other), pixel store/colours/mode resolved once, touched rectangle without per-pixel division, one clean per
+call (ADR-036). Developer run, 2026-11-08. No card, no Pi, no push.
+Worktree branch v58 (agent worktree), base 6821179c (main with V49-V51 merged). Change = 1c1c71a3 perf(vdi).
+Measured: base 6821179c against chg 1c1c71a3.
+Every QEMU/build side ran in a `git archive` tree of its commit in the session scratchpad (references/ linked);
+method/accept.sh holds the phases (builds boots tables probe gui pikernels), written for this run; the helpers
+(boot-virt.sh, pi-boot.sh, boot-console.sh, desk-inj.sh, timed-shots.py) are new, after the pattern of the V51
+run's, every QEMU stopped by the PID its starter recorded (boot-virt.sh starts qemu-system-aarch64 itself with
+the arguments of `cargo xtask run --board qemu-virt --headless`, no pattern kill); accept.sh's qemu_list only
+lists the QEMUs naming the scratch after each step (analysis/qemu-list.txt: 39 lines, all "none"). Inputs
+desk-mouse.txt / desk-shots.txt / desk-NEWDESK.INF copied unchanged from measurements/measurement-2026-11-07-v51/method/.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest of this run)
+optional_missing, verbatim, in every card.img.manifest of this run: optional_missing none   (31 manifests)
+QEMU 11.0.2: raspi4b (rpi4 kernels, -append serial=on, APFS clone of a fresh tools/mkcard.sh card per boot, one QEMU
+at a time) and virt (qemu-virt, headless).
+
+KERNELS (rpi4 --release kernel8.img, archive trees; also in pi-kernels/, gitignored; analysis/kernels.sha256)
+  base       6821179c                         a17613afb0eab0a06ab1d2f94446a34a4c8e9934f22f00d0c3c641f794ffa080 1526000 B
+  base-prof  6821179c --features raster-prof  f8e8869ab1c38d98298a587c8c7ffecf9b297387999f9a8425511f9e472751eb 1530096 B
+  chg        1c1c71a3                         2d7ceb72487124e21d6ef3cb4425a49af456f5f443c8017df477e00958920bbf 1530096 B
+  chg-prof   1c1c71a3 --features raster-prof  4377e910bbf8e136136ea5856e6cdfcddb4dbb04358c1297a4727a42a730566a 1538288 B
+  The change makes the image 4096 bytes larger (one page), hence the one address cell in AES.BIN (result 6).
+  A release build of the same commit in the worktree itself gives another sha256 (7be5e19f...): the trees differ
+  (archive vs git checkout), the code does not; the Pi kernels are the archive-tree builds above.
+
+RESULTS
+ 1 PASS  host tests on this arm64 Mac (the span kernel's assembler is the one the Pi runs):
+         tos-api/src/vdi/line.rs, 4 new unit tests: abline_runs against abline -- same store indices, dash bits,
+         ORDER, returned mask and touched rectangle -- over every direction and length 0..70 from a centre
+         (horizontal/vertical included, both ways round), XOR with last true/false, masks, the oracle screen and a
+         padded pitch, clip off/on; spans/columns at start columns 0..33, lengths 0..70, six masks, all modes;
+         clipping off with endpoints anywhere in WORD range on five small stores (run-on, store cuts, wrapped
+         deltas) and random clip rectangles (20000 segments); empty stores.
+         tos-api/tests/raster_kernel_line.rs, 6 new tests: kernel/src/raster_line.rs `abline` against
+         `abline_reference` (the backend's abline before V58: the shared walk, combine_index per pixel, box from
+         index % stride and / stride) -- whole store, returned mask and touched rectangle compared, each case on
+         one random store with the kernel run twice, first pixel right after and last pixel right before an
+         mprotect'ed page: all octants and lengths 0..70 from the centre of a 146x146 screen at strides 146/153,
+         4 modes, 3 masks, last both, clip off/on; spans and columns at every start column 0..33 and length 0..70,
+         6 masks, 4 modes; clipping off with wild endpoints on 5 small stores + runs off each end of the store;
+         1920x1080 at strides 1920/1984 (full-width/height lines, both diagonals, frame edges, clipped); XOR twice;
+         empty cases. tos-api/tests/raster_kernel_fill.rs, 1 new test: fill_span = the one-row fill_pattern
+         reference at that phase, every mode, phase 0..15, length 0..72/127..129/255..257, ten words.
+         RED with 20 deliberately wrong versions, one textual edit each, file restored byte for byte after each
+         (method/red-mutants.py, analysis/red-mutants.txt): span phase late, span cut one past the store end,
+         run-on rectangle column, cut column dash phase, column one short, upward column cut off by one, XOR rule
+         left out, diagonal fast path with one end on screen (SIGBUS at the guard page), fast path minor step sign
+         (SIGBUS), fast path rectangle y, fast path dash rotation, general path column wrap, general path one row
+         past the store, store column rotation, span always Replace, Replace fg/bg swapped, Xor keeps a bit,
+         RevTransparent on set bits, fill_span phase ignored, fill_span one pixel short -- all 20 red; green after
+         restore.
+ 2 PASS  cargo xtask test (worktree; references/ and the two gitignored rsc inputs linked from the main checkout):
+         base 6821179c 2339 / 0 / 6, change 1c1c71a3 2350 / 0 / 6 (+11 = the new tests)
+         (analysis/cargo-xtask-test-{base,chg}.txt).
+ 3 PASS  builds, fresh target per build, archive trees, both boards (analysis/builds-rc.txt, build-*.log,
+         clippy-*.txt, warnings.txt): rustc tos-api 64 / kernel 93 and clippy tos-api 73 / kernel 121 on base and
+         change, both boards: delta 0; `cargo clippy -p tos-api --tests`: the same per-target counts on both
+         (lib test 78 incl. 73 duplicates), no hit in a touched file. Hits in touched files on the kernel: only
+         kernel/src/lib.rs:9:9, the `missing_docs` "lint level defined here" note, as on the base. Release rpi4
+         with and without raster-prof: rc 0 (KERNELS).
+ 4 PASS  code check of the release kernel (method/loops.py, analysis/abline-loops.txt): `kernel::raster_line::abline`
+         (all four modes monomorphised, the run form inlined): no innermost loop holds a udiv/sdiv or a call; the
+         span loops are kernel 1's (st1 / ld1 eor|bit st1), the diagonal fast path 13-15 instructions per pixel,
+         the column loops 8-9 plus the store. No new assembler: the spans run kernel 1's asm blocks unchanged
+         (moved into fill_rows), whose save/restore check (raster_kernel_fill every_v_register_used_is_saved_and_restored)
+         passes. Line drawing is called only on the synchronous VDI/AES trap path (abline/draw_line callers:
+         tos-api aes/graf, aes/menu, aes/object, vdi/backend, vdi/primitives, vdi/text; none from the IRQ path),
+         so the FP-context finding of TASK/V49 holds unchanged.
+ 5 PASS  boots: qemu-virt headless, each tree's own fresh release build (runs/boot-virt-*/): base and change
+         "[desk] desktop up (0 drives)", 0 exception/panic lines. raspi4b serial=on: the two Pi test kernels chg and
+         chg-prof (runs/boot-rpi4-*/) "[desk] desktop up (1 drives)", 0 lines; every BOOT-SERIAL.txt of the run 0
+         exception/panic lines.
+ 6 PASS  tables via cargo xtask tosdump --tree <archive tree> with the pinned references (runs/tab-*,
+         analysis/tables-bin-compare.txt, analysis/aes-bin-diff.txt):
+           vdi-all    VDI.BIN base == chg byte-identical e91b865b92b5dbf2; vs oracle 0 of 182 on both
+           vdi-v18    VDI.BIN base == chg byte-identical af6163c916e63f70; vs oracle 0 of 19 on both
+           vdi-v18-t2 VDI.BIN base == chg byte-identical a26589eede1a4da4; vs oracle 0 of 32 on both
+           vdi-v18-t3 VDI.BIN base == chg byte-identical 52c406c4dbc753be; vs oracle 1 of 2 on both
+           aes-r2/r3/r4 AES.BIN: tosdiff base vs chg 0 of 78 / 0 of 39 / 0 of 181 cases differ; raw, exactly one
+             byte per record differs, the same record offset everywhere, 0x5a -> 0x6a (method/aes-diff.sh; cmp -l
+             prints octal 132 -> 152): the address cell, +0x1000 = the 4096 bytes the image grew (as in TASK/V50).
+             vs oracle: r2 78 of 78, r3 39 of 39 on both sides (the address words); r4 no reference.
+ 7 PASS  vdprobe (tosdump/probes/run-vdprobe.sh, probe/; the line cases K1-K5 incl. dashes, user style, XOR non-last,
+         clip off run-on, 1030-point polyline, the V40/V41 LSTLIN cases L40A-L41D, TVJ/TVK): n-base vs n-chg
+         VDPROBE.BIN byte-identical (cmp exit 0), VDPROBE.LOG identical, vdprobe-compare 986 cases 0 differ; n-chg vs
+         n-chg2 the same.
+ 8 PASS  pictures base vs change, PNG byte for byte (analysis/shots-compare.txt, runs/gui/; armed kernels:
+         analysis/kernel-sh-*.txt, kernel-inj-*.txt; inputs analysis/gui-inputs.txt):
+           shprobe 12/12 identical; shprobe-desk 2/2; desktop + IKBD injector (menu, dialog, rubberband, window drag,
+           slider drag, sizer drag, icon drags) 11/11 at 640x480 and 11/11 at 1920x1080; boot screen + AUTO console
+           (APITEST.NCP) 6/6 at 640x480 and 6/6 at 1920x1080. 0 exception/panic lines in every run. Looked at
+           desk480-chg 03-rubberband-held: the dotted XOR rubber band and the window frame drawn.
+
+INFORMAL (not a result; ad-hoc test file written and deleted again, not committed)
+  Host micro-benchmark on the arm64 Mac, release, 1920x1080 plain store, 2000 random segments in an 850x700 window,
+  `abline` against `abline_reference` (which has no dyn and no volatile per-pixel bounds check of a framebuffer
+  object, so it is faster than the kernel's old path): diagonal Replace 343 vs 550 ns, XOR 370 vs 492 ns;
+  horizontal Replace ~30 vs ~155 ns, XOR ~36 vs ~178 ns; vertical Replace 218-292 vs 294-368 ns, but vertical XOR
+  381-398 vs ~240 ns -- the new stride loop is SLOWER there on this host (reproducible, alternating order). Cause
+  not established (host CPU, not the Pi's Cortex-A72; the release kernel's column XOR loop is 8 instructions + ldr/
+  mvn/str, no call, no division). The Pi decides (ADR-036 point 5); the raster-prof kernels separate kernel and clean.
+
+NOT DRIVEN / OPEN
+  Real Pi 4: the runtime gain (ADR-036 point 5) -- plan in TASK/V58.md "Uebergabe Pi"; not touched (no card, no HW).
+  The cache clean keeps the bounding box of the segment (one clean per call, as before): for a diagonal that is
+  rows x (width/16) cache lines; its share of the line time is not measured -- the raster-prof kernels show it.
+  slprobe not run (no line path of its own beyond the desktop scenes).
+  Oracle side not rerun: the records are base == change, so the oracle comparison is the base's.

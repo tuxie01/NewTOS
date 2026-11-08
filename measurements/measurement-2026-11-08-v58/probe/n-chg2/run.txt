@@ -1,0 +1,7 @@
+vdprobe run, side newtos (2026-11-08T02:16:13Z)
+tree      1c1c71a38fec15a4be9f532b62568f686bbe0d72 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    VDPROBE.PRG 24ab22af74474dfb59927dafee50941c9a4db9297d855b571d0e85413993f843 VDPROBE.NAP 0e28ce2d5be361ac302c58b8d3561649a3743bac49dfeb3bb3a172af8f8df2ba
+kernel    2d7ceb72487124e21d6ef3cb4425a49af456f5f443c8017df477e00958920bbf /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v58/k/chg-rpi4-release.img
+card      421152a1e5cc0eec88fafe8c7a0f2802a0ec12218b82953327b560c14bf3d3ee (tools/mkcard.sh, C:\VDPROBE.NAP, #Z autorun)
+qemu      done
+card      after 097ce53f82f4ae644ad2deac02a5e714fec55f32cde5fd4602094eda1f6243c1 (the booted clone)

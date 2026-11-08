@@ -1,0 +1,2 @@
+inject-arm.py: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v58/sh/shprobe.mLwBDI/tree: tag [inj], launch:SHPROBE (3 bytes)
+kernel ead0757a52b7785a20316d7e43d2ac5bb5587ace4610350225f7c53d7d4df96c /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/ed7bb9a3-0fc2-4b37-91bb-ed70559503a3/scratchpad/v58/k/kernel-sh-base.img (commit 6821179c4bc8d1ad038bea3392e3601ebbb7de0a, armed launch:SHPROBE)

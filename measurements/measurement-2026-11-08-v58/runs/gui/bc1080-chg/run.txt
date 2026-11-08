@@ -1,0 +1,3 @@
+kernel 2d7ceb72487124e21d6ef3cb4425a49af456f5f443c8017df477e00958920bbf APITEST.NCP 7d19194ce018550d24d0c58bec87b8fd58d4878561ae7229e0b7414821c5d4ba extra [-global bcm2835-fb.xres=1920 -global bcm2835-fb.yres=1080]
+qemu pid 64725
+exception-panic-lines 0

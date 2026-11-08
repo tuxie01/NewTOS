@@ -1,0 +1,20 @@
+loop ffff000000096afc-ffff000000096b04 len 3 no div, no call :: st1 subs b.hs
+loop ffff000000096c7c-ffff000000096c98 len 8 no div, no call :: ld1 eor eor eor eor st1 subs b.hs
+loop ffff000000096dfc-ffff000000096e18 len 8 no div, no call :: ld1 bit bit bit bit st1 subs b.hs
+loop ffff000000096f80-ffff000000096f9c len 8 no div, no call :: ld1 bit bit bit bit st1 subs b.hs
+loop ffff000000097158-ffff000000097188 len 13 no div, no call :: ror add add bic tst csel cmn str csel adds sub add b.lo
+loop ffff0000000974b0-ffff0000000974e8 len 15 no div, no call :: add add bic cmn csel adds sub add b.hs ror tbz ldr mvn str b
+loop ffff0000000974ec-ffff00000009751c len 13 no div, no call :: add add bic cmn csel adds sub add b.hs ror tbz str b
+loop ffff000000097520-ffff000000097550 len 13 no div, no call :: add add bic cmn csel adds sub add b.hs ror tbnz str b
+loop ffff0000000975e8-ffff000000097634 len 20 no div, no call :: add add add sxth cmp add cinc csinc tst sub csel cinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff000000097688-ffff0000000976dc len 22 no div, no call :: add add add cmp sxth add csinc cinc csinc tst add sub csel csinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff00000009776c-ffff0000000977b8 len 20 no div, no call :: add add add sxth cmp add cinc csinc tst sub csel cinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff000000097808-ffff00000009785c len 22 no div, no call :: add add add cmp sxth add csinc cinc csinc tst add sub csel csinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff0000000978e8-ffff000000097934 len 20 no div, no call :: add add add sxth cmp add cinc csinc tst sub csel cinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff000000097984-ffff0000000979d8 len 22 no div, no call :: add add add cmp sxth add csinc cinc csinc tst add sub csel csinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff000000097a74-ffff000000097ac0 len 20 no div, no call :: add add add sxth cmp add cinc csinc tst sub csel cinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff000000097b18-ffff000000097b6c len 22 no div, no call :: add add add cmp sxth add csinc cinc csinc tst add sub csel csinc csel csel adds b.hs ubfx cmp orr b.hs
+loop ffff000000097d3c-ffff000000097d5c len 9 no div, no call :: and ubfx tst csel orr adds str add b.lo
+loop ffff000000097dfc-ffff000000097e18 len 8 no div, no call :: ubfx adds add orr b.hs and tst b.eq
+loop ffff000000097e90-ffff000000097eac len 8 no div, no call :: ubfx adds add orr b.hs and tst b.eq
+loop ffff000000097f28-ffff000000097f44 len 8 no div, no call :: ubfx adds add orr b.hs and tst b.ne

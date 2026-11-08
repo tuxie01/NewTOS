@@ -1,0 +1,11 @@
+EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN vs NEWTOS.BIN -- area VDI, 2 cases from vdi-v18-t3.tsv
+
+case 13  opcode 1  K23 v_opnwk work_in[0]=2 (ST low) after v_clswk
+    intout[0]              EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN = 0x013F (319)   NEWTOS.BIN                             = 0x027F (639)
+    intout[1]              EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN = 0x00C7 (199)   NEWTOS.BIN                             = 0x01DF (479)
+    intout[3]              EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN = 0x022C (556)   NEWTOS.BIN                             = 0x0116 (278)
+    intout[4]              EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN = 0x022C (556)   NEWTOS.BIN                             = 0x0116 (278)
+    intout[13]              EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN = 0x0010 (16)   NEWTOS.BIN                             = 0x0100 (256)
+    intout[39]              EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN = 0x1000 (4096)   NEWTOS.BIN                             = 0x0000 (0)
+
+1 of 2 cases differ
