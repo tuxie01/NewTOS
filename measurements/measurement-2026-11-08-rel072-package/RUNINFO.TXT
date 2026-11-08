@@ -1,0 +1,117 @@
+measurement-2026-11-08-rel072-package -- TASK/REL072: the NewTOS 0.7.2 test-release package
+==============================================================================================
+Developer, TASK/REL072, 2026-11-08 (host clock CET). Package from HEAD ae22f4fc
+(ae22f4fc4293a645c56b6c9c88d31c3cc03e46da), tree clean except this run directory (untracked while
+it was made). No push, no tag, no GitHub release, no issue comment, no SD card, no Pi. The only
+outward action: the read-only download of the v0.7.1 release asset.
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+WHAT / WHY
+  The speed and accuracy test release 0.7.2 for the user's Pi acceptance (TASK/REL072), made like
+  0.7.1 (measurements/measurement-2026-11-07-rel071-package/RUNINFO.TXT,
+  measurements/measurement-2026-11-07-rel071-final2/RUNINFO.TXT) by tools/release/package-release.sh,
+  against the v0.7.1 GitHub asset. Commits of this work:
+    47b3c814 chore: set the product version to 0.7.2 (REL072)
+             [workspace.package] version = "0.7.2"; Cargo.lock (kernel, tos-api, tos-types) and
+             programs/Cargo.lock (tos-types) follow (cargo metadata --locked passes in both
+             workspaces); the two "heute" lines of docs/api/emucon/06-mapping-and-decisions.md name
+             the new text. TOS-visible versions (_TOS/OSHEADER, NTOS cookie, Sversion) untouched.
+    ae22f4fc docs(release): draft the 0.7.2 tester texts (REL072)
+             docs/release/v0.7.2/ (six files, no apps/), the draft for the user's review.
+  Since v0.7.1 (6baafc92) nothing changed under sdk/, programs/, tos-types/, tools/, boot/,
+  keyboards/ (git diff --stat v0.7.1..HEAD on those paths is empty); kernel/ and tos-api/ changed
+  only by the V-series commits named in TASK/REL072.md (every changed file attributed by git log).
+  cargo xtask test (full) after the version change: passed 2369, failed 0, ignored 6 (= baseline).
+  cargo xtask build, both boards (dev), after the version change: exit 0, warnings tos-api 64,
+  kernel 93 on rpi4 and on qemu-virt (= baseline); the package's release kernel build: 64/93.
+  No code changed, so no clippy run.
+
+1 VERSION SHOWN (version/, QEMU raspi4b)
+  method/version-call.sh <scratch> calls the committed REL07 scripts unchanged
+  (measurements/measurement-2026-11-04-rel07-version/method/ build-kernel.sh, mkcard-call.sh,
+  run.sh, about-ver.script), as REL071 did: an rpi4 release kernel with the scripted IKBD injector,
+  built in a scratch copy of the working tree (version change uncommitted at that moment, content =
+  47b3c814; no .git, so the stamp reads "(unknown)"), card "#R 02" only.
+  Kernel b24e0a68..., card d683f488... (version/sha256.txt); the clone was unchanged after the run
+  (version/serial/main.img-after.sha256). Card manifest version/card.img.manifest:
+    optional_missing none
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  Screendumps (looked at):
+    version/screendumps/main-10.png  boot screen "Version : NewTOS 0.7.2"
+    version/screendumps/main-22.png  desktop About box (Ssystem(2019)) "Version  NewTOS 0.7.2"
+    version/screendumps/main-42.png  EmuCON `ver`: "NewTOS 0.7.2 - clean-room TOS for AArch64"
+  Serial version/serial/main.log has the same `ver` line; no panic or exception.
+
+2 PACKAGE (method/package-call.sh <scratch>)
+    NAMES_REMOVED="KARTE/APPS/HYPVIEW/CHANGES.TXT KARTE/APPS/COREMARK/CHANGES.TXT" \
+    KERNEL_FEATURES=crash-walk tools/release/package-release.sh 0.7.2 <scratch>/rel072 <scratch>/prev071/NewTOS-0.7.1.zip
+  Previous release: the v0.7.1 GitHub asset, `gh release download v0.7.1 -R tuxie01/NewTOS -p
+    NewTOS-0.7.1.zip` into a fresh scratch dir, 6633783 bytes, sha256
+    801ed08ac7ef3b562ed83f4f89c1054b8e5a3867907dcbd69f38f0cdf8a0ce82
+    (= measurements/measurement-2026-11-07-rel071-final2/RUNINFO.TXT).
+  NAMES_REMOVED: the two CHANGES.TXT of 0.7.1 (HYPVIEW, COREMARK). No program changed for 0.7.2, so
+    docs/release/v0.7.2/ has no apps/ texts (developer's choice for the draft, open to the user:
+    TASK/REL072.md, "Stand 2026-11-08"). NAMES_ADDED none.
+  Name list against 0.7.1 (package/names-prev.txt vs names-new.txt): exactly these two lines gone;
+    package/names.diff (expected vs new) is empty.
+  One run, exit 0, ends with "done:" (package/package-run.log). The packager is committed
+  (sha256 75b227fa...). method/smoke-call.sh was written into this run directory while the
+  builds ran and moved out before the packager's tree check, then back; it is read by no build.
+
+  ZIP (scratch, not committed; the unpacked folder NewTOS-0.7.2/ lies next to it):
+    /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/d814c6bd-1737-44e5-8ab6-459e406f6cc8/scratchpad/rel072/NewTOS-0.7.2.zip
+    sha256 d157de60c6f3dcd7590370e73d1602b73a9504a60268ff7fd5bb2e00ecbaaba9
+    6643110 bytes, 70 entries (0.7.1: 72)
+  KARTE/kernel8.img sha256 9ffc48b20f7ac05d11d87890bde8c0362859e011a6097db1419cc5cd9dee9da7,
+    1571056 bytes, "NewTOS 0.7.2", "(ae22f4fc)", crash-walk.
+
+  package/CHECKS.TXT, all PASS:
+    PASS NAMES_REMOVED/NAMES_ADDED declared against NewTOS-0.7.1
+    PASS name list = NewTOS-0.7.1 minus [KARTE/APPS/HYPVIEW/CHANGES.TXT KARTE/APPS/COREMARK/CHANGES.TXT] plus [] (apart from the version, case-sensitive)
+    PASS no AppleDouble/.DS_Store/__MACOSX entries
+    PASS kernel8.img carries "NewTOS 0.7.2"
+    PASS kernel8.img carries build rev (ae22f4fc)
+    PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+    PASS every TOS-visible name on KARTE is 8.3
+    PASS packaged release texts free of TODO-REL markers
+    PASS FILES.TSV lists every file of the ZIP
+    PASS ZIP unpacks byte-identical to NewTOS-0.7.2/
+
+  Against 0.7.1 (package/vs-0.7.1.txt, cmp per file): 10 changed, 45 the same, 2 gone, none new.
+    changed: kernel8.img (the V-series, v0.7.1..ae22f4fc); the six texts; QED.NAP, DESKTOP.NAP,
+             HYP_VIEW.NAP: sources unchanged, same size; `strings` differs only in the build date
+             (__DATE__ "Nov  7 2026" -> "Nov  8 2026": QED about text, "Tera Desktop V4.08 <date>",
+             HypView "from: <date>"); the other differing bytes (79 / 2482 / 1189) are not traced
+             per byte.
+    same:    everything else, including ZVIEW.NAP and the 10 codecs, CORE.NCP/COREVAL.NCP,
+             SYSACC.NAC, DOOM.NAP/.NTP, all resources, INF files, firmware, LICENCE.broadcom.
+    gone:    KARTE/APPS/HYPVIEW/CHANGES.TXT, KARTE/APPS/COREMARK/CHANGES.TXT (declared above).
+  The six texts are byte-identical to `git show ae22f4fc:docs/release/v0.7.2/<file>`.
+  Per-file sha256, bytes and source: package/FILES.TSV.
+
+3 SMOKE (method/smoke-call.sh <scratch>; QEMU raspi4b, headless, -append serial=on)
+  Calls measurements/measurement-2026-11-04-rel07-package/method/mkcard-call.sh and run.sh
+  unchanged. card-karte.img = exactly the package's KARTE/ (48 files), manifest
+  cards/card-karte.img.manifest:
+    optional_missing none
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+  Card c736041d..., per-run APFS clone, unchanged after the run (serial/karte.img-after.sha256),
+  deleted; the other two cards mkcard-call.sh builds (zview, qed) were not booted and are deleted.
+  Kernel = KARTE/kernel8.img of the package.
+    screendumps/karte-8.png   boot screen "Version : NewTOS 0.7.2", "Built : 2026-11-08 (ae22f4fc)"
+    screendumps/karte-22.png  desktop (shipped NEWDESK.INF: DISK C, QED.NAP, TRASH, PRINTER)
+  serial/karte.log: "[acc] loaded C:\ACC\SYSACC.NAC", "[desk] desktop up (1 drives)", no panic or
+  exception. Not driven: About of the package kernel (section 1 shows it), programs, mouse (V55
+  scenario is the user's Pi acceptance, TASK/V55.md "Uebergabe Pi").
+
+FILES
+  method/        version-call.sh, package-call.sh, smoke-call.sh (calls only)
+  version/       section 1: screendumps/, serial/, card.img.manifest, sha256.txt
+  package/       FILES.TSV, CHECKS.TXT, names-{prev,expected,new}.txt, names.diff (empty),
+                 vs-0.7.1.txt, unzip-l-0.7.2.txt, package-run.log, build-logs/ (one log per step)
+  cards/         card-karte.img.manifest
+  serial/        karte.log, karte.img-after.sha256
+  screendumps/   karte-8.png, karte-22.png
+  Not kept: the ZIP, the unpacked folder and the work dir (scratch path above), the v0.7.1 asset
+  (<scratch>/prev071/), the card images, the scratch tree and the injector kernel (deleted).
+  Scratch paths in copied files are written <scratch>.

@@ -1,0 +1,28 @@
+== cargo xtask build --board rpi4 --release --features crash-walk
+== sdk/build.sh sdk/examples/sysacc.c <scratch>/rel072/build/SYSACC.NAC
+== sdk/zview/build-zview.sh
+== sdk/apps/build-qed.sh
+== sdk/apps/build-teradesk.sh
+== sdk/apps/build-coremark.sh
+== env OUT=<scratch>/rel072/build/DOOM.NAP sdk/apps/build-doom.sh
+== sdk/apps/build-hypview.sh
+PASS NAMES_REMOVED/NAMES_ADDED declared against NewTOS-0.7.1
+PASS name list = NewTOS-0.7.1 minus [KARTE/APPS/HYPVIEW/CHANGES.TXT KARTE/APPS/COREMARK/CHANGES.TXT] plus [] (apart from the version, case-sensitive)
+PASS no AppleDouble/.DS_Store/__MACOSX entries
+PASS kernel8.img carries "NewTOS 0.7.2"
+PASS kernel8.img carries build rev (ae22f4fc)
+PASS kernel8.img crash-walk report matches KERNEL_FEATURES
+PASS every TOS-visible name on KARTE is 8.3
+PASS packaged release texts free of TODO-REL markers
+PASS FILES.TSV lists every file of the ZIP
+PASS ZIP unpacks byte-identical to NewTOS-0.7.2/
+version 0.7.2  commit ae22f4fc4293a645c56b6c9c88d31c3cc03e46da  tree_dirty_build=no  tree_dirty_docs=yes
+packager tools/release/package-release.sh 75b227fa319105a6c41002598d846d92bec3e6feae4bee8549ffa5fc32469b5b (committed)
+previous zip 801ed08ac7ef3b562ed83f4f89c1054b8e5a3867907dcbd69f38f0cdf8a0ce82 <scratch>/prev071/NewTOS-0.7.1.zip
+names_removed KARTE/APPS/HYPVIEW/CHANGES.TXT KARTE/APPS/COREMARK/CHANGES.TXT
+names_added none
+kernel_features crash-walk
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+zip d157de60c6f3dcd7590370e73d1602b73a9504a60268ff7fd5bb2e00ecbaaba9 6643110 <scratch>/rel072/NewTOS-0.7.2.zip
+entries 70
+done: <scratch>/rel072/NewTOS-0.7.2.zip
