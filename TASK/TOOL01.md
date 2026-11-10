@@ -1,59 +1,60 @@
-# TOOL01 — `cargo xtask doctor`: Hostwerkzeuge gegen gepinnte Erwartungen pruefen
+# TOOL01 — `cargo xtask doctor`: check host tools against pinned expectations
 
-Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: blockiert keine Abnahme) · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
+Status: PARKED (2026-10-31) | Priority: P2 | Reason: owner, pre-start check: blocks no acceptance | Reopen: a host tool blocks an acceptance or a run is not reproducible because of one
 
-## Sachverhalt
+Type: tool (reproducibility) — owner decision 2026-10-27. The cflow part was split out on 2026-11-10 (owner:
+"cflow mandatory") into [TOOL39](TOOL39.md); the rest stays parked. Translated to English 2026-11-10 (CLAUDE.md
+language rule); the original German text is in git history.
 
-Ob ein Messlauf oder ein Abbild reproduzierbar ist, haengt an Hostwerkzeugen,
-die heute niemand vorab prueft:
+## Facts
 
-- zView `SAMPLES` fehlte im Abbild, weil `gen-samples.py` ohne Pillow lief
-  (`sdk/zview/build-zview.sh` ruft `sdk/zview/samples/gen-samples.py`); das
-  Abbild meldete es nur als `optional_missing` (`tools/make-sd-image.sh`).
-- Pillow wurde am 2026-10-27 per `pip install --user` in die Homebrew-Python
-  3.15 gelegt (`~/Library/Python/3.15`); `brew install pillow` liess sich nur
-  fuer 3.14 einhaengen. Ein Homebrew-Python-Upgrade wirft das still weg.
-- `ld.lld`, `llvm-nm` und `gtimeout` liegen nicht auf `PATH` (Stand
-  2026-10-27); die SDK-Skripte finden ihre Werkzeuge je auf eigene Weise.
-- Der Orakelpin (`tools/oracle/oracle.env`) nennt Hatari, Kreuzcompiler und
-  ROM mit sha256; geprueft wird er nur von `tools/hatari-oracle.sh` beim Lauf.
+Whether a measurement run or an image is reproducible depends on host tools that nobody checks beforehand
+today:
 
-## Arbeit
+- zView `SAMPLES` was missing from the image because `gen-samples.py` ran without Pillow
+  (`sdk/zview/build-zview.sh` calls `sdk/zview/samples/gen-samples.py`); the image reported it only as
+  `optional_missing` (`tools/make-sd-image.sh`).
+- Pillow was put into the Homebrew Python 3.15 with `pip install --user` on 2026-10-27
+  (`~/Library/Python/3.15`); `brew install pillow` could only be linked for 3.14. A Homebrew Python upgrade
+  silently throws it away.
+- `ld.lld`, `llvm-nm` and `gtimeout` are not on `PATH` (as of 2026-10-27); the SDK scripts each find their tools
+  in their own way.
+- The oracle pin (`tools/oracle/oracle.env`) names Hatari, the cross compiler and the ROM with sha256; it is
+  checked only by `tools/hatari-oracle.sh` during a run.
+- 2026-11-10: the installed cross compiler reports `m68k-atari-mint-gcc (MiNT 20240501) 7.5.0`, while
+  `docs/analysis/ORACLE.md` §1, `tools/oracle/oracle.env` and the committed `docs/analysis/deps/edges.tsv`
+  name `MiNT 20230908` (found by `tools/deps/gen-deps.py --check`, [TOOL39](TOOL39.md)).
 
-1. **`cargo xtask doctor`** prueft Vorhandensein und Version gegen gepinnte
-   Erwartungen, Pfade wo moeglich aus `tools/oracle/oracle.env`:
+## Work
+
+1. **`cargo xtask doctor`** checks presence and version against pinned expectations, paths from
+   `tools/oracle/oracle.env` where possible:
    - Hatari 2.6.1 (`ORACLE_HATARI`);
    - `m68k-atari-mint-gcc` 7.5.0 (`ORACLE_CROSS_MINT`);
-   - `clang`, `ld.lld`, `llvm-nm` — so aufgeloest, wie die Bauskripte sie
-     aufloesen (die Skripte lesen, nicht raten), Version gepinnt;
-   - QEMU (`qemu-system-aarch64`), `cflow`, `gtimeout`, `fsck_msdos`;
-   - gepinntes ROM vorhanden und sha256 == `ORACLE_ROM_SHA256`.
-   Wo es heute keine gepinnte Version gibt: die gemessene Version als
-   Erwartung festschreiben (eine Stelle, wie `oracle.env`) und das im Bericht
-   nennen.
-2. **Python-Werkzeuge in einer Projekt-venv** statt User-Site: z. B.
-   `tools/.venv` (gitignored) plus eine requirements.txt unter `tools/` mit Pillow (Version
-   gepinnt). `doctor` prueft die venv und die Pakete gegen die Datei; ein
-   Erzeugungsbefehl steht in der Fehlermeldung.
-   `tools/make-sd-image.sh` und die von ihm gerufenen Python-Schritte
-   (`mk-hello-ncp.py`, `sdk/zview/build-zview.sh` → `gen-samples.py`, das
-   eingebettete Python am Ende) laufen mit dieser venv.
-3. **Exit 0 nur, wenn alles passt**; jede Abweichung als eine Zeile mit
-   Werkzeug, erwartet, gefunden.
-4. **Aufrufer:** `tools/make-sd-image.sh` ruft `doctor` vor dem Bau und bricht
-   bei exit != 0 ab; der Auditor ruft es als Pre-flight
-   (`.claude/agents/auditor.md`). Sollte ein Aufrufer nur einen Teil brauchen
-   (das Abbild braucht kein Hatari), eine Teilpruefung per Option — aber kein
-   stilles Ueberspringen.
-5. Hosttest fuer die Vergleichslogik (Versionsauswertung, sha256, fehlendes
-   Werkzeug), ohne die echten Werkzeuge vorauszusetzen.
-6. Doku: `docs/sdk/06-image-and-testing.md` (Bauvoraussetzungen) und
-   `docs/analysis/ORACLE.md` (Pre-flight) verweisen auf `doctor`.
+   - `clang`, `ld.lld`, `llvm-nm` — resolved the way the build scripts resolve them (read the scripts, do not
+     guess), version pinned;
+   - QEMU (`qemu-system-aarch64`), `gtimeout`, `fsck_msdos` (cflow: [TOOL39](TOOL39.md));
+   - pinned ROM present and sha256 == `ORACLE_ROM_SHA256`.
+   Where no pinned version exists today: record the measured version as the expectation (one place, like
+   `oracle.env`) and say so in the report.
+2. **Python tools in a project venv** instead of the user site: e.g. `tools/.venv` (gitignored) plus a
+   requirements.txt under `tools/` with Pillow (version pinned). `doctor` checks the venv and the packages
+   against that file; the command to create it is in the error message. `tools/make-sd-image.sh` and the Python
+   steps it calls (`mk-hello-ncp.py`, `sdk/zview/build-zview.sh` → `gen-samples.py`, the embedded Python at the
+   end) run with this venv.
+3. **Exit 0 only if everything matches**; each deviation as one line with tool, expected, found.
+4. **Callers:** `tools/make-sd-image.sh` calls `doctor` before building and aborts on exit != 0; the Auditor
+   calls it as a pre-flight (`.claude/agents/auditor.md`). If a caller needs only a part (the image needs no
+   Hatari), a partial check by option — but no silent skipping.
+5. Host test for the comparison logic (version parsing, sha256, missing tool), without requiring the real
+   tools.
+6. Docs: `docs/sdk/06-image-and-testing.md` (build prerequisites) and `docs/analysis/ORACLE.md` (pre-flight)
+   point to `doctor`.
 
-## Abnahme
+## Acceptance
 
-- `cargo xtask doctor` exit 0 auf diesem Host; mit absichtlich falschem
-  ROM-sha256 bzw. fehlender venv exit != 0 mit benannter Ursache.
-- `tools/make-sd-image.sh` baut mit der venv, zView `SAMPLES` ist im Abbild,
-  `optional_missing` im Manifest lautet `none`.
-- `cargo xtask test` gruen, doc-check der geaenderten Doku 0 Fehler.
+- `cargo xtask doctor` exit 0 on this host; with a deliberately wrong ROM sha256 or a missing venv exit != 0
+  with the cause named.
+- `tools/make-sd-image.sh` builds with the venv, zView `SAMPLES` is in the image, `optional_missing` in the
+  manifest reads `none`.
+- `cargo xtask test` green, doc-check of the changed docs 0 failures.
