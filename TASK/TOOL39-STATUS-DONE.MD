@@ -1,4 +1,16 @@
-# TOOL39 — receipt (unfinished: tester and commit pending)
+# TOOL39 — receipt DONE (2026-11-11)
+
+Commit `b7bd932a` (implementation, host tests, docs, CLAUDE.md "Required host tools", ORACLE.md section 1 cflow row,
+tester run). Independent tester PASS on all seven checks (`measurements/measurement-2026-11-11-tool39-test/RUNINFO.TXT`):
+`cargo xtask test` 2374/0/6, a mutant `check_cflow` fails all five new tests, real cflow 1.8 -> `--check` byte-identical,
+pin 1.7 and a missing path -> one line and exit 1 in both modes, `host_cflow` in the manifest, warnings delta 0, doc-check 0.
+Closed by hand by the lead: `cargo xtask close` (ADR-037 point 5) does not exist yet.
+Out of scope, no ticket: `tools/sync-card.sh`, `tools/release/package-release.sh` and `tosdump/probes/run-xdprobe.sh`
+write their own `host_clang` lines without `host_cflow`.
+
+The developer's receipt (UNFINISHED, 2026-11-11) follows, unchanged except its title is now a second-level heading.
+
+## TOOL39 — receipt (unfinished: tester and commit pending)
 
 Developer, 2026-11-11. The change is in the working tree, not committed. Base: `f43f5a79b`.
 

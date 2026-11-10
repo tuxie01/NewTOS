@@ -1,6 +1,6 @@
 # TOOL39 — cflow is a required, pinned host tool
 
-Status: OPEN (2026-11-10) | Priority: P1
+Status: DONE (2026-11-11) | Priority: P1 | Commit: b7bd932a | Receipt: TOOL39-STATUS-DONE.MD
 
 Type: tool (reproducibility). Owner decision 2026-11-10: "cflow mandatory", before the ticket tools of ADR-037.
 Split out of [TOOL01](TOOL01.md), which stays parked for everything else.
@@ -42,7 +42,7 @@ Split out of [TOOL01](TOOL01.md), which stays parked for everything else.
 
 ## Implementation
 
-Developer, 2026-11-10/11, uncommitted in the working tree (receipt: [TOOL39-STATUS-UNFINISHED.MD](TOOL39-STATUS-UNFINISHED.MD)).
+Developer, 2026-11-10/11, uncommitted in the working tree (receipt: [TOOL39-STATUS-DONE.MD](TOOL39-STATUS-DONE.MD)).
 
 - **Pin:** `tools/oracle/oracle.env` gains `ORACLE_CFLOW=/opt/homebrew/bin/cflow` and `ORACLE_CFLOW_VERSION=1.8`;
   its header names the two new readers (`tools/sd-manifest.sh`, `tools/deps/gen-deps.py`).
@@ -62,3 +62,7 @@ Developer, 2026-11-10/11, uncommitted in the working tree (receipt: [TOOL39-STAT
   line), version 1.8 (passes).
 - **Docs:** `tools/deps/README.md` ("Inputs and reproducibility"), `docs/sdk/06-image-and-testing.md` (manifest
   format: `host_cflow`).
+
+## Acceptance (tester, 2026-11-11)
+
+PASS on all seven checks, `measurements/measurement-2026-11-11-tool39-test/RUNINFO.TXT`. Closed by hand (no `cargo xtask close` yet, ADR-037).
