@@ -1,4 +1,15 @@
-# V55 — Quittung UNFINISHED (2026-11-08)
+# V55 — Quittung DONE (2026-11-08)
+
+Tester PASS (`8f19602e`, `measurements/measurement-2026-11-08-v55-test/RUNINFO.TXT`; Nachtrag `b744febc`,
+`measurements/measurement-2026-11-08-v55-gate-test/RUNINFO.TXT`): M1/M2 orakelgleich, alles andere bytegleich zur Basis;
+`cargo xtask test` 2369/0/6. Echte Pi: der Anwender fuhr am 2026-11-08 den Release-Kern `b744febc` (sha256 `e788dc58…`)
+auf der Pi 4 mit dem Szenario "Uebergabe Pi" und im Alltag, ein Befund, geparkt als [A148](A148.md) (P4, vermutlich
+aelter) — festgehalten in `measurements/measurement-2026-11-08-rel072-final/RUNINFO.TXT` ("KERNEL AGAINST THE PI TEST");
+0.7.2 ist dieser Kern bis auf die Version. Nicht belegt bleibt Punkt 3 (Zeiger waehrend eines Rechenlaufs ohne Trap): die
+Release-Texte fragen die Tester (`d35670d6`); das Stehen waehrend eines langen Systemaufrufs ist seit INPUT01 so und steht in
+`docs/DEVIATIONS.md`, kein V55-Defekt. Abgeschlossen vom Lead am 2026-11-10 (Anwender: "ja").
+
+Der Text unten ist die Quittung UNFINISHED vom 2026-11-08, unveraendert.
 
 Datum 2026-11-08 · `main`, Basis `e160f507` · Commit `9c72d3ec` (Fix, Bildtakt, Hosttests, Spec, Mapping, DEVIATIONS,
 verschobene Zitate) und der Folgecommit mit Lauf und Tickets · Beleg `measurements/measurement-2026-11-08-v55/RUNINFO.TXT`
