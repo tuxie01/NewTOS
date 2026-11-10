@@ -3341,6 +3341,129 @@ earlier intention "assembler much later" (auto-memory, 2026-07-22) is replaced b
 
 ---
 
+## ADR-037: Ticket states — six states, one machine-readable status line
+
+**Date:** 2026-11-10
+**Status:** **Accepted** (2026-11-10, owner: six states and the mapping; open points decided: blocked tickets are
+`PARKED`, STATUS.md lists checked first and generated later, separate line-3 keys, `Priority` mandatory in every
+state; the `TASK/README.md` status column is generated from line 3).
+**Phase:** cross-cutting (process, `TASK/`, `docs/STATUS.md`, `tools/xtask`)
+
+### Context
+
+The inventory `docs/analysis/ticket-inventory-2026-11-10.md` measured every file in `TASK/` at `ad58e69e`:
+657 tickets, 24 distinct leading status words in German and English with spelling variants
+(`ZURUECKGESTELLT`/`ZURÜCKGESTELLT`, `Prioritaet`/`Priorität`/`Priority`), 51 tickets done but not closed (C1),
+23 closed without receipt or commit (C2), 23 candidates where `docs/STATUS.md` and the ticket disagree (C3),
+81 parked without a reason in the status line (C4), and 75 `ERLEDIGT` lines that still say something is open.
+`TASK/README.md` defines receipts (`<ID>-STATUS-<STATE>.MD`) but no ticket states, and keeps a second status
+column of its own. No tool reads a status line, so nothing stops a ticket from being left open after its work
+landed, or closed without evidence. State words are English from now on (CLAUDE.md, *Language & Communication*,
+owner decision 2026-11-10).
+
+### Decision
+
+1. **Six states.** Every ticket `TASK/<ID>.md` is in exactly one:
+
+   | State | Meaning | Required fields |
+   |---|---|---|
+   | `OPEN` | work not done | `Priority` |
+   | `IMPLEMENTED` | the change is committed, acceptance is missing | `Priority`, `Commit`, `Missing` |
+   | `DONE` | work and acceptance complete | `Priority`, `Commit`, `Receipt` (a `<ID>-STATUS-DONE.MD` that names the commit) |
+   | `PARKED` | deliberately not worked on now | `Priority`, `Reason`, `Reopen` (the trigger that brings it back) |
+   | `ACCEPTED` | a deviation that stays, sanctioned | `Priority`, `Ref` (a `docs/COMPATIBILITY.md` entry or an `ADR-NNN`) |
+   | `OBSOLETE` | no longer applies: withdrawn, duplicate, superseded | `Priority`, `Reason`; for a duplicate or supersession also `Target: <ID>` |
+
+2. **Mapping from today's words** (used by the migration batches, point 7):
+
+   | Today | State |
+   |---|---|
+   | `OFFEN`, `URSACHE BELEGT` | `OPEN` |
+   | `IMPLEMENTIERT`, `UMGESETZT`, `TEILWEISE`, `BEFUND ERLEDIGT, ABNAHME OFFEN`, `IN ABNAHME` | `IMPLEMENTED` |
+   | `ERLEDIGT`, `BEHOBEN`, `GESCHLOSSEN`, `ABGESCHLOSSEN`, `GEKLAERT`, `URSACHE GEFUNDEN UND BEHOBEN` | `DONE` |
+   | `GEPARKT`, `ZURUECKGESTELLT`, `ZURÜCKGESTELLT`, `BACKLOG`, `ZUKUNFT`, `IDEE` | `PARKED` |
+   | `ACCEPTED-Abweichung` | `ACCEPTED` |
+   | `GEGENSTANDSLOS`, `ZURUECKGEZOGEN`, duplicate, superseded | `OBSOLETE` |
+
+   `ABGESCHLOSSEN ALS BLOCKED` maps to `PARKED` (point 10). Part-done lines (`Stufe 1 erledigt`, `TEIL 1 ERLEDIGT`,
+   `Teil 1 BEHOBEN`, `A–F … ERLEDIGT`) and every `DONE` line with an open clause have no automatic mapping: the
+   owner decides per batch.
+
+3. **The status line is line 3, fixed form, ASCII only:**
+
+   ```
+   Status: STATE (YYYY-MM-DD) | Priority: Pn | Key: value | ...
+   ```
+
+   Line 1 is `# <ID> — <title>`, line 2 is empty. The date is the day the state was entered. `Priority` is
+   `P1`–`P4` and always the second field. The state's required fields follow in the order of the table above;
+   further keys are not allowed on line 3 (history, owner quotes and detail go below it). Values contain no `|`.
+   Examples:
+
+   ```
+   Status: OPEN (2026-11-10) | Priority: P2
+   Status: IMPLEMENTED (2026-11-08) | Priority: P4 | Commit: 9c72d3ec | Missing: Pi run, scenario "Pi handover"
+   Status: DONE (2026-11-10) | Priority: P4 | Commit: 8ef6cf96 | Receipt: V55-STATUS-DONE.MD
+   Status: PARKED (2026-10-31) | Priority: P3 | Reason: no card program calls Bioskeys | Reopen: a port calls it
+   Status: ACCEPTED (2026-10-30) | Priority: P2 | Ref: ADR-033
+   Status: OBSOLETE (2026-09-20) | Priority: P3 | Reason: duplicate | Target: FS10
+   ```
+
+4. **No "done but still open".** A ticket with remaining work is not `DONE`: it is `IMPLEMENTED` (acceptance
+   missing), or `DONE` plus a new follow-up ticket that carries the rest. The owner decides which, per batch.
+
+5. **`DONE` only through `cargo xtask close <ID> --commit <hash>`.** It refuses unless the commit exists on the
+   current history, its message names the id (word boundary), and line 3 parses. It writes the DONE receipt,
+   sets line 3, and updates `docs/STATUS.md`. Other transitions go through `cargo xtask set-status`, which
+   enforces the required fields. Hand edits of line 3 stay possible; `status-check` catches a malformed one.
+
+6. **Receipts.** `DONE` needs `<ID>-STATUS-DONE.MD`. `UNFINISHED`, `FAILURE` and `BLOCKED` receipts stay allowed
+   as history and do not change a state. A sub-step receipt (`<ID>-<step>-STATUS-DONE.MD`, e.g. `ARCH03-3b`) is
+   evidence for its step only; it never closes the parent.
+
+7. **Legacy.** Existing tickets are not rewritten by this ADR. `cargo xtask status-check --new-only` checks only
+   tickets changed against a committed baseline file; the owner migrates the rest in batches the lead presents.
+   A touched ticket gets the new line 3 and its German text translated in the same commit (CLAUDE.md).
+
+8. **`docs/STATUS.md` agrees with the tickets.** Its queue, parked and blocked lists are checked against the status
+   lines by `status-check` (C3). Generating them from the status lines is a later, separate step.
+
+9. **Files in `TASK/` that are not tickets** (`README.md`, `COMPARISON.md`, `COVERAGE.md`, the index and handover
+   files, `TASK/evidence/`, `tasks.json`, the three `.MD` diagnoses) are named in an explicit list in the tool; no other
+   file is exempt. `TASK/README.md` defines the six states by pointing here; its status column is generated from
+   line 3 of each ticket, never kept by hand.
+
+10. **Blocked is not a state.** A ticket that waits on another piece of work is `PARKED` with
+    `Reason: blocked by <ID or what>` and `Reopen: <the dependency lands>`. `status-check` reports a `PARKED`
+    ticket whose `Reason` names a blocking ticket that is `DONE`.
+
+### Consequences
+
+- One parser decides a ticket's state; C1–C6 become checkable and fail the build only for new violations.
+- `TASK/README.md`, CLAUDE.md (*Commit Discipline*, STATUS lockstep) and the agent definitions that write
+  tickets point to `close`/`set-status`.
+- Closing needs a commit that names the id; documentation-only tickets close on the commit of their result.
+- A commit hash quoted before 2026-10-19 must be translated (`tools/oldhash.sh`) before `close` accepts it.
+
+### Alternatives considered
+
+- **Free-text status, checked by keyword search** — what the inventory had to do; C3 stays a heuristic and
+  every new wording breaks it. Rejected.
+- **Front matter (YAML) instead of line 3** — needs a parser for nested syntax and moves the state away from
+  where people read it; one line with `|` fields is enough for six states. Rejected.
+- **More states** (`BLOCKED`, `IN-ACCEPTANCE`, `PARTIAL`) — each overlaps one of the six (`PARKED` with a
+  `Reopen` naming the dependency; `IMPLEMENTED`); more states, more drift. Rejected (owner 2026-11-10).
+- **One free `Reason:` field for every state** (the owner's first sketch) — the required content per state
+  could not be checked. Rejected for separate keys (owner 2026-11-10).
+- **`Priority` only on open states** — loses the history of what a closed ticket weighed. Rejected.
+
+### References
+
+- `docs/analysis/ticket-inventory-2026-11-10.md` (classes C1–C6, status words, the closed-state assumption)
+- `TASK/README.md` (receipt convention), CLAUDE.md (*Language & Communication*, *Commit Discipline*)
+
+---
+
 ## Template for new ADRs
 
 ```markdown
