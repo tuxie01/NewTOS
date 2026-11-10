@@ -29,9 +29,6 @@ Cargo.lock.bak
 # User-program build dirs (each programs/* is its own workspace)
 programs/*/target/
 
-# graphify knowledge-graph output (generated, rebuild with `graphify update .`)
-graphify-out/
-
 # Local SD-card backup (RPi firmware + game ROM) — not for the public repo
 sd-card-backup-*/
 

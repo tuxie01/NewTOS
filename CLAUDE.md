@@ -277,7 +277,7 @@ PiRusTOS/
 ```
 
 Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
-`graphify-out/`, `.venv/`, `sd-card-backup-*/`.
+`sd-card-backup-*/`.
 
 **Placement rules:**
 
