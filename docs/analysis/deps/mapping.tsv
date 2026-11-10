@@ -253,14 +253,14 @@ xmxalloc	bdos/umem.c	tos-api/src/gemdos/memory.rs	mxalloc	mapped	Mxalloc 0x44
 xmxalloc	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mxalloc	mapped	-
 xsetblk	bdos/umem.c	tos-api/src/gemdos/memory.rs	mshrink	mapped	Mshrink 0x4A
 xsetblk	bdos/umem.c	tos-api/src/bdos/mem/traps.rs	mshrink	mapped	-
-call_mousevec	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+call_mousevec	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 ikbdraw	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	route_key	mapped	the jump through kbdvec
-ikbdsys	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+ikbdsys	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 init_acia_vecs	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	write_table	mapped	the kbdvecs table defaults (MEM12: the stubs in write_stubs)
 int_acia	bios/aciavecs.S	tos-api/src/xbios/kbdvecs.rs	check_events	mapped	only the ADR-031 warning: the Kbdvbase hooks an IKBD event would call (midisys, ikbdsys, mousevec, statvec, clockvec, joyvec, an accessory's kbdvec) are reported once, never called; no ACIA interrupt (BIOS15)
 kbdvec	bios/aciavecs.S	kernel/src/ikbd.rs	kbd_int	mapped	the default kbdvec
-midisys	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
-midivec	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+midisys	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
+midivec	bios/aciavecs.S	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); ACIA interrupt / MIDI packet path: no ACIA and no MIDI on NewTOS (MIDI is the absent device, bios/chardev.rs)
 acsi_begin	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 acsi_capacity	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
 acsi_end	bios/acsi.c	-	-	design:hardware:acsi	Atari ACSI hard-disk bus driver: no NewTOS counterpart (NewTOS's block device sits behind tos-api/src/bios/block.rs)
@@ -356,7 +356,7 @@ chardev_init	bios/chardev.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	
 charout_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	mapped	Absent impl (absent device)
 bcd2int	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 clock_init	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
-clockvec	bios/clock.c	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
+clockvec	bios/clock.c	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 detect_icdrtc	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 detect_megartc	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 detect_monster_rtc	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
@@ -668,9 +668,9 @@ kprintf_outc_natfeat	bios/kprint.c	-	-	design:hardware:natfeats	formatted consol
 vcprintf	bios/kprint.c	-	-	unmapped	formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
 vkcprintf	bios/kprint.c	-	-	unmapped	formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
 vkprintf	bios/kprint.c	-	-	unmapped	formatted console/debug print helper: NewTOS formats with core::fmt; no counterpart function
-int_linea	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
-linea_0	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
-linea_init	bios/lineainit.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A variable set-up: no NewTOS counterpart function found
+int_linea	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
+linea_0	bios/linea.S	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A trap: no NewTOS counterpart
+linea_init	bios/lineainit.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A variable set-up: no NewTOS counterpart function found
 set_screen_shift	bios/lineainit.c	-	-	unmapped	Line-A variable set-up: no NewTOS counterpart function found
 add_cookie_frb	bios/machine.c	-	-	design:hardware:acsi	_FRB = ST-RAM bounce buffer for ACSI/SCSI DMA into Alt-RAM (bios/acsi.c:145-160); no ACSI/SCSI DMA on the Pi, cookie absent (ARCH06 group E)
 aranym_machine_detect	bios/machine.c	-	-	design:hardware:natfeats	Atari hardware detection (_MCH, _VDO, _SND, ... cookies): no NewTOS counterpart function
@@ -702,8 +702,8 @@ ttram_detect	bios/memory2.c	-	-	design:hardware:tt-ram	TT-RAM / alt-RAM probing:
 disable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 enable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 init_system_timer	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
-jdisint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
-jenabint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+jdisint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+jenabint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 mfp_init	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 mfpint	bios/mfp.c	tos-api/src/xbios/mfp.rs	mfpint	mapped	Mfpint 0x0D without an MFP: the ADR-031 warning (handler never called) and EmuTOS' d0, the interrupt mask register after jenabint, from an image seeded with the oracle's IMRA/IMRB (BIOS15, docs/api/xbios/0d-mfpint.md)
 reset_mfp_regs	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
@@ -978,9 +978,9 @@ osxhbootdelay	bios/startup.S	-	-	unmapped	m68k reset entry / OS header: NewTOS b
 realmain	bios/startup.S	-	-	design:hardware:m68k-cpu	m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
 run_cartridge_applications	bios/startup.S	-	-	design:hardware:cartridge-port	m68k reset entry / OS header: NewTOS boots from kernel8.img (kernel/src/arch); no counterpart function
 biostrap	bios/vectors.S	tos-api/src/bios/mod.rs	dispatch	mapped	trap #13 dispatcher
-call_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
+call_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 check_read_byte	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
-default_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3041	ADR-031: OS hook not served (per-hook table); the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS boots etv_critic with the shared ret stub (JUST_RTS, bios/vectors.rs; BIOS07) and does not dispatch etv_critic
+default_etv_critic	bios/vectors.S	-	-	design:ADR-031@docs/MEMORY.md:3044	ADR-031: OS hook not served (per-hook table); the etv_critic default (handler of the etv_critic vector, called by call_etv_critic); NewTOS boots etv_critic with the shared ret stub (JUST_RTS, bios/vectors.rs; BIOS07) and does not dispatch etv_critic
 init_exc_vec	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 init_user_vec	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 int_hbl	bios/vectors.S	-	-	design:hardware:video-shifter	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
@@ -1311,15 +1311,15 @@ contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	run	mapped	the seed-queue 
 crunch_queue	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	crunch_queue	mapped	Flood::crunch_queue, qtop lowered over trailing holes (V21)
 end_pts	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts: run of one colour, fillable verdict; palette branch reads indices through pixelread (V21)
 end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts, truecolor: 16-bit screen words with OVERLAY_BIT masked on the screen side
-get_color	vdi/vdi_fill.c	-	-	design:ADR-024@docs/MEMORY.md:2156	composes a pixel colour from the bit-planes (planar path); NewTOS has no bit-planes (ADR-024); the palette branch of contour.rs uses RasterBackend::read_pixel instead
-get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel read: no NewTOS counterpart
+get_color	vdi/vdi_fill.c	-	-	design:ADR-024@docs/MEMORY.md:2158	composes a pixel colour from the bit-planes (planar path); NewTOS has no bit-planes (ADR-024); the palette branch of contour.rs uses RasterBackend::read_pixel instead
+get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; linea pixel read: no NewTOS counterpart
 get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	get_seed	mapped	Flood::get_seed: collision removal + draw, first hole, QSIZE overflow ends the fill (V21)
-no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
+no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
 pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill, no bounds check: truecolor device_to_rgb565(get_device_pixel_wrapped), palette read_pixel at the wrapped point; outside the logical screen 0, EmuTOS reads memory unchecked (V24, COMPATIBILITY)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon; no minimum vertex count (1 vertex fills nothing, 2 a dotted stroke; V22); returns false when the y-extent misses the clip band: the callers then skip the perimeter (and its LSTLIN) as polygon returns early when vwk->clip (V40)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polyline	mapped	the closed perimeter (LN_MASK 0xffff, fill colour) when fill_per; drawn by v_fillarea, gdp curve/rbox and the wide-line helper
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polygon	mapped	polygon under the wide-line attribute environment (solid pattern, line colour, perimeter on)
-put_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; linea pixel write: no NewTOS counterpart
+put_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; linea pixel write: no NewTOS counterpart
 search_to_left	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the left walk in Flood::end_pts; planar word scanning has no counterpart
 search_to_left16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the left walk in Flood::end_pts, truecolor words
 search_to_right	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the right walk in Flood::end_pts; planar word scanning has no counterpart
@@ -1358,22 +1358,22 @@ clip_line	vdi/vdi_line.c	tos-api/src/vdi/line.rs	clip_line	mapped	endpoint clip 
 clip_line	vdi/vdi_line.c	tos-api/src/vdi/line.rs	clip_segment	mapped	the vwk->clip test of polyline (ClipRect::OFF) and the vs_clip bound of the rectangle to the screen
 do_circ	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	do_circ	mapped	-
 draw_arrow	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	draw_arrow	mapped	-
-draw_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar Bresenham for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit line is kernel abline
+draw_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2158	planar Bresenham for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit line is kernel abline
 draw_line16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	draw_line16	mapped	eps/e1/e2 Bresenham with WORD arithmetic (V20)
 draw_rect	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	VDI wrapper: vr_recfl and the span fills call RasterBackend::fill_pattern
 draw_rect_common	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	horizontal runs with a pattern; horizontal dashed lines go through the horizontal path of abline
-draw_rect_setup	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	left/right word masks for the planar and blitter paths; the 16-bit path needs no masks (ADR-024)
+draw_rect_setup	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2158	left/right word masks for the planar and blitter paths; the 16-bit path needs no masks (ADR-024)
 horzline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	horzspan	mapped	solid horizontal span in the line colour for do_circ
 hwblit_rect_common	vdi/vdi_line.c	-	-	design:hardware:blitter	Atari BLiTTER rectangle fill (CONF_WITH_BLITTER); the Pi has no blitter
 hwblit_rect_nonstd	vdi/vdi_line.c	-	-	design:hardware:blitter	BLiTTER fill for non-standard patterns; the Pi has no blitter
 hwblit_vertical_line	vdi/vdi_line.c	-	-	design:hardware:blitter	BLiTTER vertical line (CONF_WITH_VDI_VERTLINE); the Pi has no blitter
-lineA2Attrib	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; copies Line-A variables into VwkAttrib: no NewTOS counterpart
-linea_color	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; composes the colour from COLBIT0-3: no NewTOS counterpart
-linea_fill	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 0xF: no NewTOS counterpart
-linea_hline	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 4: no NewTOS counterpart
-linea_line	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 3: no NewTOS counterpart
-linea_polygon	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 6: no NewTOS counterpart
-linea_rect	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 5: no NewTOS counterpart
+lineA2Attrib	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; copies Line-A variables into VwkAttrib: no NewTOS counterpart
+linea_color	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; composes the colour from COLBIT0-3: no NewTOS counterpart
+linea_fill	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 0xF: no NewTOS counterpart
+linea_hline	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 4: no NewTOS counterpart
+linea_line	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 3: no NewTOS counterpart
+linea_polygon	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 6: no NewTOS counterpart
+linea_rect	vdi/vdi_line.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 5: no NewTOS counterpart
 perp_off	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	perp_off	mapped	-
 polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	polyline	mapped	segment loop; LSTLIN (line::set_lstlin) FALSE at the start for every count, TRUE before the last segment's clip test (V40); clip_line per segment runs inside the backend abline
 polyline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	line_clip	mapped	the if (vwk->clip) of the per-segment clip_line: ClipRect::OFF when clipping is off (V20)
@@ -1381,7 +1381,7 @@ quad_xform	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	quad_xform	mapped	-
 r_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	NewTOS keeps no Vwk state to restore: colour, solid pattern and ends are arguments of wideline/polygon
 s_fa_attr	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	fill colour = line colour, solid pattern, squared ends, perimeter on, LN_MASK solid are passed as arguments to polygon
 set_LN_MASK	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	line_mask	mapped	the persistent LN_MASK global is a mask value threaded through polyline
-swblit_rect_common	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar software rectangle fill; NewTOS has no bit-planes (ADR-024), the 16-bit fill is kernel fill_pattern
+swblit_rect_common	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2158	planar software rectangle fill; NewTOS has no bit-planes (ADR-024), the 16-bit fill is kernel fill_pattern
 swblit_rect_common16	vdi/vdi_line.c	kernel/src/vdi_backend.rs	fill_pattern	mapped	16-bit pattern fill through the active pseudo-palette; multifill patterns render monochrome as in EmuTOS
 swblit_rect_common16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	abline	mapped	the horizontal line of abline (draw_rect_common with the line mask as a one-row pattern, attr.clip = 0)
 swblit_vertical_line16	vdi/vdi_line.c	tos-api/src/vdi/line.rs	vertical_line16	mapped	vertical line in 16-bit mode, never shortened by the XOR LSTLIN rule (V20)
@@ -1392,7 +1392,7 @@ vdi_vsl_ends	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_ends	mapped	opcode
 vdi_vsl_type	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_type	mapped	opcode 15
 vdi_vsl_udsty	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_udsty	mapped	opcode 113
 vdi_vsl_width	vdi/vdi_line.c	tos-api/src/vdi/attributes.rs	vsl_width	mapped	opcode 16
-vertical_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar vertical line for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit one is kernel abline
+vertical_line	vdi/vdi_line.c	-	-	design:ADR-024@docs/MEMORY.md:2158	planar vertical line for v_planes<=8; NewTOS has no bit-planes (ADR-024), the 16-bit one is kernel abline
 wideline	vdi/vdi_line.c	tos-api/src/vdi/primitives.rs	wideline	mapped	-
 vdi_v_pmarker	vdi/vdi_marker.c	tos-api/src/vdi/primitives.rs	v_pmarker	mapped	opcode 7; markers are drawn with polyline directly (EmuTOS goes through vdi_v_pline); count capped to MAX_VERTICES by dispatch_in (V23); negative draws nothing
 vdi_vqm_attributes	vdi/vdi_marker.c	tos-api/src/vdi/inquiry.rs	vqm_attributes	mapped	opcode 36
@@ -1409,8 +1409,8 @@ do_clip	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	clip of the 
 do_clip	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	clip of the destination box for vrt_cpyfm to the screen
 dont_clip	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	rect_from_ptsin	mapped	source and destination rectangles from PTSIN (corners normalised)
 hwblit_raster	vdi/vdi_raster.c	-	-	design:hardware:blitter	Atari BLiTTER BitBlt (CONF_WITH_BLITTER); the Pi has no blitter
-linea_blit	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 0xE: no NewTOS counterpart
-linea_raster	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2823	ADR-030: no Line-A emulation; Line-A function 7: no NewTOS counterpart
+linea_blit	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 0xE: no NewTOS counterpart
+linea_raster	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2826	ADR-030: no Line-A emulation; Line-A function 7: no NewTOS counterpart
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	plane count of source and destination and the plane_ct <= 16 gate
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_hull	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19): group g of row y = linear group y * fd_wdwidth + g, fd_w unread; the block hull clipped to the fd_h rows, what is bound (V26)
@@ -1558,13 +1558,13 @@ vdi_vst_rotation	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_rotation	mappe
 vdi_vst_unload_fonts	vdi/vdi_text.c	tos-api/src/vdi/attributes.rs	vst_unload_fonts	mapped	opcode 120; R11, cur_font stays
 arb_corner	vdi/vdi_misc.c	tos-api/src/vdi/attributes.rs	vs_clip	mapped	inline: the only EmuTOS caller is vdi_vs_clip (vdi_control.c:240); vs_clip swaps x1>x2 and y1>y2 in place
 arb_line	vdi/vdi_misc.c	tos-api/src/vdi/gdp.rs	rbox	mapped	inline: the only EmuTOS caller is vdi_gdp.c:240 (v_rbox/v_rfbox); rbox swaps x1>x2 and y1<y2 in place (the LL/UR order)
-get_start_addr	vdi/vdi_misc.c	-	-	design:ADR-024@docs/MEMORY.md:2156	byte address of word column x, row y in the planar screen (v_planes_shift, v_lin_wr); NewTOS has no bit-planes (ADR-024), its cursor/fill go through RasterBackend pixels
-tick_int	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	the VDI's etv_timer handler (calls tim_addr then the old chain); NewTOS has no OS-internal etv_timer chain and never calls the vex_timv vector (ADR-031 etv_timer row, vex_timv row)
-timer_init	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	chains tick_int into etv_timer via Setexc(0x100); NewTOS has no etv_timer chain (ADR-031); the tim_addr = just_rts half is the mapped row mouse.rs timer_init
+get_start_addr	vdi/vdi_misc.c	-	-	design:ADR-024@docs/MEMORY.md:2158	byte address of word column x, row y in the planar screen (v_planes_shift, v_lin_wr); NewTOS has no bit-planes (ADR-024), its cursor/fill go through RasterBackend pixels
+tick_int	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3044	the VDI's etv_timer handler (calls tim_addr then the old chain); NewTOS has no OS-internal etv_timer chain and never calls the vex_timv vector (ADR-031 etv_timer row, vex_timv row)
+timer_init	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3044	chains tick_int into etv_timer via Setexc(0x100); NewTOS has no etv_timer chain (ADR-031); the tim_addr = just_rts half is the mapped row mouse.rs timer_init
 timer_init	vdi/vdi_misc.c	tos-api/src/vdi/mouse.rs	timer_init	mapped	tim_addr = just_rts only (vdi_misc.c:128), called by workstation.rs v_opnwk before vdimouse_init and by ensure_init on the power-up path (V53)
-timer_exit	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3041	restores the saved etv_timer value; NewTOS never chained it (ADR-031)
+timer_exit	vdi/vdi_misc.c	-	-	design:ADR-031@docs/MEMORY.md:3044	restores the saved etv_timer value; NewTOS never chained it (ADR-031)
 vdi_vex_timv	vdi/vdi_misc.c	tos-api/src/vdi/mouse.rs	vex_timv	mapped	opcode 118; swaps TIM_ADDR and returns TICKCAL_MS; the handler is stored and returned but never called (ADR-031), EmuTOS calls it from tick_int
-build_vwk_chain	vdi/vdi_control.c	-	-	design:ADR-030@docs/MEMORY.md:2823	links the open Vwks through Vwk.next_work so a program holding the Line-A CUR_WORK pointer can walk them (vdi_control.c:390-403, called at :458 (v_opnvwk) and :475 (v_clsvwk), Warp9 comment :434); the chain is reachable only through that pointer, and ADR-030 has no Line-A block and does not model CUR_WORK; NewTOS Vwk (vwk.rs) is a static slot table without next_work (audit V18 part 3, K26: no API path, not measurable)
+build_vwk_chain	vdi/vdi_control.c	-	-	design:ADR-030@docs/MEMORY.md:2826	links the open Vwks through Vwk.next_work so a program holding the Line-A CUR_WORK pointer can walk them (vdi_control.c:390-403, called at :458 (v_opnvwk) and :475 (v_clsvwk), Warp9 comment :434); the chain is reachable only through that pointer, and ADR-030 has no Line-A block and does not model CUR_WORK; NewTOS Vwk (vwk.rs) is a static slot table without next_work (audit V18 part 3, K26: no API path, not measurable)
 get_vwk_by_handle	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	resolve	mapped	handle range check and table lookup; NewTOS also checks the slot's in_use flag
 init_wk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	fills the Vwk from INTIN[1..10] and DEV_TAB/SIZ_TAB into INTOUT/PTSOUT; no mouse init (that is v_opnwk's vdimouse_init only, V53)
 update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	DEV_TAB[0,1,3,4,13,35,39] and the INQ_TAB patches are built inline in init_wk and vq_extnd; BYTES_LIN/v_lin_wr/mcs_ptr are line-A planar state with no NewTOS counterpart
@@ -1608,7 +1608,7 @@ vdimouse_exit	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vdimouse_exit	mapped	v_cl
 vb_draw	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	vb_draw	mapped	once per frame (V55): nothing while mouse_flag or HIDE_CNT, else take draw_flag with newx/newy, erase + draw_at; called by kernel/src/vbl.rs run_if_due
 cur_display	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw_at	mapped	draws the 16x16 sprite at (x, y) saving the background (draw = draw_at(GCURX, GCURY)); NewTOS through RasterBackend read_device_rect/draw_sprite, EmuTOS per plane into the bit-planes with MCS save area
 cur_display16	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	draw	mapped	CONF_WITH_VDI_16BIT truecolor path; NewTOS has the one RasterBackend path
-cur_display_clip	vdi/vdi_mouse.c	-	-	design:ADR-024@docs/MEMORY.md:2156	planar left/right-clipped word update; NewTOS has no bit-planes (ADR-024) and clips per pixel in the backend
+cur_display_clip	vdi/vdi_mouse.c	-	-	design:ADR-024@docs/MEMORY.md:2158	planar left/right-clipped word update; NewTOS has no bit-planes (ADR-024) and clips per pixel in the backend
 cur_replace	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	erase	mapped	restores the saved background; NewTOS saves 16x16 pel in BACK
 cur_replace16	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	erase	mapped	CONF_WITH_VDI_16BIT truecolor restore
 vdi_v_choice	vdi/vdi_input.c	tos-api/src/vdi/input.rs	v_choice	mapped	opcode 30; INTOUT[0] = 1 (gchc_key sets TERM_CH = 1)
@@ -1953,8 +1953,8 @@ aestrap	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	the m68k trap #2 vector entr
 set_aestrap	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	writes the m68k trap #2 vector (0x88) and saves the old one; the AArch64 exception table is fixed code
 unset_aestrap	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	restores the m68k trap #2 vector (0x88); no counterpart
 retake	aes/gemdosif.S	-	-	design:hardware:m68k-cpu	re-writes the m68k trap #2 vector (0x88) after a character-mode program; the critical-error half is giveerr/takeerr (ADR-031)
-takeerr	aes/gemdosif.S	-	-	design:ADR-031@docs/MEMORY.md:3041	installs the AES critical-error handler (etv_critic, Setexc 0x101): ADR-031 table row etv_critic is not served, NewTOS Rwabs has no critical-error retry path
-giveerr	aes/gemdosif.S	-	-	design:ADR-031@docs/MEMORY.md:3041	restores the previous etv_critic (:116): ADR-031 etv_critic is not served, nothing is installed to restore
+takeerr	aes/gemdosif.S	-	-	design:ADR-031@docs/MEMORY.md:3044	installs the AES critical-error handler (etv_critic, Setexc 0x101): ADR-031 table row etv_critic is not served, NewTOS Rwabs has no critical-error retry path
+giveerr	aes/gemdosif.S	-	-	design:ADR-031@docs/MEMORY.md:3044	restores the previous etv_critic (:116): ADR-031 etv_critic is not served, nothing is installed to restore
 far_bcha	aes/gemdosif.S	tos-api/src/aes/mod.rs	user_but	mapped	button interrupt glue calling b_click (:306-325); user_but is the vector the VDI mouse path calls
 far_mcha	aes/gemdosif.S	tos-api/src/aes/mod.rs	user_mot	mapped	motion interrupt glue forking mchange (:327-347); user_mot calls mchange directly with the clipped position
 aes_wheel	aes/gemdosif.S	tos-api/src/aes/mod.rs	aes_wheel	mapped	wheel vector glue forking wheel_change (:353-374); what remains is the call it defers
@@ -1965,7 +1965,7 @@ dsptch	aes/gemasm.S	tos-api/src/aes/mod.rs	dsptch	mapped	the input half of what 
 dsptch	aes/gemasm.S	tos-api/src/bdos/process/sched.rs	dsptch	mapped	the scheduling half: caller back on the ready list, timers, head of rlr (:129-167)
 gotopgm	aes/gemasm.S	tos-api/src/bdos/process/sched.rs	switch_to	mapped	first run of an accessory: enter its entry point (the fresh switch); the STACKRESERVE adjustment of the m68k supervisor stack has no counterpart
 psetup	aes/gemasm.S	tos-api/src/bdos/process/sched.rs	admit	mapped	prepares a process to start at its entry point (pushes the entry on the m68k stack); admit marks the slot a fresh peer whose entry_va is read at the first switch
-switchto	aes/gemasm.S	-	-	design:ADR-029@docs/MEMORY.md:2746	restores the next process's m68k registers and stack (:169-190); ADR-029 rejects the flat switchto, contexts are FreeMiNT-shaped per-process ExceptionFrames
+switchto	aes/gemasm.S	-	-	design:ADR-029@docs/MEMORY.md:2749	restores the next process's m68k registers and stack (:169-190); ADR-029 rejects the flat switchto, contexts are FreeMiNT-shaped per-process ExceptionFrames
 accdesk_start	aes/gemstart.S	tos-api/src/bdos/process/standin.rs	enter_accdesk	mapped	starts the accdesk process that runs run_accs_and_desktop (Mshrink, Super, then Pterm0 at the end); enter_accdesk creates its PD, leave_accdesk is the Pterm0
 dos_exec	aes/gemstart.S	kernel/src/launch.rs	run_program_with_tail_rc	mapped	Pexec wrapper for the AES's own launches; the m68k stack re-entrancy workaround (UDA_SPSUPER adjustment) has no counterpart
 ui_start	aes/gemstart.S	tos-api/src/bdos/process/standin.rs	enter_aes	mapped	AES process start (basepage, Mshrink, Super, ad_stail, aes_restart loop); the restart loop is kernel_main_rust's session loop around reinit
