@@ -178,8 +178,16 @@ Linux source code is a cross-reference, not an authority.
 
 ## Language & Communication
 
-- Respond in **German** for design discussions, explanations, and decisions.
-- Code, identifiers, comments, commit messages, doc-comments: **English**.
+- Respond in **German** for design discussions, explanations, and decisions;
+  reports to the user in chat stay German.
+- **Everything in the repository is English** (owner decision 2026-11-10):
+  code, identifiers, comments, commit messages, doc-comments, tickets,
+  status lines, receipts, ADRs, `docs/STATUS.md` and all other docs, new and
+  existing. German text found in a file you touch is translated to English
+  in the same commit. Untouched files are not mass-translated in one go:
+  translate when touched. Keep line anchors valid (the pre-commit doc-check
+  catches shifted cites). Exception: immutable evidence — nothing under
+  `measurements/**` (RUNINFO, logs, dumps) is ever edited.
 - File names and paths: **English**, lowercase, hyphenated. Exceptions: the
   upper-case top-level docs (`docs/STATUS.md`, `docs/analysis/ORACLE.md`, …),
   ticket files and receipts (`TASK/<ID>.md`, `<ID>-STATUS-DONE.MD`),
