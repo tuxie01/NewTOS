@@ -1503,7 +1503,8 @@ family gains an ILP32/LP64 distinction by ELF class), and the app-ABI memory
 ### Addendum 2026-09-04 — ILP32 *build path* retired, *runtime* switch kept
 
 **Decision (user, 2026-09-04):** "den 32bit zweig stillegen weil eh nicht
-läuft". This retires the ILP32 **toolchain**, not the kernel's ABI plumbing.
+läuft" (translated from German: "shut down the 32-bit branch, since it does not run
+anyway"). This retires the ILP32 **toolchain**, not the kernel's ABI plumbing.
 
 **Why now.** The app ABI pivoted to LP64 on 2026-07-21 (recompiled GEM apps run
 as native 64-bit; ILP32 was the *cause* of the QED menu corruption, not the
@@ -1828,7 +1829,8 @@ code (`tos-api/src/bdos/process/{usermem,mmu}.rs`, `tos-api/src/bios/`).
 
 **Adopt FreeMiNT's protection model — its names and its values — instead of
 inventing a NewTOS one** (user decision, 2026-09-05: *"wir müssen das Rad
-nicht neu erfinden sondern können das verwenden"*). The constants are taken
+nicht neu erfinden sondern können das verwenden"*; translated from German: "we do not
+have to reinvent the wheel, we can use that"). The constants are taken
 verbatim from `references/freemint/sys/mint/mem.h:120-136` into
 `tos-types::memory`: the external `F_PROTMODE`/`F_PROT_P`/`F_PROT_G`/
 `F_PROT_S`/`F_PROT_PR`/`F_PROT_I`/`F_PROTSHIFT` nibble of an `Mxalloc` mode
@@ -2572,7 +2574,8 @@ would do the work twice.
 2. **This holds even where it is visible to programs in small ways.** The
    user (2026-10-18): *"selbst wenn es kleine sichtbare Änderungen gegenüber
    EmuTOS sind, würde ich aus Effizienzgründen dennoch für FreeMiNT mich
-   entscheiden."* Every such visible difference is still **named** in
+   entscheiden."* (Translated from German: "even if they are small visible changes
+   compared with EmuTOS, I would still decide for FreeMiNT for efficiency reasons.") Every such visible difference is still **named** in
    `docs/COMPATIBILITY.md` (with the FreeMiNT and EmuTOS source lines), never
    left silent.
 3. **Scope is the kernel only.** The AES and the VDI stay EmuTOS-faithful
@@ -3276,7 +3279,7 @@ wants to see how TOS 4.04 builds DMA sound and VDI functions and to compare them
 ## ADR-035: MagiC and fVDI as read-only comparisons for raster technique
 
 **Date:** 2026-11-07
-**Status:** **Accepted** (2026-11-07, user: "wir haben als Referenz die MagiC-Sourcen und auch fVDI, also auch die Sourcen von TOS 4, wir koennten ja dort schauen wie die das gemacht haben").
+**Status:** **Accepted** (2026-11-07, user: "wir haben als Referenz die MagiC-Sourcen und auch fVDI, also auch die Sourcen von TOS 4, wir koennten ja dort schauen wie die das gemacht haben"; translated from German: "we have the MagiC sources and also fVDI as a reference, so also the sources of TOS 4, we could look there at how they did it").
 **Phase:** cross-cutting (VDI raster performance; first use [V49](../TASK/V49.md)).
 
 ### Context
@@ -3307,7 +3310,7 @@ driver in C and the SAGA driver of the V4SA. Pins in `references/README.md`.
 ## ADR-036: The kernel raster backend may use AArch64 Advanced SIMD (NEON) kernels
 
 **Date:** 2026-11-07
-**Status:** **Accepted** (2026-11-07, user: "macht es wirklich Sinn jetzt zu ueberarbeiten und dann ersetzen wir es eh durch Assembler? Da doch lieber gleich jetzt. Voraussetzung es bringt uns Vorteile. Koennen wir SIMD/NEON verwenden?").
+**Status:** **Accepted** (2026-11-07, user: "macht es wirklich Sinn jetzt zu ueberarbeiten und dann ersetzen wir es eh durch Assembler? Da doch lieber gleich jetzt. Voraussetzung es bringt uns Vorteile. Koennen wir SIMD/NEON verwenden?"; translated from German: "does it really make sense to rework it now when we will replace it with assembler anyway? Then rather right now. Provided it gives us advantages. Can we use SIMD/NEON?").
 **Phase:** PHASE-12 (VDI), cross-cutting for the kernel ABI.
 
 ### Context
