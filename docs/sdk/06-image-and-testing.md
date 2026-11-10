@@ -80,6 +80,7 @@ image_sha256 <sha256 of the image file>
 size_mib 64
 created 2026-10-26T20:35:13Z
 host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
 switch SD_SYSINFO_AUTO=1                        (one line per SD_* variable set)
 optional_missing none                           (or one line per missing part)
 metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
@@ -91,6 +92,10 @@ compiler the SDK build scripts use) when the manifest is written, or
 `host_clang not found` (TASK/SDK08). It records the host compiler at image
 time; a program on the card built earlier names its own compiler in its
 `.comment` section.
+
+`host_cflow` is the first line of `--version` of the cflow pinned in
+`tools/oracle/oracle.env` (`ORACLE_CFLOW`, the one `tools/deps/gen-deps.py`
+runs), or `host_cflow not found` (TASK/TOOL39).
 
 `metadata` lines name macOS volume directories that came back after the
 script removed them; they are unreadable and not TOS content, so they are

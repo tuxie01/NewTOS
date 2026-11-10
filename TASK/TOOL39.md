@@ -7,8 +7,8 @@ Split out of [TOOL01](TOOL01.md), which stays parked for everything else.
 
 ## Facts
 
-- `tools/deps/gen-deps.py` is the only program that runs cflow (`CFLOW = "/opt/homebrew/bin/cflow"`,
-  `tools/deps/gen-deps.py:44@CFLOW`). `cargo xtask deps` only reads `docs/analysis/deps/edges.tsv`.
+- `tools/deps/gen-deps.py` is the only program that runs cflow (before this ticket a module
+  constant, `CFLOW = "/opt/homebrew/bin/cflow"`, line 44 at `9ff4e188c`). `cargo xtask deps` only reads `docs/analysis/deps/edges.tsv`.
 - Without cflow the generator died with a Python traceback (`FileNotFoundError: … '/opt/homebrew/bin/cflow'`,
   2026-11-10). Its version is printed into the headers of `edges.tsv` and `layers.md`, but never compared.
 - Installed 2026-11-10 with `brew install cflow`: `/opt/homebrew/bin/cflow (GNU cflow) 1.8`, the version the
@@ -39,3 +39,26 @@ Split out of [TOOL01](TOOL01.md), which stays parked for everything else.
   traceback, nothing generated.
 - A manifest from `tools/sd-manifest.sh` carries `host_cflow`.
 - `cargo xtask test` green, warnings delta 0, doc-check of the edited docs 0 failures.
+
+## Implementation
+
+Developer, 2026-11-10/11, uncommitted in the working tree (receipt: [TOOL39-STATUS-UNFINISHED.MD](TOOL39-STATUS-UNFINISHED.MD)).
+
+- **Pin:** `tools/oracle/oracle.env` gains `ORACLE_CFLOW=/opt/homebrew/bin/cflow` and `ORACLE_CFLOW_VERSION=1.8`;
+  its header names the two new readers (`tools/sd-manifest.sh`, `tools/deps/gen-deps.py`).
+- **Check:** `check_cflow` (`tools/deps/gen-deps.py:2489@check_cflow`) runs in `main`
+  (`tools/deps/gen-deps.py:2520@main`) right after reading `oracle.env`, before the build-tree check and before any
+  temporary directory, in both modes. It stops with exit 1 and one line
+  `gen-deps: cflow: expected GNU cflow <pin> at <path>, found <what>; fix: brew install cflow`, where `<what>` is
+  `no file there`, `not runnable (<errno text>)`, `` `--version` exit <n> ``, `no GNU cflow version line (<line>)`
+  or `version <v>`. The module constant `CFLOW` is gone: `cflow_edges` gets the checked path, the `cflow:` header
+  line takes the path from `ORACLE_CFLOW` and the version line from the check (same bytes as before).
+- **Manifest:** `tools/sd-manifest.sh` writes `host_cflow <first line of --version>` of `ORACLE_CFLOW` (read from
+  `oracle.env` in a subshell) after `host_clang`, or `host_cflow not found`. Existing readers filter by key
+  (`tools/xtask/src/tosdump.rs:888@manifest_lines`: `image_sha256`, `optional_missing`) and are unaffected.
+- **Host test:** `tools/xtask/src/gen_deps_tests.rs` (5 tests, run by `cargo xtask test`) loads `gen-deps.py` with
+  `python3 -I` as a module and calls `check_cflow` against fake `cflow` scripts in
+  `target/xtask-gen-deps/`: missing, version 1.7, not GNU cflow, not executable (each: exit 1, exactly the one
+  line), version 1.8 (passes).
+- **Docs:** `tools/deps/README.md` ("Inputs and reproducibility"), `docs/sdk/06-image-and-testing.md` (manifest
+  format: `host_cflow`).

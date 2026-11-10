@@ -1,0 +1,20 @@
+== check 2: pinned cflow 1.8
+gen-deps --check: edges.tsv, layers.md byte-identical
+exit 0
+== check 3: pin 1.7
+mode[] exit=1 stdout_lines=       0 stderr_lines=       1 tracebacks=0
+gen-deps: cflow: expected GNU cflow 1.7 at /opt/homebrew/bin/cflow, found version 1.8; fix: brew install cflow
+mode[--check] exit=1 stdout_lines=       0 stderr_lines=       1 tracebacks=0
+gen-deps: cflow: expected GNU cflow 1.7 at /opt/homebrew/bin/cflow, found version 1.8; fix: brew install cflow
+deps unchanged: yes; gen-deps temp dirs:        0
+== check 4: missing path
+mode[] exit=1 stdout_lines=       0 stderr_lines=       1 tracebacks=0
+gen-deps: cflow: expected GNU cflow 1.8 at /opt/homebrew/bin/cflow-missing, found no file there; fix: brew install cflow
+mode[--check] exit=1 stdout_lines=       0 stderr_lines=       1 tracebacks=0
+gen-deps: cflow: expected GNU cflow 1.8 at /opt/homebrew/bin/cflow-missing, found no file there; fix: brew install cflow
+deps unchanged: yes; gen-deps temp dirs:        0
+== check 5: manifest
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow not found

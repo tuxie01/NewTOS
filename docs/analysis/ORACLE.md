@@ -21,6 +21,7 @@ Evidence for everything below: `measurements/measurement-2026-10-26-oracle/RUNIN
 | ROM sha256 | `323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c` |
 | Hatari | 2.6.1 (macOS bundle, compiled Aug 15 2025), `/Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari`, binary sha256 `953f4e78eea55a8ca12ed6c83de1f045545b8da42a49e00112eaa235dffcd6f6` |
 | Hatari config | `tools/oracle/hatari.cfg`, sha256 `c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46`: only result-relevant settings, no paths (§2) |
+| cflow | `/opt/homebrew/bin/cflow` — `GNU cflow 1.8` (`ORACLE_CFLOW`, `ORACLE_CFLOW_VERSION`; `brew install cflow`): run only by `tools/deps/gen-deps.py`, which stops when it is missing or reports another version (TASK/TOOL39). The dependency graph needs it, the ROM and the oracle runs do not |
 
 All of these live in **one** file, `tools/oracle/oracle.env`, read by
 `tools/oracle/build-emutos.sh`, `tools/hatari-oracle.sh`, `tools/hatari-qed.sh`,

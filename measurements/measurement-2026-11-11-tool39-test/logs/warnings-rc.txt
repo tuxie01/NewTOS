@@ -1,0 +1,11 @@
+base rpi4 build rc=0
+base rpi4 clippy rc=0
+base qemu-virt build rc=0
+base qemu-virt clippy rc=0
+base xtask clippy rc=0
+change rpi4 build rc=0
+change rpi4 clippy rc=0
+change qemu-virt build rc=0
+change qemu-virt clippy rc=0
+change xtask clippy rc=0
+done

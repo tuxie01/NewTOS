@@ -1,0 +1,12 @@
+base-qemu-virt-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;
+base-qemu-virt-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;
+base-rpi4-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;
+base-rpi4-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;
+base-xtask-clippy.txt: `xtask` (bin "xtask" test) generated 9 warnings;
+change-qemu-virt-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;
+change-qemu-virt-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;
+change-rpi4-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;
+change-rpi4-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;
+change-xtask-clippy.txt: `xtask` (bin "xtask" test) generated 9 warnings;
+rc.txt: 
+summary.txt: base-qemu-virt-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;;base-qemu-virt-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;;base-rpi4-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;;base-rpi4-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;;base-xtask-clippy.txt: `xtask` (bin "xtask" test) generated 9 warnings;;change-qemu-virt-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;;change-qemu-virt-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;;change-rpi4-build.txt: `tos-api` (lib) generated 64 warnings;`kernel` (lib) generated 93 warnings;;change-rpi4-clippy.txt: `tos-api` (lib) generated 73 warnings;`kernel` (lib) generated 121 warnings;;change-xtask-clippy.txt: `xtask` (bin "xtask" test) generated 9 warnings;;

@@ -229,6 +229,17 @@ Do **not** suggest anywhere:
 - x86 or x86_64 build targets
 - `bindgen` to wrap EmuTOS C code — we are doing a clean reimplementation
 
+### Required host tools
+
+Pinned in `tools/oracle/oracle.env` (provenance: `docs/analysis/ORACLE.md` §1).
+
+- **GNU cflow 1.8** (`brew install cflow`, `/opt/homebrew/bin/cflow`):
+  `tools/deps/gen-deps.py` (the EmuTOS dependency graph) stops when it is
+  missing or reports another version, no fallback. Recorded as
+  `host_cflow` in every image manifest (`tools/sd-manifest.sh`; TOOL39).
+- The m68k cross toolchain, Hatari and the oracle ROM: `docs/analysis/ORACLE.md`
+  §1 (checks of the other tools: TASK/TOOL01, parked).
+
 ---
 
 ## Source Tree Conventions

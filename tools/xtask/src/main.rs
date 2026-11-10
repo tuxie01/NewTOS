@@ -1277,3 +1277,8 @@ mod prgflags_tests {
         assert_eq!(prgflags_describe(0x3000_0002), "PF_TTRAMLOAD | TPA quantum 4 (x 128 KiB)");
     }
 }
+
+/// TOOL39 — `tools/deps/gen-deps.py` stops before any work unless the
+/// cflow pinned in `tools/oracle/oracle.env` is there at its version.
+#[cfg(test)]
+mod gen_deps_tests;

@@ -41,6 +41,9 @@
 #                          (the clang the SDK build scripts use -- $CLANG,
 #                          default clang -- when the manifest is written;
 #                          TASK/SDK08)
+#   host_cflow <first line of `$ORACLE_CFLOW --version`> / host_cflow not found
+#                          (the cflow pinned in tools/oracle/oracle.env, the one
+#                          tools/deps/gen-deps.py runs; TASK/TOOL39)
 #   switch SD_X=<v>        (zero or more) / switch n/a
 #   optional_missing none  / optional_missing <text> (one or more)
 #   # file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
@@ -81,7 +84,7 @@ cmd_files() {
 
 cmd_write() {
   [ "$#" -ge 3 ] || usage
-  local img="$1" size_mib="$2" writer="$3" switches=env manifest part m
+  local img="$1" size_mib="$2" writer="$3" switches=env manifest part m cflow
   local optional=()
   shift 3
   while [ "$#" -gt 0 ]; do
@@ -107,6 +110,12 @@ cmd_write() {
       echo "host_clang $("${CLANG:-clang}" --version 2>/dev/null | head -1)"
     else
       echo "host_clang not found"
+    fi
+    cflow=$(. "$(dirname "${BASH_SOURCE[0]}")/oracle/oracle.env" && printf '%s' "${ORACLE_CFLOW:-}")
+    if [ -n "$cflow" ] && [ -x "$cflow" ]; then
+      echo "host_cflow $("$cflow" --version 2>/dev/null | head -1)"
+    else
+      echo "host_cflow not found"
     fi
     if [ "$switches" = env ]; then
       # Every SD_* switch set in the environment (they change what is on the card).

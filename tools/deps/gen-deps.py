@@ -17,8 +17,10 @@ Inputs, all named by tools/oracle/oracle.env (never by $PATH):
     makefile.dep and its generated prerequisites).
   * the cross compiler ORACLE_CROSS_MINT (gcc 7.5.0): `-E` for preprocessing,
     `-fdump-tree-gimple-lineno` for the per-statement facts below.
-  * GNU cflow 1.8 (/opt/homebrew/bin/cflow) over the preprocessed sources,
-    one run over bios+bdos+vdi+aes+desk.
+  * GNU cflow ORACLE_CFLOW at version ORACLE_CFLOW_VERSION (1.8) over the
+    preprocessed sources, one run over bios+bdos+vdi+aes+desk. Checked before
+    anything else, in both modes: a missing cflow or another version stops
+    the generator with one line and exit 1 (TASK/TOOL39).
   * tosvars.ld (the system-variable addresses), preprocessed by the recipe's
     own `-P -x c` command for the linker script.
 
@@ -41,7 +43,6 @@ REPO = Path(__file__).resolve().parents[2]
 ORACLE_ENV = REPO / "tools/oracle/oracle.env"
 BUILD_SCRIPT = REPO / "tools/oracle/build-emutos.sh"
 OUT_DIR = REPO / "docs/analysis/deps"
-CFLOW = "/opt/homebrew/bin/cflow"
 GENERATOR = "tools/deps/gen-deps.py"
 
 # The directories whose functions are graph nodes (user decision 2026-10-26).
@@ -1606,8 +1607,8 @@ def vector_scan(gfns, cfiles, afiles, fnset, varset, var_key, sysvar_addr, abs_i
 CFLOW_LINE = re.compile(r"^( *)([A-Za-z_]\w*)\(\)")
 
 
-def cflow_edges(ppdir, files):
-    p = run([CFLOW, "--no-preprocess", "-A", "-A", "--omit-arguments", "-d", "2",
+def cflow_edges(cflow, ppdir, files):
+    p = run([cflow, "--no-preprocess", "-A", "-A", "--omit-arguments", "-d", "2",
              *files], cwd=ppdir)
     edges = set()
     cur = None
@@ -1654,8 +1655,7 @@ def cc_env(tmp):
     return e
 
 
-def generate(outdir):
-    env = read_env()
+def generate(outdir, env, cflow):
     tree = verify_tree(env)
     with tempfile.TemporaryDirectory(prefix="gen-deps-") as td:
         tmp = Path(td)
@@ -1668,7 +1668,7 @@ def generate(outdir):
         flags = list(next(iter(flagsets)))
         check_translated(cc, tree, translated, tmp)
         ccver = run([cc, "--version"]).stdout.splitlines()[0]
-        cflowver = run([CFLOW, "--version"]).stdout.splitlines()[0]
+        cflowver = cflow[1]
 
         pp = tmp / "pp"
         gdir = tmp / "gimple"
@@ -1706,7 +1706,7 @@ def generate(outdir):
                 afiles[path] = parse_asm(path, text)
 
         cflow_files = sorted(p for p in graph_srcs if p.endswith(".c"))
-        cf_edges = cflow_edges(pp, cflow_files)
+        cf_edges = cflow_edges(cflow[0], pp, cflow_files)
 
         return build(env, tree, flags, cc, ccver, cflowver, cfiles, afiles, gtexts,
                      cf_edges, binding_srcs, sysvar_addr, outdir)
@@ -2249,7 +2249,7 @@ def header_lines(meta, what):
         f"build-tree: references/emutos-oracle/{env['ORACLE_EMUTOS_COMMIT'][:8]}",
         f"cc: {env['ORACLE_CROSS_MINT']}gcc ({meta['ccver']})",
         "cflags (make -n of the recipe): " + " ".join(meta["flags"]),
-        f"cflow: {CFLOW} ({meta['cflowver']})",
+        f"cflow: {env['ORACLE_CFLOW']} ({meta['cflowver']})",
         f"node dirs: {' '.join(DIRS)}; read for trap bindings only: "
         + " ".join(meta["binding_srcs"]),
     ]
@@ -2479,18 +2479,59 @@ def layers_md(edges, def_rows, meta):
     return "\n".join(out).rstrip("\n") + "\n"
 
 
+# --------------------------------------------------------------------------
+# J. the pinned cflow (TASK/TOOL39), checked first by main
+
+CFLOW_VERSION_LINE = re.compile(r"\(GNU cflow\) (\S+)$")
+CFLOW_FIX = "brew install cflow"
+
+
+def check_cflow(env):
+    """The pinned cflow (ORACLE_CFLOW, ORACLE_CFLOW_VERSION) must exist and
+    report that version; otherwise stop with one line. No fallback, no
+    override. Returns (path, first line of `--version`) for the headers."""
+    path = env.get("ORACLE_CFLOW")
+    want = env.get("ORACLE_CFLOW_VERSION")
+    if not path or not want:
+        die(f"{ORACLE_ENV} lacks ORACLE_CFLOW or ORACLE_CFLOW_VERSION")
+
+    def stop(found):
+        die(f"cflow: expected GNU cflow {want} at {path}, found {found}; fix: {CFLOW_FIX}")
+
+    if not os.path.isfile(path):
+        stop("no file there")
+    try:
+        p = subprocess.run([path, "--version"], stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, text=True, errors="replace")
+    except OSError as e:
+        stop(f"not runnable ({e.strerror})")
+    lines = p.stdout.splitlines()
+    first = lines[0] if lines else ""
+    if p.returncode != 0:
+        stop(f"`--version` exit {p.returncode}")
+    m = CFLOW_VERSION_LINE.search(first)
+    if not m:
+        stop(f"no GNU cflow version line ({first or 'no output'!r})")
+    if m.group(1) != want:
+        stop(f"version {m.group(1)}")
+    return path, first
+
+
 def main():
     args = sys.argv[1:]
     if args not in ([], ["--check"]):
         sys.stderr.write(__doc__)
         sys.exit(2)
+    # The pinned cflow is checked before any other work, in both modes.
+    env = read_env()
+    cflow = check_cflow(env)
     if not args:
-        generate(OUT_DIR)
+        generate(OUT_DIR, env, cflow)
         print(f"wrote {OUT_DIR.relative_to(REPO)}/edges.tsv, layers.md")
         return
     with tempfile.TemporaryDirectory(prefix="gen-deps-check-") as td:
         out = Path(td)
-        generate(out)
+        generate(out, env, cflow)
         diff = []
         for name in ("edges.tsv", "layers.md"):
             a = (OUT_DIR / name).read_bytes() if (OUT_DIR / name).exists() else b""

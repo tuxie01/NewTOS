@@ -1,0 +1,31 @@
+RUNINFO -- Tester, independent acceptance of TASK/TOOL39 (cflow required, pinned host tool)
+Date: 2026-11-11. Base HEAD dab087895; change = uncommitted working tree (8 files, see git diff --stat).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Image booted: none (no kernel/tos-api change; the diff touches tools/, docs/, TASK/ only -> no QEMU boot needed).
+No manifest of a booted image to cite; manifest checks used scratch images only (optional_missing none).
+Scratch: .../scratchpad/tool39-test/ (copy = git archive HEAD + working-tree overlay, references symlinked). Real repo's
+oracle.env never edited (all pin changes made in the copy). Method: method/*.sh; logs: logs/.
+
+Results
+1 PASS  cargo xtask test (repo): sum of all "test result" lines 2374 passed / 0 failed / 6 ignored (base 2369/0/6, +5).
+        5 gen_deps_tests::* ok (logs/cargo-xtask-test.log). Mutation (method/mutation.sh, copy only): early
+        `return path, "mutant"` in check_cflow -> all 5 gen_deps tests FAILED (0 passed, 5 failed).
+2 PASS  python3 -I tools/deps/gen-deps.py --check -> "edges.tsv, layers.md byte-identical", exit 0 (repo and copy).
+3 PASS  pin 1.7, generate and --check: exit 1, exactly one stderr line
+        "gen-deps: cflow: expected GNU cflow 1.7 at /opt/homebrew/bin/cflow, found version 1.8; fix: brew install cflow",
+        0 tracebacks, empty stdout, 0 gen-deps temp dirs, docs/analysis/deps sha256 unchanged.
+4 PASS  ORACLE_CFLOW=/opt/homebrew/bin/cflow-missing: same, "... found no file there; fix: brew install cflow".
+5 PASS  sd-manifest.sh files+write on scratch image: "host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8" after host_clang;
+        missing path -> "host_cflow not found". Reader tools/xtask/src/tosdump.rs manifest_lines filters image_sha256 /
+        optional_missing only: unaffected. make-sd-image.sh, mkcard.sh, mktestdisk.sh only call sd-manifest.sh and count ^file.
+6 PASS  fresh target per build, base (HEAD files) vs change, both boards, all rc 0 (logs/warnings-*.txt):
+        cargo xtask build rustc tos-api 64 / kernel 93 (rpi4 and qemu-virt, both sides);
+        cargo clippy -p kernel --no-default-features --features board-<b>: tos-api 73 / kernel 121 (both boards, both sides);
+        cargo clippy -p xtask --tests: 9 both sides. Delta 0. (Kernel image bytes not compared; no kernel source change.)
+7 PASS  cargo xtask doc-check tools/deps/README.md docs/sdk/06-image-and-testing.md TASK/TOOL39.md
+        TASK/TOOL39-STATUS-UNFINISHED.MD TASK/SPEC04.md: 0 failures.
+
+Out-of-scope observations
+- tools/sync-card.sh (own host_clang writer, line ~158), tools/release/package-release.sh:314 and
+  tosdump/probes/run-xdprobe.sh:106 write host_clang lines without host_cflow; the ticket names only sd-manifest.sh.
+Verdict: PASS (1-7). Not tested: real-Pi4 (not applicable).

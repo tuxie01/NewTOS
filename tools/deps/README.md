@@ -30,7 +30,15 @@ coverage of the set and its verdict (see "Coverage and the ratchet").
 
 ## Inputs and reproducibility
 
-Everything comes from `tools/oracle/oracle.env`. The generator checks that
+Everything comes from `tools/oracle/oracle.env`. Before any other work, in
+both modes, the generator checks the cflow pinned there: `ORACLE_CFLOW`
+(`/opt/homebrew/bin/cflow`) must exist and the first line of its `--version`
+must end in `(GNU cflow) <ORACLE_CFLOW_VERSION>` (`1.8`). Otherwise it stops
+with one line naming the tool, the expected version and path, what it found,
+and the fix (`brew install cflow`), exit 1, nothing generated; there is no
+fallback and no override (`check_cflow`, `tools/deps/gen-deps.py:2489@check_cflow`;
+TASK/TOOL39). The image manifest records the same cflow as `host_cflow`
+(`tools/sd-manifest.sh`). The generator then checks that
 `references/emutos-oracle/<pin[:8]>/` is at the pinned commit, clean, and
 holds the built `etos512de.img` with `ORACLE_ROM_SHA256`; it only reads that
 tree. The compile command of every source is taken from `make -n` of the
