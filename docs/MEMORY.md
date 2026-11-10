@@ -3347,7 +3347,7 @@ earlier intention "assembler much later" (auto-memory, 2026-07-22) is replaced b
 ## ADR-037: Ticket states — six states, one machine-readable status line
 
 **Date:** 2026-11-10
-**Status:** **Accepted** (2026-11-10, owner: six states and the mapping; open points decided: blocked tickets are
+**Status:** **Accepted, amended 2026-11-11** (addendum below: roles and the gap check replace point 5; accepted 2026-11-10, owner: six states and the mapping; open points decided: blocked tickets are
 `PARKED`, STATUS.md lists checked first and generated later, separate line-3 keys, `Priority` mandatory in every
 state; the `TASK/README.md` status column is generated from line 3).
 **Phase:** cross-cutting (process, `TASK/`, `docs/STATUS.md`, `tools/xtask`)
@@ -3464,6 +3464,49 @@ owner decision 2026-11-10).
 
 - `docs/analysis/ticket-inventory-2026-11-10.md` (classes C1–C6, status words, the closed-state assumption)
 - `TASK/README.md` (receipt convention), CLAUDE.md (*Language & Communication*, *Commit Discipline*)
+
+### Addendum 2026-11-11 — who changes a state, and the gap check
+
+Owner decision 2026-11-11. Replaces point 5 ("`DONE` only through `cargo xtask close`") and the lead's role in closing;
+points 1–4 and 6–10 stand.
+
+11. **Roles.**
+    - **Developer.** A commit whose subject is `fix(...)` or `feat(...)` and names a ticket id (`(TOOL40)`, word
+      boundary) must, in the same commit, carry line 3 of `TASK/<ID>.md` as `IMPLEMENTED` with `Missing` filled.
+      `Commit: self` stands for the commit that sets the line (the commit cannot name its own hash); `status-check`
+      resolves it to the commit that last changed line 3 (`git log -L3,3`). A later fix commit on an `IMPLEMENTED`
+      ticket keeps the line or updates `Missing`. The developer's receipt records `Role: developer` and the agent.
+    - **Tester.** Acceptance only through `cargo xtask accept <ID> --commit <hash> --result PASS|FAIL [--note ...]`.
+      It refuses unless line 3 is `IMPLEMENTED`, `<hash>` exists on the current history and names the id, and the
+      acceptor differs from the developer recorded for the ticket. `PASS` writes `<ID>-STATUS-DONE.MD` (naming
+      `<hash>`, the result, role and agent) and sets line 3 to `DONE (date) | Priority | Commit: <hash> | Receipt: …`
+      in one commit. `FAIL` writes `<ID>-STATUS-UNFINISHED.MD` with the note; line 3 stays `IMPLEMENTED`.
+    - **Lead.** Closes nothing. Only `cargo xtask set-status <ID> PARKED|OBSOLETE|ACCEPTED` after an owner decision,
+      with the fields of point 1 (`Reason`+`Reopen`, `Reason`[+`Target`], `Ref`) mandatory.
+12. **Self-acceptance.** Every commit has the same git author (the owner), so the roles are recorded, not
+    authenticated: the developer's receipt and the `accept` receipt each name role and agent; `status-check` flags a
+    `DONE` whose acceptor equals its developer. A record, not a proof.
+13. **Gap check** (`cargo xtask status-check --new-only`, on the staged content; only tickets the commit touches or
+    names). Rejects, naming ticket and gap:
+    - a `fix`/`feat` commit naming a ticket whose staged line 3 is `OPEN` (or `DONE`: further work goes into a
+      follow-up ticket);
+    - a `<ID>-STATUS-DONE.MD` while line 3 is not `DONE`;
+    - line 3 `DONE` without a DONE receipt that names a commit;
+    - line 3 `IMPLEMENTED` without `Commit` (a hash or `self`) or without `Missing`;
+    - line 3 `PARKED` without `Reason` and `Reopen`.
+    Reports without rejecting: a `PARKED` ticket whose `Reason: blocked by <ID>` names a ticket that is `DONE`; a
+    flagged self-acceptance (point 12).
+14. **Where it runs.** The checks that need the commit message (the `fix`/`feat` subject and the ids it names) run in
+    a `commit-msg` hook: `pre-commit` runs before the message exists. The other checks run in `pre-commit`. Both are
+    installed by `cargo xtask install-hooks` and are switched on only after the owner's OK; until then the commands
+    run by hand. `cargo xtask report` and the SessionStart summary are unchanged by this addendum.
+
+Owner decisions 2026-11-11 on the open points of the draft:
+
+- (e) `cargo xtask accept` commits itself, with a generated message; the lead does not touch acceptance commits.
+- (f) `PARKED` → `OPEN`: the lead, via `cargo xtask set-status <ID> OPEN --reason ...`, after an owner decision. New
+  tickets are created directly as `OPEN` by whoever opens them; `status-check` validates line 3.
+- (g) A commit that names several ticket ids: every named id must satisfy the rules.
 
 ---
 
