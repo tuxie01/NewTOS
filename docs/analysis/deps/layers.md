@@ -10,7 +10,7 @@ never edit by hand: rerun the generator (check: tools/deps/gen-deps.py --check).
 emutos-commit: 1a7484aba1bfba23e2c0899e243b6d8177fe41df
 rom-sha256: 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c (etos512de.img, make 512 COUNTRY=de, tools/oracle/build-emutos.sh, docs/analysis/ORACLE.md)
 build-tree: references/emutos-oracle/1a7484ab
-cc: /opt/cross-mint/bin/m68k-atari-mint-gcc (m68k-atari-mint-gcc (MiNT 20230908) 7.5.0)
+cc: /opt/cross-mint/bin/m68k-atari-mint-gcc (m68k-atari-mint-gcc (MiNT 20240501) 7.5.0)
 cflags (make -n of the recipe): -m68000 -mshort -O2 -fomit-frame-pointer -fno-common -Wall -Werror=undef -Werror=missing-prototypes -Werror=strict-prototypes -Werror=implicit-function-declaration -Werror=format -Werror=redundant-decls -Werror=format-extra-args -Werror=old-style-definition -Werror=type-limits -Iinclude -DWITH_AES=1 -DWITH_CLI=1 -DTARGET_512
 cflow: /opt/homebrew/bin/cflow (/opt/homebrew/bin/cflow (GNU cflow) 1.8)
 node dirs: bios bdos vdi aes desk; read for trap bindings only: util/lisautil.S util/memmove.S util/memset.S util/miscasm.S util/optimopt.S util/setjmp.S util/stringasm.S

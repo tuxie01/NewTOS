@@ -1,0 +1,5 @@
+323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c  tree/etos512de.img
+323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c  tools/oracle/etos512de-1a7484ab.img
+b7df4fc4e44e6a0072f676d5a750d4b4d969c0dd4bf1ef48e2775281b10ac02d  /opt/cross-mint/bin/m68k-atari-mint-gcc-7.5.0
+070586b1ff20fd80d867ccd41b1b41b1293f3c8837a67b1acd88837dc9aef959  /opt/cross-mint/bin/m68k-atari-mint-as
+1d2a4eed87bfa127eb81845995e86cb42776dd21dedd43977be0b3324791e2bc  /opt/cross-mint/bin/m68k-atari-mint-ld

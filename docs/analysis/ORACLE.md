@@ -15,7 +15,7 @@ Evidence for everything below: `measurements/measurement-2026-10-26-oracle/RUNIN
 | EmuTOS commit | `1a7484aba1bfba23e2c0899e243b6d8177fe41df` (2026-04-14, = `references/emutos` HEAD, the tree `docs/api/` is extracted from) |
 | Build | `make 512 COUNTRY=de` → `TARGET_512`, `-DWITH_AES=1 -DWITH_CLI=1`, no `localconf.h`; CONF table: `docs/api/_emutos-config.md` |
 | Build date (pinned) | 2026-04-14 = the commit date → `OS_DATE 0x04142026`, version string `"20260414"` |
-| Toolchain | `/opt/cross-mint/bin/m68k-atari-mint-gcc` — `m68k-atari-mint-gcc (MiNT 20230908) 7.5.0` |
+| Toolchain | `/opt/cross-mint/bin/m68k-atari-mint-gcc` — `m68k-atari-mint-gcc (MiNT 20240501) 7.5.0`: verified byte-identical ROM, 2026-11-10 (rebuild of the pin = `ORACLE_ROM_SHA256`, `measurements/measurement-2026-11-10-tool01/RUNINFO.TXT`; owner decision 2026-11-10: an identical ROM settles a toolchain change for the pin, the control and calibration runs of §7 were not rerun). Recorded at the pin run 2026-10-26 as `MiNT 20230908` |
 | Host tools | built `-arch x86_64` (Rosetta), see §3 |
 | ROM | `tools/oracle/etos512de-1a7484ab.img` (committed, the safeguard); rebuilt into `references/emutos-oracle/1a7484ab/` (gitignored) as the cross-check |
 | ROM sha256 | `323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c` |

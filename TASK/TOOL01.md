@@ -23,7 +23,10 @@ today:
   checked only by `tools/hatari-oracle.sh` during a run.
 - 2026-11-10: the installed cross compiler reports `m68k-atari-mint-gcc (MiNT 20240501) 7.5.0`, while
   `docs/analysis/ORACLE.md` §1, `tools/oracle/oracle.env` and the committed `docs/analysis/deps/edges.tsv`
-  name `MiNT 20230908` (found by `tools/deps/gen-deps.py --check`, [TOOL39](TOOL39.md)).
+  name `MiNT 20230908` (found by `tools/deps/gen-deps.py --check`, [TOOL39](TOOL39.md)). Settled the same day:
+  the installed toolchain rebuilds the pinned ROM byte-identical (`measurements/measurement-2026-11-10-tool01/RUNINFO.TXT`);
+  `MiNT 20240501` is recorded as verified in `docs/analysis/ORACLE.md` §1 and `tools/oracle/oracle.env`, and the
+  header line of `docs/analysis/deps/edges.tsv` and `layers.md` follows it (owner decision 2026-11-10).
 
 ## Work
 

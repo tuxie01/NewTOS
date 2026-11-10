@@ -1,0 +1,33 @@
+TOOL01 -- m68k cross compiler drift: does the installed toolchain still build the pinned oracle ROM? Date 2026-11-10.
+Why: tools/deps/gen-deps.py --check (TASK/TOOL39) found the installed cross compiler reporting
+  "m68k-atari-mint-gcc (MiNT 20240501) 7.5.0", while docs/analysis/ORACLE.md section 1, tools/oracle/oracle.env and the
+  oracle run measurements/measurement-2026-10-26-oracle/RUNINFO.TXT name "MiNT 20230908". ORACLE.md section 7: a toolchain
+  change means rerunning control and calibration first. Owner 2026-11-10: rebuild the ROM per ORACLE.md section 3 first;
+  equal sha256 -> record the compiler as verified and continue; different -> stop and change nothing.
+Who: lead. No image booted, no QEMU, no Hatari, no card, no Pi (so no image manifest and no optional_missing line).
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+Host: macOS 27.2 (26B123); make: GNU Make 3.81 from /Library/Developer/CommandLineTools (the 2026-10-26 run used
+  /Applications/Xcode.app/Contents/Developer/usr/bin/make, same recipe).
+
+METHOD (method/rebuild-rom.sh)
+  tools/oracle/build-emutos.sh 1a7484aba1bfba23e2c0899e243b6d8177fe41df 2026-04-14 <fresh clone in the session scratchpad>
+  Script and oracle.env taken from commit 9ff4e188c (the working tree's oracle.env carried an uncommitted TOOL39 edit).
+  The script clones references/emutos, checks out the commit, refuses a dirty tree, runs make clean + make 512 COUNTRY=de
+  with the pinned date shim and x86_64 host tools, and compares the result with ORACLE_ROM_SHA256.
+  Full rebuild: make clean first, 192 objects compiled (build-logs/1a7484ab-make-512-de.log).
+
+RESULT: BYTE-IDENTICAL
+  etos512de.img sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c = ORACLE_ROM_SHA256;
+  cmp against the committed tools/oracle/etos512de-1a7484ab.img: identical. Script exit 0, "matches ORACLE_ROM_SHA256".
+  Build log against measurements/measurement-2026-10-26-oracle/build-logs/1a7484ab-make-512-de.log (paths masked): only
+  the make path (line 2) and the gcc version line differ; the same leading "m68k-atari-mint-gcc: command not found"
+  from make clean without a prefix is in both.
+  The installed toolchain (sha256.txt: gcc-7.5.0 b7df4fc4..., as 070586b1..., ld 1d2a4eed...) therefore produces the
+  oracle ROM bit for bit. When the binaries started reporting MiNT 20240501 is not determinable (mtime 2026-02-23,
+  ctime 2026-10-13, both before the 2026-10-26 run that recorded 20230908).
+
+FILES
+  build-logs/1a7484ab-make-512-de.log   output of the build
+  method/rebuild-rom.sh                 the call
+  sha256.txt                            ROM (rebuilt, committed) and the cross gcc, as, ld binaries
+  The rebuilt ROM and its tree stay in the scratchpad (not committed); identical to the committed ROM.
