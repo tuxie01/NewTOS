@@ -1,6 +1,6 @@
 # BIOS03 — ADR „OS hooks installed by programs“: welche eingehaengten Haken wirken
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: eac8b1a83 | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: eac8b1a83 | Receipt: BIOS03-STATUS-DONE.MD
 
 Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit eac8b1a83 (docs: BIOS01 before TOOL17, OS hook ADR proposal (BIOS03)), VERIFIED: diff of eac8b1a83 (docs: BIOS01 before TOOL17, OS hook ADR proposal (BIOS03)) touches docs/analysis/os-hooks-adr-proposal-2026-10-28.md, names the id by subject, 4 files, legacy line: ERLEDIGT 2026-10-28 — ADR-031 in `docs/MEMORY.md` (Vorschlag `docs/analysis/os-h
 
