@@ -32,8 +32,8 @@ tester's acceptance (CLAUDE.md *Commit Discipline*).
    rule itself is recorded by the lead (owner decision).
 3. **Hook.** When staged code changes shift `@symbol` anchors in docs the commit leaves alone, the pre-commit
    rejection message suggests `cargo xtask doc-check --fix-anchors <docs>`; a rejection stands only if the symbol no
-   longer exists in the cited file (owner 2026-11-11). How a shifted-but-findable anchor is treated otherwise (passes
-   with a notice, or rejects with the suggestion) is stated in the receipt and checked with the owner before merge.
+   longer exists in the cited file (owner 2026-11-11). A shifted anchor whose symbol still exists is rejected too, and
+   the message suggests `--fix-anchors` (owner 2026-11-11, option b: no stale line numbers land on `main`).
 4. **One repo-wide run, scope first.** Before any rewrite, `--fix-anchors` in a dry-run mode (`--dry-run`) lists every
    file and cite it would change, grouped by tree (`TASK/`, `docs/api/`, `docs/audits/`, dated `docs/analysis/`,
    other docs); `measurements/**` and `docs/archive/` are never touched. The owner decides the scope (e.g. whether
