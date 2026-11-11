@@ -1,0 +1,23 @@
+RUNINFO — TOOL54 test (tester agent a92f01b43e6001c5b), 2026-11-11
+What: tester run of TASK/TOOL54 (cargo xtask migrate --batch <N>), branch worktree-agent-a6eee2de23e7c5095 head f359f92b7.
+Why: acceptance evidence (not accepted/merged by this run).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Image manifest: none (no image booted; host-only tooling test).
+Main HEAD before: fc05daf11d7e97b2f49ed5c970622726d3e859f8; after: 8a67f0134 (docs(claude) commit made by someone else meanwhile; this run committed nothing in main).
+Scratch clone of the branch: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a92f01b43e6001c5b/clone (1.9G incl. target; mainclone 1.9G for warnings baseline). hooksPath=tools/git-hooks, newtos.ticketChecks=true there.
+sha256 clone/target/debug/xtask: 14e8725ab2db38dcc201fb437fd4e685e5d12f100afbc3e08181514bd3c5b1da
+Results: see the tester report; refusal log in measurements/refusals.log, script measurements/refuse.sh, full test log measurements/fulltest.log.
+ - cargo xtask test (worktree): 2432 passed / 0 failed / 7 ignored.  cargo test -p xtask migrate: 6 passed.
+ - e2e batch 1 (6 tickets, DONE/OPEN/PARKED/OBSOLETE/ACCEPTED/IMPLEMENTED): one commit 6b911e47d, hooks passed, 7 baseline entries removed (899 -> 892), status-check 0 rejected, second run refuses.
+ - 28 refusal cases: all leave HEAD, status, baseline unchanged.
+ - Mutations: baseline check off -> 2 tests fail; DONE receipt checks off -> refusals_change_nothing fails (by message; status-check gap is a second layer).
+ - Warnings: clippy -p xtask --all-targets identical on main clone (8a67f0134) and branch: 1 bin + 9 test warnings, delta 0.
+Hand-written batch-1.tsv (tabs shown as TAB):
+# approved: owner 2026-11-11 test
+id<TAB>state<TAB>fields<TAB>evidence
+A111<TAB>DONE<TAB>Priority: P2 | Commit: 033da16f | Receipt: A111-STATUS-DONE.MD<TAB>A111-STATUS-DONE.MD names the fix 033da16f
+A119<TAB>OPEN<TAB>Priority: P3<TAB>legacy OFFEN, work not started
+A146<TAB>PARKED<TAB>Priority: P4 | Reason: owner 2026-11-07 later research | Reopen: the next Pi acceptance round<TAB>legacy GEPARKT
+Q01<TAB>OBSOLETE<TAB>Priority: P1 | Reason: no longer applies | Target: A27<TAB>legacy GEGENSTANDSLOS
+BIOS05<TAB>ACCEPTED<TAB>Priority: P2 | Ref: ADR-031<TAB>legacy ACCEPTED-Abweichung ADR-031
+A128<TAB>IMPLEMENTED<TAB>Priority: P2 | Commit: df2c7501 | Missing: tester acceptance<TAB>legacy UMGESETZT df2c7501

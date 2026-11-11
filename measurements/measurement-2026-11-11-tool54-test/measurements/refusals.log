@@ -1,0 +1,85 @@
+### no approval line :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:1: line 1 must be the owner's approval line `# approved: owner YYYY-MM-DD [note]` (ADR-037 point 16), found "# comment"
+### malformed approval :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:1: line 1 must be the owner's approval line `# approved: owner YYYY-MM-DD [note]` (ADR-037 point 16), found "# approved: owner 11-11-2026"
+### approval without owner :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:1: line 1 must be the owner's approval line `# approved: owner YYYY-MM-DD [note]` (ADR-037 point 16), found "# approved: lead 2026-11-11"
+### batch not committed (untracked) :: UNCHANGED
+xtask: migrate: refused: TASK/migration/batch-2.tsv is not committed (ADR-037 point 16: committed before the run)
+### batch committed, then modified :: UNCHANGED
+xtask: migrate: refused: TASK/migration/batch-2.tsv differs from its committed version:
+ M TASK/migration/batch-2.tsv
+### batch staged only :: UNCHANGED
+xtask: migrate: refused: TASK/migration/batch-2.tsv is not committed (ADR-037 point 16: committed before the run)
+### id not in baseline (TOOL54) :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv:2: TOOL54: not in tools/xtask/ticket-baseline.tsv; migrate rewrites legacy tickets only (ADR-037 point 16; a batch that ran already refuses here)
+### id not in baseline (A119 after batch1 -> use batch 1 state: A140 not legacy?) :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv:2: NOSUCH: no ticket TASK/NOSUCH.md
+### DONE without receipt file :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv:2: A119: DONE needs the existing receipt TASK/A119-STATUS-DONE.MD; migrate writes none (ADR-037 point 17)
+### DONE evidence lacks commit :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv:2: A130: DONE only from evidence that names the receipt A130-STATUS-DONE.MD and the fix commit d9e44143 (ADR-037 point 17)
+### DONE evidence lacks receipt name :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv:2: A130: DONE only from evidence that names the receipt A130-STATUS-DONE.MD and the fix commit d9e44143 (ADR-037 point 17)
+### DONE without Receipt field :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A130: DONE lacks the required field Receipt (ADR-037 point 1): expected `Receipt: ...` (required for DONE, in the order Commit, Receipt)
+### PARKED without Reopen :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: PARKED lacks the required field Reopen (ADR-037 point 1): expected `Reopen: ...` (required for PARKED, in the order Reason, Reopen)
+### PARKED without Reason :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: PARKED lacks the required field Reason (ADR-037 point 1): expected `Reason: ...` (required for PARKED, in the order Reason, Reopen)
+### OBSOLETE without Reason :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: OBSOLETE lacks the required field Reason (ADR-037 point 1): expected `Reason: ...` (required for OBSOLETE, in the order Reason)
+### OBSOLETE with Target to no ticket :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv: A120: after the migration: [bad-target] TASK/A120.md:3: Target: ZZZ99 is no ticket in TASK/
+### ACCEPTED without Ref :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: ACCEPTED lacks the required field Ref (ADR-037 point 1): expected `Ref: ...` (required for ACCEPTED, in the order Ref)
+### IMPLEMENTED without Missing :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: IMPLEMENTED lacks the required field Missing (ADR-037 point 1): expected `Missing: ...` (required for IMPLEMENTED, in the order Commit, Missing)
+### missing Priority :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: OPEN lacks the required field Priority (ADR-037 point 1): the fields column starts with `Priority: Pn`, found "Reason: x"
+### Commit: self :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:2: A120: `Commit: self` would name the migration commit; give the hash of the work
+### Commit not on history :: UNCHANGED
+xtask: migrate: refused, nothing written:
+  TASK/migration/batch-2.tsv:2: A120: Commit: deadbeef1 is no commit on the current history (an old hash? tools/oldhash.sh)
+### id twice :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:3: A120 stands twice (also line 2)
+### one good + one bad row (atomic) :: UNCHANGED
+xtask: migrate: refused:
+  TASK/migration/batch-2.tsv:3: A121: PARKED lacks the required field Reason (ADR-037 point 1): expected `Reason: ...` (required for PARKED, in the order Reason, Reopen)
+  TASK/migration/batch-2.tsv:3: A121: PARKED lacks the required field Reopen (ADR-037 point 1): expected `Reopen: ...` (required for PARKED, in the order Reason, Reopen)
+### closed.txt committed :: UNCHANGED
+xtask: migrate: refused: TASK/migration/closed.txt exists, the owner has ended the migration (ADR-037 point 16)
+### closed.txt uncommitted :: UNCHANGED
+xtask: migrate: refused: TASK/migration/closed.txt exists, the owner has ended the migration (ADR-037 point 16)
+### other file staged :: UNCHANGED
+xtask: migrate: refused: other changes are staged; it commits only its own:
+docs/STATUS.md
+### written file dirty (A120.md modified) :: UNCHANGED
+xtask: migrate: refused: uncommitted changes in the files it writes:
+ M TASK/A120.md
+### baseline dirty :: UNCHANGED
+xtask: migrate: refused: uncommitted changes in the files it writes:
+ M tools/xtask/ticket-baseline.tsv
+### no batch file at all (batch 9) :: UNCHANGED
+xtask: migrate: refused: TASK/migration/batch-9.tsv is not committed (ADR-037 point 16: committed before the run)
+### bad --batch arg :: UNCHANGED
+xtask: migrate: --batch expects a decimal number, found "x"

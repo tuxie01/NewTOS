@@ -1,0 +1,8 @@
+RUNINFO addendum — TOOL54 rework check, tester agent a92f01b43e6001c5b, 2026-11-11
+Branch worktree-agent-a6eee2de23e7c5095 head a8c257a14 (ce467ce9a + a8c257a14, on main 8a67f0134). host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image.
+Scratch clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a92f01b43e6001c5b/clone (real hooks). Main HEAD before/after: 8a67f0134 (unchanged by me).
+Results: cargo xtask test 2436/0/7; migrate tests 9/9; A01 case via commit map migrates (e2daf3a55), status-check 0 rejected, receipt md5 unchanged;
+unanchored-cite evidence: hook rejects, revert -> HEAD/status/index tree/baseline/A119/README/untracked md5s identical, rerun with batch 3 works;
+historical-receipts: with approval no orphan-receipt for 2 entries (stale baseline entries rejected, --prune-baseline drops exactly 2), without approval line status-check exits 1;
+mutation revert no-op -> a_rejecting_hook_reverts_every_write_and_a_rerun_works fails; reverted, diff empty. Clippy warnings: see report.
+Batch 1 row: A01<TAB>DONE<TAB>Priority: P2 | Commit: 87b03c250 | Receipt: A01-STATUS-DONE.MD<TAB>A01-STATUS-DONE.MD names d7ab92d (old hash of 87b03c250)

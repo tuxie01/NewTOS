@@ -1,0 +1,8 @@
+# approved: owner 2026-11-11 test
+id	state	fields	evidence
+A111	DONE	Priority: P2 | Commit: 033da16f | Receipt: A111-STATUS-DONE.MD	A111-STATUS-DONE.MD names the fix 033da16f
+A119	OPEN	Priority: P3	legacy OFFEN, work not started
+A146	PARKED	Priority: P4 | Reason: owner 2026-11-07 later research | Reopen: the next Pi acceptance round	legacy GEPARKT
+Q01	OBSOLETE	Priority: P1 | Reason: no longer applies | Target: A27	legacy GEGENSTANDSLOS
+BIOS05	ACCEPTED	Priority: P2 | Ref: ADR-031	legacy ACCEPTED-Abweichung ADR-031
+A128	IMPLEMENTED	Priority: P2 | Commit: df2c7501 | Missing: tester acceptance	legacy UMGESETZT df2c7501
