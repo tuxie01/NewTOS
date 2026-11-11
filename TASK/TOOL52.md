@@ -1,6 +1,6 @@
 # TOOL52 — writing xtask commands act on the repository of the working directory, or refuse
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 5420b02cd | Receipt: TOOL52-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decision 2026-11-11. Queue: right after [TOOL50](TOOL50.md).
 
