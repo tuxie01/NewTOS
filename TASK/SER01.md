@@ -1,5 +1,10 @@
 # SER01 — Serielle Ausgabe auf der Pi abschaltbar, Vorgabe aus
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt SER01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 91be77f9b (feat(console): serial output off by default on the), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-10-02, [Statusdatei](SER01-STATUS-DONE.MD); Pi-Abnahme offen) · Prioritaet: **P1** (vor dem Termin) · Typ: Kernel / Konsole — Anwenderentscheidung 2026-10-02
 
 Abhaengigkeiten: —

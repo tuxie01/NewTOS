@@ -1,5 +1,10 @@
 # PROC06 — `Pexec` liefert nach Ctrl-C `-32` vorzeichenerweitert statt 65504
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 689d88b0a | Missing: check that the change is committed (legacy line says uncommitted)
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/PROC06-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit 689d88b0a (fix(gemdos): Pexec caller gets the child's exit code zero-extended (PR), VERIFIED: diff of 689d88b0a (fix(gemdos): Pexec caller gets the child's exit code zero-ex) touches kernel/src/arch/aarch64/exceptions.rs, tos-api/src/bdos/process/pterm.rs, tos-api/src/gemdos/console.rs (+6), names the id by subject, 148 files, legacy line: ERLEDIGT (2026-10-16, uncommitted)
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-10-16, uncommitted)** · Prioritaet: **P3** · Typ: Konformitaet — Nebenfund DESK43 U9-0 (2026-10-14) · [Quittung](PROC06-STATUS-DONE.MD)
 
 EmuTOS legt den Exitcode in `xterm(UWORD rc)` zero-extended ab

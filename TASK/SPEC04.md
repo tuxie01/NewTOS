@@ -1,5 +1,10 @@
 # SPEC04 — Nacharbeit aus V18 Teil 3: COMPATIBILITY, Mapping, Graph, Spec
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P4 | Commit: e197b9cd3 | Missing: developer points 3 (generator) and 5 (run the measurement case)
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/SPEC04-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit e197b9cd3 (docs(vdi): COMPATIBILITY entries K23 and v_opnwk-while-open, mapping, ), VERIFIED: diff of e197b9cd3 (docs(vdi): COMPATIBILITY entries K23 and v_opnwk-while-open,) touches docs/analysis/deps/mapping.tsv, docs/api/vdi/input/_mouse.md, docs/api/vdi/workstation/101-v_clsvwk.md (+2), names the id by subject, 8 files, legacy line: ERLEDIGT 2026-11-08 ([Quittung](SPEC04-STATUS-DONE.MD)), offen fuer den Develope
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-08 ([Quittung](SPEC04-STATUS-DONE.MD)); offen fuer den Developer: Punkt 3 (Generator), Punkt 5 (Messfall fahren) · Prioritaet: **P4** · Typ: Researcher (nur Doku) — aus [V18](V18.md) Teil 3 (VDI-WK-005…008, K23)
 
 Aus `docs/audits/2026-11-07-v18-t3-vdi-workstation.md` (§8, Nebenbefunde):

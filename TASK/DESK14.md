@@ -1,5 +1,10 @@
 # DESK14 — `Read .INF file` ist nicht `app_read_inf`
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 7dd743e1f | Missing: item 4 (deferred)
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/DESK14-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit 7dd743e1f (feat(desk): Read .INF file asks, checks and reports), VERIFIED: 7dd743e1f (feat(desk): Read .INF file asks, checks and reports) names the id by body, its message names the ticket-title identifier app_read_inf, touches code (12 files), legacy line: ERLEDIGT (Punkte 1-3, Punkt 4 zurueckgestellt, siehe unten) ·
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (Punkte 1-3; Punkt 4 zurueckgestellt, siehe unten) ·
 Prioritaet: **P3** · Typ: Konformitaet — Nebenbefund DESK03/DESK04
 

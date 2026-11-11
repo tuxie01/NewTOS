@@ -1,5 +1,10 @@
 # DESK45 — Die vier Selbsttests in `kernel/src/desk/` haengen in keinem Startpfad
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 87436d523 (test(desk43): U10 tester run on 22e01597 - baselin), named by status-line-named
+
+Line 3 before the migration:
 Status: **ERLEDIGT als Form A** (DESK43 U8a `09eaca14`: Feature `selftest-desk`, ein Kommando, Gegenprobe Karte unberuehrt; Tester-Lauf nach U10 `87436d52`: 64 PASS / 1 FAIL vorbestehend); offen/optional: Form B (EL0-Testprogramm) · Prioritaet: **P3** · Typ: Verrottungsrisiko — aus DESK43 U4, 2026-09-26
 
 Abhaengigkeiten: —

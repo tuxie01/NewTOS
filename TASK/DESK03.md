@@ -1,5 +1,10 @@
 # DESK03 — Options → Install icon / Remove icon
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; receipt DESK03-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 7dd743e1f (feat(desk): Read .INF file asks, checks and report), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-24) — Pi-Sichtabnahme offen** · Prioritaet: **P3** · Typ: Funktionsluecke desk/
 
 Abhaengigkeiten: [DESK08](DESK08.md), [DESK09](DESK09.md)

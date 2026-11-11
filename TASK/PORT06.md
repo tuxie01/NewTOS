@@ -1,5 +1,10 @@
 # PORT06 — Doom portieren: konform ueber BIOS, AES und VDI
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt PORT06-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by bed4ed417 (feat(sdk): Doom draws straight into the EdDI devic), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT — Pi-Abnahme 2026-10-04** ([Statusdatei](PORT06-STATUS-DONE.MD); TT als Machbarkeitsbeweis) · Prioritaet: **P1** (vorgezogen vor den OFAM-Termin, Anwender 2026-10-02) · Typ: Portierung — Anwenderwunsch 2026-09-28
 
 Abhaengigkeiten: — (**nicht** von [SDL01](SDL01.md); siehe §2)

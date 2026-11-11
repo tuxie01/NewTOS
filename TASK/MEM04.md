@@ -1,5 +1,10 @@
 # MEM04 — `usermem::free` laesst die Abbildung eines freigegebenen Blocks stehen
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 48ba717ca (feat(kernel): per-process memory protection after ), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT mit ARCH03 Stufe 3b (2026-10-05) — bei eingeschaltetem Speicherschutz; Tester-Abnahme und Pi offen** · Prioritaet: **P2** · Typ: Isolationsluecke — Nebenfund aus [ARCH03](ARCH03.md) Schritt 2
 
 Abhaengigkeiten: — (wird mit ARCH03 Stufe 1/3 ohnehin neu gebaut; bis dahin eigenstaendig)

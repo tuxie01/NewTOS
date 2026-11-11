@@ -1,5 +1,10 @@
 # DESK30 — Desktop-Verknuepfungen (`CONF_WITH_DESKTOP_SHORTCUTS`)
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt DESK30-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 0364966cd (feat(desk): window icons - a file's icon can come ), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** · Prioritaet: **P2** · Typ: Funktionsluecke — gemeldet in DESK15
 
 Abhaengigkeiten: [DESK15](DESK15.md) (erledigt)

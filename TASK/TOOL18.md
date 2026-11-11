@@ -1,5 +1,10 @@
 # TOOL18 — Cookie-Falltabelle, gemessen auf dem gepinnten ROM (alle drei Profile)
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: 9b882e8d4 | Missing: seven cookies open with the owner
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/TOOL18-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit 9b882e8d4 (feat(tosdump): cookie-jar cases measured on the pin (TOOL18)), VERIFIED: diff of 9b882e8d4 (feat(tosdump): cookie-jar cases measured on the pin (TOOL18)) touches tosdump/tests/test_jar.c, tosdump/cases/jar-r1.tsv, names the id by subject, 77 files, legacy line: ERLEDIGT 2026-10-29 ([Quittung](TOOL18-STATUS-DONE.MD)), 7 Cookies OPEN beim Anw
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL18-STATUS-DONE.MD)); 7 Cookies OPEN beim Anwender · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [ARCH05](ARCH05.md)
 
 ## Sachverhalt

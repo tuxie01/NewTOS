@@ -94,16 +94,16 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [V08](V08.md) | vsm_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V09](V09.md) | vq_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V10](V10.md) | v_get_pixel: Rückgabeformat Palette gegen Truecolor | Geräteunterschied / Test | P1 | OBSOLETE | — |
-| [V11](V11.md) | v_get_pixel: Weiß und OVERLAY_BIT isolieren | Diagnose eines bekannten Defekts | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
-| [V12](V12.md) | Weiß-/Overlayfehler lokal korrigieren | Bedingte Implementierung | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | V11 |
+| [V11](V11.md) | v_get_pixel: Weiß und OVERLAY_BIT isolieren | Diagnose eines bekannten Defekts | P1 | IMPLEMENTED | — |
+| [V12](V12.md) | Weiß-/Overlayfehler lokal korrigieren | Bedingte Implementierung | P1 | PARKED | V11 |
 | [V13](V13.md) | vq_chcells: Textzellen aus Bildschirm und Font | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V14](V14.md) | v_opnvwk: ausgegebene Gerätemetriken | Geräteunterschied / Test | P2 | OBSOLETE | V01, V02, V03 |
 | [V15](V15.md) | v_opnvwk: Handle-Identität statt Zahlenvergleich | Messauswertung | P2 | OBSOLETE | — |
 | [R01](R01.md) | vro_cpyfm: oversized destination, D-VDI-25 | Zurückgestellte Vertragsabweichung | P3 | PARKED | — |
-| [R02](R02.md) | vro_cpyfm: Screen → Memory messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
-| [R03](R03.md) | vro_cpyfm: Memory → Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
-| [R04](R04.md) | vro_cpyfm: überlappende Screen-Kopie messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
-| [R05](R05.md) | vrt_cpyfm: monochrome Expansion auf Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
+| [R02](R02.md) | vro_cpyfm: Screen → Memory messen | Messlücke / Messdesign | P1 | PARKED | — |
+| [R03](R03.md) | vro_cpyfm: Memory → Screen messen | Messlücke / Messdesign | P1 | PARKED | — |
+| [R04](R04.md) | vro_cpyfm: überlappende Screen-Kopie messen | Messlücke / Messdesign | P1 | PARKED | — |
+| [R05](R05.md) | vrt_cpyfm: monochrome Expansion auf Screen messen | Messlücke / Messdesign | P1 | IMPLEMENTED | — |
 | [Q01](Q01.md) | v_gtext: sichtbares einzelnes a messen | Pixel-Messlücke | P1 | OBSOLETE | — |
 | [Q02](Q02.md) | vs_clip: Text am Clip-Rand messen | Pixel-Messlücke | P1 | OBSOLETE | Q01 |
 | [Q03](Q03.md) | vr_recfl: XOR-Cursor zweimal zeichnen | Pixel-Messlücke | P1 | OBSOLETE | Q01 |

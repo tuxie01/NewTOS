@@ -1,5 +1,10 @@
 # SYSINFO02 — System Info, Version 2: Starteinstellungen auswaehlen und speichern
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: e78e43df7 | Missing: one open point (Esc, kernel AES)
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/SYSINFO02-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit e78e43df7 (feat(sysacc): System Info edits the boot settings (SYSINFO02)), VERIFIED: diff of e78e43df7 (feat(sysacc): System Info edits the boot settings (SYSINFO02) touches sdk/examples/sysacc.c, sdk/examples/sysacc-cmdline.h, sdk/examples/tests/sysacc-cmdline-host.c (+1), names the id by subject, 123 files, legacy line: ERLEDIGT (QEMU), 2026-10-08, ein offener Punkt (Esc, Kernel-AES) — [Quittung](SY
+
+Line 3 before the migration:
 Status: **ERLEDIGT (QEMU), 2026-10-08, ein offener Punkt (Esc, Kernel-AES)** — [Quittung](SYSINFO02-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: NewTOS-Erweiterung (Accessory, nur Werkzeugkette) — Anwender 2026-10-07/08
 
 Abhaengigkeiten: [SYSINFO01](SYSINFO01.md) (Dialog, Ssystem 2003–2019,

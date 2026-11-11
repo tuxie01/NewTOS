@@ -1,5 +1,10 @@
 # GUI06 — Der Boden der Geste: zwei Vollbild-Neuzeichnen und 400–600 MB Cachepflege
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt GUI06-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: only the commit 4ef536366 (perf(desk): a drop redraws its window, not the who) that added the receipt itself
+
+Line 3 before the migration:
 Status: **BEHOBEN — Pi-Abnahme offen** (2026-09-28) · Prioritaet: **P2** · Typ: Belegter Defekt / Laufzeit — aus der FS04-Messung herausgeloest
 
 Abhaengigkeiten: — (unabhaengig von [FS04](FS04.md); dieselbe Messung, andere Ursache)

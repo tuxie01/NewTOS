@@ -1,5 +1,10 @@
 # PORT01 — Eine auf QED gezogene Datei erreicht die Anwendung nicht
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt PORT01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by a758173e1 (fix(sdk): crt0 builds argv from the command tail), named by body
+
+Line 3 before the migration:
 Status: **URSACHE GEFUNDEN UND BEHOBEN (2026-09-25) — Abnahme blockiert durch einen zweiten, eigenen Defekt (siehe Abschluss §4)** · Prioritaet: **P2** · Typ: Belegter Defekt — Pi-Runde 2026-09-24
 
 Abhaengigkeiten: [DESK19](DESK19.md) (erledigt)

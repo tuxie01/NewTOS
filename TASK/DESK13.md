@@ -1,5 +1,10 @@
 # DESK13 — Reste aus DESK02: Kopier-/Ueberschreibruecksprache, `Supexec`, Datumstrenner, `_IDT`
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 43e257776 | Missing: hardware acceptance
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/DESK13-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit 43e257776 (feat(desk): copy and overwrite confirmations, and one date rule), VERIFIED: 43e257776 (feat(desk): copy and overwrite confirmations, and one date r) names the id by body, its message names the ticket-title identifier desk02, touches code (20 files), legacy line: ERLEDIGT — HW-Abnahme offen
+
+Line 3 before the migration:
 Status: **ERLEDIGT — HW-Abnahme offen** · Prioritaet: **P3** · Typ: Funktionsluecken — Nebenbefunde DESK02
 
 Abhaengigkeiten: [DESK02](DESK02.md) (erledigt)

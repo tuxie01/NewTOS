@@ -1,5 +1,10 @@
 # LIBC-TTY — mintlib-`getchar`/`fgets` auf der Konsole: RAW-Weg, doppelt gelesene Tasten
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: a7421716c | Missing: tester acceptance
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/LIBC-TTY-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit a7421716c (fix(libc): build mintlib's own isatty, drop the NewTOS shim (LIBC-TTY)), VERIFIED: diff of a7421716c (fix(libc): build mintlib's own isatty, drop the NewTOS shim ) touches sdk/libc/newtos-arch/isatty.c, sdk/libc/build-libc.sh, sdk/libc/newtos-arch/access.c (+1), names the id by subject, 244 files, legacy line: ERLEDIGT 2026-10-13 ([Quittung](LIBC-TTY-STATUS-DONE.MD))
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-13 ([Quittung](LIBC-TTY-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: SDK / libc — Nebenfund FS11 (2026-10-13)
 
 Abhaengigkeiten: [FS11](FS11.md) (Zeilenlesen ueber `Fread` auf CON)

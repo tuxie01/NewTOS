@@ -1,5 +1,10 @@
 # DESK43 — Der Desktop muss im User-Space laufen, wie jede andere Anwendung
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: e074301ab | Missing: Pi counter-check
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: commit e074301ab (feat(desk): drift guards before the EL0 move (DESK43 U5a)), VERIFIED: diff of e074301ab (feat(desk): drift guards before the EL0 move (DESK43 U5a)) touches kernel/src/lib.rs, kernel/Cargo.toml, names the id by subject, 46 files, legacy line: ERLEDIGT 2026-10-16 (U1–U10, U10 `f6f90202`, Tester-Lauf `87436d52` PASS, ADR-02
+
+Line 3 before the migration:
 Status: **ERLEDIGT 2026-10-16** (U1–U10; U10 `f6f90202`, Tester-Lauf `87436d52` PASS, ADR-026; Pi 2026-10-16 gebootet; offen nur: Pi-Gegenprobe des EmuCON-Rueckfalls bei defektem NEWDESK) · Prioritaet: **P1** · Typ: **Abweichung von EmuTOS** (nicht blosse Architekturfrage) — Anwenderentscheidung 2026-08-31, geschaerft 2026-09-01, belegt 2026-09-25
 
 Abhaengigkeiten: **[PORT05](PORT05.md) muss vorher stehen** (Begruendung unten).

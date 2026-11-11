@@ -1,5 +1,10 @@
 # PRESENT01 — PRESENT.NAP: Folien-Präsentation im Vollbild (eigene GEM-Anwendung)
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt PRESENT01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: only the commit 0bda4b9a3 (feat(sdk): PRESENT.NAP, a full-screen slide show f) that added the receipt itself
+
+Line 3 before the migration:
 Status: **ERLEDIGT (QEMU), 2026-10-08, ein offener Punkt (Bild auf/ab, Kernel-Tastaturtabelle)** — [Quittung](PRESENT01-STATUS-DONE.MD) · Priorität: **P1** (Vortrag Atari-Treffen, Samstag) · Typ: NewTOS-Anwendung (nur SDK/Werkzeugkette) — Anwender 2026-10-08
 
 Abhängigkeiten: SDK (gemlib, mintlib, [libpng/zlib aus LDG-M2](../docs/sdk/11-codec-libraries.md)),

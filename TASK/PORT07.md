@@ -1,5 +1,10 @@
 # PORT07 — Die Ball-Demo auf der Pi konform machen (und damit Dooms Bildweg beweisen)
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt PORT07-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 83d3003e2 (fix(vdi): the device pixel carries the Falcon word), named by receipt-named
+
+Line 3 before the migration:
 Status: **ERLEDIGT — ein Pi-Lauf offen** (2026-09-28) · Prioritaet: **P2** · Typ: Portierung / Konformitaet — Anwenderwunsch 2026-09-28
 
 Abhaengigkeiten: — · **Vorbedingung im Sinne eines Beweises** fuer [PORT06](PORT06.md)

@@ -1,5 +1,10 @@
 # DESK44 — `.NTP` laeuft als GEM, soll aber Konsole mit Parametern sein
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; receipt DESK44-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 4d16ace00 (feat(desk): U4 - the kernel lets go of desk, drift), named by body
+
+Line 3 before the migration:
 Status: **BEHOBEN — HW-Gegenprobe offen** (2026-09-26) · Prioritaet: **P3** · Typ: Belegter Widerspruch im Baum — aus DESK43 U3, Anwenderentscheidung 2026-09-26
 
 Abhaengigkeiten: —

@@ -1,5 +1,10 @@
 # MEM05 — viele kleine `malloc` erschoepfen die 254 Speicherdeskriptoren systemweit
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 1a9f1a4fb (feat(libc): malloc hunks double up to 16 MiB (MEM0), named by subject
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-14 (Quittungen [A](MEM05-A-STATUS-DONE.MD), [B](MEM05-B-STATUS-DONE.MD); Pi offen) · Prioritaet: **P2** · Typ: Grenzwert — Nebenfund der E9-Nacharbeit ([ARCH03](ARCH03.md))
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # PROC05 — Shell-Start liefert nie den Exitcode des Programms
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; receipt PROC05-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by acb0ff45c (feat(shell): exit codes, exact registry names, pub), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-10-14, DESK43 U9-0b, uncommitted)** · Prioritaet: **P3** · Typ: Konformitaet — Nebenfund DESK43 U6a (2026-10-14) · [Quittung](PROC05-STATUS-DONE.MD)
 
 `kernel/src/launch.rs` `run_program_with_tail_rc` (`:62-65,172`) gibt fuer

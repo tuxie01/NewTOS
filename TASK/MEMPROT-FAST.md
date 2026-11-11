@@ -1,5 +1,10 @@
 # MEMPROT-FAST — memory-protection resync cheap (brief options 1+2 = analysis options 1 and 3)
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt MEMPROT-FAST-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 15, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: only the commit 70a53d26f (perf(memprot): resync only where and for whom righ) that added the receipt itself
+
+Line 3 before the migration:
 Status: **ERLEDIGT in QEMU** (Quittung [MEMPROT-FAST-STATUS-DONE.MD](MEMPROT-FAST-STATUS-DONE.MD)), Pi-Lauf offen · Prioritaet: **P1** · Typ: Leistung (Speicherschutz, NewTOS-eigen)
 
 Anwender-Entscheidung 2026-10-07 („Optionen 1+2“ des Auftrags) = in

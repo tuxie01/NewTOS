@@ -1,5 +1,10 @@
 # DESK08 — Dialoge: `form_center` und `form_dial(FMD_START/FMD_FINISH)`
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: f16fef8f0 | Missing: real-Pi visual acceptance
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/DESK08-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit f16fef8f0 (feat(desk): dialogs go through form_center and form_dial, the context ), VERIFIED: f16fef8f0 (feat(desk): dialogs go through form_center and form_dial, th) names the id by body, its message names the ticket-title identifier form_center, fmd_start, touches code (68 files), legacy line: ERLEDIGT (2026-09-23) — Pi-Sichtabnahme offen
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-23) — Pi-Sichtabnahme offen** · Prioritaet: **P2** · Typ: Strukturluecke desk/ (G7 der Lueckenliste)
 
 Abhaengigkeiten: —

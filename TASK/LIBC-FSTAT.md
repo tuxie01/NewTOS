@@ -1,5 +1,10 @@
 # LIBC-FSTAT — `fstat` meldet fds 0–2 auch bei Umlenkung als Zeichengeraet
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 67878ccd4 | Missing: tester acceptance
+
+Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/LIBC-FSTAT-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit 67878ccd4 (fix(libc): fstat follows isatty for standard handles (LIBC-FSTAT)), VERIFIED: diff of 67878ccd4 (fix(libc): fstat follows isatty for standard handles (LIBC-F) touches sdk/libc/newtos-arch/do_fstat.c, names the id by subject, 282 files, legacy line: ERLEDIGT ([Quittung](LIBC-FSTAT-STATUS-DONE.MD), 2026-10-17, Tester-Abnahme offe
+
+Line 3 before the migration:
 Status: **ERLEDIGT** ([Quittung](LIBC-FSTAT-STATUS-DONE.MD), 2026-10-17, Tester-Abnahme offen) · Prioritaet: **P3** · Typ: SDK / libc — Anwenderentscheidung 2026-10-13 ([LIBC-TTY](LIBC-TTY.md) Punkt 4)
 
 ## Sachverhalt
