@@ -1,6 +1,6 @@
 # TOOL66 — mktestdisk writes a fixed OEM name, independent of the mtools version
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-12) | Priority: P2 | Commit: 2d24395fe | Receipt: TOOL66-STATUS-DONE.MD
 
 Type: tool. Owner decision 2026-11-11 (option b of the BIOS full run). Split off from [TOOL15](TOOL15.md) (PARKED:
 pin mtools, `--fast-forward` as a profile parameter), which stays parked.
