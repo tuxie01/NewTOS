@@ -1,0 +1,13 @@
+diff --git a/tools/xtask/src/tickets.rs b/tools/xtask/src/tickets.rs
+index e6ce2deeb..5689ccc5d 100644
+--- a/tools/xtask/src/tickets.rs
++++ b/tools/xtask/src/tickets.rs
+@@ -2283,7 +2283,7 @@ pub fn stray_done_receipts<'a>(a: &'a Analysis, t: &Ticket, repo: &mut dyn Repo)
+     if t.effective == Some(State::Done) {
+         return Vec::new();
+     }
+-    let lines: Vec<&str> = migrated_not_done(t).into_iter().filter(|m| verify_migrated(&a.aids, &t.id, m).is_ok()).collect();
++    let lines: Vec<&str> = migrated_not_done(t).into_iter().collect();
+     let mut out = Vec::new();
+     for r in a.receipts.values() {
+         match done_receipt_number(&t.id, &r.file) {

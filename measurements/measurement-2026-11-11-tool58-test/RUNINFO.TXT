@@ -1,0 +1,10 @@
+TOOL58 test run 2026-11-11 (tester, Sonnet)
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+branch worktree-agent-a7b4c73759c67c267 head ca1552318; main 6e2d6b13a; no image booted, no manifest, optional_missing: n/a (host-only run)
+clone: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-tool58-test/../../target-agents/agent-afeacd4da56123236/clone (1,8G); mainclone (1,8G)
+Results: see chat report. full test 2447/0/7; tool58 4/4; status-check 0 rejected, 656 of 656; adversarial: fake batch, wrong id, evidence, to DONE, to OBSOLETE rejected by status-check and pre-commit; batch-file edits/approval deletion pass the hook, caught by next full status-check; consistent forge passes. Mutations M1/M2 fail tests, reverted, diff empty.
+sha256:
+f2ad50f1209e58989eedba48c72bd578b545f7cff662a86fa43c5734bf038975  measurements/adv.sh
+612cb5553eb9acfcd695e20a0022a281ab80d9613023341c7257381199227a75  measurements/fulltest.log
+aa20c35edfb2e591d172315b37723f822053b0e35e5f27cf3af3900156caef04  measurements/m1.diff
+e576ce9bc32f59e4c82ff4430d19607f2acdcda0c603987fa4a52ea180f6c6b7  measurements/m2.diff

@@ -1,0 +1,5 @@
+TOOL58 fixcheck 2026-11-11 (tester addendum); host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+branch head 201d0c2a7; host-only, no image/manifest. clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-afeacd4da56123236/clone (1,8G)
+full test 2450/0/7; tool58 7/7; replay a,b,c, delete closed.txt, new batch, rename: rejected by pre-commit (migration-frozen); switch-off commit caught by full status-check; real tree 0 rejected, 656/656; mutation M3 fails 2 tests, reverted; xtask warnings 2 = main
+182b9771e01128c37d77f7573fa1e9c2c57c040a9311d95f9a3fcc56aa447a4a  measurements/measurement-2026-11-11-tool58-fixcheck/measurements/full2.log
+e291605d927ef8efb265451d1e4e31508ad6c26158e11c75586bbc0fbfeb68a1  measurements/measurement-2026-11-11-tool58-fixcheck/measurements/m3.diff
