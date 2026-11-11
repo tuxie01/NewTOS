@@ -1,0 +1,48 @@
+MISS rc=0 want=2 [cwd=/proj]: git -C "references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: git -C 'references/emutos fetch
+ok   rc=2: echo $( git -C references/emutos fetch
+ok   rc=2: git -C references/emutos fetch \
+MISS rc=0 want=2 [cwd=/proj]: echo "unterminated; git -C references/emutos fetch
+ok   rc=2: git -C references/emutos fetch #
+ok   rc=2: echo a # x
+git -C references/emutos fetch
+ok   rc=2: cat <<'EOF'
+x
+EOF
+git -C references/emutos fetch
+ok   rc=2: echo $(echo $(git -C references/emutos fetch))
+ok   rc=2: echo "$(cd references/emutos; git fetch)"
+ok   rc=2: echo `cd references/emutos; git fetch`
+ok   rc=2: diff <(git -C references/emutos fetch) /dev/null
+ok   rc=2: case x in x) git -C references/emutos fetch;; esac
+ok   rc=2: f() { git -C references/emutos fetch; }; f
+ok   rc=2: git -C references/emutos fetch |& cat
+ok   rc=2: ! git -C references/emutos fetch
+ok   rc=2: git -C references/emutos fetch & wait
+MISS rc=0 want=2 [cwd=/proj]: timeout 5 git -C references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: gtimeout 5 git -C references/emutos fetch
+ok   rc=2: nice git -C references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: caffeinate git -C references/emutos fetch
+ok   rc=2: exec git -C references/emutos fetch
+ok   rc=2: FOO=1 BAR=2 git -C references/emutos fetch
+ok   rc=2: env -i git -C references/emutos fetch
+ok   rc=2: env -u X git -C references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: env -S 'git -C references/emutos fetch'
+MISS rc=0 want=2 [cwd=/proj]: /usr/bin/env git -C references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: xcrun git -C references/emutos fetch
+ok   rc=2: /Applications/Xcode.app/x/git -C references/emutos fetch
+ok   rc=2: git -C references/emutos fetch
+ok   rc=2: if git -C references/emutos fetch; then :; fi
+ok   rc=2: until git -C references/emutos fetch; do :; done
+ok   rc=2: time -p git -C references/emutos fetch
+ok   rc=2: (git -C references/emutos fetch)
+ok   rc=2: ((1)); git -C references/emutos fetch
+ok   rc=2: [[ -d x ]] && git -C references/emutos fetch
+ok   rc=2: echo ${X:-} ; cd references/emutos ; git pull
+ok   rc=2: cd "$CLAUDE_PROJECT_DIR" && cd references/emutos && git fetch
+ok   rc=2: cd $CLAUDE_PROJECT_DIR/references/emutos && git fetch
+ok   rc=2: cd ${CLAUDE_PROJECT_DIR}/references/emutos && git fetch
+ok   rc=2: cd ~ && cd FX/proj/references/emutos && git fetch
+MISS rc=0 want=2 [cwd=/proj]: cd FX/proj/references/emutos && cd - && git fetch
+MISS rc=0 want=2 [cwd=/proj]: cd FX/scratch && cd - && git fetch
+TOTAL 43 MISS 11

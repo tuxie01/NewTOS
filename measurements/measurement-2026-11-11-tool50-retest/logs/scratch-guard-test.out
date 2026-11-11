@@ -1,0 +1,47 @@
+ok exit 2 (want 2): shared /tmp path
+ok exit 2 (want 2): shared /private/tmp path
+ok exit 2 (want 2): bare /tmp
+ok exit 0 (want 0): session scratch root (/private/tmp)
+ok exit 0 (want 0): session scratch root (/tmp)
+ok exit 0 (want 0): the scratch root itself
+ok exit 0 (want 0): relative ./tmp
+ok exit 0 (want 0): tmp below another dir
+ok exit 0 (want 0): no path
+ok exit 2 (want 2): $CLAUDE_JOB_DIR while empty
+ok exit 0 (want 0): ${CLAUDE_JOB_DIR} while set
+ok exit 2 (want 2): Write into the shared /tmp
+ok exit 2 (want 2): Edit in the shared /private/tmp
+ok exit 0 (want 0): Write into the scratch root
+ok exit 0 (want 0): Write into the repo
+ok exit 0 (want 0): other tool: not checked
+ok exit 0 (want 0): clone into target-agents
+ok exit 0 (want 0): clone + CARGO_TARGET_DIR in target-agents
+ok exit 0 (want 0): --target-dir in target-agents
+ok exit 0 (want 0): --target-dir= in target-agents
+ok exit 0 (want 0): remove in target-agents
+ok exit 2 (want 2): clone into the scratch root
+ok exit 2 (want 2): clone into the scratch root (/tmp form)
+ok exit 2 (want 2): git -C dir clone into the scratch root
+ok exit 2 (want 2): git -c clone, quoted dest
+ok exit 0 (want 0): clone after cd into the scratch root (relative dest, not seen: text match)
+ok exit 2 (want 2): clone after ; into the scratch root
+ok exit 2 (want 2): CARGO_TARGET_DIR in the scratch root
+ok exit 2 (want 2): export CARGO_TARGET_DIR (quoted) in the scratch root
+ok exit 2 (want 2): --target-dir in the scratch root
+ok exit 2 (want 2): --target-dir= in the scratch root (/tmp form)
+ok exit 0 (want 0): clone into target-agents, scratch named in another segment
+ok exit 0 (want 0): small scratch file, no clone
+ok exit 0 (want 0): word clone in a quoted string (no git clone command)
+ok exit 0 (want 0): cargo build without a target dir
+ok exit 2 (want 2): clone into the shared /tmp (old rule)
+ok exit 2 (want 2): known false positive: 'git clone' as echo text with a scratch path
+ok exit 0 (want 0): commit message text, scratch path in another segment: passes
+ok exit 0 (want 0): known gap: git worktree add into the scratch root
+ok exit 0 (want 0): known gap: target dir through a variable
+ok exit 2 (want 2): TOOL50: shared /tmp in upper case
+ok exit 2 (want 2): TOOL50: shared /private/tmp in mixed case
+ok exit 0 (want 0): TOOL50: the scratch root in upper case
+ok exit 2 (want 2): TOOL50: clone into the scratch root, mixed case
+ok exit 2 (want 2): TOOL50: CARGO_TARGET_DIR in the scratch root, upper case
+ok exit 2 (want 2): TOOL50: Write into the shared /tmp, upper case
+ok exit 0 (want 0): TOOL50: Write into the scratch root, upper case

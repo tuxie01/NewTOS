@@ -1,0 +1,45 @@
+ok   rc=2: export GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git; git remote set-url origin x
+ok   rc=2: export GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git && git config remote.origin.url x
+ok   rc=2: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git git -C . remote add u x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references config --file emutos/.git/config remote.origin.url x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj config --file references/emutos/.git/config remote.origin.url x
+MISS rc=0 want=2 [cwd=/proj]: git config -f/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config remote.origin.url x
+ok   rc=2: git config --file /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config --add remote.origin.url x
+ok   rc=2: git config --file /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config --unset remote.origin.url
+ok   rc=2: git config --file /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config -e
+ok   rc=2: git config --file /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config set remote.origin.url x
+ok   rc=2: git config --file /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos-oracle/1a7484ab/.git/config --rename-section remote.origin up
+ok   rc=2: git config --file /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/scratch/refs/emutos/.git/config remote.origin.url x
+MISS rc=0 want=2 [cwd=/proj]: GIT_CONFIG=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config git config remote.origin.url x
+MISS rc=0 want=2 [cwd=/proj]: GIT_CONFIG=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/config git config --unset remote.origin.url
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --unset-all remote.origin.fetch
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --replace-all remote.origin.url x y
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --type=bool remote.origin.url x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --comment c remote.origin.url x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config -z remote.origin.url x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --no-includes remote.origin.url x
+MISS rc=0 want=2 [cwd=/proj]: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local remote.origin.url=x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local 'remote.origin.url' x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local "remote.origin.url" x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local remote.upstream.url x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local remote.upstream.pushurl x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local remote.origin.mirror true
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --name-only remote.origin.url x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local remote.pushDefault origin
+MISS rc=0 want=2 [cwd=/proj]: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local url.x.insteadOf y
+MISS rc=0 want=2 [cwd=/proj]: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local branch.master.remote x
+MISS rc=0 want=2 [cwd=/proj]: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local core.hooksPath x
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --get-urlmatch remote.origin.url x
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --show-origin --get remote.origin.url
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --bool --get remote.origin.url
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --get --default x remote.origin.url
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --type=bool --get remote.origin.url
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local -z --get remote.origin.url
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --name-only --list
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos config --local --get-regexp 'remote.*'
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote -vv
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote show -n origin
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos ls-remote
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos ls-remote origin
+ok   rc=0: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos fetch --dry-run
+TOTAL 44 MISS 7

@@ -1,0 +1,21 @@
+RUNINFO -- TOOL50 retest of the REWORK, 2026-11-11 (agent a8cc259b29d497846, Tester; neither developer nor first tester)
+Tested: branch worktree-agent-aeebbf8f8af122b9d head 53e53f7f1 (base cb78c9d48), worktree .claude/worktrees/agent-aeebbf8f8af122b9d (clean, unchanged).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image/kernel booted: manifest N/A, optional_missing: none (no image).
+Method: method/ (adv.sh + cases*.sh own pipe harness over a fixture repo; ci.sh case-variant checks; build.sh build-emutos.sh fixture with git/make shims;
+snap.sh read-only snapshot). Only hook JSON was piped into guards; no command under test was run; real references/ only read (snapshots, gen-deps --check).
+Scratch: target-agents/agent-a8cc259b29d497846 (no clone; 3.5G of cargo target dirs and fixtures, removed afterwards: 0B). No gitignored output cited.
+
+Snapshots: logs/snap0.txt (start) and snap1.txt (end). Start (verbatim in snap0.txt): HEAD of all three trees unchanged; for-each-ref sha, .git/index, .git/HEAD mtimes,
+status --short --ignored sha256 and stash count IDENTICAL at the end. Differences start->end:
+ (a) ls -ldO: drwxr-xr-x '-' -> dr-xr-xr-x 'uchg' on all three trees; remote origin now pinned:/no-fetch / pinned:/no-push. The owner applied the pin lock at
+     13:10:37 (the three .git dir mtimes, all 1794399037, show one -R run) while this run was going on; not me: I ran no chmod/chflags/git write, only JSON piped to guards.
+ (b) the three .git dir mtimes (same lock run); (c) main HEAD 49458dc7f -> c4fd814ee (another task committed).
+ -> refs, index/HEAD mtimes, status hash, stash: identical.
+
+Results
+1. pin-guard-test.sh 308 ok/0 FAIL; no-verify-guard-test.sh 204/0; scratch-guard-test.sh 47/0; (agent-scratch-test.sh 65/0); cargo xtask test (worktree) 2416 passed/0 failed/7 ignored, 0 SKIPPED.
+2. Own adversarial harness, 469 piped cases: out1 143 (1 miss), cases2 98 (0), cases3 89 (5), cases4 95 (5), cases5 44 (7). Every miss classified in the report.
+3. ci.sh 114 cases: 9 "misses" all my own test errors (hash-object needs -w; fx lay inside main repo; /TMP/CLAUDE-501/../x allowed by the pre-existing prefix rule, same in lower case). Real: case variants handled.
+4. build.sh 75 cases (root = fixture repo and a real linked worktree with TOOL44 symlinks), 0 MISS: refusals exit 2 with shim log free of git/make (only rev-parse --git-common-dir), allowed exit 99 (reached git clone shim).
+5. Mutations on copies (scratch): paths.sh path_lower -> cat: pin test 49 FAIL, scratch test 5 FAIL; chflags let through: pin test 27 FAIL. Worktree git status --short empty, git diff empty.
+6. clippy -p xtask --all-targets: main 12 warning lines, branch 12, sorted set identical (delta 0). doc-check of ORACLE.md, TOOL50.md, TOOL42.md and both receipts: 0 failures. gen-deps.py --check rc 0 byte-identical (ran after the lock, on the locked tree, probably; the lock moment is 13:10:37).

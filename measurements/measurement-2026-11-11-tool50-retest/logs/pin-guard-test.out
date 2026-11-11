@@ -1,0 +1,308 @@
+ok exit 2 (want 2): E: chmod -R u+w
+ok exit 2 (want 2): O: chmod -R u+w
+ok exit 2 (want 2): E, other letter case: chmod -R u+w
+ok exit 2 (want 2): O, other letter case: chmod -R u+w
+ok exit 2 (want 2): E via the worktree symlink: chmod -R u+w
+ok exit 2 (want 2): O via the worktree symlink, relative: chmod -R u+w
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: chmod -R u+w
+ok exit 2 (want 2): E named through an undecidable variable (text): chmod -R u+w
+ok exit 0 (want 0): scratch copy: chmod -R u+w
+ok exit 0 (want 0): archive export: chmod -R u+w
+ok exit 2 (want 2): E: chmod a file
+ok exit 2 (want 2): O: chmod a file
+ok exit 2 (want 2): E, other letter case: chmod a file
+ok exit 2 (want 2): O, other letter case: chmod a file
+ok exit 2 (want 2): E via the worktree symlink: chmod a file
+ok exit 2 (want 2): O via the worktree symlink, relative: chmod a file
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: chmod a file
+ok exit 2 (want 2): E named through an undecidable variable (text): chmod a file
+ok exit 0 (want 0): scratch copy: chmod a file
+ok exit 0 (want 0): archive export: chmod a file
+ok exit 2 (want 2): E: chflags -R nouchg
+ok exit 2 (want 2): O: chflags -R nouchg
+ok exit 2 (want 2): E, other letter case: chflags -R nouchg
+ok exit 2 (want 2): O, other letter case: chflags -R nouchg
+ok exit 2 (want 2): E via the worktree symlink: chflags -R nouchg
+ok exit 2 (want 2): O via the worktree symlink, relative: chflags -R nouchg
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: chflags -R nouchg
+ok exit 2 (want 2): E named through an undecidable variable (text): chflags -R nouchg
+ok exit 0 (want 0): scratch copy: chflags -R nouchg
+ok exit 0 (want 0): archive export: chflags -R nouchg
+ok exit 2 (want 2): E: chflags a file
+ok exit 2 (want 2): O: chflags a file
+ok exit 2 (want 2): E, other letter case: chflags a file
+ok exit 2 (want 2): O, other letter case: chflags a file
+ok exit 2 (want 2): E via the worktree symlink: chflags a file
+ok exit 2 (want 2): O via the worktree symlink, relative: chflags a file
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: chflags a file
+ok exit 2 (want 2): E named through an undecidable variable (text): chflags a file
+ok exit 0 (want 0): scratch copy: chflags a file
+ok exit 0 (want 0): archive export: chflags a file
+ok exit 2 (want 2): E: chown -R
+ok exit 2 (want 2): O: chown -R
+ok exit 2 (want 2): E, other letter case: chown -R
+ok exit 2 (want 2): O, other letter case: chown -R
+ok exit 2 (want 2): E via the worktree symlink: chown -R
+ok exit 2 (want 2): O via the worktree symlink, relative: chown -R
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: chown -R
+ok exit 2 (want 2): E named through an undecidable variable (text): chown -R
+ok exit 0 (want 0): scratch copy: chown -R
+ok exit 0 (want 0): archive export: chown -R
+ok exit 2 (want 2): E: sudo chmod
+ok exit 2 (want 2): O: sudo chmod
+ok exit 2 (want 2): E, other letter case: sudo chmod
+ok exit 2 (want 2): O, other letter case: sudo chmod
+ok exit 2 (want 2): E via the worktree symlink: sudo chmod
+ok exit 2 (want 2): O via the worktree symlink, relative: sudo chmod
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: sudo chmod
+ok exit 2 (want 2): E named through an undecidable variable (text): sudo chmod
+ok exit 0 (want 0): scratch copy: sudo chmod
+ok exit 0 (want 0): archive export: sudo chmod
+ok exit 2 (want 2): E: find -exec chmod
+ok exit 2 (want 2): O: find -exec chmod
+ok exit 2 (want 2): E, other letter case: find -exec chmod
+ok exit 2 (want 2): O, other letter case: find -exec chmod
+ok exit 2 (want 2): E via the worktree symlink: find -exec chmod
+ok exit 2 (want 2): O via the worktree symlink, relative: find -exec chmod
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: find -exec chmod
+ok exit 2 (want 2): E named through an undecidable variable (text): find -exec chmod
+ok exit 0 (want 0): scratch copy: find -exec chmod
+ok exit 0 (want 0): archive export: find -exec chmod
+ok exit 2 (want 2): E: cd && chmod, relative
+ok exit 2 (want 2): O: cd && chmod, relative
+ok exit 2 (want 2): E, other letter case: cd && chmod, relative
+ok exit 2 (want 2): O, other letter case: cd && chmod, relative
+ok exit 2 (want 2): E via the worktree symlink: cd && chmod, relative
+ok exit 2 (want 2): O via the worktree symlink, relative: cd && chmod, relative
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: cd && chmod, relative
+ok exit 2 (want 2): E named through an undecidable variable (text): cd && chmod, relative
+ok exit 0 (want 0): scratch copy: cd && chmod, relative
+ok exit 0 (want 0): archive export: cd && chmod, relative
+ok exit 2 (want 2): E: sub-shell cd && chflags
+ok exit 2 (want 2): O: sub-shell cd && chflags
+ok exit 2 (want 2): E, other letter case: sub-shell cd && chflags
+ok exit 2 (want 2): O, other letter case: sub-shell cd && chflags
+ok exit 2 (want 2): E via the worktree symlink: sub-shell cd && chflags
+ok exit 2 (want 2): O via the worktree symlink, relative: sub-shell cd && chflags
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR: sub-shell cd && chflags
+ok exit 2 (want 2): E named through an undecidable variable (text): sub-shell cd && chflags
+ok exit 0 (want 0): scratch copy: sub-shell cd && chflags
+ok exit 0 (want 0): archive export: sub-shell cd && chflags
+ok exit 2 (want 2): chmod -R of a directory that contains E
+ok exit 2 (want 2): chflags -R of references/, cwd the main repo
+ok exit 2 (want 2): chmod -R of references/, other letter case
+ok exit 2 (want 2): find from an ancestor -exec chflags
+ok exit 2 (want 2): chmod -R of the project dir
+ok exit 2 (want 2): chmod with a glob that reaches E
+ok exit 2 (want 2): chmod with a glob inside E
+ok exit 2 (want 2): chmod through another symlink to E
+ok exit 2 (want 2): chflags through a symlink and ..
+ok exit 0 (want 0): chmod in the main repo
+ok exit 0 (want 0): chmod of an unprotected sibling
+ok exit 0 (want 0): chmod of a name that only starts with emutos
+ok exit 0 (want 0): worktree: chmod of its references/ (symlinks only; -R does not follow)
+ok exit 0 (want 0): reading the lock
+ok exit 0 (want 0): find -exec grep
+ok exit 0 (want 0): chmod of an undecidable path without the name
+ok exit 2 (want 2): E, -C: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): O, cd &&: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, cwd: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, other letter case: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E via the worktree symlink: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, --git-dir=: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): O, GIT_DIR=: git remote set-url origin https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy: git remote set-url origin https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy, cwd: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, -C: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): O, cd &&: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): E, cwd: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): E, other letter case: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): E via the worktree symlink: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): E, --git-dir=: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): O, GIT_DIR=: git remote add up https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy: git remote add up https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy, cwd: git remote add up https://example.invalid/emutos.git
+ok exit 2 (want 2): E, -C: git remote remove origin
+ok exit 2 (want 2): O, cd &&: git remote remove origin
+ok exit 2 (want 2): E, cwd: git remote remove origin
+ok exit 2 (want 2): E, other letter case: git remote remove origin
+ok exit 2 (want 2): E via the worktree symlink: git remote remove origin
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git remote remove origin
+ok exit 2 (want 2): E, --git-dir=: git remote remove origin
+ok exit 2 (want 2): O, GIT_DIR=: git remote remove origin
+ok exit 0 (want 0): scratch copy: git remote remove origin
+ok exit 0 (want 0): scratch copy, cwd: git remote remove origin
+ok exit 2 (want 2): E, -C: git remote rm origin
+ok exit 2 (want 2): O, cd &&: git remote rm origin
+ok exit 2 (want 2): E, cwd: git remote rm origin
+ok exit 2 (want 2): E, other letter case: git remote rm origin
+ok exit 2 (want 2): E via the worktree symlink: git remote rm origin
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git remote rm origin
+ok exit 2 (want 2): E, --git-dir=: git remote rm origin
+ok exit 2 (want 2): O, GIT_DIR=: git remote rm origin
+ok exit 0 (want 0): scratch copy: git remote rm origin
+ok exit 0 (want 0): scratch copy, cwd: git remote rm origin
+ok exit 2 (want 2): E, -C: git remote rename origin up
+ok exit 2 (want 2): O, cd &&: git remote rename origin up
+ok exit 2 (want 2): E, cwd: git remote rename origin up
+ok exit 2 (want 2): E, other letter case: git remote rename origin up
+ok exit 2 (want 2): E via the worktree symlink: git remote rename origin up
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git remote rename origin up
+ok exit 2 (want 2): E, --git-dir=: git remote rename origin up
+ok exit 2 (want 2): O, GIT_DIR=: git remote rename origin up
+ok exit 0 (want 0): scratch copy: git remote rename origin up
+ok exit 0 (want 0): scratch copy, cwd: git remote rename origin up
+ok exit 2 (want 2): E, -C: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): O, cd &&: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): E, cwd: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): E, other letter case: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): E via the worktree symlink: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): E, --git-dir=: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): O, GIT_DIR=: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy, cwd: git config remote.origin.url https://example.invalid/emutos.git
+ok exit 2 (want 2): E, -C: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): O, cd &&: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): E, cwd: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): E, other letter case: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): E via the worktree symlink: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): E, --git-dir=: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): O, GIT_DIR=: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 0 (want 0): scratch copy: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 0 (want 0): scratch copy, cwd: git config --add remote.origin.fetch +refs/x:refs/x
+ok exit 2 (want 2): E, -C: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): O, cd &&: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): E, cwd: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): E, other letter case: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): E via the worktree symlink: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): E, --git-dir=: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): O, GIT_DIR=: git config --replace-all remote.origin.url x
+ok exit 0 (want 0): scratch copy: git config --replace-all remote.origin.url x
+ok exit 0 (want 0): scratch copy, cwd: git config --replace-all remote.origin.url x
+ok exit 2 (want 2): E, -C: git config --unset remote.origin.url
+ok exit 2 (want 2): O, cd &&: git config --unset remote.origin.url
+ok exit 2 (want 2): E, cwd: git config --unset remote.origin.url
+ok exit 2 (want 2): E, other letter case: git config --unset remote.origin.url
+ok exit 2 (want 2): E via the worktree symlink: git config --unset remote.origin.url
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --unset remote.origin.url
+ok exit 2 (want 2): E, --git-dir=: git config --unset remote.origin.url
+ok exit 2 (want 2): O, GIT_DIR=: git config --unset remote.origin.url
+ok exit 0 (want 0): scratch copy: git config --unset remote.origin.url
+ok exit 0 (want 0): scratch copy, cwd: git config --unset remote.origin.url
+ok exit 2 (want 2): E, -C: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): O, cd &&: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): E, cwd: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): E, other letter case: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): E via the worktree symlink: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): E, --git-dir=: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): O, GIT_DIR=: git config --unset-all remote.origin.fetch
+ok exit 0 (want 0): scratch copy: git config --unset-all remote.origin.fetch
+ok exit 0 (want 0): scratch copy, cwd: git config --unset-all remote.origin.fetch
+ok exit 2 (want 2): E, -C: git config set remote.origin.url x
+ok exit 2 (want 2): O, cd &&: git config set remote.origin.url x
+ok exit 2 (want 2): E, cwd: git config set remote.origin.url x
+ok exit 2 (want 2): E, other letter case: git config set remote.origin.url x
+ok exit 2 (want 2): E via the worktree symlink: git config set remote.origin.url x
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config set remote.origin.url x
+ok exit 2 (want 2): E, --git-dir=: git config set remote.origin.url x
+ok exit 2 (want 2): O, GIT_DIR=: git config set remote.origin.url x
+ok exit 0 (want 0): scratch copy: git config set remote.origin.url x
+ok exit 0 (want 0): scratch copy, cwd: git config set remote.origin.url x
+ok exit 2 (want 2): E, -C: git config unset remote.origin.url
+ok exit 2 (want 2): O, cd &&: git config unset remote.origin.url
+ok exit 2 (want 2): E, cwd: git config unset remote.origin.url
+ok exit 2 (want 2): E, other letter case: git config unset remote.origin.url
+ok exit 2 (want 2): E via the worktree symlink: git config unset remote.origin.url
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config unset remote.origin.url
+ok exit 2 (want 2): E, --git-dir=: git config unset remote.origin.url
+ok exit 2 (want 2): O, GIT_DIR=: git config unset remote.origin.url
+ok exit 0 (want 0): scratch copy: git config unset remote.origin.url
+ok exit 0 (want 0): scratch copy, cwd: git config unset remote.origin.url
+ok exit 2 (want 2): E, -C: git config --rename-section remote.origin up
+ok exit 2 (want 2): O, cd &&: git config --rename-section remote.origin up
+ok exit 2 (want 2): E, cwd: git config --rename-section remote.origin up
+ok exit 2 (want 2): E, other letter case: git config --rename-section remote.origin up
+ok exit 2 (want 2): E via the worktree symlink: git config --rename-section remote.origin up
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --rename-section remote.origin up
+ok exit 2 (want 2): E, --git-dir=: git config --rename-section remote.origin up
+ok exit 2 (want 2): O, GIT_DIR=: git config --rename-section remote.origin up
+ok exit 0 (want 0): scratch copy: git config --rename-section remote.origin up
+ok exit 0 (want 0): scratch copy, cwd: git config --rename-section remote.origin up
+ok exit 2 (want 2): E, -C: git config --remove-section remote.origin
+ok exit 2 (want 2): O, cd &&: git config --remove-section remote.origin
+ok exit 2 (want 2): E, cwd: git config --remove-section remote.origin
+ok exit 2 (want 2): E, other letter case: git config --remove-section remote.origin
+ok exit 2 (want 2): E via the worktree symlink: git config --remove-section remote.origin
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --remove-section remote.origin
+ok exit 2 (want 2): E, --git-dir=: git config --remove-section remote.origin
+ok exit 2 (want 2): O, GIT_DIR=: git config --remove-section remote.origin
+ok exit 0 (want 0): scratch copy: git config --remove-section remote.origin
+ok exit 0 (want 0): scratch copy, cwd: git config --remove-section remote.origin
+ok exit 2 (want 2): E, -C: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): O, cd &&: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): E, cwd: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): E, other letter case: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): E via the worktree symlink: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): E, --git-dir=: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): O, GIT_DIR=: git config --local Remote.Origin.URL x
+ok exit 0 (want 0): scratch copy: git config --local Remote.Origin.URL x
+ok exit 0 (want 0): scratch copy, cwd: git config --local Remote.Origin.URL x
+ok exit 2 (want 2): E, -C: git config -e
+ok exit 2 (want 2): O, cd &&: git config -e
+ok exit 2 (want 2): E, cwd: git config -e
+ok exit 2 (want 2): E, other letter case: git config -e
+ok exit 2 (want 2): E via the worktree symlink: git config -e
+ok exit 2 (want 2): O via $CLAUDE_PROJECT_DIR: git config -e
+ok exit 2 (want 2): E, --git-dir=: git config -e
+ok exit 2 (want 2): O, GIT_DIR=: git config -e
+ok exit 0 (want 0): scratch copy: git config -e
+ok exit 0 (want 0): scratch copy, cwd: git config -e
+ok exit 2 (want 2): config --file in E: remote.* write
+ok exit 2 (want 2): config -f in O, other letter case
+ok exit 2 (want 2): E as --work-tree (repo found elsewhere; blocked, the tree is named)
+ok exit 0 (want 0): E, read: git remote
+ok exit 0 (want 0): E, read: git remote -v
+ok exit 0 (want 0): E, read: git remote show origin
+ok exit 0 (want 0): E, read: git remote get-url origin
+ok exit 0 (want 0): E, read: git config remote.origin.url
+ok exit 0 (want 0): E, read: git config --get remote.origin.url
+ok exit 0 (want 0): E, read: git config --get-regexp remote
+ok exit 0 (want 0): E, read: git config -l
+ok exit 0 (want 0): E, read: git config list
+ok exit 0 (want 0): E, read: git config get remote.origin.url
+ok exit 0 (want 0): config --file in E: read
+ok exit 0 (want 0): the main repo's own remote
+ok exit 0 (want 0): known limit, owner decision: other config writes (the OS lock)
+ok exit 0 (want 0): known limit, owner decision: fetch (the OS lock, the invalid remote)
+ok exit 0 (want 0): known limit, owner decision: rm (the OS lock, uchg)
+ok exit 0 (want 0): known limit, owner decision: redirection (the OS lock)
+ok exit 0 (want 0): known limit: a wrapper the parser does not know (timeout)
+ok exit 0 (want 0): unrelated
+ok exit 2 (want 2): Write into E
+ok exit 2 (want 2): Edit in E
+ok exit 2 (want 2): Write into O (new dir)
+ok exit 2 (want 2): Edit through the worktree symlink
+ok exit 2 (want 2): NotebookEdit in E
+ok exit 2 (want 2): Write into E, other letter case
+ok exit 2 (want 2): Edit in O, other letter case
+ok exit 0 (want 0): Write into the scratch copy
+ok exit 0 (want 0): Write into the repo
+ok exit 0 (want 0): Write into an unprotected sibling
+ok exit 0 (want 0): Read: not checked
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree (relative)
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree (absolute)
+ok exit 2 (want 2): build-emutos.sh refuses a new tree in references/emutos-oracle/
+ok exit 2 (want 2): build-emutos.sh refuses references/emutos
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree in another letter case
+ok exit 2 (want 2): build-emutos.sh refuses a new tree under REFERENCES/
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree through a worktree's symlink
+ok exit 2 (want 2): build-emutos.sh refuses a path through another symlink
+ok exit 2 (want 2): build-emutos.sh refuses any tree dir under references/
+ok exit 1 (want 1): build-emutos.sh lets a tree dir in target-agents through (then: no cross gcc)

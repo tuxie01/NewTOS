@@ -1,0 +1,101 @@
+ok   rc=2: cd "/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos" && chmod -R u+w .
+ok   rc=2: cd '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos' && chmod -R u+w .
+ok   rc=2: cd $CLAUDE_PROJECT_DIR/references/emutos && chmod -R u+w .
+ok   rc=2: cd "$CLAUDE_PROJECT_DIR"/references/emutos && chmod -R u+w .
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/bios; cd ..; chmod -R u+w .
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/bios && cd .. && chmod u+w README
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references; git -C emutos remote set-url origin x
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references; git -C emutos-oracle/1a7484ab remote set-url origin x
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/bios && git -C .. remote set-url origin x
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos && git --git-dir=.git remote set-url origin x
+ok   rc=2: cd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos && git -C . remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/ config remote.origin.url x
+ok   rc=2: git --git-dir=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git/ remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj -C references/emutos remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references -C emutos remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos -C bios remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x && true
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x; true
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x | cat
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x 2>&1
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote \
+  set-url origin x
+ok   rc=2: echo a
+chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: echo a
+git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/{emutos,x}
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/{references,x}
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/?eferences
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/e[m]utos
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/r*/e*
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/*/emutos
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos*
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/*/1a7484ab
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/./README
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos//README
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/bios/../README
+ok   rc=2: chmod -R u+w "$CLAUDE_PROJECT_DIR"/references/emutos
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/"emutos"
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/refer"ences/emutos"
+ok   rc=2: chmod u+w -R /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -R u+w -- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -R u+w 2>/dev/null /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod --reference=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/a /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/README
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/a /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/b /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos <<< x
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos <<EOT
+x
+EOT
+ok   rc=2: find "/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos" -exec chmod u+w {} +
+ok   rc=2: find /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos -mindepth 1 -exec chmod u+w {} +
+ok   rc=2: find /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos -name x -o -exec chmod u+w {} +
+ok   rc=2: find /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos -exec chmod u+w {} + -quit
+ok   rc=2: find /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos -print -exec chmod u+w {} +
+ok   rc=2: find /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos -type f -exec echo {} \; -exec chmod u+w {} +
+ok   rc=2: find /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx -exec chmod u+w {} +
+ok   rc=2: find / -exec chmod u+w {} +
+MISS rc=0 want=2 [cwd=/proj]: find ~/.. -exec chmod u+w {} +
+ok   rc=2: find . -exec chflags nouchg {} +
+ok   rc=2: pushd /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos >/dev/null; chflags -R nouchg .
+ok   rc=2: sudo -- chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: sudo -u root -- chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: nice -n 5 chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: nice -n5 chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: time chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: ! chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: while true; do chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos; break; done
+ok   rc=2: case x in x) chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos;; esac
+ok   rc=2: f() { chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos; }; f
+ok   rc=2: FOO=1 chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: LC_ALL=C chflags -R nouchg /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: export X=1; chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos ; chmod -R u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos-oracle/1a7484ab
+ok   rc=2: chmod -R a+rwx,u-s /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -R -h u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -RH u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -RL u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -RP u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -vR u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chmod -fR u+w /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chflags -RH nouchg /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chflags -RL nouchg /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chflags -vR nouchg /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chflags -fR nouchg /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chown -RH me /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chown -vR me /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos
+ok   rc=2: chown :staff /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/README
+ok   rc=2: chown me: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/README
+ok   rc=2: chown -R me:staff /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/wt/references/emutos/
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x # comment
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote  set-url   origin   x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos  remote add u x
+MISS rc=0 want=2 [cwd=/proj]: git -C=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x
+MISS rc=0 want=2 [cwd=/proj]: git -C/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x
+ok   rc=2: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git GIT_WORK_TREE=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos git remote set-url origin x
+MISS rc=0 want=2 [cwd=/proj]: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git; git remote set-url origin x
+MISS rc=0 want=2 [cwd=/proj]: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git && git remote set-url origin x
+ok   rc=2: env GIT_DIR=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos/.git git remote set-url origin x
+ok   rc=2: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx/proj/references/emutos remote set-url origin x
+TOTAL 95 MISS 5

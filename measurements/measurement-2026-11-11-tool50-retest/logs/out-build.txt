@@ -1,0 +1,76 @@
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos-oracle/1a7484ab  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos-oracle/new  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/freemint/x  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/newdir  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/REFERENCES/new  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/References/EmuTOS  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/EMUTOS-ORACLE/1A7484AB  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/PROJ/references/x  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/../references/y  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos/bios/../x  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/lnk  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/lnk/sub  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/chain/sub  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/rel/emutos  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/rel/new  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/refs/new  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/TA/LNK/sub  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/lnk/../emutos-oracle/z  [root=/proj] 
+ok   rc=2: references/emutos-oracle/1a7484ab  [root=/proj] 
+ok   rc=2: references/emutos-oracle/1a7484ab  [root=/proj] 
+ok   rc=2: emutos  [root=/proj] 
+ok   rc=2: ../references/q  [root=/proj] 
+ok   rc=2: ./emutos-oracle/x  [root=/proj] 
+ok   rc=2: emutos/sub  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos  [root=/proj] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos-oracle/x  [root=/proj] 
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/emutos-1a7484ab  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/emutos-1a7484ab|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/target-agents/agent-a1/emutos  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/target-agents/agent-a1/emutos|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/elsewhere/emutos  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/elsewhere/emutos|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/references-copy  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/references-copy|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references2/x  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references2/x|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/target-agents/agent-a1/emutos  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/target-agents/agent-a1/emutos|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/refs/emutos  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/refs/emutos|
+ok   rc=99: tree-x  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos tree-x|
+ok   rc=99: ../x  [root=/proj] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos ../x|
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos-oracle/1a7484ab  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos-oracle/new  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/freemint/x  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/newdir  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/REFERENCES/new  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/References/EmuTOS  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/EMUTOS-ORACLE/1A7484AB  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/PROJ/references/x  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/../references/y  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references/emutos/bios/../x  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/lnk  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/lnk/sub  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/chain/sub  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/rel/emutos  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/rel/new  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/refs/new  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/TA/LNK/sub  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/lnk/../emutos-oracle/z  [root=/wt] 
+ok   rc=2: references/emutos-oracle/1a7484ab  [root=/wt] 
+ok   rc=2: references/emutos-oracle/1a7484ab  [root=/wt] 
+ok   rc=2: emutos  [root=/wt] 
+ok   rc=2: ../references/q  [root=/wt] 
+ok   rc=2: ./emutos-oracle/x  [root=/wt] 
+ok   rc=2: emutos/sub  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos-oracle/x  [root=/wt] 
+ok   rc=2: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/anything  [root=/wt] 
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/emutos-1a7484ab  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/emutos-1a7484ab|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/target-agents/agent-a1/emutos  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/target-agents/agent-a1/emutos|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/elsewhere/emutos  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/elsewhere/emutos|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/references-copy  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/ta/references-copy|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references2/x  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/references2/x|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/target-agents/agent-a1/emutos  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/target-agents/agent-a1/emutos|
+ok   rc=99: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/refs/emutos  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/proj/refs/emutos|
+ok   rc=99: tree-x  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos tree-x|
+ok   rc=99: ../x  [root=/wt] log:git clone -q --no-checkout /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/bfx/wt/references/emutos ../x|
+TOTAL 75 MISS 0

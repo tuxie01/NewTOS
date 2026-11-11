@@ -1,0 +1,1 @@
+gen-deps --check: edges.tsv, layers.md byte-identical

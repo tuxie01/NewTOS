@@ -1,0 +1,130 @@
+MISS rc=0 want=2 [cwd=/proj]: git -C references/EMUTOS fetch
+MISS rc=0 want=2 [cwd=/proj]: git -C References/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: git -C REFERENCES/emutos-oracle/1A7484AB fetch
+MISS rc=0 want=2 [cwd=/proj]: rm -rf references/EmuTOS
+MISS rc=0 want=2 [cwd=/proj]: echo a > references/EMUTOS/x
+MISS rc=0 want=2 [cwd=/proj]: cd references/EMUTOS && git fetch
+MISS rc=0 want=2: Write FX/proj/references/EMUTOS/x
+MISS rc=0 want=2: Write FX/proj/References/emutos/x
+MISS rc=0 want=2 [cwd=/proj]: sed -Ei s/a/b/ FX/proj/references/emutos/README
+ok   rc=2: sed -E -i s/a/b/ FX/proj/references/emutos/README
+MISS rc=0 want=2 [cwd=/proj]: sed -nEi p FX/proj/references/emutos/README
+MISS rc=0 want=2 [cwd=/proj]: sed -ri s/a/b/ FX/proj/references/emutos/README
+ok   rc=2: sed -i '' -E s/a/b/ FX/proj/references/emutos/README
+MISS rc=0 want=2 [cwd=/proj]: find references -delete
+MISS rc=0 want=2 [cwd=/proj]: find references -name x -exec rm {} +
+MISS rc=0 want=2 [cwd=/proj]: find . -delete
+MISS rc=0 want=2 [cwd=/proj]: find FX/proj -exec rm {} +
+MISS rc=0 want=2 [cwd=/proj]: find FX/proj/references -name x -delete
+MISS rc=0 want=2 [cwd=/proj]: find references -type f -exec chmod 0 {} +
+MISS rc=0 want=2 [cwd=/proj]: env -C references/emutos make
+MISS rc=0 want=2 [cwd=/proj]: env --chdir=references/emutos make
+MISS rc=0 want=2 [cwd=/proj]: env -C references/emutos git fetch
+MISS rc=0 want=2 [cwd=/proj]: builtin cd references/emutos && git fetch
+MISS rc=0 want=2 [cwd=/proj]: command cd references/emutos && git fetch
+ok   rc=2: cd -P references/emutos && git fetch
+MISS rc=0 want=2 [cwd=/proj]: cd -- references/emutos && git fetch
+ok   rc=2: cd -L references/emutos && git fetch
+ok   rc=2: cd references/emutos/ && git fetch
+ok   rc=2: cd ./references/emutos && git fetch
+ok   rc=2: cd references/./emutos && git fetch
+ok   rc=2: cd references/emutos/. && git fetch
+ok   rc=2: cd FX/proj/references/emutos; cd bios; cd ..; git fetch
+ok   rc=2: pushd references/emutos; pushd bios; pushd ..; git fetch
+ok   rc=2: cd references; pushd emutos; git fetch
+MISS rc=0 want=2 [cwd=/proj]: ln -s references/emutos x; cd x; git fetch
+MISS rc=0 want=2 [cwd=/proj]: git -C $'references/emutos' fetch
+ok   rc=2: git -C references/emu\tos fetch
+ok   rc=2: git -C references/emu""tos fetch
+ok   rc=2: git -C references/{emutos,x} fetch
+ok   rc=2: git -C references/emut* fetch
+ok   rc=2: git -C references/emut?s fetch
+ok   rc=2: git -C references/emut[o]s fetch
+ok   rc=2: git -C references/emutos-oracle/* fetch
+ok   rc=2: git "-C" FX/proj/references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: git -C"FX/proj/references/emutos" fetch
+MISS rc=0 want=2 [cwd=/proj]: git -CFX/proj/references/emutos fetch
+ok   rc=2: git -C 'FX/proj/references/emutos' -c x=y fetch
+ok   rc=2: git -c alias.f=fetch -C FX/proj/references/emutos f
+ok   rc=2: git -C FX/proj/references/emutos f
+ok   rc=2: git -C FX/proj/references/emutos -c alias.x='!rm -rf .' x
+ok   rc=2: git --exec-path=. -C FX/proj/references/emutos fetch
+ok   rc=2: git --git-dir=FX/proj/references/emutos/.git --work-tree=FX/scratch status && git --git-dir=FX/proj/references/emutos/.git fetch
+ok   rc=2: git -C '' -C FX/proj/references/emutos fetch
+MISS rc=0 want=2 [cwd=/proj]: echo a >| references/emutos/x
+ok   rc=2: echo a >&references/emutos/x
+MISS rc=0 want=2 [cwd=/proj]: echo a >&2 >| references/emutos/x
+MISS rc=0 want=2 [cwd=/proj]: echo a &>| references/emutos/x
+MISS rc=0 want=2 [cwd=/proj]: echo a >!references/emutos/x
+MISS rc=0 want=2 [cwd=/proj]: echo a >! references/emutos/x
+ok   rc=2: echo a >> "references/emutos/x"
+ok   rc=2: echo a 1> references/emutos/x
+ok   rc=2: echo a 2>>references/emutos/x
+ok   rc=2: echo a 10> references/emutos/x
+ok   rc=2: echo a <> references/emutos/x
+ok   rc=2: echo a >(tee references/emutos/x)
+ok   rc=2: cat <<< a > references/emutos/x
+MISS rc=0 want=2 [cwd=/proj]: curl -o references/emutos/x https://example.invalid
+MISS rc=0 want=2 [cwd=/proj]: curl -O --output-dir references/emutos https://example.invalid/a
+MISS rc=0 want=2 [cwd=/proj]: wget -O references/emutos/x https://example.invalid
+MISS rc=0 want=2 [cwd=/proj]: wget -P references/emutos https://example.invalid
+MISS rc=0 want=2 [cwd=/proj]: cc -o references/emutos/a.out a.c
+MISS rc=0 want=2 [cwd=/proj]: sort -o references/emutos/x a
+MISS rc=0 want=2 [cwd=/proj]: awk -i inplace 1 references/emutos/README
+MISS rc=0 want=2 [cwd=/proj]: sed -n 'w references/emutos/x' a
+MISS rc=0 want=2 [cwd=/proj]: split a references/emutos/p
+MISS rc=0 want=2 [cwd=/proj]: zip references/emutos/a.zip a
+MISS rc=0 want=2 [cwd=/proj]: cpio -idv -D references/emutos < a
+MISS rc=0 want=2 [cwd=/proj]: unzip -d references/emutos a.zip
+MISS rc=0 want=2 [cwd=/proj]: vim references/emutos/README
+MISS rc=0 want=2 [cwd=/proj]: ed references/emutos/README
+MISS rc=0 want=2 [cwd=/proj]: git -C FX/scratch/emutos push origin HEAD:refs/heads/zz
+MISS rc=0 want=2 [cwd=/proj]: git -C FX/scratch/emutos push FX/proj/references/emutos HEAD:refs/heads/zz
+MISS rc=0 want=2 [cwd=/proj]: git push FX/proj/references/emutos HEAD:refs/heads/zz
+MISS rc=0 want=2 [cwd=/proj]: git push references/emutos HEAD:refs/heads/zz
+MISS rc=0 want=2 [cwd=/proj]: git push file://FX/proj/references/emutos HEAD:refs/heads/zz
+MISS rc=0 want=2 [cwd=/proj]: git fetch FX/proj/references/emutos master:refs/heads/zz
+MISS rc=0 want=2 [cwd=/proj]: git -C FX/scratch/emutos config core.worktree FX/proj/references/emutos
+ok   rc=2: git -C FX/scratch/emutos --work-tree=FX/proj/references/emutos checkout .
+MISS rc=0 want=2 [cwd=/proj]: git -C FX/scratch/emutos fetch FX/proj/references/emutos +master:master
+MISS rc=0 want=2 [cwd=/proj]: git clone --shared FX/proj/references/emutos FX/scratch/sh1 && git -C FX/scratch/sh1 gc
+ok   rc=2: rm -rf references/emutos/
+ok   rc=2: rm -rf references/emutos//
+ok   rc=2: rm -rf "$CLAUDE_PROJECT_DIR"/references/emutos
+ok   rc=2: rm -rf ${CLAUDE_PROJECT_DIR:-.}/references/emutos
+MISS rc=0 want=2 [cwd=/proj]: rm -rf ~/x/references/emutos
+ok   rc=2: rm -rf $PWD/references/emutos
+ok   rc=2: rm -rf $(pwd)/references/emutos
+ok   rc=2: rm -rf $OLDPWD/references/emutos
+MISS rc=0 want=2 [cwd=/proj]: rm -rf $HOME/references/emutos
+ok   rc=2: rm -rf references/emutos/../emutos
+ok   rc=2: rm -rf FX/scratch/emutos/../x/*
+ok   rc=2: rm -rf FX/scratch/refs/emutos
+ok   rc=2: rm -rf FX/scratch/rel/
+ok   rc=2: rm -rf FX/scratch/rel/*
+ok   rc=2: rm FX/scratch/rel/README
+ok   rc=2: mv FX/scratch/rel/README FX/scratch/zz
+ok   rc=2: mv FX/scratch/zz FX/scratch/rel/README
+ok   rc=2: cp FX/scratch/zz FX/scratch/rel/README
+ok   rc=2: cp -r FX/scratch/emutos/. FX/scratch/refs/emutos/
+ok   rc=2: git -C FX/scratch/refs/emutos-oracle/1a7484ab fetch
+ok   rc=2: echo a > FX/scratch/refs/emutos/x
+ok   rc=2: rsync -a FX/scratch/ FX/scratch/rel/
+MISS rc=0 want=2 [cwd=/proj]: rsync -a a user@host:references/emutos/
+ok   rc=2: rsync -a rsync://h/x FX/proj/references/emutos/
+MISS rc=0 want=2 [cwd=/proj]: scp a FX/proj/references/emutos/
+MISS rc=0 want=2 [cwd=/proj]: scp host:x FX/proj/references/emutos/
+MISS rc=0 want=2 [cwd=/proj]: scp -r host:x FX/proj/references/emutos
+ok   rc=2: tar -xf a -C FX/scratch/refs/emutos
+ok   rc=2: tar -xf a -C FX/scratch/rel
+MISS rc=0 want=2 [cwd=/proj]: tar xf a --one-top-level=FX/proj/references/emutos
+ok   rc=2: cd FX/scratch/rel && tar xf a
+ok   rc=2: mkdir -p references/emutos/a
+ok   rc=2: mkdir references/emutos
+ok   rc=2: touch FX/scratch/refs/emutos/x
+ok   rc=2: chmod -R u+w FX/scratch/rel
+ok   rc=2: git -C FX/proj/references/emutos checkout --help
+ok   rc=2: git -C FX/proj/references/emutos clean -ndx
+ok   rc=2: git -C FX/proj/references/emutos stash -h
+MISS rc=0 want=2 [cwd=/proj]: git -C FX/proj/references/emutos branch
+TOTAL 129 MISS 63

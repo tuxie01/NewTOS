@@ -1,0 +1,92 @@
+# cwd variants: t want proj cwd cmd
+t 2 $P $E "chmod -R u+w ."
+t 2 $P $E "chmod u+w README"
+t 2 $P $E "chflags -R nouchg ."
+t 2 $P $E/bios "chmod u+w k.c"
+t 2 $P $E/bios "chmod -R u+w .."
+t 2 $P $O "chflags -R nouchg ."
+t 2 $P $P/references "chmod -R u+w ."
+t 2 $P $P/references "chmod -R u+w *"
+t 2 $P $P/references "chmod -R u+w emutos"
+t 2 $P $P/references "chflags -R nouchg emutos-oracle"
+t 2 $P $WT/references/emutos "chmod -R u+w ."
+t 2 $P $S/x "chmod -R u+w ."
+t 2 $P $S/x "chmod -R u+w *"
+t 2 $WT $WT "chmod -R u+w references/emutos"
+t 2 $WT $WT "chmod -R u+w references/emutos/"
+t 2 $WT $WT "chflags -R nouchg references/emutos-oracle/1a7484ab"
+t 2 $WT $WT "chmod -R u+w \$CLAUDE_PROJECT_DIR/references/emutos"
+t 2 $WT $WT/references "chmod -R u+w emutos/"
+t 2 $WT $WT/references "chmod u+w emutos/README"
+t 2 $P $E "git remote set-url origin x"
+t 2 $P $E "git remote add u x"
+t 2 $P $E "git remote rename origin x"
+t 2 $P $E "git remote remove origin"
+t 2 $P $E "git config remote.origin.url x"
+t 2 $P $E "git config --replace-all remote.origin.pushurl x"
+t 2 $P $E "git config -e"
+t 2 $P $E/bios "git remote set-url origin x"
+t 2 $P $O "git remote set-url origin x"
+t 2 $P $S/x "git remote set-url origin x"
+t 2 $P $WT/references/emutos "git config remote.origin.url x"
+t 2 $P $E "git --file .git/config config remote.origin.url x"
+t 0 $P $E "git remote -v"
+t 0 $P $E "git config --get remote.origin.url"
+t 0 $P $E "ls -ldO ."
+t 0 $P $E "stat ."
+t 0 $P $S/emutos "git remote set-url origin x"
+t 0 $P $S/emutos "chmod -R u+w ."
+t 0 $P $P "git remote set-url origin x"
+# Write/Edit
+w 2 Write $E/x
+w 2 Edit $E/README
+w 2 Write $B/proj/REFERENCES/emutos/x
+w 2 Write $WT/references/emutos/x
+w 2 Write $S/x/x
+w 2 Write $S/rel/x
+w 2 Write $S/refs/emutos-oracle/1a7484ab/x
+w 2 Write $E/../emutos/x
+w 2 Write $E/bios/../x
+w 2 NotebookEdit $O/n
+w 0 Write $S/emutos/x
+w 0 Write $P/a
+w 0 Write $P/references/freemint/x
+w 0 Read $E/README
+# Known limits / wrapper gaps for undo commands (expect allow = documented gap)
+a "timeout 5 chmod -R u+w $E"
+a "gtimeout 5 chflags -R nouchg $E"
+a "caffeinate chmod -R u+w $E"
+a "xcrun chmod -R u+w $E"
+a "/usr/bin/env chmod -R u+w $E"
+a "env -C $E chmod -R u+w ."
+a "env -S 'chmod -R u+w $E'"
+a "command cd $E && chmod u+w README"
+a "cd -- $E && chmod u+w README"
+a "xargs chmod u+w < $B/list"
+a "echo $E | xargs chmod -R u+w"
+a "bash -c 'chmod -R u+w $E'"
+a "sh -c \"chflags -R nouchg $E\""
+a "eval 'chmod -R u+w $E'"
+a "x=chmod; \$x -R u+w $E"
+a "p=$E; chmod -R u+w \$p"
+a "chmod -R u+w \$(echo $E)"
+a "chmod -R u+w \`echo $E\`"
+a "ln -s $E $S/newlink && chmod -R u+w $S/newlink"
+a "chmod \$'-R' u+w $E"
+a "find $E -exec sh -c 'chmod u+w \"\$0\"' {} \;"
+a "find $E -exec env chmod u+w {} +"
+a "find $E | xargs chmod u+w"
+a "git -C $E -c remote.origin.url=x fetch"
+a "git -C $E push origin"
+a "git --exec-path=. -C $E remote set-url origin x"
+a "git -C $E alias.x remote"
+a "setfacl -R -m u::rwx $E"
+a "xattr -c $E"
+a "sudo -E chmod -R u+w $E"
+a "python3 -c 'import os; os.chmod(\"$E\",0o777)'"
+a "perl -e 'chmod 0777, \"$E\"'"
+a "install -m 644 /dev/null $E/x"
+a "mv $E $B/gone"
+a "rm -rf $E"
+a "timeout 5 git -C $E remote set-url origin x"
+a "env -C $E git remote set-url origin x"

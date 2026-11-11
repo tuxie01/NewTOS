@@ -44,6 +44,8 @@ reset, clean, stash, `make` in or otherwise modify them (nor through a
 worktree's symlink); reads stay allowed. A pin change is an owner decision
 (`docs/analysis/ORACLE.md` §7). Builds run on a copy. A failing
 `emutos_resolves_at_the_pin` is reported to the owner, never fixed in the checkout.
+The trees are locked read-only at OS and git level by the owner (ORACLE.md §7,
+*Pin lock*); agents may not undo the lock (`tools/hooks/pin-guard.sh`, TASK/TOOL50.md).
 
 **FreeMiNT** (`references/freemint/`) is the sanctioned source for
 FreeMiNT-compatible extensions and for kernel memory management (ADR-027).
@@ -442,9 +444,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   worktree; the main tree's hooks change only when it is merged after the
   tester's acceptance (owner 2026-11-11).
   A worktree branch never fast-forwards into `main`: it lands with
-  `git merge --squash <branch>` and a normal `git commit -F` in the main
-  tree, one commit per ticket, so main's stable hooks check it (owner
-  2026-11-11).
+  `cargo xtask land <branch> -F <msg>` (a squash merge and a normal commit
+  in the main tree, one commit per ticket, so main's stable hooks check it;
+  owner 2026-11-11). Agents cannot run `git merge --squash` into `main`
+  (`tools/hooks/no-verify-guard.sh`, TASK/TOOL50.md).
 - A fresh git worktree first runs `cargo xtask worktree-setup`: it links
   the main tree's gitignored inputs (`references/*`, `sdk/apps/<app>/`)
   into it, so `cargo xtask test` runs the main tree's set (`--check` lists

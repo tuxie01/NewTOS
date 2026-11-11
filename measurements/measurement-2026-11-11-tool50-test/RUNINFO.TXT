@@ -1,0 +1,22 @@
+RUNINFO -- TOOL50 tester run, 2026-11-11 (agent aa663040a99c90842, Tester)
+Tested: branch worktree-agent-aeebbf8f8af122b9d head 8a170770c (base f0eb31889), worktree .claude/worktrees/agent-aeebbf8f8af122b9d.
+Main HEAD at start 774afd372, at end 18de4bcd4 (another task committed meanwhile; unrelated to references/).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No SD/kernel image booted: manifest N/A, optional_missing: none (no image).
+Method: method/ (adv.sh + cases*.sh = own pipe harness over a fixture repo with fake references/emutos, oracle clone, worktree with TOOL44 symlinks, scratch symlinks; snap.sh = read-only snapshot).
+Only hook JSON was piped into the guards; no command under test was executed; real references/ only read (snapshots, gen-deps --check).
+
+Snapshots (GIT_OPTIONAL_LOCKS=0): logs/snap0.txt (start), snap1 (after xtask test), snap2 (after gen-deps --check), snap3 (end).
+snap0 == snap1 == snap2 byte-identical; snap3 differs only in the "main HEAD" line (main repo moved by another task); the references/emutos,
+emutos-oracle/1a7484ab, emutos-oracle/v1.4 blocks (HEAD, for-each-ref sha, .git/index/.git/HEAD/.git mtimes, status sha256, stash count) identical.
+snap0 verbatim: see logs/snap0.txt (sha256 92ab4376...a5a37).
+
+Results
+1. pin-guard-test.sh 670 ok 0 FAIL; no-verify-guard-test.sh 200 ok 0 FAIL; cargo xtask test 2416 passed / 0 failed / 7 ignored.
+2. Own harness: out1 596 cases, out2 129, out3 43 (768 total). Misses listed in the report; classified in logs.
+3. Squash rule: 40 piped cases against real main/worktree dirs, see report.
+4. build-emutos.sh fixture copy: refusal exit 2 with git shim log showing only 'rev-parse --git-common-dir'; no clone/checkout/make.
+   gen-deps.py --check (worktree, real oracle tree): byte-identical, rc 0, snapshots identical.
+5. Old no-verify-guard-test.sh (main) vs new guard: 191 ok, 1 FAIL (the deliberately flipped 'merge --squash' case) -> logs/old-test-new-guard.out.
+6. Mutations on copies of the guard in scratch (PIN_GUARD=...): ro_git allows fetch -> 20 FAIL; physical without cd -P -> 6 FAIL. Worktree untouched (git status --short empty).
+7. clippy -p xtask --all-targets: worktree vs main identical 8 warning lines (delta 0); doc-check of 5 edited docs 0 failures.
+Scratch: target-agents/agent-aa663040a99c90842 (clones: none; cargo target dirs and fixtures removed afterwards; du -sh after cleanup small).

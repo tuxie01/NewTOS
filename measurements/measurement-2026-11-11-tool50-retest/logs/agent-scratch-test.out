@@ -1,0 +1,65 @@
+ok: start: context names target-agents/agent-<id>/
+ok: start: hookEventName
+ok: start: makes no directory
+ok: start: agent- prefix of the id normalised
+ok: start: project dir a worktree -> main repo target-agents
+ok: stop: the worker's dir and contents stay
+ok: stop: writes the stop time into .stopped
+ok: stop: appends to .stop-log, prints nothing
+ok: stop: no marker in another worker's dir
+ok: stop again (agent- prefix): marker overwritten, mtime fresh
+ok: stop while waiting on background work: clone survives
+ok: resume: stop -> start keeps dir and contents
+ok: resume: start removes the marker, logs it
+ok: stop: no dir for the id: no-op, makes none
+ok: stop: no agent_id (internal agent) no-op
+ok: stop: symlinked worker dir: no marker written through it
+ok: stop: planted marker symlinks not followed
+ok: clean: removes agent-a1 only
+ok: clean: target-agents itself stays
+ok: clean: reports path and size
+ok: clean: symlink inside the worker dir not followed
+ok: clean: agent- prefixed id
+ok: clean: from a worktree project dir
+ok: clean: several ids
+ok: clean: unknown id is a no-op
+ok: clean refuses id ''
+ok: clean refuses id '..'
+ok: clean refuses id '../outside'
+ok: clean refuses id 'a1/../a2'
+ok: clean refuses id 'a 1'
+ok: clean refuses id '.'
+ok: clean refuses id '*'
+ok: clean refuses id 'a1;rm -rf x'
+ok: clean refuses id '-rf'
+ok: clean refuses id 'agent-'
+ok: clean refuses id '/'
+ok: clean refuses id '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/tmp/as-test.Ngso92/outside'
+ok: stop hook, id "": exit 0, nothing removed
+ok: stop hook, id "..": exit 0, nothing removed
+ok: stop hook, id "../outside": exit 0, nothing removed
+ok: stop hook, id "a 1": exit 0, nothing removed
+ok: stop hook, id null: exit 0, nothing removed
+ok: stop hook, id 7: exit 0, nothing removed
+ok: stop hook, id "-rf": exit 0, nothing removed
+ok: refuse: worker dir is a symlink outside
+ok: refuse: symlink reported
+ok: refuse: worker dir is a symlink to another worker
+ok: refuse: worker entry is a file
+ok: refuse: target-agents is a symlink
+ok: refuse: CLAUDE_PROJECT_DIR empty
+ok: refuse: project dir not a git repo
+ok: refuse: clean without an id
+ok: session: last stop 72 h 10 min ago: removed
+ok: session: last stop 71 h 50 min ago: kept
+ok: session: no marker (old files): never deleted
+ok: session: symlink and the others kept
+ok: session: reports the expired removal
+ok: session: a resumed worker (marker removed at start) is not expired
+ok: session: below the default 20 GiB, nothing expired: silent
+ok: session: over the threshold: warning
+ok: session: largest subdirectory first
+ok: session: lists the dirs without a marker
+ok: session: same text as context for Claude
+ok: session: the warning removes nothing
+ok: session: no target-agents: silent

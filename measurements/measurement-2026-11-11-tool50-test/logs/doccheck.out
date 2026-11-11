@@ -1,0 +1,3 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `/Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa663040a99c90842/cargo/debug/xtask doc-check TASK/TOOL50.md TASK/TOOL50-STATUS-UNFINISHED.MD TASK/TOOL42.md TASK/TOOL42-STATUS-UNFINISHED.MD docs/analysis/ORACLE.md`
+doc-check: 5 files, 161 path cites and 0 ADR cites checked, 0 failures, 0 skipped (reference tree missing); 25 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)

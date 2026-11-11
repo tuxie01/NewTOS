@@ -1,0 +1,115 @@
+ok   nv rc=2: git -C /Volumes/Daten/Development/PiRusTOS commit-tree HEAD^{tree} -m x
+ok   nv rc=2: git -C /Volumes/Daten/Development/PiRusTOS update-ref refs/heads/main HEAD
+ok   nv rc=2: git -C /Volumes/Daten/Development/PiRusTOS symbolic-ref HEAD refs/heads/x
+ok   nv rc=2: git -C /Volumes/Daten/Development/PiRusTOS merge --squash foo
+ok   nv rc=2: git -C /Volumes/Daten/Development/PiRusTOS commit --no-verify -m x
+MISS nv rc=0 want=2 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /Volumes/Daten/Development/PiRusTOS hash-object -t commit x
+ok   nv rc=2: git --git-dir=/Volumes/Daten/Development/PiRusTOS/.git commit-tree HEAD^{tree}
+ok   nv rc=2: cd /Volumes/Daten/Development/PiRusTOS && git commit-tree HEAD^{tree}
+ok   nv rc=2: git commit-tree HEAD^{tree}
+ok   nv rc=2: git -C /volumes/daten/development/pirustos commit-tree HEAD^{tree} -m x
+ok   nv rc=2: git -C /volumes/daten/development/pirustos update-ref refs/heads/main HEAD
+ok   nv rc=2: git -C /volumes/daten/development/pirustos symbolic-ref HEAD refs/heads/x
+ok   nv rc=2: git -C /volumes/daten/development/pirustos merge --squash foo
+ok   nv rc=2: git -C /volumes/daten/development/pirustos commit --no-verify -m x
+MISS nv rc=0 want=2 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /volumes/daten/development/pirustos hash-object -t commit x
+ok   nv rc=2: git --git-dir=/volumes/daten/development/pirustos/.git commit-tree HEAD^{tree}
+ok   nv rc=2: cd /volumes/daten/development/pirustos && git commit-tree HEAD^{tree}
+ok   nv rc=2: git commit-tree HEAD^{tree}
+ok   nv rc=2: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS commit-tree HEAD^{tree} -m x
+ok   nv rc=2: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS update-ref refs/heads/main HEAD
+ok   nv rc=2: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS symbolic-ref HEAD refs/heads/x
+ok   nv rc=2: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS merge --squash foo
+ok   nv rc=2: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS commit --no-verify -m x
+MISS nv rc=0 want=2 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS hash-object -t commit x
+ok   nv rc=2: git --git-dir=/VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS/.git commit-tree HEAD^{tree}
+ok   nv rc=2: cd /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS && git commit-tree HEAD^{tree}
+ok   nv rc=2: git commit-tree HEAD^{tree}
+ok   nv rc=2: git -C /Volumes/Daten/Development/Pirustos commit-tree HEAD^{tree} -m x
+ok   nv rc=2: git -C /Volumes/Daten/Development/Pirustos update-ref refs/heads/main HEAD
+ok   nv rc=2: git -C /Volumes/Daten/Development/Pirustos symbolic-ref HEAD refs/heads/x
+ok   nv rc=2: git -C /Volumes/Daten/Development/Pirustos merge --squash foo
+ok   nv rc=2: git -C /Volumes/Daten/Development/Pirustos commit --no-verify -m x
+MISS nv rc=0 want=2 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /Volumes/Daten/Development/Pirustos hash-object -t commit x
+ok   nv rc=2: git --git-dir=/Volumes/Daten/Development/Pirustos/.git commit-tree HEAD^{tree}
+ok   nv rc=2: cd /Volumes/Daten/Development/Pirustos && git commit-tree HEAD^{tree}
+ok   nv rc=2: git commit-tree HEAD^{tree}
+ok   nv rc=2: git update-ref refs/heads/main HEAD
+ok   nv rc=2: git -C /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/../../.git commit-tree x
+MISS nv rc=2 want=0 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx commit-tree HEAD^{tree} -m x
+MISS nv rc=2 want=0 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/fx update-ref refs/heads/x HEAD
+MISS nv rc=2 want=0 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS/TARGET-AGENTS/AGENT-A8CC259B29D497846/fx commit-tree HEAD^{tree} -m x
+MISS nv rc=2 want=0 [cwd=/Volumes/Daten/Development/PiRusTOS]: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS/TARGET-AGENTS/AGENT-A8CC259B29D497846/fx update-ref refs/heads/x HEAD
+ok   sg rc=2: echo hi > /TMP/x
+ok   sg rc=2: touch /Tmp/x
+ok   sg rc=2: touch /Private/Tmp/x
+ok   sg rc=2: touch /PRIVATE/TMP/x
+ok   sg rc=2: touch /private/TMP/x
+ok   sg rc=2: mkdir /tmp/x
+ok   sg rc=2: cp a /private/tmp/b
+MISS sg rc=0 want=2: touch /TMP/CLAUDE-501/../x
+ok   sg rc=0: touch /private/tmp/claude-501/x
+ok   sg rc=0: touch /TMP/claude-501/x
+ok   sg rc=0: touch /Private/Tmp/Claude-501/x
+ok   sg rc=2: touch /tmp/claude-502/x
+ok   sg rc=2: CARGO_TARGET_DIR=/private/tmp/claude-501/t cargo build
+ok   sg rc=2: CARGO_TARGET_DIR=/PRIVATE/TMP/CLAUDE-501/t cargo build
+ok   sg rc=2: git clone x /Private/Tmp/claude-501/c
+ok   sg rc=2: cargo build --target-dir /Private/Tmp/claude-501/t
+ok   sgw rc=2: Write /TMP/x
+ok   sgw rc=2: Edit /Private/Tmp/x
+ok   sgw rc=2: Write /PRIVATE/TMP/x
+ok   sgw rc=0: Write /private/tmp/claude-501/x
+ok   sgw rc=0: Write /Private/Tmp/Claude-501/x
+ok   sgw rc=0: Write /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846/x
+ok   nv rc=0: ls -la
+ok   sg rc=0: ls -la
+ok   nv rc=0: git status
+ok   sg rc=0: git status
+ok   nv rc=0: git log --oneline -5
+ok   sg rc=0: git log --oneline -5
+ok   nv rc=0: git diff --stat
+ok   sg rc=0: git diff --stat
+ok   nv rc=0: cargo xtask test
+ok   sg rc=0: cargo xtask test
+ok   nv rc=0: cargo build --release
+ok   sg rc=0: cargo build --release
+ok   nv rc=0: grep -rn tmpfile src
+ok   sg rc=0: grep -rn tmpfile src
+ok   nv rc=0: echo /Volumes/Daten/Tmp
+ok   sg rc=0: echo /Volumes/Daten/Tmp
+ok   nv rc=0: cat /Volumes/Daten/Development/PiRusTOS/CLAUDE.md
+ok   sg rc=0: cat /Volumes/Daten/Development/PiRusTOS/CLAUDE.md
+ok   nv rc=0: ls /Volumes/Daten/Development/PiRusTOS/target-agents
+ok   sg rc=0: ls /Volumes/Daten/Development/PiRusTOS/target-agents
+ok   nv rc=0: git commit -m fix
+ok   sg rc=0: git commit -m fix
+ok   nv rc=0: git add -A
+ok   sg rc=0: git add -A
+ok   nv rc=0: git worktree list
+ok   sg rc=0: git worktree list
+ok   nv rc=0: sed -n 1,5p docs/STATUS.md
+ok   sg rc=0: sed -n 1,5p docs/STATUS.md
+ok   nv rc=0: echo temporary
+ok   sg rc=0: echo temporary
+ok   nv rc=0: ls /Users/x/Tmp
+ok   sg rc=0: ls /Users/x/Tmp
+ok   nv rc=0: git branch --list
+ok   sg rc=0: git branch --list
+ok   nv rc=0: make -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846
+ok   sg rc=0: make -C /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a8cc259b29d497846
+ok   nv rc=0: ls /Volumes/Daten/Development/PiRusTOS/references
+ok   sg rc=0: ls /Volumes/Daten/Development/PiRusTOS/references
+ok   nv rc=0: git -C /Volumes/Daten/Development/PiRusTOS log -1
+ok   sg rc=0: git -C /Volumes/Daten/Development/PiRusTOS log -1
+ok   nv rc=0: git -C /volumes/daten/development/pirustos log -1
+ok   sg rc=0: git -C /volumes/daten/development/pirustos log -1
+ok   nv rc=0: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS status --short
+ok   sg rc=0: git -C /VOLUMES/DATEN/DEVELOPMENT/PIRUSTOS status --short
+ok   nv rc=0: cd /Volumes/Daten/Development/PiRusTOS && git status
+ok   sg rc=0: cd /Volumes/Daten/Development/PiRusTOS && git status
+ok   nv rc=0: git -C /Volumes/Daten/Development/Pirustos show HEAD
+ok   sg rc=0: git -C /Volumes/Daten/Development/Pirustos show HEAD
+ok   nv rc=0: git -C /Volumes/Daten/Development/PiRusTOS rev-parse HEAD
+ok   sg rc=0: git -C /Volumes/Daten/Development/PiRusTOS rev-parse HEAD
+TOTAL 114 MISS 9

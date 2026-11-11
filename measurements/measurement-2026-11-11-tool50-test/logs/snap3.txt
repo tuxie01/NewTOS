@@ -1,0 +1,29 @@
+== references/emutos
+HEAD 1a7484aba1bfba23e2c0899e243b6d8177fe41df
+7f31c7504ff0f2d50d3c272fb40b7f602c832bd5b1b0163c8a6304e80920d0a1  -
+gitdir /Volumes/Daten/Development/PiRusTOS/references/emutos/.git
+index 1783686103
+HEADf 1777739485
+gitdir 1794381866
+status d6922b324cb7f7377d8827e514a37d4460d7072a7490c2fae37bcc5010482dd4 -
+stash 0
+== references/emutos-oracle/1a7484ab
+HEAD 1a7484aba1bfba23e2c0899e243b6d8177fe41df
+dca0be6898b5549dd2a8ce9dc6db60be0e17b5c5ce9063ab19de28cef5189a25  -
+gitdir /Volumes/Daten/Development/PiRusTOS/references/emutos-oracle/1a7484ab/.git
+index 1793002126
+HEADf 1792999133
+gitdir 1794352201
+status 44745aee4ec3dabd2f801ead8dd21adc9145f9b49c05cfdc007df50e5af1b8df -
+stash 0
+== references/emutos-oracle/v1.4
+HEAD 978e37569bff95841e42675d11fcc6799aad8483
+dca0be6898b5549dd2a8ce9dc6db60be0e17b5c5ce9063ab19de28cef5189a25  -
+gitdir /Volumes/Daten/Development/PiRusTOS/references/emutos-oracle/v1.4/.git
+index 1793001208
+HEADf 1792999133
+gitdir 1793001208
+status 82534da6cec48860c8486efdf5005394b8acf4a2755d24dccd2c343fa5846d3e -
+stash 0
+== main
+HEAD 18de4bcd48ba03f26f6fc0a54cdae6d4d4f38ed6

@@ -1,0 +1,11 @@
+RUNINFO -- TOOL50 fix check, 2026-11-11 (agent a8cc259b29d497846, Tester). Addendum to measurement-2026-11-11-tool50-retest.
+Tested: branch worktree-agent-aeebbf8f8af122b9d head 9133d84c5 (rebased on c4fd814ee); worktree clean. host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image: optional_missing: none.
+Snapshots logs/snap0.txt vs snap1.txt (locked trees, GIT_OPTIONAL_LOCKS=0): byte-identical. Only hook JSON piped; no mutating command run.
+Results: pin 372/0 FAIL, no-verify 204/0, scratch 47/0, agent-scratch 65/0; cargo xtask test 2416/0/7.
+cases6 (86 new pipe cases): 0 MISS: both earlier false negatives (-f<path>, GIT_CONFIG prefix/export/env/subshell/--unset, GIT_CONFIG_GLOBAL/SYSTEM into a tree), url.*.insteadOf/pushInsteadOf and
+branch.<b>.remote/pushRemote (set, --add, --replace-all, --unset, set, case variants, -C/cd/--git-dir/GIT_DIR/--file/worktree symlink) exit 2 on the trees; same on scratch copy/main repo exit 0;
+GIT_CONFIG_GLOBAL/SYSTEM to a file outside the trees and --global exit 0; reads exit 0.
+Re-run of the retest cases (cases..cases5, 469): same misses as before except the fixed ones; remaining = invalid commands, chgrp, core.hooksPath (documented limit). No new false positives.
+Mutation (scratch copy, 3 GIT_CONFIG* patterns of shell-parse.sh neutralized): pin test 6 FAIL; worktree git status/diff empty.
+Comment block (pin-guard.sh lines 40-66): names chgrp/setfacl/xattr, find -exec wrappers, scripts, env -C, $'..', other config keys, and the owner's global/system insteadOf limit.
+Scratch target-agents/agent-a8cc259b29d497846: 3.5G before removal (cargo target, fixtures), removed; no clone; no gitignored output cited.

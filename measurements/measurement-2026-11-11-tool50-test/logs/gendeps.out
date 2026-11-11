@@ -1,0 +1,2 @@
+gen-deps --check: edges.tsv, layers.md byte-identical
+python3 -I tools/deps/gen-deps.py --check  9,26s user 2,71s system 119% cpu 10,050 total

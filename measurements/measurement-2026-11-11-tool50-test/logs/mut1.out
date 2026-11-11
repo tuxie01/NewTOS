@@ -1,0 +1,670 @@
+FAIL exit 0 (want 2): E, -C: git fetch
+FAIL exit 0 (want 2): E, cd &&: git fetch
+FAIL exit 0 (want 2): E, cwd: git fetch
+FAIL exit 0 (want 2): E, relative -C: git fetch
+FAIL exit 0 (want 2): E via the worktree symlink: git fetch
+FAIL exit 0 (want 2): O via the worktree symlink, relative cd: git fetch
+FAIL exit 0 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git fetch
+FAIL exit 0 (want 2): O, -C: git fetch
+ok exit 0 (want 0): scratch copy, -C: git fetch
+ok exit 0 (want 0): scratch copy, cd &&: git fetch
+ok exit 0 (want 0): scratch copy, cwd: git fetch
+FAIL exit 0 (want 2): E, -C: git fetch origin
+FAIL exit 0 (want 2): E, cd &&: git fetch origin
+FAIL exit 0 (want 2): E, cwd: git fetch origin
+FAIL exit 0 (want 2): E, relative -C: git fetch origin
+FAIL exit 0 (want 2): E via the worktree symlink: git fetch origin
+FAIL exit 0 (want 2): O via the worktree symlink, relative cd: git fetch origin
+FAIL exit 0 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git fetch origin
+FAIL exit 0 (want 2): O, -C: git fetch origin
+ok exit 0 (want 0): scratch copy, -C: git fetch origin
+ok exit 0 (want 0): scratch copy, cd &&: git fetch origin
+ok exit 0 (want 0): scratch copy, cwd: git fetch origin
+ok exit 2 (want 2): E, -C: git pull
+ok exit 2 (want 2): E, cd &&: git pull
+ok exit 2 (want 2): E, cwd: git pull
+ok exit 2 (want 2): E, relative -C: git pull
+ok exit 2 (want 2): E via the worktree symlink: git pull
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git pull
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git pull
+ok exit 2 (want 2): O, -C: git pull
+ok exit 0 (want 0): scratch copy, -C: git pull
+ok exit 0 (want 0): scratch copy, cd &&: git pull
+ok exit 0 (want 0): scratch copy, cwd: git pull
+ok exit 2 (want 2): E, -C: git pull --ff-only origin master
+ok exit 2 (want 2): E, cd &&: git pull --ff-only origin master
+ok exit 2 (want 2): E, cwd: git pull --ff-only origin master
+ok exit 2 (want 2): E, relative -C: git pull --ff-only origin master
+ok exit 2 (want 2): E via the worktree symlink: git pull --ff-only origin master
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git pull --ff-only origin master
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git pull --ff-only origin master
+ok exit 2 (want 2): O, -C: git pull --ff-only origin master
+ok exit 0 (want 0): scratch copy, -C: git pull --ff-only origin master
+ok exit 0 (want 0): scratch copy, cd &&: git pull --ff-only origin master
+ok exit 0 (want 0): scratch copy, cwd: git pull --ff-only origin master
+ok exit 2 (want 2): E, -C: git remote update
+ok exit 2 (want 2): E, cd &&: git remote update
+ok exit 2 (want 2): E, cwd: git remote update
+ok exit 2 (want 2): E, relative -C: git remote update
+ok exit 2 (want 2): E via the worktree symlink: git remote update
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git remote update
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git remote update
+ok exit 2 (want 2): O, -C: git remote update
+ok exit 0 (want 0): scratch copy, -C: git remote update
+ok exit 0 (want 0): scratch copy, cd &&: git remote update
+ok exit 0 (want 0): scratch copy, cwd: git remote update
+ok exit 2 (want 2): E, -C: git checkout master
+ok exit 2 (want 2): E, cd &&: git checkout master
+ok exit 2 (want 2): E, cwd: git checkout master
+ok exit 2 (want 2): E, relative -C: git checkout master
+ok exit 2 (want 2): E via the worktree symlink: git checkout master
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git checkout master
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git checkout master
+ok exit 2 (want 2): O, -C: git checkout master
+ok exit 0 (want 0): scratch copy, -C: git checkout master
+ok exit 0 (want 0): scratch copy, cd &&: git checkout master
+ok exit 0 (want 0): scratch copy, cwd: git checkout master
+ok exit 2 (want 2): E, -C: git checkout -- .
+ok exit 2 (want 2): E, cd &&: git checkout -- .
+ok exit 2 (want 2): E, cwd: git checkout -- .
+ok exit 2 (want 2): E, relative -C: git checkout -- .
+ok exit 2 (want 2): E via the worktree symlink: git checkout -- .
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git checkout -- .
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git checkout -- .
+ok exit 2 (want 2): O, -C: git checkout -- .
+ok exit 0 (want 0): scratch copy, -C: git checkout -- .
+ok exit 0 (want 0): scratch copy, cd &&: git checkout -- .
+ok exit 0 (want 0): scratch copy, cwd: git checkout -- .
+ok exit 2 (want 2): E, -C: git switch -c x
+ok exit 2 (want 2): E, cd &&: git switch -c x
+ok exit 2 (want 2): E, cwd: git switch -c x
+ok exit 2 (want 2): E, relative -C: git switch -c x
+ok exit 2 (want 2): E via the worktree symlink: git switch -c x
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git switch -c x
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git switch -c x
+ok exit 2 (want 2): O, -C: git switch -c x
+ok exit 0 (want 0): scratch copy, -C: git switch -c x
+ok exit 0 (want 0): scratch copy, cd &&: git switch -c x
+ok exit 0 (want 0): scratch copy, cwd: git switch -c x
+ok exit 2 (want 2): E, -C: git reset --hard HEAD~1
+ok exit 2 (want 2): E, cd &&: git reset --hard HEAD~1
+ok exit 2 (want 2): E, cwd: git reset --hard HEAD~1
+ok exit 2 (want 2): E, relative -C: git reset --hard HEAD~1
+ok exit 2 (want 2): E via the worktree symlink: git reset --hard HEAD~1
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git reset --hard HEAD~1
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git reset --hard HEAD~1
+ok exit 2 (want 2): O, -C: git reset --hard HEAD~1
+ok exit 0 (want 0): scratch copy, -C: git reset --hard HEAD~1
+ok exit 0 (want 0): scratch copy, cd &&: git reset --hard HEAD~1
+ok exit 0 (want 0): scratch copy, cwd: git reset --hard HEAD~1
+ok exit 2 (want 2): E, -C: git clean -fdx
+ok exit 2 (want 2): E, cd &&: git clean -fdx
+ok exit 2 (want 2): E, cwd: git clean -fdx
+ok exit 2 (want 2): E, relative -C: git clean -fdx
+ok exit 2 (want 2): E via the worktree symlink: git clean -fdx
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git clean -fdx
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git clean -fdx
+ok exit 2 (want 2): O, -C: git clean -fdx
+ok exit 0 (want 0): scratch copy, -C: git clean -fdx
+ok exit 0 (want 0): scratch copy, cd &&: git clean -fdx
+ok exit 0 (want 0): scratch copy, cwd: git clean -fdx
+ok exit 2 (want 2): E, -C: git stash
+ok exit 2 (want 2): E, cd &&: git stash
+ok exit 2 (want 2): E, cwd: git stash
+ok exit 2 (want 2): E, relative -C: git stash
+ok exit 2 (want 2): E via the worktree symlink: git stash
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git stash
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git stash
+ok exit 2 (want 2): O, -C: git stash
+ok exit 0 (want 0): scratch copy, -C: git stash
+ok exit 0 (want 0): scratch copy, cd &&: git stash
+ok exit 0 (want 0): scratch copy, cwd: git stash
+ok exit 2 (want 2): E, -C: git stash push -u
+ok exit 2 (want 2): E, cd &&: git stash push -u
+ok exit 2 (want 2): E, cwd: git stash push -u
+ok exit 2 (want 2): E, relative -C: git stash push -u
+ok exit 2 (want 2): E via the worktree symlink: git stash push -u
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git stash push -u
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git stash push -u
+ok exit 2 (want 2): O, -C: git stash push -u
+ok exit 0 (want 0): scratch copy, -C: git stash push -u
+ok exit 0 (want 0): scratch copy, cd &&: git stash push -u
+ok exit 0 (want 0): scratch copy, cwd: git stash push -u
+ok exit 2 (want 2): E, -C: git stash pop
+ok exit 2 (want 2): E, cd &&: git stash pop
+ok exit 2 (want 2): E, cwd: git stash pop
+ok exit 2 (want 2): E, relative -C: git stash pop
+ok exit 2 (want 2): E via the worktree symlink: git stash pop
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git stash pop
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git stash pop
+ok exit 2 (want 2): O, -C: git stash pop
+ok exit 0 (want 0): scratch copy, -C: git stash pop
+ok exit 0 (want 0): scratch copy, cd &&: git stash pop
+ok exit 0 (want 0): scratch copy, cwd: git stash pop
+ok exit 2 (want 2): E, -C: git restore .
+ok exit 2 (want 2): E, cd &&: git restore .
+ok exit 2 (want 2): E, cwd: git restore .
+ok exit 2 (want 2): E, relative -C: git restore .
+ok exit 2 (want 2): E via the worktree symlink: git restore .
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git restore .
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git restore .
+ok exit 2 (want 2): O, -C: git restore .
+ok exit 0 (want 0): scratch copy, -C: git restore .
+ok exit 0 (want 0): scratch copy, cd &&: git restore .
+ok exit 0 (want 0): scratch copy, cwd: git restore .
+ok exit 2 (want 2): E, -C: git rebase origin/master
+ok exit 2 (want 2): E, cd &&: git rebase origin/master
+ok exit 2 (want 2): E, cwd: git rebase origin/master
+ok exit 2 (want 2): E, relative -C: git rebase origin/master
+ok exit 2 (want 2): E via the worktree symlink: git rebase origin/master
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git rebase origin/master
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git rebase origin/master
+ok exit 2 (want 2): O, -C: git rebase origin/master
+ok exit 0 (want 0): scratch copy, -C: git rebase origin/master
+ok exit 0 (want 0): scratch copy, cd &&: git rebase origin/master
+ok exit 0 (want 0): scratch copy, cwd: git rebase origin/master
+ok exit 2 (want 2): E, -C: git merge origin/master
+ok exit 2 (want 2): E, cd &&: git merge origin/master
+ok exit 2 (want 2): E, cwd: git merge origin/master
+ok exit 2 (want 2): E, relative -C: git merge origin/master
+ok exit 2 (want 2): E via the worktree symlink: git merge origin/master
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git merge origin/master
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git merge origin/master
+ok exit 2 (want 2): O, -C: git merge origin/master
+ok exit 0 (want 0): scratch copy, -C: git merge origin/master
+ok exit 0 (want 0): scratch copy, cd &&: git merge origin/master
+ok exit 0 (want 0): scratch copy, cwd: git merge origin/master
+ok exit 2 (want 2): E, -C: git commit -m x
+ok exit 2 (want 2): E, cd &&: git commit -m x
+ok exit 2 (want 2): E, cwd: git commit -m x
+ok exit 2 (want 2): E, relative -C: git commit -m x
+ok exit 2 (want 2): E via the worktree symlink: git commit -m x
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git commit -m x
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git commit -m x
+ok exit 2 (want 2): O, -C: git commit -m x
+ok exit 0 (want 0): scratch copy, -C: git commit -m x
+ok exit 0 (want 0): scratch copy, cd &&: git commit -m x
+ok exit 0 (want 0): scratch copy, cwd: git commit -m x
+ok exit 2 (want 2): E, -C: git am x.patch
+ok exit 2 (want 2): E, cd &&: git am x.patch
+ok exit 2 (want 2): E, cwd: git am x.patch
+ok exit 2 (want 2): E, relative -C: git am x.patch
+ok exit 2 (want 2): E via the worktree symlink: git am x.patch
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git am x.patch
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git am x.patch
+ok exit 2 (want 2): O, -C: git am x.patch
+ok exit 0 (want 0): scratch copy, -C: git am x.patch
+ok exit 0 (want 0): scratch copy, cd &&: git am x.patch
+ok exit 0 (want 0): scratch copy, cwd: git am x.patch
+ok exit 2 (want 2): E, -C: git apply x.patch
+ok exit 2 (want 2): E, cd &&: git apply x.patch
+ok exit 2 (want 2): E, cwd: git apply x.patch
+ok exit 2 (want 2): E, relative -C: git apply x.patch
+ok exit 2 (want 2): E via the worktree symlink: git apply x.patch
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git apply x.patch
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git apply x.patch
+ok exit 2 (want 2): O, -C: git apply x.patch
+ok exit 0 (want 0): scratch copy, -C: git apply x.patch
+ok exit 0 (want 0): scratch copy, cd &&: git apply x.patch
+ok exit 0 (want 0): scratch copy, cwd: git apply x.patch
+ok exit 2 (want 2): E, -C: git rm -r bios
+ok exit 2 (want 2): E, cd &&: git rm -r bios
+ok exit 2 (want 2): E, cwd: git rm -r bios
+ok exit 2 (want 2): E, relative -C: git rm -r bios
+ok exit 2 (want 2): E via the worktree symlink: git rm -r bios
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git rm -r bios
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git rm -r bios
+ok exit 2 (want 2): O, -C: git rm -r bios
+ok exit 0 (want 0): scratch copy, -C: git rm -r bios
+ok exit 0 (want 0): scratch copy, cd &&: git rm -r bios
+ok exit 0 (want 0): scratch copy, cwd: git rm -r bios
+ok exit 2 (want 2): E, -C: git mv README R2
+ok exit 2 (want 2): E, cd &&: git mv README R2
+ok exit 2 (want 2): E, cwd: git mv README R2
+ok exit 2 (want 2): E, relative -C: git mv README R2
+ok exit 2 (want 2): E via the worktree symlink: git mv README R2
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git mv README R2
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git mv README R2
+ok exit 2 (want 2): O, -C: git mv README R2
+ok exit 0 (want 0): scratch copy, -C: git mv README R2
+ok exit 0 (want 0): scratch copy, cd &&: git mv README R2
+ok exit 0 (want 0): scratch copy, cwd: git mv README R2
+ok exit 2 (want 2): E, -C: git gc
+ok exit 2 (want 2): E, cd &&: git gc
+ok exit 2 (want 2): E, cwd: git gc
+ok exit 2 (want 2): E, relative -C: git gc
+ok exit 2 (want 2): E via the worktree symlink: git gc
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git gc
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git gc
+ok exit 2 (want 2): O, -C: git gc
+ok exit 0 (want 0): scratch copy, -C: git gc
+ok exit 0 (want 0): scratch copy, cd &&: git gc
+ok exit 0 (want 0): scratch copy, cwd: git gc
+ok exit 2 (want 2): E, -C: git prune
+ok exit 2 (want 2): E, cd &&: git prune
+ok exit 2 (want 2): E, cwd: git prune
+ok exit 2 (want 2): E, relative -C: git prune
+ok exit 2 (want 2): E via the worktree symlink: git prune
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git prune
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git prune
+ok exit 2 (want 2): O, -C: git prune
+ok exit 0 (want 0): scratch copy, -C: git prune
+ok exit 0 (want 0): scratch copy, cd &&: git prune
+ok exit 0 (want 0): scratch copy, cwd: git prune
+ok exit 2 (want 2): E, -C: git worktree add ../wt2
+ok exit 2 (want 2): E, cd &&: git worktree add ../wt2
+ok exit 2 (want 2): E, cwd: git worktree add ../wt2
+ok exit 2 (want 2): E, relative -C: git worktree add ../wt2
+ok exit 2 (want 2): E via the worktree symlink: git worktree add ../wt2
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git worktree add ../wt2
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git worktree add ../wt2
+ok exit 2 (want 2): O, -C: git worktree add ../wt2
+ok exit 0 (want 0): scratch copy, -C: git worktree add ../wt2
+ok exit 0 (want 0): scratch copy, cd &&: git worktree add ../wt2
+ok exit 0 (want 0): scratch copy, cwd: git worktree add ../wt2
+ok exit 2 (want 2): E, -C: git worktree remove ../wt2
+ok exit 2 (want 2): E, cd &&: git worktree remove ../wt2
+ok exit 2 (want 2): E, cwd: git worktree remove ../wt2
+ok exit 2 (want 2): E, relative -C: git worktree remove ../wt2
+ok exit 2 (want 2): E via the worktree symlink: git worktree remove ../wt2
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git worktree remove ../wt2
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git worktree remove ../wt2
+ok exit 2 (want 2): O, -C: git worktree remove ../wt2
+ok exit 0 (want 0): scratch copy, -C: git worktree remove ../wt2
+ok exit 0 (want 0): scratch copy, cd &&: git worktree remove ../wt2
+ok exit 0 (want 0): scratch copy, cwd: git worktree remove ../wt2
+ok exit 2 (want 2): E, -C: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): E, cd &&: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): E, cwd: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): E, relative -C: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): E via the worktree symlink: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): O, -C: git update-ref refs/heads/master HEAD~1
+ok exit 0 (want 0): scratch copy, -C: git update-ref refs/heads/master HEAD~1
+ok exit 0 (want 0): scratch copy, cd &&: git update-ref refs/heads/master HEAD~1
+ok exit 0 (want 0): scratch copy, cwd: git update-ref refs/heads/master HEAD~1
+ok exit 2 (want 2): E, -C: git config core.x 1
+ok exit 2 (want 2): E, cd &&: git config core.x 1
+ok exit 2 (want 2): E, cwd: git config core.x 1
+ok exit 2 (want 2): E, relative -C: git config core.x 1
+ok exit 2 (want 2): E via the worktree symlink: git config core.x 1
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git config core.x 1
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git config core.x 1
+ok exit 2 (want 2): O, -C: git config core.x 1
+ok exit 0 (want 0): scratch copy, -C: git config core.x 1
+ok exit 0 (want 0): scratch copy, cd &&: git config core.x 1
+ok exit 0 (want 0): scratch copy, cwd: git config core.x 1
+ok exit 2 (want 2): E, -C: git config --unset core.x
+ok exit 2 (want 2): E, cd &&: git config --unset core.x
+ok exit 2 (want 2): E, cwd: git config --unset core.x
+ok exit 2 (want 2): E, relative -C: git config --unset core.x
+ok exit 2 (want 2): E via the worktree symlink: git config --unset core.x
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git config --unset core.x
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git config --unset core.x
+ok exit 2 (want 2): O, -C: git config --unset core.x
+ok exit 0 (want 0): scratch copy, -C: git config --unset core.x
+ok exit 0 (want 0): scratch copy, cd &&: git config --unset core.x
+ok exit 0 (want 0): scratch copy, cwd: git config --unset core.x
+ok exit 2 (want 2): E, -C: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, cd &&: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, cwd: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, relative -C: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E via the worktree symlink: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): O, -C: git remote set-url origin https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy, -C: git remote set-url origin https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy, cd &&: git remote set-url origin https://example.invalid/emutos.git
+ok exit 0 (want 0): scratch copy, cwd: git remote set-url origin https://example.invalid/emutos.git
+ok exit 2 (want 2): E, -C: git branch -f master HEAD~1
+ok exit 2 (want 2): E, cd &&: git branch -f master HEAD~1
+ok exit 2 (want 2): E, cwd: git branch -f master HEAD~1
+ok exit 2 (want 2): E, relative -C: git branch -f master HEAD~1
+ok exit 2 (want 2): E via the worktree symlink: git branch -f master HEAD~1
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git branch -f master HEAD~1
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git branch -f master HEAD~1
+ok exit 2 (want 2): O, -C: git branch -f master HEAD~1
+ok exit 0 (want 0): scratch copy, -C: git branch -f master HEAD~1
+ok exit 0 (want 0): scratch copy, cd &&: git branch -f master HEAD~1
+ok exit 0 (want 0): scratch copy, cwd: git branch -f master HEAD~1
+ok exit 2 (want 2): E, -C: git tag v1
+ok exit 2 (want 2): E, cd &&: git tag v1
+ok exit 2 (want 2): E, cwd: git tag v1
+ok exit 2 (want 2): E, relative -C: git tag v1
+ok exit 2 (want 2): E via the worktree symlink: git tag v1
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git tag v1
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git tag v1
+ok exit 2 (want 2): O, -C: git tag v1
+ok exit 0 (want 0): scratch copy, -C: git tag v1
+ok exit 0 (want 0): scratch copy, cd &&: git tag v1
+ok exit 0 (want 0): scratch copy, cwd: git tag v1
+ok exit 2 (want 2): E, -C: git init
+ok exit 2 (want 2): E, cd &&: git init
+ok exit 2 (want 2): E, cwd: git init
+ok exit 2 (want 2): E, relative -C: git init
+ok exit 2 (want 2): E via the worktree symlink: git init
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git init
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git init
+ok exit 2 (want 2): O, -C: git init
+ok exit 0 (want 0): scratch copy, -C: git init
+ok exit 0 (want 0): scratch copy, cd &&: git init
+ok exit 0 (want 0): scratch copy, cwd: git init
+ok exit 2 (want 2): E, -C: git submodule update
+ok exit 2 (want 2): E, cd &&: git submodule update
+ok exit 2 (want 2): E, cwd: git submodule update
+ok exit 2 (want 2): E, relative -C: git submodule update
+ok exit 2 (want 2): E via the worktree symlink: git submodule update
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git submodule update
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git submodule update
+ok exit 2 (want 2): O, -C: git submodule update
+ok exit 0 (want 0): scratch copy, -C: git submodule update
+ok exit 0 (want 0): scratch copy, cd &&: git submodule update
+ok exit 0 (want 0): scratch copy, cwd: git submodule update
+ok exit 2 (want 2): E, -C: git notes add -m x
+ok exit 2 (want 2): E, cd &&: git notes add -m x
+ok exit 2 (want 2): E, cwd: git notes add -m x
+ok exit 2 (want 2): E, relative -C: git notes add -m x
+ok exit 2 (want 2): E via the worktree symlink: git notes add -m x
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git notes add -m x
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git notes add -m x
+ok exit 2 (want 2): O, -C: git notes add -m x
+ok exit 0 (want 0): scratch copy, -C: git notes add -m x
+ok exit 0 (want 0): scratch copy, cd &&: git notes add -m x
+ok exit 0 (want 0): scratch copy, cwd: git notes add -m x
+ok exit 2 (want 2): E, -C: git reflog expire --all
+ok exit 2 (want 2): E, cd &&: git reflog expire --all
+ok exit 2 (want 2): E, cwd: git reflog expire --all
+ok exit 2 (want 2): E, relative -C: git reflog expire --all
+ok exit 2 (want 2): E via the worktree symlink: git reflog expire --all
+ok exit 2 (want 2): O via the worktree symlink, relative cd: git reflog expire --all
+ok exit 2 (want 2): E via $CLAUDE_PROJECT_DIR (worktree): git reflog expire --all
+ok exit 2 (want 2): O, -C: git reflog expire --all
+ok exit 0 (want 0): scratch copy, -C: git reflog expire --all
+ok exit 0 (want 0): scratch copy, cd &&: git reflog expire --all
+ok exit 0 (want 0): scratch copy, cwd: git reflog expire --all
+FAIL exit 0 (want 2): E, --git-dir=: fetch
+ok exit 2 (want 2): O, --git-dir with a work tree elsewhere: checkout
+ok exit 2 (want 2): E as --work-tree of the copy's repo
+ok exit 2 (want 2): E, GIT_DIR= prefix
+ok exit 2 (want 2): O, export GIT_DIR
+ok exit 2 (want 2): E, GIT_WORK_TREE= prefix
+ok exit 2 (want 2): E, a subdirectory
+ok exit 2 (want 2): E, in a sub-shell
+ok exit 2 (want 2): O, in a quoted $( )
+FAIL exit 0 (want 2): E, quoted -C path, piped
+FAIL exit 0 (want 2): E, env wrapper: fetch
+FAIL exit 0 (want 2): E named through an undecidable variable (text)
+ok exit 2 (want 2): O after an undecidable cd (text)
+ok exit 0 (want 0): undecidable target without the name: allowed
+ok exit 2 (want 2): clone from upstream into E
+ok exit 2 (want 2): clone into references/emutos-oracle/<new>
+ok exit 2 (want 2): clone without a dest, cwd references/ (dest emutos)
+ok exit 2 (want 2): clone without a dest in the worktree's references/
+ok exit 2 (want 2): clone --separate-git-dir into E
+ok exit 2 (want 2): worktree add of the main repo into E
+ok exit 2 (want 2): init into O
+ok exit 2 (want 2): main repo: clean -x (references/ is ignored there)
+ok exit 2 (want 2): main repo, cwd: clean -X
+ok exit 2 (want 2): main repo: clean -x as its own word
+ok exit 2 (want 2): main repo: stash --all
+ok exit 2 (want 2): config --file into E (a write)
+ok exit 0 (want 0): E, read-only: git status
+ok exit 0 (want 0): O via the worktree symlink, read-only: git status
+ok exit 0 (want 0): E, read-only: git status --short
+ok exit 0 (want 0): O via the worktree symlink, read-only: git status --short
+ok exit 0 (want 0): E, read-only: git log --oneline -n 1
+ok exit 0 (want 0): O via the worktree symlink, read-only: git log --oneline -n 1
+ok exit 0 (want 0): E, read-only: git show HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git show HEAD
+ok exit 0 (want 0): E, read-only: git ls-tree HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git ls-tree HEAD
+ok exit 0 (want 0): E, read-only: git ls-files
+ok exit 0 (want 0): O via the worktree symlink, read-only: git ls-files
+ok exit 0 (want 0): E, read-only: git cat-file -p HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git cat-file -p HEAD
+ok exit 0 (want 0): E, read-only: git rev-parse HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git rev-parse HEAD
+ok exit 0 (want 0): E, read-only: git diff
+ok exit 0 (want 0): O via the worktree symlink, read-only: git diff
+ok exit 0 (want 0): E, read-only: git diff --stat HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git diff --stat HEAD
+ok exit 0 (want 0): E, read-only: git grep -n readme
+ok exit 0 (want 0): O via the worktree symlink, read-only: git grep -n readme
+ok exit 0 (want 0): E, read-only: git blame README
+ok exit 0 (want 0): O via the worktree symlink, read-only: git blame README
+ok exit 0 (want 0): E, read-only: git describe --always
+ok exit 0 (want 0): O via the worktree symlink, read-only: git describe --always
+ok exit 0 (want 0): E, read-only: git branch
+ok exit 0 (want 0): O via the worktree symlink, read-only: git branch
+ok exit 0 (want 0): E, read-only: git branch -a
+ok exit 0 (want 0): O via the worktree symlink, read-only: git branch -a
+ok exit 0 (want 0): E, read-only: git branch --list
+ok exit 0 (want 0): O via the worktree symlink, read-only: git branch --list
+ok exit 0 (want 0): E, read-only: git branch --contains HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git branch --contains HEAD
+ok exit 0 (want 0): E, read-only: git tag
+ok exit 0 (want 0): O via the worktree symlink, read-only: git tag
+ok exit 0 (want 0): E, read-only: git tag -l
+ok exit 0 (want 0): O via the worktree symlink, read-only: git tag -l
+ok exit 0 (want 0): E, read-only: git config --get remote.origin.url
+ok exit 0 (want 0): O via the worktree symlink, read-only: git config --get remote.origin.url
+ok exit 0 (want 0): E, read-only: git config remote.origin.url
+ok exit 0 (want 0): O via the worktree symlink, read-only: git config remote.origin.url
+ok exit 0 (want 0): E, read-only: git config -l
+ok exit 0 (want 0): O via the worktree symlink, read-only: git config -l
+ok exit 0 (want 0): E, read-only: git stash list
+ok exit 0 (want 0): O via the worktree symlink, read-only: git stash list
+ok exit 0 (want 0): E, read-only: git stash show
+ok exit 0 (want 0): O via the worktree symlink, read-only: git stash show
+ok exit 0 (want 0): E, read-only: git worktree list
+ok exit 0 (want 0): O via the worktree symlink, read-only: git worktree list
+ok exit 0 (want 0): E, read-only: git remote
+ok exit 0 (want 0): O via the worktree symlink, read-only: git remote
+ok exit 0 (want 0): E, read-only: git remote -v
+ok exit 0 (want 0): O via the worktree symlink, read-only: git remote -v
+ok exit 0 (want 0): E, read-only: git remote get-url origin
+ok exit 0 (want 0): O via the worktree symlink, read-only: git remote get-url origin
+ok exit 0 (want 0): E, read-only: git reflog -n 3
+ok exit 0 (want 0): O via the worktree symlink, read-only: git reflog -n 3
+ok exit 0 (want 0): E, read-only: git for-each-ref
+ok exit 0 (want 0): O via the worktree symlink, read-only: git for-each-ref
+ok exit 0 (want 0): E, read-only: git archive HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git archive HEAD
+ok exit 0 (want 0): E, read-only: git rev-list --count HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git rev-list --count HEAD
+ok exit 0 (want 0): E, read-only: git symbolic-ref HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git symbolic-ref HEAD
+ok exit 0 (want 0): E, read-only: git show-ref
+ok exit 0 (want 0): O via the worktree symlink, read-only: git show-ref
+ok exit 0 (want 0): E, read-only: git merge-base HEAD HEAD
+ok exit 0 (want 0): O via the worktree symlink, read-only: git merge-base HEAD HEAD
+ok exit 0 (want 0): E: GIT_OPTIONAL_LOCKS=0 status
+ok exit 0 (want 0): O: status --porcelain | grep
+ok exit 0 (want 0): clone from E into target-agents
+ok exit 0 (want 0): clone --shared from O into target-agents
+ok exit 0 (want 0): clone from E without a dest, cwd target-agents
+ok exit 0 (want 0): archive E | tar -x into target-agents
+ok exit 0 (want 0): main repo: clean without -x
+ok exit 0 (want 0): main repo: clean --exclude (no -x cluster)
+ok exit 0 (want 0): worktree: clean -x (its references/ holds symlinks only)
+ok exit 0 (want 0): main repo: stash -u (ignored files stay)
+ok exit 0 (want 0): unprotected sibling
+ok exit 2 (want 2): E: rm -rf
+ok exit 0 (want 0): scratch copy: rm -rf
+ok exit 0 (want 0): archive export: rm -rf
+ok exit 2 (want 2): E: rm a file
+ok exit 0 (want 0): scratch copy: rm a file
+ok exit 0 (want 0): archive export: rm a file
+ok exit 2 (want 2): E: rm -f -- a file
+ok exit 0 (want 0): scratch copy: rm -f -- a file
+ok exit 0 (want 0): archive export: rm -f -- a file
+ok exit 2 (want 2): E: rmdir
+ok exit 0 (want 0): scratch copy: rmdir
+ok exit 0 (want 0): archive export: rmdir
+ok exit 2 (want 2): E: unlink
+ok exit 0 (want 0): scratch copy: unlink
+ok exit 0 (want 0): archive export: unlink
+ok exit 2 (want 2): E: mv out of it
+ok exit 0 (want 0): scratch copy: mv out of it
+ok exit 0 (want 0): archive export: mv out of it
+ok exit 2 (want 2): E: mv into it
+ok exit 0 (want 0): scratch copy: mv into it
+ok exit 0 (want 0): archive export: mv into it
+ok exit 2 (want 2): E: cp into it
+ok exit 0 (want 0): scratch copy: cp into it
+ok exit 0 (want 0): archive export: cp into it
+ok exit 2 (want 2): E: cp -R into it
+ok exit 0 (want 0): scratch copy: cp -R into it
+ok exit 0 (want 0): archive export: cp -R into it
+ok exit 2 (want 2): E: cp -t
+ok exit 0 (want 0): scratch copy: cp -t
+ok exit 0 (want 0): archive export: cp -t
+ok exit 2 (want 2): E: rsync into it
+ok exit 0 (want 0): scratch copy: rsync into it
+ok exit 0 (want 0): archive export: rsync into it
+ok exit 2 (want 2): E: install into it
+ok exit 0 (want 0): scratch copy: install into it
+ok exit 0 (want 0): archive export: install into it
+ok exit 2 (want 2): E: ln -s into it
+ok exit 0 (want 0): scratch copy: ln -s into it
+ok exit 0 (want 0): archive export: ln -s into it
+ok exit 2 (want 2): E: touch
+ok exit 0 (want 0): scratch copy: touch
+ok exit 0 (want 0): archive export: touch
+ok exit 2 (want 2): E: mkdir -p
+ok exit 0 (want 0): scratch copy: mkdir -p
+ok exit 0 (want 0): archive export: mkdir -p
+ok exit 2 (want 2): E: chmod
+ok exit 0 (want 0): scratch copy: chmod
+ok exit 0 (want 0): archive export: chmod
+ok exit 2 (want 2): E: truncate
+ok exit 0 (want 0): scratch copy: truncate
+ok exit 0 (want 0): archive export: truncate
+ok exit 2 (want 2): E: redirect >
+ok exit 0 (want 0): scratch copy: redirect >
+ok exit 0 (want 0): archive export: redirect >
+ok exit 2 (want 2): E: redirect >> (no space)
+ok exit 0 (want 0): scratch copy: redirect >> (no space)
+ok exit 0 (want 0): archive export: redirect >> (no space)
+ok exit 2 (want 2): E: redirect 2>
+ok exit 0 (want 0): scratch copy: redirect 2>
+ok exit 0 (want 0): archive export: redirect 2>
+ok exit 2 (want 2): E: redirect &>
+ok exit 0 (want 0): scratch copy: redirect &>
+ok exit 0 (want 0): archive export: redirect &>
+ok exit 2 (want 2): E: here-document into it
+ok exit 0 (want 0): scratch copy: here-document into it
+ok exit 0 (want 0): archive export: here-document into it
+ok exit 2 (want 2): E: tee -a
+ok exit 0 (want 0): scratch copy: tee -a
+ok exit 0 (want 0): archive export: tee -a
+ok exit 2 (want 2): E: sed -i (BSD)
+ok exit 0 (want 0): scratch copy: sed -i (BSD)
+ok exit 0 (want 0): archive export: sed -i (BSD)
+ok exit 2 (want 2): E: sed -i.bak
+ok exit 0 (want 0): scratch copy: sed -i.bak
+ok exit 0 (want 0): archive export: sed -i.bak
+ok exit 2 (want 2): E: perl -pi
+ok exit 0 (want 0): scratch copy: perl -pi
+ok exit 0 (want 0): archive export: perl -pi
+ok exit 2 (want 2): E: make -C
+ok exit 0 (want 0): scratch copy: make -C
+ok exit 0 (want 0): archive export: make -C
+ok exit 2 (want 2): E: make -C<dir>
+ok exit 0 (want 0): scratch copy: make -C<dir>
+ok exit 0 (want 0): archive export: make -C<dir>
+ok exit 2 (want 2): E: make --directory=
+ok exit 0 (want 0): scratch copy: make --directory=
+ok exit 0 (want 0): archive export: make --directory=
+ok exit 2 (want 2): E: cd && make
+ok exit 0 (want 0): scratch copy: cd && make
+ok exit 0 (want 0): archive export: cd && make
+ok exit 2 (want 2): E: make in a subdirectory
+ok exit 0 (want 0): scratch copy: make in a subdirectory
+ok exit 0 (want 0): archive export: make in a subdirectory
+ok exit 2 (want 2): E: tar -x -C
+ok exit 0 (want 0): scratch copy: tar -x -C
+ok exit 0 (want 0): archive export: tar -x -C
+ok exit 2 (want 2): E: tar xzf -C
+ok exit 0 (want 0): scratch copy: tar xzf -C
+ok exit 0 (want 0): archive export: tar xzf -C
+ok exit 2 (want 2): E: tar -x, cwd
+ok exit 0 (want 0): scratch copy: tar -x, cwd
+ok exit 0 (want 0): archive export: tar -x, cwd
+ok exit 2 (want 2): E: find -delete
+ok exit 0 (want 0): scratch copy: find -delete
+ok exit 0 (want 0): archive export: find -delete
+ok exit 2 (want 2): E: find -exec rm
+ok exit 0 (want 0): scratch copy: find -exec rm
+ok exit 0 (want 0): archive export: find -exec rm
+ok exit 2 (want 2): E: sudo rm
+ok exit 0 (want 0): scratch copy: sudo rm
+ok exit 0 (want 0): archive export: sudo rm
+ok exit 2 (want 2): E: nohup rm, background
+ok exit 0 (want 0): scratch copy: nohup rm, background
+ok exit 0 (want 0): archive export: nohup rm, background
+ok exit 2 (want 2): E: sub-shell cd && rm
+ok exit 0 (want 0): scratch copy: sub-shell cd && rm
+ok exit 0 (want 0): archive export: sub-shell cd && rm
+ok exit 2 (want 2): E: path with ..
+ok exit 0 (want 0): scratch copy: path with ..
+ok exit 0 (want 0): archive export: path with ..
+ok exit 2 (want 2): O: rm -rf
+ok exit 2 (want 2): O: redirect
+ok exit 2 (want 2): O: make clean
+ok exit 2 (want 2): rm of a directory that contains E
+ok exit 2 (want 2): rm of references/, cwd the main repo
+ok exit 2 (want 2): rm via $CLAUDE_PROJECT_DIR
+ok exit 2 (want 2): rm of the project dir
+ok exit 2 (want 2): rm via an undecidable variable (text)
+ok exit 2 (want 2): rm with a glob that reaches E
+ok exit 2 (want 2): rm with a brace word that reaches E
+ok exit 2 (want 2): rm with a glob inside E
+ok exit 2 (want 2): mv of references/
+ok exit 2 (want 2): worktree: rm through the symlink, relative
+ok exit 2 (want 2): worktree: redirect through the symlink
+ok exit 2 (want 2): worktree: make through the symlink
+ok exit 2 (want 2): worktree: cp through the symlink
+ok exit 2 (want 2): rsync --remove-source-files from E
+ok exit 2 (want 2): rm through another symlink to E
+ok exit 2 (want 2): rm through a symlink and .. (resolved by the kernel)
+ok exit 2 (want 2): touch of a new path through a symlink and ..
+ok exit 0 (want 0): cat
+ok exit 0 (want 0): grep with a quoted > argument
+ok exit 0 (want 0): ls of E, redirect elsewhere
+ok exit 0 (want 0): cd E && grep 2>/dev/null
+ok exit 0 (want 0): cp out of E
+ok exit 0 (want 0): cp -R of E elsewhere
+ok exit 0 (want 0): rsync from E elsewhere
+ok exit 0 (want 0): tar -c with -C E
+ok exit 0 (want 0): tar -c --exclude with -C E
+ok exit 0 (want 0): find
+ok exit 0 (want 0): find -exec grep
+ok exit 0 (want 0): diff -r
+ok exit 0 (want 0): ln -s pointing at E (the link lies elsewhere)
+ok exit 0 (want 0): sed without -i
+ok exit 0 (want 0): rm of an unprotected sibling
+ok exit 0 (want 0): rm of a name that only starts with emutos
+ok exit 0 (want 0): worktree: rm of its references/ (symlinks only)
+ok exit 0 (want 0): cd alone
+ok exit 0 (want 0): the words in a quoted string
+ok exit 0 (want 0): rm of an undecidable path without the name
+ok exit 0 (want 0): unrelated
+ok exit 2 (want 2): Write into E
+ok exit 2 (want 2): Edit in E
+ok exit 2 (want 2): Write into O (new dir)
+ok exit 2 (want 2): Edit through the worktree symlink
+ok exit 2 (want 2): NotebookEdit in E
+ok exit 0 (want 0): Write into the scratch copy
+ok exit 0 (want 0): Write into the repo
+ok exit 0 (want 0): Write into an unprotected sibling
+ok exit 0 (want 0): Read: not checked
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree (relative)
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree (absolute)
+ok exit 2 (want 2): build-emutos.sh refuses a new tree in references/emutos-oracle/
+ok exit 2 (want 2): build-emutos.sh refuses references/emutos
+ok exit 2 (want 2): build-emutos.sh refuses the oracle tree through a worktree's symlink
+ok exit 2 (want 2): build-emutos.sh refuses a path through another symlink
+ok exit 2 (want 2): build-emutos.sh refuses any tree dir under references/
+ok exit 1 (want 1): build-emutos.sh lets a tree dir in target-agents through (then: no cross gcc)
