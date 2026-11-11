@@ -3531,6 +3531,11 @@ batch-wise clean-up; points 1–14 and decisions (e)–(h) stand.
     evidence named in the row (a receipt and a fix commit); it does not write `-STATUS-DONE.MD` receipts and is not an
     acceptance (point 11 applies to new work only).
 
+Note (owner 2026-11-11): a commit whose only change to a ticket file is made by `migrate` (new line 3, the
+`Migrated …` line, the quoted old line 3) does not count as touching the file for the language rule (CLAUDE.md):
+the new line 3 and the `Migrated` line are English, the old line 3 stays verbatim as a quote, and no translation is
+required; the ticket is translated when someone works on its content.
+
 ---
 
 ## Template for new ADRs
