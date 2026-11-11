@@ -1,6 +1,6 @@
 # TOOL42 — no-verify-guard blocks hook-bypassing git plumbing in the main repo
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: DONE through cargo xtask accept (TOOL41); tester PASS in measurements/measurement-2026-11-11-tool42-retest/RUNINFO.TXT
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 9bc27d82b | Receipt: TOOL42-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decision 2026-11-11. Small; lands in its own commit before [TOOL41](TOOL41.md) is
 merged. Developed in its own git worktree like the git-hook tickets: `tools/hooks/no-verify-guard.sh` is a live
