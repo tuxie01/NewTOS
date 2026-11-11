@@ -149,7 +149,7 @@ fn main() -> ExitCode {
     };
 
     let rest: Vec<String> = args.collect();
-    let result = match cmd.as_str() {
+    let result = repo_guard::check_cwd(&cmd, &workspace_root()).and_then(|()| match cmd.as_str() {
         "build" => cmd_build(&rest),
         "build-programs" => cmd_build_programs(&rest),
         "deps" => deps::cmd(&workspace_root(), &rest),
@@ -170,7 +170,7 @@ fn main() -> ExitCode {
             Ok(())
         }
         other => tickets::cmd(other, &workspace_root(), &rest),
-    };
+    });
 
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -1314,3 +1314,7 @@ mod worktree_setup;
 /// TOOL46 — `scratch-clean`, `land` and the clean-up after `accept`: the
 /// worker directories under `target-agents/`.
 mod scratch;
+
+/// TOOL52 — a writing command runs only from inside the repository this
+/// binary was built for (applied by `main` before the dispatch).
+mod repo_guard;
