@@ -5,7 +5,8 @@ Status: OPEN (2026-11-11) | Priority: P1
 Type: tool (enforcement). Owner decision 2026-11-11. Small; lands in its own commit before [TOOL41](TOOL41.md) is
 merged. Developed in its own git worktree like the git-hook tickets: `tools/hooks/no-verify-guard.sh` is a live
 PreToolUse hook of every agent session (`.claude/settings.json`), so the main tree's copy changes only when this
-ticket is merged after the tester's acceptance.
+ticket is merged after the tester's acceptance. It lands with `git merge --squash` and one normal `git commit -F` in
+the main tree, never as a fast-forward (owner 2026-11-11, CLAUDE.md *Commit Discipline*).
 
 ## Facts
 
@@ -35,7 +36,11 @@ ticket is merged after the tester's acceptance.
    without `-C`, `cd … &&`); the same allowed in a scratch clone (created by the test under the scratch rules and
    removed after); blob `hash-object -w` and `update-index --cacheinfo` allowed in the main repo; every existing case
    unchanged. Wire the script into `cargo xtask test` if cheap (one test that runs it and fails on a `FAIL` line).
-4. **Docs:** the comment block of the guard; CLAUDE.md is not edited by the developer — the receipt proposes the
+4. **Optional (owner 2026-11-11): no fast-forward into `main`.** In the main repo, block a `git merge` that would
+   fast-forward a local branch into `main` — `--ff-only`, and any `git merge <branch>` without `--squash` while
+   `main` is checked out (the rule is squash only; a `--no-ff` merge commit is not the way either). `git pull` from `origin` stays allowed. If a text match cannot tell the
+   cases apart reliably, say so in the receipt and leave it out rather than block too much.
+5. **Docs:** the comment block of the guard; CLAUDE.md is not edited by the developer — the receipt proposes the
    one-line change to the hook paragraph ("Agents must not bypass it: …"), the lead applies it.
 
 ## Acceptance

@@ -396,6 +396,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 - A ticket that changes `tools/git-hooks/**` is developed in its own git
   worktree; the main tree's hooks change only when it is merged after the
   tester's acceptance (owner 2026-11-11).
+  A worktree branch never fast-forwards into `main`: it lands with
+  `git merge --squash <branch>` and a normal `git commit -F` in the main
+  tree, one commit per ticket, so main's stable hooks check it (owner
+  2026-11-11).
 - A line cite into NewTOS code (git-tracked files under `kernel/`, `tos-api/`,
   `tos-types/`, `programs/`, `tools/`, `tosdump/`, `sdk/`, `boot/`,
   `keyboards/`) carries a symbol anchor, `<path>:<line>@<symbol>`: doc-check
