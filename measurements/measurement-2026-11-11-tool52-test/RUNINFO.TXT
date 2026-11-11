@@ -1,0 +1,9 @@
+RUNINFO TOOL52 tester run 2026-11-11
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (no image booted; no manifest)
+What: verify TASK/TOOL52 (repo_guard) at 80969118b, base 86f89935b, worktree .claude/worktrees/agent-aaa8980ff98a0788b.
+Scratch clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa45cf07d71138376/clone (du -sh of /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa45cf07d71138376: 1,8G); xtask binary sha256 04bcff45a6dbd1efe4143ca1e64166096f4d631562d4193c4af862435d7732fc
+Results: full cargo xtask test 2427/0/7; repo_guard unit 8 ok, integration 3 ok; 8 writing commands refused from clone (rc=1, both paths named),
+HEADs/status/config unchanged (before2.txt/after2.txt identical); own root/subdir/symlink/case-variant pass guard (ZZTOOL52 not found); doc-check + deps --check-mapping run from clone;
+outside-git, nested clone, GIT_DIR(+WORK_TREE) refused; mutations M1 (accept ReadOnly: 4 fail), M2 (check_cwd removed: 2 fail), M3 (dummy arm: 1 fail), reverted, git diff empty;
+clippy 10 warnings wt == main (identical lists); doc-check of 2 edited docs 0 failures.
+main HEAD c918cddd4 throughout, worktree HEAD 80969118b throughout.

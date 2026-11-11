@@ -1,0 +1,8 @@
+   1 warning: `xtask` (bin "xtask" test) generated 9 warnings (run `cargo clippy --fix --bin "xtask" -p xtask --tests -- ` to apply 4 suggestions)
+   1 warning: `xtask` (bin "xtask") generated 1 warning (run `cargo clippy --fix --bin "xtask" -p xtask -- ` to apply 1 suggestion)
+   1 warning: constant `PROPTAG_GET_CLOCK_RATE_MEASURED` is never used
+   1 warning: constant `PROPTAG_GET_MAX_CLOCK_RATE` is never used
+   1 warning: for loop over a single element
+   4 warning: manual implementation of `.is_multiple_of()`
+   1 warning: slow zero-filling initialization
+   2 warning: this assertion has a constant value

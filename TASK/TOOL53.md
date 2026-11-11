@@ -28,7 +28,11 @@ check.
 3. **Tests** (scratch repo): dirty worktree → kept and its files listed; failed commit (hook rejects) → nothing
    removed; clean success → worktree, branch and its `<worktree>/target/agent-scratch/` gone; a worktree with ignored-only files
    (e.g. `target/`) counts as clean. The TOOL52 check applies to `land` as to every writing command.
-4. Agent briefs and the TOOL46 lines in CLAUDE.md: proposed in the receipt, the lead applies them.
+4. **Git environment** (TOOL52 tester and developer, 2026-11-11): `tools/xtask/src/tickets.rs` and
+   `tools/xtask/src/scratch.rs` run git without clearing `GIT_DIR`, `GIT_WORK_TREE` and related variables, so a
+   caller's `GIT_DIR` redirects their git calls (the TOOL52 check itself clears them). Clear them in one helper for
+   every git call of xtask; a test with `GIT_DIR` set to another repository.
+5. Agent briefs and the TOOL46 lines in CLAUDE.md: proposed in the receipt, the lead applies them.
 
 ## Acceptance
 

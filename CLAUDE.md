@@ -448,6 +448,9 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   in the main tree, one commit per ticket, so main's stable hooks check it;
   owner 2026-11-11). Agents cannot run `git merge --squash` into `main`
   (`tools/hooks/no-verify-guard.sh`, TASK/TOOL50.md).
+- A writing xtask command runs only from inside the repository its binary
+  was built for; started by path from another one it refuses and names
+  both (TASK/TOOL52.md).
 - A fresh git worktree first runs `cargo xtask worktree-setup`: it links
   the main tree's gitignored inputs (`references/*`, `sdk/apps/<app>/`)
   into it, so `cargo xtask test` runs the main tree's set (`--check` lists
