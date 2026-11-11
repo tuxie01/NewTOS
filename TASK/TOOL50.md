@@ -1,6 +1,6 @@
 # TOOL50 — the agent guard keeps the EmuTOS checkouts on the pin; `land` is the only merge path
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 64abacbbe | Receipt: TOOL50-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decision 2026-11-11. Changes `tools/hooks/**`, the live hooks of every agent session:
 developed in its own git worktree and landed by squash merge after the tester's acceptance (CLAUDE.md *Commit
