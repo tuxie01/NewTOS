@@ -1,6 +1,6 @@
 # BIOS02 — Spec BIOS-Speicher nachziehen; physische Einheit der Pi-SD festlegen
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: 40efc473b | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 40efc473b | Receipt: BIOS02-STATUS-DONE.MD
 
 Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit 40efc473b (docs: approve BIOS02 spec, record TOOL07/TOOL08 decisions, new tickets), VERIFIED: diff of 40efc473b (docs: approve BIOS02 spec, record TOOL07/TOOL08 decisions, n) touches docs/api/bios/04-rwabs.md, docs/api/bios/09-mediach.md, names the id by subject, 16 files, legacy line: ERLEDIGT 2026-10-28 (Spec freigegeben)
 
