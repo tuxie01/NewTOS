@@ -1,0 +1,14 @@
+id	state	fields	evidence
+A31	OBSOLETE	Priority: P2 | Reason: moot: save_windows/restore_windows have no caller in the product since the desk/ cut-back 343b3c5	TASK/A31.md status line (GEGENSTANDSLOS (2026-09-19)), TASK/A31-STATUS-DONE.MD exists
+A51	OBSOLETE	Priority: P2 | Reason: moot: the recycled-handle case is covered by A16/A34	TASK/A51.md status line (GEGENSTANDSLOS (2026-09-20)), TASK/A51-STATUS-DONE.MD exists
+A58	OBSOLETE	Priority: P3 | Reason: moot through A27 (ticket status line) | Target: A27	TASK/A58.md status line (GEGENSTANDSLOS (2026-09-20, durch A27)), TASK/A58-STATUS-DONE.MD exists
+DESK23	OBSOLETE	Priority: P4 | Reason: withdrawn 2026-09-24: EmuTOS-conformant, both drawings are right	TASK/DESK23.md status line (ZURUECKGEZOGEN (2026-09-24, EmuTOS-konform)), TASK/DESK23-STATUS-DONE.MD exists
+DESK29	OBSOLETE	Priority: P3 | Reason: withdrawn 2026-09-24: EmuTOS-conformant, EmuTOS deletes unconditionally at two places	TASK/DESK29.md status line (ZURUECKGEZOGEN (2026-09-24, EmuTOS-konform)), TASK/DESK29-STATUS-DONE.MD exists
+DESK57	OBSOLETE	Priority: P2 | Reason: superseded by DESK62 (ticket status line) | Target: DESK62	TASK/DESK57.md status line (ERLEDIGT 2026-10-17 — superseded by [DESK62](DESK62.md) ([Qu), TASK/DESK57-STATUS-DONE.MD exists
+FS03	OBSOLETE	Priority: P3 | Reason: withdrawn 2026-09-24: no defect (question to the source)	TASK/FS03.md status line (ZURUECKGEZOGEN (2026-09-24, kein Defekt))
+FS07	OBSOLETE	Priority: P2 | Reason: duplicate of FS10 (ticket status line "Duplikat von FS10") | Target: FS10	TASK/FS07.md status line (ERLEDIGT 2026-10-13 (Duplikat von [FS10](FS10.md), `f6049bf8)
+Q01	OBSOLETE	Priority: P1 | Reason: moot (owner decision): the QED text faults had their cause in the ILP32 memory model and crt0, fixed at the cause	TASK/Q01.md status line (GEGENSTANDSLOS (2026-09-21))
+Q02	OBSOLETE	Priority: P1 | Reason: moot (owner decision): not QED but the system was defective, fixed at the cause, vs_clip covered by V06 and vdi_reference	TASK/Q02.md status line (GEGENSTANDSLOS (2026-09-21))
+Q03	OBSOLETE	Priority: P1 | Reason: moot (owner decision): XOR/SELECTED model brought to EmuTOS by A85/A99, covered by host tests	TASK/Q03.md status line (GEGENSTANDSLOS (2026-09-21))
+Q04	OBSOLETE	Priority: P1 | Reason: moot (owner decision): keyboard events covered by A73/A92 host tests	TASK/Q04.md status line (GEGENSTANDSLOS (2026-09-21))
+Q05	OBSOLETE	Priority: P1 | Reason: moot (owner decision): cursor-sprite bracket fixed by A65 and verified on the Pi	TASK/Q05.md status line (GEGENSTANDSLOS (2026-09-21))

@@ -1,0 +1,22 @@
+file	reason
+ACCTITLE-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/ACCTITLE.md; title: ACCTITLE — Quittung (FERTIG): Accessory-Titel im Desk-Menü einer Anwendung sind für die An
+FIX-01-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/FIX-01.md; title: FIX-01 — Handleprüfung im FIRST/NEXT-Arm von wind_get
+FIX-02-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/FIX-02.md; title: FIX-02 — Reihenfolge der Reststücke in der Rechteckliste
+FIX-03-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/FIX-03.md; title: FIX-03 — Rechteckliste und Iteratorcursor pro Fenster
+FIX-04-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/FIX-04.md; title: FIX-04 — der Schlagschatten als ganze Beziehung
+FIX-05-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/FIX-05.md; title: FIX-05 — die geschriebenen Wörter am Ende der Rechteckliste
+FIX-06-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/FIX-06.md; title: FIX-06 — das Rechteck in der `WM_REDRAW`-Nachricht
+LDG-M1-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LDG-M1.md; title: LDG-M1 — Quittung: `ex_lib` als natives `.NLD` über den echten LDG-Weg, `sinus()` gerufen
+LDG-M2-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LDG-M2.md; title: LDG-M2 — Quittung: Fremdbibliotheken der zView-Codecs als statische NewTOS-Bibliotheken
+LDG-M3-B1-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LDG-M3-B1.md; title: LDG-M3-B1 — Quittung: AES meldet den Tastenzustand des Ereignisses (B1) und setzt die `obj
+LDG-M3-B2-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LDG-M3-B2.md; title: LDG-M3-B2 — Quittung: libshare 0.1.1 als Allokator jedes LDG-Moduls (Befund B2 geschlossen
+LDG-M3-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LDG-M3.md; title: LDG-M3 — Quittung (FERTIG): WinDom 1.21.3 als SDK-Bibliothek, LDG-Demo-Client mit `EX_LIB.
+LDG-M3-STATUS-UNFINISHED.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LDG-M3.md; title: LDG-M3 — Quittung (UNFERTIG): WinDom 1.21.3 als SDK-Bibliothek, LDG-Demo-Client gegen `EX_
+LIBC-MAIN-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/LIBC-MAIN.md; title: LIBC-MAIN — libc-crt0 ruft wieder mintlibs `_main` — Quittung
+PORT-WAITH-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/PORT-WAITH.md; title: PORT-WAITH — mintlib `<sys/wait.h>` auf AArch64 — ERLEDIGT
+PPARENT-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/PPARENT.md; title: PPARENT — `p_parent` und Umgebung wie EmuTOS (Weg A, Stellvertreter-PDs) — ERLEDIGT
+R3-TABELLE-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/R3-TABELLE.md; title: R3-Tabelle — Quittung
+V-SERIES-STATUS-DONE.MD	range receipt of the closed V-series tickets V01, V02, V04-V10, V13-V15 (no ticket id V-SERIES was ever created); title: V01, V02, V04–V10, V13–V15 — Quittung (2026-09-21)
+ZVIEW-M4-K1-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/ZVIEW-M4-K1.md; title: ZVIEW-M4-K1 — Quittung (FERTIG): die AES besitzt eine echte physikalische VDI-Workstation,
+ZVIEW-M4-STATUS-DONE.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/ZVIEW-M4.md; title: ZVIEW-M4 — Quittung (FERTIG): zView als ZVIEW.NAP + zehn Codecs `.NLD`, ohne PDF
+ZVIEW-M4-STATUS-UNFINISHED.MD	historical receipt of a work package or sub-step that never had its own ticket file TASK/ZVIEW-M4.md; title: ZVIEW-M4 — Quittung (UNFERTIG): zView als ZVIEW.NAP + zehn Codecs `.NLD`, ohne PDF — block

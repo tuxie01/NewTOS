@@ -1,0 +1,10 @@
+id	state	fields	evidence
+A127	OPEN	Priority: P1	TASK/A127.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P1 product bug, cause first, on the STATUS P1 list)
+HW04	OPEN	Priority: P2	TASK/HW04.md status line: OFFEN (teilweise: Durchsatzpunkte 1-Bit-Bus und Nur-Einzelblock erledigt mit FS08 Teil 1 `e8fe4137`,, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P2 partial on the STATUS list)
+NET01	OPEN	Priority: P2	TASK/NET01.md status line: OFFEN — Vorrecherche, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (target 1.2, preliminary research (owner 2026-10-20))
+SND01	OPEN	Priority: P2	TASK/SND01.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (1.0 scope (owner 2026-10-23))
+SND02	OPEN	Priority: P2	TASK/SND02.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (1.0 scope (owner 2026-10-23))
+TOOL05	OPEN	Priority: P2	TASK/TOOL05.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P2 on the STATUS list)
+V39	OPEN	Priority: P3	TASK/V39.md status line: OFFEN (2026-11-06, Anwender 2026-11-08: wird mit [V41](V41.md) gefixt, D4), no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (decided to be fixed with V41 (owner 2026-11-08, D4))
+V41	OPEN	Priority: P3	TASK/V41.md status line: URSACHE BELEGT, Fix offen, ans Listenende (Anwender 2026-11-06, zugunsten [HW08](HW08.md)), D1–D4 en, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (cause known, D1-D4 decided 2026-11-08, end of the VDI queue)
+W01	OPEN	Priority: P2	TASK/W01.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P2 on the STATUS list)
