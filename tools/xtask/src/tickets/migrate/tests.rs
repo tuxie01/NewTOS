@@ -340,29 +340,30 @@ fn the_real_commit_map_translates_the_a01_receipt_hash() {
     let new: Vec<&str> = map.translate("d7ab92d").collect();
     assert_eq!(new, ["87b03c250f9b04418337a01922f742fdab8ba2ec"]);
     assert!(map.translate("d7ab92").next().is_none(), "7 digits at least");
-    let receipt = fs::read_to_string(ws.join("TASK/A01-STATUS-DONE.MD")).unwrap();
-    assert!(!names_commit(&receipt, "87b03c250"), "the receipt names the old hash only");
-    assert!(names_commit_mapped(&receipt, "87b03c250", &map));
-    assert!(evidence_names_commit(&map, &receipt, &[], "87b03c250"));
+    let receipt = A01_RECEIPT;
+    assert!(!names_commit(receipt, "87b03c250"), "the receipt names the old hash only");
+    assert!(names_commit_mapped(receipt, "87b03c250", &map));
+    assert!(evidence_names_commit(&map, receipt, &[], "87b03c250"));
     // The ticket's Migrated line counts as evidence too; nothing names a
     // foreign commit.
     let m = [migrated_line("1", D, State::Done, "fix 1234abcd5")];
     assert!(evidence_names_commit(&CommitMap::default(), "no hash here", &m, "1234abcd5"));
     assert!(!evidence_names_commit(&CommitMap::default(), "no hash here", &[], "1234abcd5"));
-    assert!(!evidence_names_commit(&map, &receipt, &m, "abcdef123"));
+    assert!(!evidence_names_commit(&map, receipt, &m, "abcdef123"));
 }
 
 /// The real A01 (legacy ERLEDIGT, its receipt names the pre-2026-10-19 hash
 /// `d7ab92d`) in a scratch repository whose commit map translates that hash
-/// to the scratch fix commit.
+/// to the scratch fix commit. The ticket and receipt are the fixtures of
+/// A01 as before its migration, not the live `TASK/` files: owner batch 20
+/// migrated the live A01 to `DONE` (TOOL57).
 #[test]
 fn the_a01_case_migrates_to_done_through_the_commit_map() {
-    let ws = workspace();
-    let a01 = fs::read_to_string(ws.join("TASK/A01.md")).unwrap();
-    let receipt = fs::read(ws.join("TASK/A01-STATUS-DONE.MD")).unwrap();
+    let a01 = A01_TICKET;
+    let receipt = A01_RECEIPT.as_bytes();
     let r = bare_repo("migrate-a01");
-    r.write("TASK/A01.md", &a01);
-    fs::write(r.0.join("TASK/A01-STATUS-DONE.MD"), &receipt).unwrap();
+    r.write("TASK/A01.md", a01);
+    fs::write(r.0.join("TASK/A01-STATUS-DONE.MD"), receipt).unwrap();
     r.write(COMMIT_MAP_FILE, "# Columns: old new\n");
     commit(&r, "base");
     r.write("src.txt", "work\n");
@@ -516,4 +517,31 @@ fn an_implemented_row_with_a_legacy_done_receipt_migrates() {
     assert_eq!(read(&r, "TASK/L7-STATUS-DONE.MD"), legacy_receipt, "the receipt is untouched");
     let c = check(&r.0, &CheckOpts::default()).unwrap();
     assert!(c.rejected.is_empty(), "{:?}", c.rejected);
+}
+
+/// `TASK/A01.md` as before its migration (`add86da91^`, owner batch 20): a
+/// legacy ticket, `ERLEDIGT`, in the baseline. A committed copy, not a
+/// `git show` of that commit, so the test needs no history (a shallow clone
+/// runs it too) and never reads the live ticket (TOOL57).
+const A01_TICKET: &str = include_str!("fixtures/A01.md");
+/// `TASK/A01-STATUS-DONE.MD` as of `add86da91^`; it names the old fix hash
+/// `d7ab92d` only.
+const A01_RECEIPT: &str = include_str!("fixtures/A01-STATUS-DONE.MD");
+/// The git blob ids of the two fixtures, as recorded at `add86da91^`.
+const A01_BLOBS: [(&str, &str); 2] = [
+    ("fixtures/A01.md", "1e1fee28514cc4e622c429feec5ca70f8af4cf9c"),
+    ("fixtures/A01-STATUS-DONE.MD", "1c7b2ed74884e041b3ca6bc7940a312367d7a7e9"),
+];
+
+/// The fixtures are byte-identical to the blobs of `add86da91^`: their git
+/// blob ids (`git hash-object`, no history needed) match the recorded ones.
+#[test]
+fn the_a01_fixtures_are_the_pre_migration_blobs() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/tickets/migrate");
+    for (rel, blob) in A01_BLOBS {
+        let o = Command::new("git").arg("hash-object").arg(dir.join(rel)).output().unwrap();
+        assert!(o.status.success(), "git hash-object {rel}: {}", String::from_utf8_lossy(&o.stderr));
+        assert_eq!(String::from_utf8_lossy(&o.stdout).trim(), blob, "{rel} is not the blob of add86da91^");
+    }
+    assert!(A01_TICKET.lines().nth(2).unwrap().starts_with("Status: **ERLEDIGT"), "the fixture is the legacy ticket");
 }

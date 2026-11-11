@@ -104,9 +104,9 @@ The tester's verdict on `f359f92b7` was PARTIAL (all checks green, two findings)
   (`tools/xtask/src/tickets.rs:1030@historical`); its baseline entry is then stale and goes with
   `status-check --prune-baseline`, in the commit that adds the list. The real list is not created here.
 - **Tests:** `tools/xtask/src/tickets/migrate/tests.rs:333@the_real_commit_map_translates_the_a01_receipt_hash`
-  (the real map and receipt),
-  `tools/xtask/src/tickets/migrate/tests.rs:355@the_a01_case_migrates_to_done_through_the_commit_map` (the real
-  A01 ticket and receipt in a scratch repository, a fixture map line to its fix commit; refused without the line; the
+  (the real map; A01's receipt as a fixture since TOOL57),
+  `tools/xtask/src/tickets/migrate/tests.rs:361@the_a01_case_migrates_to_done_through_the_commit_map` (A01's
+  ticket and receipt as before the migration, fixtures since TOOL57, in a scratch repository, a fixture map line to its fix commit; refused without the line; the
   receipt bytes unchanged; the `Migrated` line alone satisfies `status-check`),
   `tools/xtask/src/tickets/migrate/tests.rs:424@a_rejecting_hook_reverts_every_write_and_a_rerun_works` (a
   `pre-commit` and a `commit-msg` hook that exit 1: work tree bytes, `git status`, staged blobs and `HEAD` identical
