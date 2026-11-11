@@ -1,0 +1,131 @@
+measurement-2026-11-11-bios06-o3-test -- BIOS06 owner decision O3 (Getmpb(NULL) ends the program), branch worktree-agent-afaf0403dea94a2cf
+=====================================================================================================================================
+Tester (Sonnet), 2026-11-11 ~22:55-00:05 (host clock CET). Measurement only: no commit, no accept, no merge, no push, no product-code
+change left behind (one temporary mutation, reverted by hand, see check 5).
+Branch head tested: 49127ddec (ab6a59867 + 49127ddec) in /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf;
+base for the warnings comparison: 78d972f1f (git archive). Main tree HEAD at the time: 78d972f1f. Worktree `git status --short`: empty
+before and after.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every card.img.manifest).
+No hardware, no real card. QEMU raspi4b only (see "NOT COVERED").
+
+WHAT / WHY
+  O3 (owner 2026-11-11): Getmpb(NULL) from a program ends the program like EmuTOS's bus error, in user AND super state, nothing written
+  to page 0, the system keeps running. Checks 1-6 of the brief.
+
+METHOD (method/)
+  build-nap.sh        NAP half of measurement-2026-10-29-bios06/method/build.sh (aarch64 clang + sdk/libc of the main tree: the worktree has no
+                      gitignored libc.a). Probes: the October GNPROBE.NAP reused unchanged (sha256 below = the October one, probe/GNPROBE.NAP
+                      60c03261...), plus measurement-only copies of gnprobe.c (not in tosdump/):
+                        gnprobe-super.c -DSUPERVARIANT  S00 cells $0-$F (Supexec), S01 flushed to disk, then Supexec(Getmpb(0L)); S02 = return
+                        gnparent.c -DPARENT -DCHILD="C:\X.NAP"  parent: P00 cells $0-$F, Pexec(child), P01 return, P02 cells again
+                      Parents are named PGNPROBE/PGNSUPER (a first try with PARGNPROBE.NAP, 10 chars, was not found: 8.3, rc=-33; its dirs are
+                      kept in serial/failed-8dot3-name/).
+  run-qmp.sh          as measurement-2026-10-29-bios06/method/run-newtos.sh (tools/mkcard.sh card, #Z autorun of the first NAP, QEMU raspi4b
+                      headless -append serial=on, BOOT-SERIAL via -serial file, card cloned for QEMU, logs read back with mcopy) plus a QMP
+                      socket (relative path) for screendumps and a space key. Cards/images in the session scratchpad (TOOL53: mkcard failed
+                      with the scratch under /Volumes/Daten, first try); the card used by run n-user came out of that same scratchpad.
+  run-newtos-oct.sh   the October script, copied for reference only (not run).
+  tables.sh           cargo xtask tosdump bios <table> --reference <tt BIN> --reference <falcontc BIN> --out runs/<t> (October "after" form).
+  warnings.sh         cargo build / cargo clippy -p kernel --no-default-features --features board-<b> --release, both boards, both trees.
+  Kernels (cargo xtask build --board rpi4 --release in the worktree, own build, bit-identical to the developer's):
+    kernel8-o3.img          6bd20446df510f87d3eb7cdd2f5b24c15aa7069eb945c8219053f8ca011475a1  (kernel ELF 68b6cd97...cf62)
+    kernel8-o3-nowait.img   9f9e688da5bd8b827237fd8a8ebd8fd4a08ad71eea79efcd3d6974af3acaae51  (same + --features crash-nowait)
+  The first build attempt with CARGO_TARGET_DIR=<agent dir> produced an ELF there but xtask's objcopy took the old kernel8.img from the
+  worktree target; I noticed it from the sha256 equality and rebuilt without CARGO_TARGET_DIR (xtask ignores that variable for the image).
+  Every number below is from the second, proper build.
+
+1. HOST TESTS  PASS
+  `cargo xtask test` in the worktree (CARGO_TARGET_DIR=target-agents/agent-.../target-host): sum over 209 "test result" lines:
+  2454 passed, 0 failed, 7 ignored (developer: 2454/0/7, equal). serial/host-test.log. getmpb tests all ok:
+  describe_is_one_unlinked_unowned_region, descriptor_bytes_follow_the_lp64_header_layout,
+  null_mpb_from_a_program_is_refused_before_any_store_in_any_state, null_mpb_from_the_kernel_is_refused_before_any_store,
+  unwritable_mpb_faults_and_writes_nothing, writable_mpb_gets_free_then_used_only; uaccess::tests::fault_record_round_trip_and_first_fault_wins ok.
+
+2. QEMU raspi4b, GNPROBE group N, branch kernel (user state)  PASS except the key step (NOT COVERED)
+  serial/n-user (kernel8-o3.img, the waiting kernel): GNPROBE.LOG G00-G06 as in October (G03 start 0x400000 length 0xa00000, G04 all 1,
+  G06 ok). GNPROB2.LOG = "N00 before: long@0=04040000 long@4=0007e080" + "N01 calling Getmpb(NULL)" and nothing else: no N02, no N03.
+  BOOT-SERIAL: "[crash] slot 0 Bus Error esr=0x9600004f pc=0xffff0000000c9918 far=Some(0)"; report "Panic: Bus Error / addr=0000000000000000
+  / Memory violation: page-0 system-variable memory, write (permission fault, level 3)" and "*** Press any key to continue ***".
+  Screendump serial/n-user/after-key.png (viewed): the crash screen (Panic: Bus Error, addr=0, "Press any key").
+  October NewTOS (measurement-2026-10-29-bios06/runs/PROBE-NEWTOS-raspi4b/GNPROB2.LOG): N00 0/0, N01, N02 ret=0, N03 0/0, program ran on
+  = silent success. Now: program ended, EmuTOS-like Bus Error report. (N00 reads 04040000/0007e080 now instead of 0/0: page 0 holds other
+  values on today's kernel; unrelated to this change, not chased, noted below.)
+  THE KEY STEP COULD NOT BE DRIVEN: on raspi4b the console keyboard is the USB keyboard, which QEMU raspi4b does not have ("[pcie] RC not
+  present ... USB disabled"); the QMP key event failed: "Input handler not found for event type key" (serial/n-user/key.out). qemu-virt has
+  the input but no C: to start the probe from. So before/after-key screendumps there are identical (still the crash screen).
+  Proxy for "the system keeps running after the key": the kernel feature crash-nowait (kernel/src/arch/aarch64/crash.rs: report, then
+  "terminating with Pterm(-1)" without waiting for the key; the same termination path the key leads to). kernel8-o3-nowait.img:
+  serial/n-user-nowait: same "[crash] ... Bus Error ... far=Some(0)" + report, then "[crash] slot 0 crash-nowait, terminating with
+  Pterm(-1)", "[shell] ... starting desktop NEWDESK", "[desk] desktop up (1 drives)"; no "exception" line; screendump
+  serial/n-user-nowait/after-key.png (viewed): desktop (menu bar Desk/File/View/Options, mouse pointer). GNPROB2.LOG again N00, N01 only.
+  This proves the system continues through the end-of-program path; it does NOT prove that the real keypress is accepted: that is a
+  real-Pi4 / hardware item.
+
+3. SUPER STATE (Supexec(Getmpb(0L)))  PASS (kernel8-o3-nowait.img)
+  serial/n-super-nowait: GNPROB2.LOG "S00 before: 04040000 0007e080 0007e040 0007e040", "S01 calling Getmpb(NULL) inside Supexec", no S02;
+  "[crash] slot 0 Bus Error esr=0x9600004f pc=0xffff0000000c9624 far=Some(0)", the same report text as the user case (diff of the two
+  reports in p-user-nowait/p-super-nowait: only USP/data/bss addresses differ), terminated, "desktop up (1 drives)", screendump = desktop.
+  Page 0 cells $0-$F unchanged, read by a parent that Pexecs the child (child ends, parent resumes):
+  serial/p-super-nowait/GNPARENT.LOG  P00 before child: 04040000 0007e080 0007e040 0007e040
+                                      P01 Pexec(C:\GNSUPER.NAP) returned 65535 (0x0000ffff)
+                                      P02 after child:  04040000 0007e080 0007e040 0007e040     (identical)
+  serial/p-user-nowait/GNPARENT.LOG   same for the user-state child C:\GNPROBE.NAP: P00 = P02 = 04040000 0007e080 0007e040 0007e040,
+                                      Pexec returned 65535 (a 16-bit Pterm word -1; shell then "exited with rc=0", desktop up).
+  The parent runs through to its end after the child died: the kernel survived and the parent's own Fwrite/Fcreate worked afterwards.
+
+4. REGRESSION TABLES  PASS (no newly differing case)  runs/{xbios-ptr-r1,bios-core-r1,bios-r1}; kernel8.img 6bd20446 (default build)
+  every run "ended normally ... desktop up after DUMPBIOS.NAP, rc=0"; tosdiff --validate exit 0 on every run.
+  table / reference                       differing now    bios-full baseline (24eb0b070)   case set / diff text vs baseline
+  xbios-ptr-r1  tt (XBIOS-ptr)            0 of 9           (not in bios-full)               n/a (October "after" also 0 of 9; case 34 Getmpb now equal)
+  xbios-ptr-r1  falcontc                  0 of 9           (not in bios-full)               n/a
+  bios-core-r1  tt                        2 of 44          2 (0 open + 2 ACCEPTED)          identical case set and identical text
+  bios-core-r1  falcontc                  1 of 44          1 (0 open + 1 ACCEPTED)          identical
+  bios-r1       tt                        32 of 147        32 (31 open + 1 ACCEPTED)        identical case set and identical text
+  bios-r1       falcontc                  37 of 147        37 (35 open + 2 ACCEPTED)        identical
+  (comparison: the "case N" lines of runs/<t>/tosdiff-<ref>.txt vs measurement-2026-11-11-bios-full/runs/<t>/tosdiff-<ref>.txt, 0 diff lines.)
+  Note: the brief names xbios-ptr-r1, bios-core-r1, bios-r1 only; the October tables xbios-chardev-r1 and xbios-system-r1 were not rerun.
+  Cards: runs/*/card.img.manifest (3), each "optional_missing none". Per-run NewTOS BIN sha256: bios-r1 ae52bc5f9c3e229f737499696f886e3ae102bb01c0c25216f61afbadef291de3,
+  bios-core-r1 ca9df7873288abc392bfdacfe88d06c018004fe2c6ac7d656d0927a2b493fcad, xbios-ptr-r1 288a6ceb5558cb744e23c558d6f867dc58015b491a5b6ba038d7feba8a345f5d
+  (the BIN differs from bios-full's by sha because of the build id; the tosdiff verdicts are equal). Tables ran with --scratch in the scratchpad.
+
+5. MUTATION  PASS (the mutation is killed)
+  In the worktree tos-api/src/bios/getmpb.rs the body of `if mpb == 0 { ...; return FAULTED; }` replaced by `return 0;` (the old behaviour).
+  `cargo test -p tos-api --lib getmpb`: rc 101, "4 passed; 2 failed": null_mpb_from_a_program_is_refused_before_any_store_in_any_state
+  FAILED (panic getmpb.rs:276) and null_mpb_from_the_kernel_is_refused_before_any_store FAILED (getmpb.rs:301). serial/mutation-test.txt.
+  Reverted by restoring the saved copy; `cmp` identical, `git diff 49127ddec -- tos-api/src/bios/getmpb.rs` empty, `git status --short` empty.
+
+6. WARNINGS DELTA  PASS (0 on both boards) and DOC-CHECK  PASS (no failure from this change)
+  warnings.sh, release, base 78d972f1f vs branch 49127ddec (serial/warnings/*.log), rc 0 everywhere:
+    build  rpi4:      base kernel 93 / tos-api 64    branch kernel 93 / tos-api 64
+    build  qemu-virt: base kernel 93 / tos-api 64    branch kernel 93 / tos-api 64
+    clippy rpi4:      base kernel 121 / tos-api 73   branch kernel 121 / tos-api 73
+    clippy qemu-virt: base kernel 121 / tos-api 73   branch kernel 121 / tos-api 73
+  (Base built from `git archive 78d972f1f` extracted below target-agents; the embedded programs were copied from the worktree's
+  target/programs; xtask refuses a build in such a copy (TOOL52), so the xtask build_kernel cargo invocation was used directly.)
+  doc-check in the worktree: `cargo xtask doc-check --base 78d972f1f TASK/BIOS06.md TASK/BIOS06-STATUS-UNFINISHED.MD TASK/BIOS19.md
+  docs/COMPATIBILITY.md docs/api/bios/00-getmpb.md`: rc 1, 10 failures, all "missing" paths of gitignored trees that exist in the main tree
+  but not in the worktree (sdk/gemlib, sdk/cflib, sdk/zview, sdk/libc/mintlib, Applications/mintlib-src; each cite is older than this change:
+  none on an added line, e.g. 00-getmpb.md:57 is in 78d972f1f too). Same files in the main tree: 0 failures (621 path cites). serial/doc-check-worktree.txt.
+
+NOT COVERED / OPEN
+  * The real key press after the crash screen (raspi4b has no input in QEMU; qemu-virt has no C:): proxy via crash-nowait only. For the
+    user's HW checklist: Getmpb(0L) probe on a real Pi4, press a key, desktop returns.
+  * Hatari/EmuTOS side not re-run (October measurement stands: Bus Error writing at $0, PC=$e027e6, panic, waits for a key).
+  * xbios-chardev-r1 and xbios-system-r1 of the October list not rerun.
+  * Real hardware / cache behaviour: n/a to this change.
+
+OUT-OF-SCOPE OBSERVATIONS
+  * Page 0 longs at $0/$4 read 04040000/0007e080 on today's kernel (October NewTOS run: 0/0).
+  * `fv` (two stray characters) is printed on the serial line just before "Panic: Bus Error" in every crash run.
+  * Pexec of a crashed child returns 0xFFFF (16-bit -1) rather than a sign-extended long (not compared with EmuTOS).
+
+OUTPUT / SCRATCH
+  Clone: none (worktree used read-only, its target/ holds the xtask-built kernel8.img; no clone made). Scratch dir
+  target-agents/agent-a47a684379122b596 = 4.0G after cleanup (5.8G before: base archive and base/branch warning targets deleted);
+  holds target-host, target-k, k/, probe/. This run dir: 2.6M.
+  sha256 of cited gitignored outputs: kernel8-o3.img 6bd20446...475a1, kernel8-o3-nowait.img 9f9e688d...ae51 (full above); probes
+  GNPROBE.NAP 60c03261ea1a2129e52f8eee2f1ae820443b21a8dac36ac8ad70cb089dfcdcd7, GNSUPER.NAP 071743d4a2b0550f77c16ef266a529070c09d85366b3d71d121d7c44e73a9452,
+  PGNPROBE.NAP e6e9470fcc54591b79997ff6f20f55f4895d5ecec21b5f5be55ab3b1deff1751, PGNSUPER.NAP 6f10737790c200511a08e93f308bc67bf7f36f912a184f678d6d94db2d423e18;
+  card images (deleted after the run; before = image_sha256 of the manifest, after = card.img.after.sha256 in the run dir):
+  n-user c917648f..., n-user-nowait 7f5c728c..., n-super-nowait a2aa9220..., p-user-nowait a3468034..., p-super-nowait c97a2622...
+  (every card.img.manifest: "optional_missing none").

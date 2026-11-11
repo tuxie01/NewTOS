@@ -1,0 +1,2 @@
+S00 before: 04040000 0007e080 0007e040 0007e040
+S01 calling Getmpb(NULL) inside Supexec

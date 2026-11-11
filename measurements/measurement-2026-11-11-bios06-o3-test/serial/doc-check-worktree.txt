@@ -1,0 +1,14 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask doc-check --base 78d972f1f TASK/BIOS06.md TASK/BIOS06-STATUS-UNFINISHED.MD TASK/BIOS19.md docs/COMPATIBILITY.md docs/api/bios/00-getmpb.md`
+docs/COMPATIBILITY.md:255: sdk/gemlib/gemlib-0.44.0/a_wind_get.c:355-358: missing
+docs/COMPATIBILITY.md:255: sdk/gemlib/gemlib-0.44.0/a_graf_xhandle.c:48-49: missing
+docs/COMPATIBILITY.md:397: sdk/gemlib/gemlib-0.44.0/a_wind_set_ptr_int.c:27-28: missing
+docs/COMPATIBILITY.md:482: sdk/cflib/cflib-21/purec.c:166,171: missing
+docs/COMPATIBILITY.md:592: sdk/zview/z-tools-04805b7/zview/zvdi/vdi.c:28: missing
+docs/COMPATIBILITY.md:1666: sdk/libc/mintlib/mintlib/alglobal.c:7: missing
+docs/COMPATIBILITY.md:1669: sdk/libc/mintlib/include/mint/linea.h:154-315: missing
+docs/COMPATIBILITY.md:1672: sdk/libc/mintlib/include/mint/linea.h:485: missing
+docs/COMPATIBILITY.md:1994: sdk/cflib/cflib-21/fsnorm.c:85-92: missing
+docs/api/bios/00-getmpb.md:57: Applications/mintlib-src/mintlib-0.60.1/include/mint/ostruct.h:240-255: missing
+doc-check: 5 files, 685 path cites and 31 ADR cites checked, 10 failures, 0 skipped (reference tree missing); 100 anchored line cites, 12 unanchored line cites into NewTOS code on lines unchanged since 78d972f1f (fixed when touched)
+xtask: doc-check: 10 failures (see above)

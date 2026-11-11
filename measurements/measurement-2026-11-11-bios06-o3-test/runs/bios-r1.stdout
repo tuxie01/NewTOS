@@ -1,0 +1,36 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump bios tosdump/cases/bios-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-bios06-o3-test/runs/bios-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/xt`
+tosdump: command   cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-bios06-o3-test/runs/bios-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/xt
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    49127ddec3744dbc3ec5533bfe2a24977c0f61c6
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit 49127ddec3744dbc3ec5533bfe2a24977c0f61c6
+tosdump: features  (none)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (7 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (7 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 6bd20446df510f87d3eb7cdd2f5b24c15aa7069eb945c8219053f8ca011475a1
+tosdump: kernel ELF  sha256 68b6cd97974f056cf5389189961138a950d218ec3f5df2b78939f1958973cf62 (/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+tosdump: dumper build id 4912
+tosdump: DUMPBIOS.NAP sha256 75dd800e7627982ff166094e617dc519c4952544e99b4e274af457301d9bd517
+tosdump: card.img.manifest: image_sha256 124475a7fe3ba01b497692e2a0ac61598d8544eac3eb943ccb6f8301b67b7e2c
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/xt/tosdump-81857/card.img sha256 124475a7fe3ba01b497692e2a0ac61598d8544eac3eb943ccb6f8301b67b7e2c (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 d3df1d486adbe0709da2baa21f91cb91fff550bc625d06441238916df604d86b
+tosdump: BIOS.BIN 47072 bytes, sha256 ae52bc5f9c3e229f737499696f886e3ae102bb01c0c25216f61afbadef291de3
+tosdump: BIOS.LOG 172 bytes, sha256 9201f65059f9928a420a684a56b39ffe2ae15296f454ebf40f16016ec5acb668
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-afaf0403dea94a2cf/tosdump/host/build/tosdiff sha256 31ddce5c3ab45aa78f747ccb9f2d9b80bf670983b78fc45e29493bda46fbea39
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 147 records of 320 bytes, build 4912, case CRC 583C11E0
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 32 of 147 cases differ
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN: exit 1, 37 of 147 cases differ
+tosdump: total     38 s
+tosdump: result    run complete (differences above are findings, not failures)

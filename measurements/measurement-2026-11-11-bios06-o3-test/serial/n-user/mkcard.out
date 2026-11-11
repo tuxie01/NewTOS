@@ -1,0 +1,7 @@
+mkcard: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/card-n-user.img (64 MiB, MBR + FAT16, label NTCARD)
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+  + C:\GNPROBE.NAP <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a47a684379122b596/probe/GNPROBE.NAP
+  + C:\NEWDESK.INF <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/z-GNPROBE.NAP.inf
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/card-n-user.img
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/card-n-user.img.manifest (2 files; copy it into the measurement run, RUNINFO.TXT cites it)
