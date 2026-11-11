@@ -414,8 +414,8 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   which only shrinks (`status-check --prune-baseline`).
 - The ticket checks in `pre-commit` (`status-check --staged --new-only`) and
   `commit-msg` (the `fix`/`feat` subject and every id it names) run only with
-  `git config newtos.ticketChecks true`, switched on by the owner (ADR-037
-  point 14); off, the hooks behave as after TOOL40.
+  `git config newtos.ticketChecks true`: switched on 2026-11-11 (owner,
+  ADR-037 point 14). Ids count from the subject line only, never the body.
 - A ticket that changes `tools/git-hooks/**` is developed in its own git
   worktree; the main tree's hooks change only when it is merged after the
   tester's acceptance (owner 2026-11-11).

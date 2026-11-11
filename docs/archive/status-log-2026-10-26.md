@@ -1,35 +1,36 @@
 Historical, not authoritative; current state: STATUS.md / ORACLE.md
 
-Dieses Archiv nimmt auf, was bis zum 2026-10-26 in `docs/STATUS.md` stand und
-dort nicht mehr hingehoert: das Aenderungsprotokoll *Recent Decisions* bis auf
-die zehn neuesten Zeilen, den abgeloesten Kopf (Stand 2026-10-16), den
-„Historischen Text“, die Langfassung der Phasentabelle und die Open-ADR- und
-Blocked-Punkte vor der Bereinigung. Ausgelagert am 2026-10-26 nach der
-freigegebenen Triage `docs/analysis/cleanup-triage-2026-10-26.md`; STATUS.md fuehrt
-seitdem nur den aktuellen Stand und hoechstens zehn Recent Decisions.
+This archive holds what stood in `docs/STATUS.md` up to 2026-10-26 and no
+longer belongs there: the change log *Recent Decisions* except for the ten
+newest rows, the superseded head (as of 2026-10-16), the
+"historical text", the long form of the phase table and the Open-ADR and
+Blocked items before the clean-up. Moved out on 2026-10-26 after the
+approved triage `docs/analysis/cleanup-triage-2026-10-26.md`; since then STATUS.md
+holds only the current state and at most ten Recent Decisions.
 
-Die Zeilen sind unveraendert uebernommen; nur relative Markdown-Links sind auf
-den neuen Ort `docs/archive/` umgestellt. Das Protokoll ist nach Datum
-sortiert, neueste zuerst; Zeilen desselben Datums stehen in ihrer bisherigen
-Reihenfolge (im frueheren, aufsteigend sortierten Endblock 2026-05-02 bis
-2026-07-03 ist das die zeitliche). Was hier steht, galt zum jeweiligen Datum — es ist kein
-Beleg fuer heute; Pfade und Zeilennummern koennen veraltet sein (der Desktop
-lag z. B. bis DESK43 U8b in `kernel/src/desk/`, heute `programs/desktop/`).
+The rows are taken over unchanged; only relative Markdown links are switched to
+the new place `docs/archive/`. The log is sorted by date,
+newest first; rows of the same date keep their previous
+order (in the former, ascending end block 2026-05-02 to
+2026-07-03 that is the chronological one). What stands here held on its date; it is no
+evidence for today; paths and line numbers may be outdated (the desktop
+lay, e.g., in `kernel/src/desk/` until DESK43 U8b, today `programs/desktop/`).
 
-**Commit-Hashes:** Die Historie wurde am 2026-10-19 umgeschrieben. Hashes aus
-der Zeit davor sind alte Hashes; `tools/oldhash.sh <prefix>` uebersetzt sie
-ueber `docs/commit-map.txt`. Einige Hashes aus Juni/Juli 2026 loesen nirgends
-auf: sie stammen aus einem noch frueheren Verlauf, den die Commit-Map nicht
-abdeckt (die Arbeit existiert unter anderen Hashes mit gleichem Betreff).
-Hashes wie `5805c0a4…` sind Abbild-Pruefsummen oder Upstream-Pins, keine
-Repository-Commits.
+**Commit hashes:** history was rewritten on 2026-10-19. Hashes from
+before are old hashes; `tools/oldhash.sh <prefix>` translates them
+via `docs/commit-map.txt`. Some hashes from June/July 2026 resolve nowhere:
+they come from an even earlier history the commit map does not
+cover (the work exists under other hashes with the same subject).
+Hashes like `5805c0a4…` are image checksums or upstream pins, not
+repository commits.
 
-# STATUS.md-Archiv, ausgelagert 2026-10-26
+# STATUS.md archive, moved out 2026-10-26
 
-## Recent Decisions bis 2026-10-24 (neueste zuerst; spaeter aus STATUS.md rotierte Zeilen stehen oben)
+## Recent Decisions up to 2026-10-24 (newest first; rows rotated out of STATUS.md later stand on top)
 
 | Date       | Decision                                            |
 |------------|-----------------------------------------------------|
+| 2026-11-08 | **[V58](../../TASK/V58.md) and [V59](../../TASK/V59.md): lines as span, column or step pixel, mouse pointer saved, painted and restored per cell; in `main` with merges `b2ba4981` and `64bf181e` (Developer each in the worktree; Tester PASS `3711dd00`, `2d58115d`; Pi `measurements/measurement-2026-11-08-v58-v59-pi/RUNINFO.TXT`; commit of this line, Lead).** Why: ADR-036, user 2026-11-08 (finish the NEON series); both paths ran per pixel via `dyn` calls, `abline` in addition with a division per pixel, the pointer with a `fill_rect` 1x1 and its own cache maintenance per pixel. Pixels unchanged: tables, `vdprobe`, `wkprobe`, AES r2/r3/r4, desktop scenes byte-identical to the base. User's Pi, one Fbench run against the V50/V51 run: Hide/show mouse 20 377 -> 111 346/s (x5,46), graf_mouse off+on x4,51, form_dial redraw x1,94; XOR line +57 %, User line style +18 %, Polyline 32 +13 %; Line, 2 points and Dashed line unchanged; control rows scatter up to 10 %. The five rows that were 9–17 % lower in the preceding run are again within 5 % of the V49 run: run scatter, no regression. Against the state before V49 (Fbench comparison): VDI 234 %, AES 239 %, full-screen window 442 %. Host tests 2339 -> 2358/0/6; warnings per branch delta 0 (rustc 64/93, clippy 73/121, Developer and Tester), not re-measured on the merge. Open: `raster-prof` kernels of V58, EL0 test with live V registers (V59). |
 | 2026-11-08 | **[V50](../../TASK/V50.md) and [V51](../../TASK/V51.md): NEON kernels for expansion (text, `vrt_cpyfm`) and rectangle copy (scrolling, moving windows, 16 raster operations); in `main` with merge `20c23349` (Developer each in the worktree; Tester PASS `e6763ca4`, `fe527625`; Pi `measurements/measurement-2026-11-08-v50-v51-pi/RUNINFO.TXT`).** Why: ADR-036, same finding as V49 (per-pixel `combine`/`read_volatile`). Pixels unchanged: all tables, probes, AES and desktop images byte-identical, overlap in all directions, text with all effects in all modes. User's Pi against V49: Mono blit 13 460 -> 45 721/s, text x1,8-2,6, full-screen scrolling 81,6 -> 176,0/s, Blit 64x64 x2,2, Window move x1,8. NewTOS now leads against the V4SA except for lines and hide/show mouse. Five untouched rows 9-17 % lower (one run, not evaluated). Host tests 2318 -> 2339/0/6. Kernel on the card = `main` except for the embedded commit hash (16 bytes). |
 | 2026-11-08 | **[V56](../../TASK/V56.md): The `vex_*` default marks are separate `static AtomicU8` instead of empty functions (`559614ed`, Developer; Tester PASS `f064a5cf`, `measurements/measurement-2026-11-08-v56-test/RUNINFO.TXT`).** Why: rustc gives functions `unnamed_addr`, LLVM MergeFunctions put `just_rts`/`mov_cur`/`aes_wheel_token` on one address in the release kernel and struck the AES wheel comparison. Consequence: a program that saves the wheel vector and returns it killed the desktop wheel. Latent, no card program calls `vex_*`; new probe `tosdump/probes/wvprobe.c`: base wheel dead, fix scrolls, oracle like the fix. Host tests +2 (release-sensitive). |
 | 2026-11-08 | **[V40](../../TASK/V40.md): `LSTLIN` maintained like EmuTOS, the XOR underline reads it (`5be660c2`, Developer; Tester PASS `da2aad51`, `measurements/measurement-2026-11-08-v40-test/RUNINFO.TXT`).** Why: a global Line-A word (`bios/lineavars.S:288`), only `polyline` writes it (`vdi/vdi_line.c:1106-1108`), `abline` shortens the end of an XOR line when FALSE; NewTOS did not know it. 32 new probe cases plus TVJ/TVK oracle-identical, base against fix only the end pixel of the underline in 16 cases. The AES draws past the VDI trap, so its line, box and frame paths set the flag (pixels unchanged). Host tests +14. Test gap: menu separator line without a test. |
