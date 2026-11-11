@@ -4,7 +4,9 @@ Status: OPEN (2026-11-11) | Priority: P1
 
 Type: tool (enforcement). Owner decisions 2026-11-10/11: ADR-037 with its addendum of 2026-11-11 (points 11–14,
 decisions e–g) in `docs/MEMORY.md`. Order: starts only after [TOOL40](TOOL40.md) is done — both change
-`tools/git-hooks/` and the xtask hook plumbing. Hooks are switched on only after the owner's OK.
+`tools/git-hooks/` and the xtask hook plumbing. Hooks are switched on only after the owner's OK. Developed in its own
+git worktree; the main tree's hooks change only when TOOL41 is merged after the tester's acceptance (owner
+2026-11-11, CLAUDE.md *Commit Discipline*).
 
 ## Facts
 

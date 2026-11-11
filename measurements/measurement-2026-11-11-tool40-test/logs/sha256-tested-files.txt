@@ -1,0 +1,4 @@
+1e7586674a302d7d4d97380f6c0350bf81dbccbc6e5798f2d2c9f1844ec5f8df  /Volumes/Daten/Development/PiRusTOS/tools/xtask/src/deps.rs
+6f60246e73aaad37d7de796e149442016b4b72ebc9c80bf294fee5095ce99eb8  /Volumes/Daten/Development/PiRusTOS/tools/xtask/src/doc_check.rs
+46c48522f47949fa526013e5eaffbb62540214b7f0f061900ce7cd5090d045c9  /Volumes/Daten/Development/PiRusTOS/tools/xtask/src/main.rs
+74eae89fdf6aebce6e6b86b9da2bf529e40051ce0b1ae02e6166a5435bb8afda  /Volumes/Daten/Development/PiRusTOS/tools/git-hooks/pre-commit

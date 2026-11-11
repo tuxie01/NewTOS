@@ -1,0 +1,13 @@
+diff --git a/tools/xtask/src/deps.rs b/tools/xtask/src/deps.rs
+index 041b23201..956d51704 100644
+--- a/tools/xtask/src/deps.rs
++++ b/tools/xtask/src/deps.rs
+@@ -931,7 +931,7 @@ pub fn staged_problems(root: &Path, base: &str) -> Result<(Vec<Problem>, usize),
+     let (mut fresh, mut legacy) = (Vec::new(), 0);
+     for p in now {
+         match left.get_mut(&(p.row.clone(), p.what.clone())) {
+-            Some(n) if *n > 0 => {
++            Some(n) if false && *n > 0 => {
+                 *n -= 1;
+                 legacy += 1;
+             }

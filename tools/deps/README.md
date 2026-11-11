@@ -15,6 +15,7 @@ tools/deps/gen-deps.py            # rewrite edges.tsv and layers.md
 tools/deps/gen-deps.py --check    # regenerate in a temp dir, compare byte for byte
 cargo xtask deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N] [--layers l,..]
 cargo xtask deps --check-mapping  # what the mapping test checks, as a report
+cargo xtask deps --check-mapping --staged  # the same on the index, new problems only (pre-commit)
 cargo xtask deps --coverage       # mapped/design/unmapped per layer
 ```
 
@@ -364,3 +365,19 @@ line lies in that ADR's section of `<file>`, a `source:` path exists.
 Regenerating `edges.tsv` after a pin move therefore turns the mapping red
 where it no longer fits — fix the rows by reading, `cargo xtask deps
 --check-mapping` lists them.
+
+The pre-commit hook (`tools/git-hooks/pre-commit`, TOOL40) runs `cargo xtask
+deps --check-mapping --staged`: the same checks on what the commit records —
+`edges.tsv`, `mapping.tsv`, the cited ADR files, `source:` paths and NewTOS
+files as the index has them (`staged_problems`,
+`tools/xtask/src/deps.rs:920@staged_problems`), an unstaged working-tree
+copy never counts. Only problems the commit introduces reject it: a
+problem is legacy when `HEAD` reports it too for a row with the same
+columns (a row that only moved keeps its problems; a row the commit edits
+is checked as new). A check that cannot run (`mapping.tsv` or `edges.tsv`
+missing from the index or not parsing, git failing) rejects the commit.
+The hook starts it only when the commit stages `docs/MEMORY.md`,
+`mapping.tsv`, `edges.tsv` or a file the staged `mapping.tsv` names
+(`newtos_file`, the file of an ADR cite, a `source:` path): inserting lines
+into `docs/MEMORY.md` above a cited ADR, or renaming a mapped `fn`, is
+caught at the commit, not first by the host test.

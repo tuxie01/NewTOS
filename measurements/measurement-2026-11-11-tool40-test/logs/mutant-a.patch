@@ -1,0 +1,13 @@
+diff --git a/tools/xtask/src/doc_check.rs b/tools/xtask/src/doc_check.rs
+index 16f4db23d..92cfe1979 100644
+--- a/tools/xtask/src/doc_check.rs
++++ b/tools/xtask/src/doc_check.rs
+@@ -1037,7 +1037,7 @@ impl Resolver {
+             if !self.tracked()?.contains(rel) {
+                 return Ok(None);
+             }
+-            return self.workspace_file(rel).map(Some);
++            return Ok(fs::read(self.root.join(rel)).ok().map(Rc::from));
+         }
+         Ok(fs::read(self.root.join(rel)).ok().map(Rc::from))
+     }

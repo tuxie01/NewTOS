@@ -1,0 +1,12 @@
+doc-check --staged: no staged docs to check
+doc-check --staged: 1936 docs the commit leaves alone, 119 of their cites name one of the 1 changed paths, 0 broken by this commit
+docs/analysis/deps/mapping.tsv:35: tos-api/src/bdos/fs/cache.rs has no `fn invalidate_drive_broken`
+deps --check-mapping --staged: 1 problems the commit introduces, 0 legacy (at HEAD too, not blocking)
+xtask: 1 mapping problems the commit introduces
+pre-commit: the mapping check failed on rows this commit breaks (above, docs/analysis/deps/mapping.tsv).
+pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+  1,54s user 2,30s system 183% cpu 2,091 total
+rc=1
+--- cargo invocations:
+1794355027 cargo -q xtask doc-check --staged
+1794355028 cargo -q xtask deps --check-mapping --staged

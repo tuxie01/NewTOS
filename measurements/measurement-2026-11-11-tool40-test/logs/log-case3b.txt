@@ -1,0 +1,6 @@
+doc-check --staged: no staged docs to check
+doc-check --staged: 1936 docs the commit leaves alone, 181 of their cites name one of the 1 changed paths, 0 broken by this commit
+  0,95s user 1,39s system 178% cpu 1,309 total
+rc=0
+--- cargo invocations:
+1794354972 cargo -q xtask doc-check --staged

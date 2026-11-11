@@ -1,0 +1,3 @@
+doc-check --staged: 2 files, 41 path cites and 8 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 9 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1934 docs the commit leaves alone, 1006 of their cites name one of the 7 changed paths, 0 broken by this commit
+git commit -q -m "feat(tools): hook runs the mapping check (TOOL40)"  1,44s user 2,26s system 183% cpu 2,012 total

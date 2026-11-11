@@ -1,0 +1,67 @@
+doc-check --staged: no staged docs to check
+TASK/BIOS01.md:79: bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/FS04-EMMC-STATUS-DONE.MD:81: cache.rs:128: missing (resolves at HEAD; this commit breaks it)
+TASK/FS04-EMMC-STATUS-DONE.MD:82: cache.rs:67-69: missing (resolves at HEAD; this commit breaks it)
+TASK/FS04-STATUS-UNFINISHED.MD:100: cache.rs:18-19: missing (resolves at HEAD; this commit breaks it)
+TASK/FS08-FAT-STATUS-DONE.MD:29: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/FS09-STATUS-DONE.MD:44: bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/FS20-STATUS-DONE.MD:17: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/FS20-STATUS-DONE.MD:18: tos-api/src/bdos/fs/cache.rs:262@hit_test: missing (resolves at HEAD; this commit breaks it)
+TASK/FS20-STATUS-DONE.MD:20: tos-api/src/bdos/fs/cache.rs:277@rwabs_test: missing (resolves at HEAD; this commit breaks it)
+TASK/FS20-STATUS-DONE.MD:21: tos-api/src/bdos/fs/cache.rs:291@invalidate_drive: missing (resolves at HEAD; this commit breaks it)
+TASK/FS24.md:89: cache.rs:452@get: missing (resolves at HEAD; this commit breaks it)
+TASK/FS24.md:92: cache.rs:226@signal_media_change: missing (resolves at HEAD; this commit breaks it)
+TASK/FS24.md:231: tos-api/src/bdos/fs/cache.rs:56@SLOTS: missing (resolves at HEAD; this commit breaks it)
+TASK/FS26.md:82: tos-api/src/bdos/fs/cache.rs:56@SLOTS: missing (resolves at HEAD; this commit breaks it)
+TASK/FS26.md:83: tos-api/src/bdos/fs/cache.rs:627@flush: missing (resolves at HEAD; this commit breaks it)
+TASK/HW03-STATUS-DONE.MD:74: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/HW03-STATUS-DONE.MD:128: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/HW03-STATUS-DONE.MD:244: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/HW03.md:23: tos-api/src/bdos/fs/cache.rs:67-69: missing (resolves at HEAD; this commit breaks it)
+TASK/HW03.md:33: cache.rs:128: missing (resolves at HEAD; this commit breaks it)
+TASK/HW05.md:69: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/HW08.md:22: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/HW08.md:22: tos-api/src/bdos/fs/cache.rs:627@flush: missing (resolves at HEAD; this commit breaks it)
+TASK/HW08.md:49: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+TASK/HW08.md:49: tos-api/src/bdos/fs/cache.rs:627@flush: missing (resolves at HEAD; this commit breaks it)
+docs/COMPATIBILITY.md:1201: tos-api/src/bdos/fs/cache.rs:225-243: missing (resolves at HEAD; this commit breaks it)
+docs/INVENTORY.md:433: tos-api/src/bdos/fs/cache.rs:88: missing (resolves at HEAD; this commit breaks it)
+docs/analysis/emutos-full-function-inventory.md:209: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:330: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:576: tos-api/src/bdos/fs/cache.rs:352@write_back: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:603: tos-api/src/bdos/fs/cache.rs:262@hit_test: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:604: tos-api/src/bdos/fs/cache.rs:277@rwabs_test: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:609: tos-api/src/bdos/fs/cache.rs:226@signal_media_change: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:620: tos-api/src/bdos/fs/cache.rs:291@invalidate_drive: missing (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/file/40-fwrite.md:480: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+docs/api/hw/emmc-audit.md:5: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+docs/api/hw/emmc-audit.md:310: tos-api/src/bdos/fs/cache.rs: missing (resolves at HEAD; this commit breaks it)
+docs/api/hw/emmc-audit.md:453: cache.rs:18: missing (resolves at HEAD; this commit breaks it)
+docs/api/hw/emmc-audit.md:556: tos-api/src/bdos/fs/cache.rs:63-72: missing (resolves at HEAD; this commit breaks it)
+docs/api/hw/emmc-audit.md:582: cache.rs:104-119: missing (resolves at HEAD; this commit breaks it)
+doc-check --staged: 1936 docs the commit leaves alone, 155 of their cites name one of the 2 changed paths, 40 broken by this commit
+xtask: doc-check: 40 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above).
+docs/analysis/deps/mapping.tsv:35: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:82: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:83: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:84: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:85: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:86: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:87: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:88: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:89: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:90: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:157: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:158: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:159: tos-api/src/bdos/fs/cache.rs does not exist
+docs/analysis/deps/mapping.tsv:175: tos-api/src/bdos/fs/cache.rs does not exist
+deps --check-mapping --staged: 14 problems the commit introduces, 0 legacy (at HEAD too, not blocking)
+xtask: 14 mapping problems the commit introduces
+pre-commit: the mapping check failed on rows this commit breaks (above, docs/analysis/deps/mapping.tsv).
+pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+  1,61s user 2,36s system 75% cpu 5,256 total
+rc=1
+--- cargo invocations:
+1794355386 cargo -q xtask doc-check --staged
+1794355390 cargo -q xtask deps --check-mapping --staged

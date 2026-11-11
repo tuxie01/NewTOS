@@ -49,6 +49,8 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fs;
 use std::path::Path;
 
+use crate::doc_check::{Resolver, Tree};
+
 /// The generated edge list.
 pub const EDGES_FILE: &str = "docs/analysis/deps/edges.tsv";
 /// The hand-curated EmuTOS → NewTOS mapping.
@@ -646,6 +648,23 @@ fn parse_kinds(s: &str) -> Result<BTreeSet<String>, String> {
 }
 
 pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
+    if args == ["--check-mapping", "--staged"] || args == ["--staged", "--check-mapping"] {
+        let (fresh, legacy) = staged_problems(root, "HEAD")
+            .map_err(|e| format!("deps --check-mapping --staged: cannot run: {e}"))?;
+        for p in &fresh {
+            println!("{p}");
+        }
+        println!(
+            "deps --check-mapping --staged: {} problems the commit introduces, {legacy} legacy \
+             (at HEAD too, not blocking)",
+            fresh.len()
+        );
+        return if fresh.is_empty() {
+            Ok(())
+        } else {
+            Err(format!("{} mapping problems the commit introduces", fresh.len()))
+        };
+    }
     if args == ["--check-mapping"] {
         let g = parse_edges(&read(root, EDGES_FILE)?)?;
         let map = parse_mapping(&read(root, MAPPING_FILE)?)?;
@@ -697,7 +716,7 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
     }
     let usage = "usage: cargo xtask deps <fn> --down|--up [--kinds k,..|+k,..|all] [--depth N] \
                  [--layers l,..]\n       \
-                 cargo xtask deps --check-mapping\n       \
+                 cargo xtask deps --check-mapping [--staged]\n       \
                  cargo xtask deps --coverage";
     let start = start.ok_or(usage)?;
     let dir = dir.ok_or(usage)?;
@@ -745,48 +764,88 @@ fn is_ident_byte(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'_'
 }
 
+/// One problem [`check_mapping`] reports. `line` is the row's line in
+/// [`MAPPING_FILE`] (`None` for a function without a row), `row` the row's
+/// columns without the line (empty without a row), `what` the message.
+/// `--staged` compares problems by `row` and `what`: a row that only moved
+/// keeps its problems; a row the commit edits is new (TOOL40).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Problem {
+    pub line: Option<usize>,
+    pub row: String,
+    pub what: String,
+}
+
+impl std::fmt::Display for Problem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.line {
+            Some(l) => write!(f, "{MAPPING_FILE}:{l}: {}", self.what),
+            None => write!(f, "{MAPPING_FILE}: {}", self.what),
+        }
+    }
+}
+
+/// Every problem of `mapping.tsv` against the graph and the NewTOS tree,
+/// with the files read from the working tree (see [`check_mapping_in`]).
+pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
+    let mut disk = |rel: &str| Ok(fs::read(root.join(rel)).ok().map(|b| String::from_utf8_lossy(&b).into_owned()));
+    check_mapping_in(&mut disk, g, map)
+        .expect("reading the working tree does not fail")
+        .iter()
+        .map(Problem::to_string)
+        .collect()
+}
+
 /// Every problem of `mapping.tsv` against the graph and the NewTOS tree:
 /// an EmuTOS function that is no `def` row of its file, a NewTOS file or
 /// function that does not exist, a `-` row without a reason, an EmuTOS
 /// `bios/`/`bdos/` function without a row, and a bad class: one that does
 /// not parse, `mapped` without a NewTOS function or `design`/`unmapped`
 /// with one, an ADR cite whose line is not in that ADR's section of the
-/// cited file, a `source:` path that does not exist.
-pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
+/// cited file, a `source:` path that does not exist. `file` reads a
+/// workspace-relative file of the tree checked: `Ok(None)` = no such file,
+/// `Err` = the tree cannot be read (the check cannot run).
+pub fn check_mapping_in(
+    file: &mut dyn FnMut(&str) -> Result<Option<String>, String>,
+    g: &Graph,
+    map: &[MapRow],
+) -> Result<Vec<Problem>, String> {
     let mut bad = Vec::new();
     let mut covered: BTreeSet<(String, String)> = BTreeSet::new();
     let mut texts: BTreeMap<String, Option<String>> = BTreeMap::new();
+    let mut text_of = |rel: &str| -> Result<Option<String>, String> {
+        if !texts.contains_key(rel) {
+            texts.insert(rel.to_string(), file(rel)?);
+        }
+        Ok(texts[rel].clone())
+    };
     for r in map {
-        let at = format!("{MAPPING_FILE}:{}", r.line);
+        let row = [&r.emutos_fn, &r.emutos_file, &r.newtos_file, &r.newtos_fn, &r.class, &r.note]
+            .map(String::as_str)
+            .join("\t");
+        let mut push = |what: String| bad.push(Problem { line: Some(r.line), row: row.clone(), what });
         let none = r.newtos_file == "-" || r.newtos_fn == "-";
         match parse_class(&r.class) {
-            Err(e) => bad.push(format!("{at}: {e}")),
-            Ok(Class::Mapped) if none => {
-                bad.push(format!("{at}: class mapped, but no NewTOS function (`-`)"))
-            }
+            Err(e) => push(e),
+            Ok(Class::Mapped) if none => push("class mapped, but no NewTOS function (`-`)".into()),
             Ok(Class::Design(_) | Class::Unmapped) if !none => {
-                bad.push(format!("{at}: class {}, but a NewTOS function is named", r.class))
+                push(format!("class {}, but a NewTOS function is named", r.class))
             }
-            Ok(Class::Design(Evidence::Adr { n, file, line })) => {
-                let text = texts
-                    .entry(file.clone())
-                    .or_insert_with(|| fs::read_to_string(root.join(&file)).ok());
-                match text {
-                    None => bad.push(format!("{at}: ADR-{n:03}: {file} does not exist")),
-                    Some(t) => match adr_section_at(t, line) {
-                        Some(m) if m == n => {}
-                        Some(m) => bad.push(format!(
-                            "{at}: {file}:{line} is in ADR-{m:03}, not in ADR-{n:03}"
-                        )),
-                        None => bad.push(format!(
-                            "{at}: {file}:{line} is not in the section of ADR-{n:03} \
-                             (no `## ADR-{n:03}:` heading at or above it)"
-                        )),
-                    },
+            Ok(Class::Design(Evidence::Adr { n, file, line })) => match text_of(&file)? {
+                None => push(format!("ADR-{n:03}: {file} does not exist")),
+                Some(t) => match adr_section_at(&t, line) {
+                    Some(m) if m == n => {}
+                    Some(m) => push(format!("{file}:{line} is in ADR-{m:03}, not in ADR-{n:03}")),
+                    None => push(format!(
+                        "{file}:{line} is not in the section of ADR-{n:03} \
+                         (no `## ADR-{n:03}:` heading at or above it)"
+                    )),
+                },
+            },
+            Ok(Class::Design(Evidence::Source(p))) => {
+                if text_of(&p)?.is_none() {
+                    push(format!("source {p} does not exist"))
                 }
-            }
-            Ok(Class::Design(Evidence::Source(p))) if !root.join(&p).is_file() => {
-                bad.push(format!("{at}: source {p} does not exist"))
             }
             Ok(_) => {}
         }
@@ -794,30 +853,27 @@ pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
             d.iter().any(|(_, site)| site.split(':').next() == Some(r.emutos_file.as_str()))
         });
         if !def_ok {
-            bad.push(format!("{at}: `{}` is not defined in {}", r.emutos_fn, r.emutos_file));
+            push(format!("`{}` is not defined in {}", r.emutos_fn, r.emutos_file));
         }
         covered.insert((r.emutos_fn.clone(), r.emutos_file.clone()));
         if r.newtos_file == "-" || r.newtos_fn == "-" {
             if r.newtos_file != r.newtos_fn {
-                bad.push(format!("{at}: newtos_file and newtos_fn must both be `-`"));
+                push("newtos_file and newtos_fn must both be `-`".into());
             }
             if r.note.trim().is_empty() || r.note == "-" {
-                bad.push(format!("{at}: no counterpart needs a reason in the note"));
+                push("no counterpart needs a reason in the note".into());
             }
             continue;
         }
         if !NEWTOS_ROOTS.iter().any(|p| r.newtos_file.starts_with(p)) {
-            bad.push(format!("{at}: {} is not NewTOS code ({})", r.newtos_file, NEWTOS_ROOTS.join(", ")));
+            push(format!("{} is not NewTOS code ({})", r.newtos_file, NEWTOS_ROOTS.join(", ")));
             continue;
         }
-        let text = texts
-            .entry(r.newtos_file.clone())
-            .or_insert_with(|| fs::read_to_string(root.join(&r.newtos_file)).ok());
-        match text {
-            None => bad.push(format!("{at}: {} does not exist", r.newtos_file)),
+        match text_of(&r.newtos_file)? {
+            None => push(format!("{} does not exist", r.newtos_file)),
             Some(t) => {
-                if !defines_fn(t, &r.newtos_fn) {
-                    bad.push(format!("{at}: {} has no `fn {}`", r.newtos_file, r.newtos_fn));
+                if !defines_fn(&t, &r.newtos_fn) {
+                    push(format!("{} has no `fn {}`", r.newtos_file, r.newtos_fn));
                 }
             }
         }
@@ -828,11 +884,61 @@ pub fn check_mapping(root: &Path, g: &Graph, map: &[MapRow]) -> Vec<String> {
             if MAPPED_DIRS.iter().any(|p| file.starts_with(p))
                 && !covered.contains(&(f.clone(), file.to_string()))
             {
-                bad.push(format!("{MAPPING_FILE}: no row for `{f}` ({site})"));
+                bad.push(Problem { line: None, row: String::new(), what: format!("no row for `{f}` ({site})") });
             }
         }
     }
-    bad
+    Ok(bad)
+}
+
+/// The problems of the mapping as one tree records it: [`EDGES_FILE`],
+/// [`MAPPING_FILE`] and every file a row names read through `res` (a
+/// [`Resolver`] viewing the index or a commit). Outer `Err`: the tree
+/// cannot be read (git failed); inner `Err`: [`EDGES_FILE`] or
+/// [`MAPPING_FILE`] is missing or does not parse.
+fn tree_problems(res: &mut Resolver) -> Result<Result<Vec<Problem>, String>, String> {
+    let mut file = |rel: &str| -> Result<Option<String>, String> {
+        Ok(res.tree_file(Path::new(rel))?.map(|b| String::from_utf8_lossy(&b).into_owned()))
+    };
+    let (Some(edges), Some(mapping)) = (file(EDGES_FILE)?, file(MAPPING_FILE)?) else {
+        return Ok(Err(format!("{EDGES_FILE} or {MAPPING_FILE} is not in the tree")));
+    };
+    let parsed = parse_edges(&edges).and_then(|g| Ok((g, parse_mapping(&mapping)?)));
+    match parsed {
+        Err(e) => Ok(Err(e)),
+        Ok((g, map)) => check_mapping_in(&mut file, &g, &map).map(Ok),
+    }
+}
+
+/// The problems of the staged mapping that `base` does not have, and the
+/// number of those it has too (legacy). Both sides as [`tree_problems`];
+/// the index must have both files and parse them (else the check cannot
+/// run); a `base` that lacks them or cannot parse them has no problems, so
+/// every staged one is new. A problem is the same on both sides when its
+/// row (columns, not line) and message are; with duplicates, the surplus is
+/// new.
+pub fn staged_problems(root: &Path, base: &str) -> Result<(Vec<Problem>, usize), String> {
+    let mut index = Resolver::new(root);
+    index.use_tree(&Tree::Index, base)?;
+    let now = tree_problems(&mut index)?.map_err(|e| format!("the index: {e}"))?;
+    let mut then = Resolver::new(root);
+    then.use_tree(&Tree::Rev(base.to_string()), base)?;
+    let old = tree_problems(&mut then)?.unwrap_or_default();
+    let mut left: BTreeMap<(String, String), usize> = BTreeMap::new();
+    for p in old {
+        *left.entry((p.row, p.what)).or_default() += 1;
+    }
+    let (mut fresh, mut legacy) = (Vec::new(), 0);
+    for p in now {
+        match left.get_mut(&(p.row.clone(), p.what.clone())) {
+            Some(n) if *n > 0 => {
+                *n -= 1;
+                legacy += 1;
+            }
+            _ => fresh.push(p),
+        }
+    }
+    Ok((fresh, legacy))
 }
 
 #[cfg(test)]
@@ -1020,6 +1126,86 @@ a\tcb\tcallback\taddress\tbdos/a.c:3
         let (g, m) = real();
         let bad = check_mapping(&root(), &g, &m);
         assert!(bad.is_empty(), "{} mapping problems:\n{}", bad.len(), bad.join("\n"));
+    }
+
+    /// `--staged` (TOOL40): the index, not the working tree, is checked;
+    /// a problem the commit introduces is reported, one `HEAD` has too is
+    /// legacy, also when its row only moved.
+    #[test]
+    fn staged_reports_only_what_the_commit_introduces() {
+        use crate::doc_check::tests::TempRepo;
+        let r = TempRepo::new("deps-staged");
+        let memory = "# M\n\n## ADR-017: x\nbody\n## ADR-030: y\nbody\n";
+        r.write("docs/MEMORY.md", memory);
+        r.write("tos-api/src/x.rs", "pub fn fa() {}\n");
+        r.write(
+            EDGES_FILE,
+            "from\tto\tkind\tdetail\tsite\n\
+             a\t-\tdef\tbdos\tbdos/a.c:1\n\
+             b\t-\tdef\tbdos\tbdos/b.c:1\n\
+             c\t-\tdef\tbdos\tbdos/c.c:1\n",
+        );
+        let rows = "emutos_fn\temutos_file\tnewtos_file\tnewtos_fn\tclass\tnote\n\
+                    a\tbdos/a.c\ttos-api/src/x.rs\tfa\tmapped\t-\n\
+                    b\tbdos/b.c\t-\t-\tdesign:ADR-030@docs/MEMORY.md:5\tno line-a\n\
+                    c\tbdos/c.c\ttos-api/src/x.rs\tgone\tmapped\tlegacy\n";
+        r.write(MAPPING_FILE, rows);
+        r.git(&["add", "-A"]);
+        r.git(&["commit", "-q", "-m", "base"]);
+        let run = || staged_problems(&r.0, "HEAD").unwrap();
+        let whats = |v: &[Problem]| v.iter().map(Problem::to_string).collect::<Vec<_>>().join("\n");
+
+        // Nothing staged: the legacy problem (row c) does not block.
+        let (fresh, legacy) = run();
+        assert!(fresh.is_empty(), "{}", whats(&fresh));
+        assert_eq!(legacy, 1);
+
+        // A line inserted above ADR-030, staged: row b now cites ADR-017.
+        let shifted = memory.replacen("# M\n", "# M\nnew\n", 1);
+        r.write("docs/MEMORY.md", &shifted);
+        r.git(&["add", "docs/MEMORY.md"]);
+        let (fresh, legacy) = run();
+        assert_eq!(whats(&fresh), format!("{MAPPING_FILE}:3: docs/MEMORY.md:5 is in ADR-017, not in ADR-030"));
+        assert_eq!(legacy, 1);
+        // An unstaged fix in the working tree does not let it through ...
+        r.write("docs/MEMORY.md", memory);
+        assert_eq!(run().0.len(), 1);
+        // ... and the staged fix passes although the working copy is broken.
+        r.git(&["add", "docs/MEMORY.md"]);
+        r.write("docs/MEMORY.md", &shifted);
+        assert!(run().0.is_empty());
+        r.write("docs/MEMORY.md", memory);
+
+        // A staged rename of a mapped fn is new; the working copy is not read.
+        r.write("tos-api/src/x.rs", "pub fn fb() {}\n");
+        r.git(&["add", "tos-api/src/x.rs"]);
+        r.write("tos-api/src/x.rs", "pub fn fa() {}\n");
+        assert_eq!(whats(&run().0), format!("{MAPPING_FILE}:2: tos-api/src/x.rs has no `fn fa`"));
+        r.git(&["add", "tos-api/src/x.rs"]);
+        assert!(run().0.is_empty());
+
+        // Rows inserted above the legacy row move it: still legacy. A staged
+        // deletion of the mapped file is new, also for the legacy row,
+        // whose problem changes.
+        let moved = rows.replacen("\na\t", "\n# moved\n# moved\na\t", 1);
+        r.write(MAPPING_FILE, &moved);
+        r.git(&["add", MAPPING_FILE]);
+        let (fresh, legacy) = run();
+        assert!(fresh.is_empty(), "{}", whats(&fresh));
+        assert_eq!(legacy, 1);
+        r.git(&["rm", "-q", "--cached", "tos-api/src/x.rs"]);
+        assert_eq!(
+            whats(&run().0),
+            format!(
+                "{MAPPING_FILE}:4: tos-api/src/x.rs does not exist\n\
+                 {MAPPING_FILE}:6: tos-api/src/x.rs does not exist"
+            )
+        );
+        r.git(&["add", "tos-api/src/x.rs"]);
+
+        // Without the mapping in the index the check cannot run.
+        r.git(&["rm", "-q", "--cached", MAPPING_FILE]);
+        assert!(staged_problems(&r.0, "HEAD").is_err());
     }
 
     #[test]

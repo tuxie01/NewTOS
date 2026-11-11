@@ -1,0 +1,21 @@
+diff --git a/tools/xtask/src/deps.rs b/tools/xtask/src/deps.rs
+index 041b23201..cfb067223 100644
+--- a/tools/xtask/src/deps.rs
++++ b/tools/xtask/src/deps.rs
+@@ -924,13 +924,13 @@ pub fn staged_problems(root: &Path, base: &str) -> Result<(Vec<Problem>, usize),
+     let mut then = Resolver::new(root);
+     then.use_tree(&Tree::Rev(base.to_string()), base)?;
+     let old = tree_problems(&mut then)?.unwrap_or_default();
+-    let mut left: BTreeMap<(String, String), usize> = BTreeMap::new();
++    let mut left: BTreeMap<(Option<usize>, String), usize> = BTreeMap::new();
+     for p in old {
+-        *left.entry((p.row, p.what)).or_default() += 1;
++        *left.entry((p.line, p.what)).or_default() += 1;
+     }
+     let (mut fresh, mut legacy) = (Vec::new(), 0);
+     for p in now {
+-        match left.get_mut(&(p.row.clone(), p.what.clone())) {
++        match left.get_mut(&(p.line, p.what.clone())) {
+             Some(n) if *n > 0 => {
+                 *n -= 1;
+                 legacy += 1;

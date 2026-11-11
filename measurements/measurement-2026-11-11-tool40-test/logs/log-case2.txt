@@ -1,0 +1,8 @@
+doc-check --staged: 1 files, 521 path cites and 164 ADR cites checked, 0 failures, 6 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 4 anchored line cites, 51 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1935 docs the commit leaves alone, 222 of their cites name one of the 1 changed paths, 0 broken by this commit
+deps --check-mapping --staged: 0 problems the commit introduces, 0 legacy (at HEAD too, not blocking)
+  2,16s user 3,17s system 182% cpu 2,919 total
+rc=0
+--- cargo invocations:
+1794354951 cargo -q xtask doc-check --staged
+1794354952 cargo -q xtask deps --check-mapping --staged

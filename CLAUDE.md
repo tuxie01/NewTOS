@@ -379,13 +379,23 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   failures, mostly undated `docs/analysis/`, `docs/INVENTORY.md` and
   `docs/hardware/`; `docs/api/` and `docs/sdk/` are clean).
 - A checked-in pre-commit hook (`tools/git-hooks/pre-commit`, installed once
-  with `cargo xtask install-hooks`, which sets `core.hooksPath`) runs
-  `cargo xtask doc-check --staged` on what the commit records: the staged
-  docs, and for a commit that stages code, every doc citing the changed
-  files. It rejects the commit only for errors the commit introduces; the
-  legacy backlog (TASK/SPEC03.md) never blocks (TASK/TOOL29.md). Agents must
+  with `cargo xtask install-hooks`, which sets `core.hooksPath`) runs two
+  checks on what the commit records (the index, not the working tree):
+  `cargo xtask doc-check --staged` on the staged docs, and for a commit that
+  stages code, on every doc citing the changed files (TASK/TOOL29.md); and
+  `cargo xtask deps --check-mapping --staged` on every row of
+  `docs/analysis/deps/mapping.tsv` against the staged `edges.tsv`, NewTOS
+  files and ADR lines, when the commit stages `docs/MEMORY.md`,
+  `mapping.tsv`, `edges.tsv` or a file `mapping.tsv` names (TASK/TOOL40.md).
+  Each rejects the commit only for errors the commit introduces; the legacy
+  backlog (TASK/SPEC03.md) never blocks. A commit that edits a `mapping.tsv`
+  row owns it: any error on that row blocks, even one present at `HEAD` and
+  even for a note-only edit (owner 2026-11-11). Agents must
   not bypass it: `tools/hooks/no-verify-guard.sh` blocks the bypass flags and
   any `core.hooksPath` other than `tools/git-hooks`.
+- A ticket that changes `tools/git-hooks/**` is developed in its own git
+  worktree; the main tree's hooks change only when it is merged after the
+  tester's acceptance (owner 2026-11-11).
 - A line cite into NewTOS code (git-tracked files under `kernel/`, `tos-api/`,
   `tos-types/`, `programs/`, `tools/`, `tosdump/`, `sdk/`, `boot/`,
   `keyboards/`) carries a symbol anchor, `<path>:<line>@<symbol>`: doc-check

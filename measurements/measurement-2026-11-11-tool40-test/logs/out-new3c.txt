@@ -1,0 +1,3 @@
+doc-check --staged: 1 files, 20 path cites and 5 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 6 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1935 docs the commit leaves alone, 18 of their cites name one of the 1 changed paths, 0 broken by this commit
+rc=0

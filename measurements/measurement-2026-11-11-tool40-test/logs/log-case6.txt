@@ -1,0 +1,23 @@
+doc-check --staged: no staged docs to check
+TASK/SPEC04.md:25: edges.tsv:16457: missing (resolves at HEAD; this commit breaks it)
+TASK/SPEC04.md:26: edges.tsv:2927-2928: missing (resolves at HEAD; this commit breaks it)
+TASK/SPEC04.md:27: edges.tsv:24379,24428: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL01.md:25: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL01.md:29: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL12.md:7: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL32.md:15: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL39.md:11: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL40.md:16: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+TASK/TOOL40.md:23: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+docs/analysis/deps/layers.md:19: docs/analysis/deps/edges.tsv: missing (resolves at HEAD; this commit breaks it)
+doc-check --staged: 1936 docs the commit leaves alone, 58 of their cites name one of the 1 changed paths, 11 broken by this commit
+xtask: doc-check: 11 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above).
+xtask: deps --check-mapping --staged: cannot run: the index: docs/analysis/deps/edges.tsv or docs/analysis/deps/mapping.tsv is not in the tree
+pre-commit: the mapping check failed on rows this commit breaks (above, docs/analysis/deps/mapping.tsv).
+pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+  1,22s user 1,84s system 177% cpu 1,723 total
+rc=1
+--- cargo invocations:
+1794355036 cargo -q xtask doc-check --staged
+1794355037 cargo -q xtask deps --check-mapping --staged

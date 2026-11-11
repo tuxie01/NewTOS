@@ -1,0 +1,42 @@
+doc-check --staged: 1 files, 521 path cites and 164 ADR cites checked, 0 failures, 6 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 4 anchored line cites, 51 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1935 docs the commit leaves alone, 222 of their cites name one of the 1 changed paths, 0 broken by this commit
+docs/analysis/deps/mapping.tsv:256: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:258: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:262: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:263: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:359: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:671: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:672: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:673: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:705: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:706: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:981: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:983: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:1315: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1317: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1322: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1370: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1371: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1372: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1373: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1374: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1375: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1376: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1412: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1413: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1562: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:1563: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:1565: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:1567: docs/MEMORY.md:2826 is in ADR-029, not in ADR-030
+docs/analysis/deps/mapping.tsv:1956: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:1957: docs/MEMORY.md:3044 is in ADR-030, not in ADR-031
+docs/analysis/deps/mapping.tsv:1968: docs/MEMORY.md:2749 is in ADR-028, not in ADR-029
+deps --check-mapping --staged: 31 problems the commit introduces, 0 legacy (at HEAD too, not blocking)
+xtask: 31 mapping problems the commit introduces
+pre-commit: the mapping check failed on rows this commit breaks (above, docs/analysis/deps/mapping.tsv).
+pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+  2,24s user 4,25s system 203% cpu 3,183 total
+rc=1
+--- cargo invocations:
+1794354941 cargo -q xtask doc-check --staged
+1794354943 cargo -q xtask deps --check-mapping --staged

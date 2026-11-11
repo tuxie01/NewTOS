@@ -1028,6 +1028,20 @@ impl Resolver {
         fs::read(&full).map(Rc::from).map_err(|e| format!("doc-check: {}: {e}", full.display()))
     }
 
+    /// Workspace-relative `rel` as the view's tree records it (`deps
+    /// --check-mapping --staged`, TOOL40): `None` if the tree lacks the
+    /// file, else its content, read from the tree where the working copy
+    /// differs ([`Self::workspace_file`]). Without a view: the working tree.
+    pub fn tree_file(&mut self, rel: &Path) -> Result<Option<Rc<[u8]>>, String> {
+        if self.view.is_some() {
+            if !self.tracked()?.contains(rel) {
+                return Ok(None);
+            }
+            return self.workspace_file(rel).map(Some);
+        }
+        Ok(fs::read(self.root.join(rel)).ok().map(Rc::from))
+    }
+
     /// Resolves EmuTOS cites at `commit` instead of the [`ORACLE_ENV`] pin.
     #[cfg(test)]
     pub fn with_emutos_commit(root: &Path, commit: &str) -> Self {
@@ -1733,7 +1747,7 @@ fn introduced(root: &Path, base: &str) -> Result<usize, String> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
 
     fn root() -> PathBuf {
@@ -2166,11 +2180,11 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
     }
 
     /// A scratch git repository under the workspace's `target/`, removed on
-    /// drop.
-    struct TempRepo(PathBuf);
+    /// drop (also used by the `deps --check-mapping --staged` tests).
+    pub(crate) struct TempRepo(pub(crate) PathBuf);
 
     impl TempRepo {
-        fn new(name: &str) -> TempRepo {
+        pub(crate) fn new(name: &str) -> TempRepo {
             let dir = root().join("target").join(format!("xtask-test-{name}-{}", std::process::id()));
             let _ = fs::remove_dir_all(&dir);
             fs::create_dir_all(&dir).unwrap();
@@ -2179,7 +2193,7 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
             r
         }
 
-        fn git(&self, args: &[&str]) {
+        pub(crate) fn git(&self, args: &[&str]) {
             let mut c = Command::new("git");
             for v in ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"] {
                 c.env_remove(v);
@@ -2194,7 +2208,7 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
             assert!(out.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&out.stderr));
         }
 
-        fn write(&self, rel: &str, text: &str) {
+        pub(crate) fn write(&self, rel: &str, text: &str) {
             let p = self.0.join(rel);
             fs::create_dir_all(p.parent().unwrap()).unwrap();
             fs::write(p, text).unwrap();

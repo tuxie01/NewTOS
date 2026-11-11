@@ -1,0 +1,59 @@
+RUNINFO -- independent acceptance of TASK/TOOL40.md (pre-commit hook runs the mapping check)
+date: 2026-11-11 | tester | base HEAD a590987f7, change UNCOMMITTED in the working tree
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+image: none booted, no SD image, no QEMU run (host-only change); manifest: not applicable (optional_missing: none, no image)
+
+WHAT
+  Verify the TOOL40 change (tools/xtask/src/deps.rs, doc_check.rs, main.rs, tools/git-hooks/pre-commit,
+  tools/deps/README.md, TASK/TOOL40.md, receipt) with own runs. sha256 of the tested files: logs/sha256-tested-files.txt
+  (clone copies verified identical to the working-tree files).
+
+HOW
+  Working repo: only `cargo xtask test` and `cargo xtask doc-check <files>` (read-only). All commit experiments in a throwaway
+  `git clone` in the session scratchpad (core.hooksPath = tools/git-hooks there), a logging `cargo` wrapper first on PATH
+  (method/cargo-wrapper.sh, method/env.sh), per-case helper method/lib.sh; mutants method/mutants.sh; warnings method/warn.sh
+  (fresh target dir for base clone at a590987f7 and for change clone). Clone has symlinks to references/ and its own empty target/
+  (doc-check cites target/). Legacy state of case 5 built with `git commit-tree` + `update-ref` (hook bypass flags are blocked
+  by tools/hooks/no-verify-guard.sh; plumbing used in the throwaway clone only).
+
+RESULTS
+  1  cargo xtask test: 2375 passed / 0 failed / 6 ignored (baseline 2374/0/6); deps::tests::staged_reports_only_what_the_commit_introduces ok.
+  2  Mutants (host test `cargo test -p xtask staged_reports`), all three KILLED:
+       a staged reads working tree (Resolver::tree_file)  -> test fails (assert at deps.rs:1168)
+       b problems compared by line instead of row         -> test fails (deps.rs:1194)
+       c HEAD comparison dropped (everything blocks)      -> test fails (deps.rs:1160)
+       patches: logs/mutant-*.patch, logs/mutant-*.log
+  3  Hook cases (wall clock of `git commit`, cargo calls from the wrapper log):
+       commit of the change itself through the new hook: passes, doc-check only, 2.0 s (first attempt rejected by
+         doc-check "TASK/TOOL40.md:75 target/: missing" = my clone lacked target/, setup artifact, then fixed)
+       1   3 lines before ## ADR-024, staged: rejected, 31 mapping rows named (e.g. :256 MEMORY.md:3044 is in ADR-030, not in ADR-031);
+           doc-check 0 failures (the original gap); cargo: doc-check + mapping; 2.89 s
+       1b  same, working copy restored unstaged: rejected, 31 rows; 3.18 s
+       2   append at end of MEMORY.md: passes, 0 new 0 legacy; both checks ran; 2.92 s
+       3   README.md only: passes, NO cargo call; 0.17 s; old HEAD hook vs new hook on the same staged state: both silent, rc 0, 0 cargo calls
+       3b  comment in tos-api/src/aes/trace.rs (not in mapping.tsv): passes; cargo: doc-check only; 1.31 s
+       3c  staged TASK/TOOL40.md edit: old-hook output and new-hook output diff-identical (success path), only doc-check ran
+       4   rename `fn invalidate_drive` in staged tos-api/src/bdos/fs/cache.rs, working copy original: rejected by mapping check
+           (mapping.tsv:35 has no `fn invalidate_drive`) AND by doc-check (2 anchored cites); 2.31 s
+       5a  legacy broken row (HEAD, via plumbing), unrelated MEMORY.md append: passes, "0 new, 1 legacy"; 2.91 s
+       5b  edit of the broken row's note column: rejected, 1 problem new (row counts as edited); 2.09 s
+       6   staged deletion of edges.tsv: rejected, "cannot run: the index: ... not in the tree" + 11 doc-check failures; 1.72 s
+       6b  staged deletion of mapping.tsv: rejected, same cannot-run message; both checks ran
+       7   git mv of a mapped file (cache.rs -> cache2.rs): rejected, 14 rows "does not exist" (trigger sees the old name)
+       8   `git commit <pathspec>` (temporary index) with MEMORY.md shift: rejected, 31 new, 1 legacy; `git commit -a`
+           with README only: 0 cargo calls
+  4  Warnings, fresh builds base (a590987f7) vs change: `cargo xtask build --board rpi4` 159 / 159, `--board qemu-virt` 159 / 159,
+     clippy -p kernel board-rpi4 196 / 196, board-qemu-virt 196 / 196, clippy -p xtask --tests 10 / 10 (rc 0 all);
+     sorted warning+location sets identical. Delta 0. (logs/warn-*.summary; counts are `^warning` lines incl. summary lines;
+     the receipt's counts are per-crate, mine are totals)
+  5  doc-check of TASK/TOOL40.md, TOOL40-STATUS-UNFINISHED.MD, tools/deps/README.md, CLAUDE.md, STATUS.md, MEMORY.md: 0 failures.
+     main.rs: numstat 2/2, line count 1284 -> 1284, hunks at 206 and 209 only. Docs citing the changed paths, committed state
+     in the clone: "1006 of their cites name one of the 7 changed paths, 0 broken by this commit". Full `cargo xtask doc-check`
+     in the working repo: 762 failures (legacy backlog, none cites xtask deps/doc_check/main); no valid base number (a plain clone lacks
+     the untracked sdk/ files), so no delta claimed.
+  6  Hook diff: no trigger file staged -> same output and exit as HEAD's hook (cases 3, 3c). Failure trailer text differs on purpose.
+
+OPEN / NOT VERIFIED
+  - CLAUDE.md "Commit Discipline" paragraph (Work item 6): not part of the tested change; the receipt lists it as pending for the lead.
+  - Semantic question from the receipt (editing a legacy row's note counts as new, case 5b) confirmed as implemented; not judged.
+  - Real macOS timing only; no HW involved.

@@ -1,6 +1,6 @@
 # TOOL40 — pre-commit hook runs the mapping check
 
-Status: OPEN (2026-11-10) | Priority: P1
+Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: DONE through cargo xtask accept (TOOL41); tester PASS in measurements/measurement-2026-11-11-tool40-test/RUNINFO.TXT
 
 Type: tool (enforcement). Owner decision 2026-11-10. Order: after the [TOOL39](TOOL39.md) acceptance, before the
 ADR-037 ticket tools.
@@ -15,7 +15,7 @@ ADR-037 ticket tools.
   cheap `git diff --cached --quiet` pre-filter; only errors the commit introduces block.
 - `cargo xtask deps --check-mapping` checks every row against `docs/analysis/deps/edges.tsv`, the NewTOS file and
   function of the row, and the ADR line (`tools/xtask/src/deps.rs`). It reads the working tree.
-- `mapping.tsv` names 105 distinct NewTOS files (column `newtos_file`).
+- `mapping.tsv` names 104 distinct NewTOS files (column `newtos_file`; first written as 105, counting the header).
 
 ## Work
 
@@ -43,3 +43,43 @@ ADR-037 ticket tools.
 3. A commit that touches none of the trigger files → check skipped (no cargo run for it).
 4. Runtime of the hook for each of the three cases reported (wall clock).
 - `cargo xtask test` green, warnings delta 0, doc-check of the edited docs 0 failures.
+
+## Owner decision (2026-11-11)
+
+Keep as built: a commit that edits a `mapping.tsv` row owns that row. Any error on it blocks, even one that already
+exists at `HEAD` and even when only the `note` column changed. A row is never matched across a commit by its EmuTOS
+side alone (that would let a changed NewTOS side hide an old error).
+
+## Implementation
+
+Developer, 2026-11-11, uncommitted in the working tree, base `8f6f66afe` (receipt:
+[TOOL40-STATUS-UNFINISHED.MD](TOOL40-STATUS-UNFINISHED.MD)).
+
+- **Check on a tree:** `check_mapping_in` (`tools/xtask/src/deps.rs:808@check_mapping_in`) is the former
+  `check_mapping`, reading every file through a callback and returning `Problem`s (row line, row columns, message;
+  `tools/xtask/src/deps.rs:773@Problem`). `check_mapping` keeps its signature and output for the working tree and the
+  host test `mapping_rows_exist_on_both_sides`.
+- **Staged mode:** `cargo xtask deps --check-mapping --staged` (`tools/xtask/src/deps.rs:650@cmd`) runs
+  `staged_problems` (`tools/xtask/src/deps.rs:920@staged_problems`): the check once on the index and once on `HEAD`,
+  both through doc-check's `Resolver` views (`Tree::Index`, `Tree::Rev`; new accessor `Resolver::tree_file`,
+  `tools/xtask/src/doc_check.rs:1035@tree_file`): a file exists if the tree records it and is read from the tree
+  where the working copy differs. A problem is legacy when `HEAD` reports the same message for a row with the same
+  columns (a moved row keeps its problems; a row the commit edits is checked as new); all others reject. `edges.tsv`
+  or `mapping.tsv` missing from the index or not parsing, or git failing, makes the check fail ("cannot run").
+- **Hook:** `tools/git-hooks/pre-commit` keeps the doc-check pre-filter and adds a trigger in shell: `git diff
+  --cached --name-only --no-renames HEAD` against `docs/MEMORY.md`, `mapping.tsv`, `edges.tsv` and the files the
+  staged `mapping.tsv` names (`newtos_file`, the file of an `ADR-NNN@<file>:<line>` class, a `source:` path; one
+  `git show` + `awk`). Without a hit the mapping check is not started; both checks run when triggered, either failure
+  rejects. Comment block updated.
+- **Host test:** `deps::tests::staged_reports_only_what_the_commit_introduces`
+  (`tools/xtask/src/deps.rs:1135@staged_reports_only_what_the_commit_introduces`), in a scratch repo under `target/`
+  (doc-check's `TempRepo`, now `pub(crate)`): legacy row not blocking; a MEMORY.md line insert reported; unstaged
+  fix ignored and staged fix honoured; staged fn rename reported; moved legacy row stays legacy; staged deletion of
+  the mapped file reported; mapping missing from the index is an error.
+- **Docs:** `tools/deps/README.md` ("Checks"), `cargo xtask` usage text (`tools/xtask/src/main.rs`).
+
+## Acceptance (tester, 2026-11-11)
+
+PASS on all checks, including three mutants killed by the host test and the owner's row-ownership case (5b):
+`measurements/measurement-2026-11-11-tool40-test/RUNINFO.TXT`. Not closed: under the ADR-037 addendum only the tester
+moves a ticket to `DONE`, through `cargo xtask accept`, which TOOL41 builds.

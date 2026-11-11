@@ -1,0 +1,16 @@
+doc-check --staged: no staged docs to check
+TASK/FS20-STATUS-DONE.MD:21: tos-api/src/bdos/fs/cache.rs:291@invalidate_drive: tos-api/src/bdos/fs/cache.rs: @invalidate_drive not within ±5 of line 291; nearest occurrence: line 351 (resolves at HEAD; this commit breaks it)
+docs/api/gemdos/_state.md:620: tos-api/src/bdos/fs/cache.rs:291@invalidate_drive: tos-api/src/bdos/fs/cache.rs: @invalidate_drive not within ±5 of line 291; nearest occurrence: line 351 (resolves at HEAD; this commit breaks it)
+doc-check --staged: 1936 docs the commit leaves alone, 155 of their cites name one of the 1 changed paths, 2 broken by this commit
+xtask: doc-check: 2 failures (see above)
+pre-commit: doc-check failed on the staged docs or on cites this commit breaks (above).
+docs/analysis/deps/mapping.tsv:35: tos-api/src/bdos/fs/cache.rs has no `fn invalidate_drive`
+deps --check-mapping --staged: 1 problems the commit introduces, 0 legacy (at HEAD too, not blocking)
+xtask: 1 mapping problems the commit introduces
+pre-commit: the mapping check failed on rows this commit breaks (above, docs/analysis/deps/mapping.tsv).
+pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+  1,63s user 2,92s system 197% cpu 2,310 total
+rc=1
+--- cargo invocations:
+1794354990 cargo -q xtask doc-check --staged
+1794354991 cargo -q xtask deps --check-mapping --staged

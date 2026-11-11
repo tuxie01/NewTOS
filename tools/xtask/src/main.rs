@@ -203,10 +203,10 @@ Commands:
                                    the unmapped functions of the touched
                                    layers (default: <fn>'s), complete only
                                    without any (TOOL17)
-  deps --check-mapping           — every mapping.tsv row names an existing
+  deps --check-mapping [--staged] — every mapping.tsv row names an existing
                                    EmuTOS definition and NewTOS fn and has a
                                    valid class, every EmuTOS bios/, bdos/, vdi/, aes/
-                                   function has a row
+                                   function has a row (--staged: index, new only)
   deps --coverage                — mapped/design/unmapped per layer, count
                                    and share (TOOL17)
   doc-check [--staged] [--base <rev>] [<file>...]

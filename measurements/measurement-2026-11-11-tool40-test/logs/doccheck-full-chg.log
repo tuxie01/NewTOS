@@ -1,0 +1,764 @@
+docs/HARDWARE-PROFILE.md:45: bcm2711/framebuffer.rs: missing
+docs/HARDWARE-PROFILE.md:45: bcm2711/mailbox.rs: missing
+docs/HARDWARE-PROFILE.md:45: qemu_virt/ramfb.rs: missing
+docs/HARDWARE-PROFILE.md:46: usb/hid.rs: missing
+docs/HARDWARE-PROFILE.md:47: bcm2711/pl011.rs: missing
+docs/HARDWARE-PROFILE.md:47: qemu_virt/pl011.rs: missing
+docs/HARDWARE-PROFILE.md:48: usb/hid.rs: missing
+docs/HARDWARE-PROFILE.md:49: bcm2711/emmc.rs: missing
+docs/HARDWARE-PROFILE.md:100: qemu_virt/ramfb.rs:80-81: missing
+docs/HARDWARE-PROFILE.md:130: framebuffer.rs:178-179: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:211: console.rs:91-107: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:216: bcm2711/pl011.rs: missing
+docs/HARDWARE-PROFILE.md:218: pl011.rs:29: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:220: pl011.rs:14-18: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:220: qemu_virt/pl011.rs:11: missing
+docs/HARDWARE-PROFILE.md:222: pl011.rs:132: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:225: pl011.rs:128-129: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:227: pl011.rs:135: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:230: pl011.rs:98-103: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:272: hid.rs:69-100: line 100 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:273: console.rs:109-133: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:280: drivers/usb/hid.rs:106-112: line 112 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:283: hid.rs:108: line 108 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:308: bcm2711/emmc.rs:16-18: missing
+docs/HARDWARE-PROFILE.md:402: init.rs:14-21,195-205: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:485: lib.rs:311-313: ambiguous (7 matches)
+docs/HARDWARE-PROFILE.md:485: desktop.rs:822,1124-1126: missing
+docs/INVENTORY.md:181: docs/STATUS.md:371: line 371 beyond end (296 lines) of docs/STATUS.md
+docs/INVENTORY.md:278: kernel/src/desktop.rs: missing
+docs/INVENTORY.md:281: kernel/src/desk/: missing
+docs/INVENTORY.md:328: mod.rs:145-147: ambiguous (22 matches)
+docs/INVENTORY.md:338: mod.rs:94: ambiguous (22 matches)
+docs/INVENTORY.md:339: mod.rs:96: ambiguous (22 matches)
+docs/INVENTORY.md:340: mod.rs:97: ambiguous (22 matches)
+docs/INVENTORY.md:341: mod.rs:78: ambiguous (22 matches)
+docs/INVENTORY.md:342: mod.rs:86: ambiguous (22 matches)
+docs/INVENTORY.md:343: mod.rs:79: ambiguous (22 matches)
+docs/INVENTORY.md:344: mod.rs:88: ambiguous (22 matches)
+docs/INVENTORY.md:345: mod.rs:100: ambiguous (22 matches)
+docs/INVENTORY.md:346: mod.rs:108: ambiguous (22 matches)
+docs/INVENTORY.md:347: mod.rs:105: ambiguous (22 matches)
+docs/INVENTORY.md:359: mod.rs:45-59: ambiguous (22 matches)
+docs/INVENTORY.md:360: mod.rs:64-68: ambiguous (22 matches)
+docs/INVENTORY.md:360: gemdos/memory.rs:318-386: line 386 beyond end (265 lines) of tos-api/src/gemdos/memory.rs
+docs/INVENTORY.md:361: mod.rs:71-74: ambiguous (22 matches)
+docs/INVENTORY.md:362: mod.rs:75: ambiguous (22 matches)
+docs/INVENTORY.md:363: mod.rs:80-91: ambiguous (22 matches)
+docs/INVENTORY.md:364: mod.rs:95: ambiguous (22 matches)
+docs/INVENTORY.md:365: mod.rs:101-102: ambiguous (22 matches)
+docs/INVENTORY.md:366: mod.rs:106-107: ambiguous (22 matches)
+docs/INVENTORY.md:368: mod.rs:145: ambiguous (22 matches)
+docs/INVENTORY.md:417: mod.rs:92: ambiguous (22 matches)
+docs/INVENTORY.md:444: mod.rs:74: ambiguous (22 matches)
+docs/INVENTORY.md:445: mod.rs:75: ambiguous (22 matches)
+docs/INVENTORY.md:446: mod.rs:76: ambiguous (22 matches)
+docs/INVENTORY.md:447: mod.rs:77: ambiguous (22 matches)
+docs/INVENTORY.md:448: mod.rs:79: ambiguous (22 matches)
+docs/INVENTORY.md:448: mod.rs:138-205: ambiguous (22 matches)
+docs/INVENTORY.md:449: mod.rs:80: ambiguous (22 matches)
+docs/INVENTORY.md:450: mod.rs:82: ambiguous (22 matches)
+docs/INVENTORY.md:451: mod.rs:78: ambiguous (22 matches)
+docs/INVENTORY.md:452: mod.rs:83: ambiguous (22 matches)
+docs/INVENTORY.md:453: mod.rs:84: ambiguous (22 matches)
+docs/INVENTORY.md:454: mod.rs:85: ambiguous (22 matches)
+docs/INVENTORY.md:454: mod.rs:106-117: ambiguous (22 matches)
+docs/INVENTORY.md:460: mod.rs:81: ambiguous (22 matches)
+docs/INVENTORY.md:518: mod.rs:79: ambiguous (22 matches)
+docs/INVENTORY.md:519: mod.rs:87: ambiguous (22 matches)
+docs/INVENTORY.md:520: mod.rs:86: ambiguous (22 matches)
+docs/INVENTORY.md:521: mod.rs:109: ambiguous (22 matches)
+docs/INVENTORY.md:522: mod.rs:112-115: ambiguous (22 matches)
+docs/INVENTORY.md:523: mod.rs:88: ambiguous (22 matches)
+docs/INVENTORY.md:524: mod.rs:126: ambiguous (22 matches)
+docs/INVENTORY.md:583: mod.rs:349-352: ambiguous (22 matches)
+docs/INVENTORY.md:607: harness.rs:9-14: ambiguous (3 matches)
+docs/INVENTORY.md:654: config.h:388: ambiguous (6 matches)
+docs/INVENTORY.md:694: mod.rs:435: ambiguous (22 matches)
+docs/INVENTORY.md:712: kernel/src/desk/mod.rs:104-115: missing
+docs/INVENTORY.md:791: kernel/src/desk/: missing
+docs/INVENTORY.md:825: kernel/src/desk/menu.rs:58-124: missing
+docs/INVENTORY.md:826: kernel/src/desk/main.rs:747-820: missing
+docs/INVENTORY.md:830: main.rs:770-777: ambiguous (5 matches)
+docs/INVENTORY.md:836: kernel/src/desk/menu.rs:665-725: missing
+docs/INVENTORY.md:939: sdk/apps/teradesk/build/obj/environm.err:1: line 1 beyond end (0 lines) of sdk/apps/teradesk/build/obj/environm.err
+docs/INVENTORY.md:950: kernel/src/desk/main.rs:458-460: missing
+docs/INVENTORY.md:983: STATUS.md:370: line 370 beyond end (296 lines) of docs/STATUS.md
+docs/INVENTORY.md:1045: xhci/mod.rs:1138: missing
+docs/MEASUREMENT-COVERAGE.md:17: cases/aes-r2-wind.tsv: missing
+docs/MEASUREMENT-COVERAGE.md:59: cases/aes-r2-wind.tsv: missing
+docs/MEASUREMENT-COVERAGE.md:91: tests/aes_reference.rs: missing
+docs/MEASUREMENT-COVERAGE.md:185: cases/vdi-raster.tsv: missing
+docs/SOURCE-ANALYSIS-PROTOCOL.md:209: docs/api/gemdos/01-cconin.md: missing
+docs/STEP2-VALIDATION.md:42: kernel/src/fbcon.rs:62-127: line 127 beyond end (67 lines) of kernel/src/fbcon.rs
+docs/STEP2-VALIDATION.md:45: kernel/src/drivers/usb/hid.rs:106-112: line 112 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/STEP2-VALIDATION.md:51: bcm2711/pl011.rs: missing
+docs/STEP2-VALIDATION.md:59: bcm2711/pl011.rs: missing
+docs/STEP2-VALIDATION.md:64: bcm2711/pl011.rs: missing
+docs/STEP2-VALIDATION.md:69: bcm2711/emmc.rs: missing
+docs/STEP2-VALIDATION.md:116: kernel/src/desktop.rs:822,1124-1126: missing
+docs/analysis/aes-abi-trace/menu-functions.md:41: mt_gem.h:2081-2094: missing
+docs/analysis/aes-abi-trace/menu-functions.md:41: object.rs:29-55: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:65: mt_gem.h:2527-2535: missing
+docs/analysis/aes-abi-trace/menu-functions.md:65: mod.rs:35-49: ambiguous (22 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:81: mt_gem.h:1988-2001: missing
+docs/analysis/aes-abi-trace/menu-functions.md:82: mt_gem.h:2004-2020: missing
+docs/analysis/aes-abi-trace/menu-functions.md:83: mt_gem.h:2023-2031: missing
+docs/analysis/aes-abi-trace/menu-functions.md:92: mt_gem.h:2177-2191: missing
+docs/analysis/aes-abi-trace/menu-functions.md:92: menu.rs:830-903: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:104: menu.rs:848-903: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:115: a_menu_bar.c:48-60: missing
+docs/analysis/aes-abi-trace/menu-functions.md:115: mod.rs:69-83: ambiguous (22 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:115: mod.rs:106-112: ambiguous (22 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:115: menu.rs:137-172: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:116: event.rs:69-97: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:116: menu.rs:49,165: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:117: object.rs:176-195: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:117: object.rs:310-351: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:117: menu.rs:598-611: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:117: object.rs:2218,1964-1990: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:118: a_menu_tnormal.c:22-35: missing
+docs/analysis/aes-abi-trace/menu-functions.md:118: menu.rs:690-708: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:118: menu.rs:804-818: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:119: menu.rs:669-671: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:120: menu.rs:678-683: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:121: menu.rs:716-745: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:136: menu.rs:162: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:137: menu.rs:608: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:143: event.rs:97: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:178: mt_gem.h:2527-2535: missing
+docs/analysis/aes-abi-trace/menu-functions.md:180: mod.rs:69-83: ambiguous (22 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:185: object.rs:176-195: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:196: object.rs:1979: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:199: kernel/src/desk/menu.rs: missing
+docs/analysis/aes-abi-trace/menu-functions.md:202: menu.rs:550-593: ambiguous (8 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:208: object.rs:1968-1990: ambiguous (3 matches)
+docs/analysis/aes-abi-trace/menu-functions.md:226: a_menu_bar.c:48-60: missing
+docs/analysis/aes-abi-trace/menu-functions.md:226: a_menu_tnormal.c:22-35: missing
+docs/analysis/aes-abi-trace/menu-functions.md:226: mt_gem.h:2081-2094: missing
+docs/analysis/aes-audit/00-MASTER.md:123: p6-...md:13,215: missing
+docs/analysis/aes-audit/coverage-matrix.md:34: config.h:1319-1320: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:34: config.h:352-353: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:35: config.h:1304-1305: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:35: config.h:316-317: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:36: config.h:1258-1259: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:36: config.h:310-311: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:38: config.h:210-394: ambiguous (6 matches)
+docs/analysis/aes-audit/coverage-matrix.md:179: shell.rs:143-149: ambiguous (3 matches)
+docs/analysis/aes-audit/coverage-matrix.md:183: shell.rs:255-273: ambiguous (3 matches)
+docs/analysis/aes-audit/coverage-matrix.md:211: shell.rs:14: ambiguous (3 matches)
+docs/analysis/aes-audit/coverage-matrix.md:212: object.rs:13: ambiguous (3 matches)
+docs/analysis/aes-audit/coverage-matrix.md:240: shell.rs:134: ambiguous (3 matches)
+docs/analysis/aes-audit/emutos-config-profile.md:102: object.rs:546: ambiguous (3 matches)
+docs/analysis/aes-audit/emutos-config-profile.md:173: kernel/src/desk/: missing
+docs/analysis/aes-audit/emutos-config-profile.md:184: desk/inf.rs:138: missing
+docs/analysis/aes-audit/emutos-config-profile.md:187: desk/main.rs:1003: missing
+docs/analysis/aes-audit/emutos-config-profile.md:190: desk/menu.rs:716: missing
+docs/analysis/aes-audit/emutos-config-profile.md:191: desk/main.rs:1100: missing
+docs/analysis/aes-audit/emutos-config-profile.md:191: desk/menu.rs:711: missing
+docs/analysis/aes-audit/emutos-config-profile.md:194: desk/win.rs:245,274: missing
+docs/analysis/aes-audit/emutos-config-profile.md:194: desk/global.rs:211: missing
+docs/analysis/aes-audit/emutos-config-profile.md:342: bios.c:872: ambiguous (2 matches)
+docs/analysis/aes-audit/emutos-config-profile.md:353: bios.c:869: ambiguous (2 matches)
+docs/analysis/aes-audit/emutos-config-profile.md:354: bios.c:873: ambiguous (2 matches)
+docs/analysis/aes-audit/emutos-config-profile.md:354: bios.c:847: ambiguous (2 matches)
+docs/analysis/aes-audit/emutos-config-profile.md:415: desk/win.rs:245: missing
+docs/analysis/aes-audit/emutos-function-inventory.md:579: window.rs:517-628: ambiguous (6 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:24: mod.rs:251-260: ambiguous (22 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:25: mod.rs:59-262: ambiguous (22 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:26: mod.rs:166: ambiguous (22 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:31: mod.rs:180-250: ambiguous (22 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:57: config.h:1319-1320: ambiguous (6 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:82: _state.md:31-32,283: ambiguous (6 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:165: _dispatcher.md:99-118,186-195,205: ambiguous (5 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:167: mod.rs:95-103: ambiguous (22 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:168: mod.rs:260: ambiguous (22 matches)
+docs/analysis/aes-audit/p1-appl-pd-dispatch.md:178: mod.rs:251-260: ambiguous (22 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:119: window.rs:1807-1878: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:120: window.rs:1880-1891: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:122: event.rs:300: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:123: event.rs:331-351: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:128: event.rs:337-349: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:141: window.rs:628-649: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:155: event.rs:58-90: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:156: event.rs:77-84: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:158: event.rs:297: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:159: event.rs:337: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:182: event.rs:296: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:184: event.rs:301: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:210: event.rs:123-141: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:210: event.rs:310-323: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:211: event.rs:129,311: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:213: event.rs:137,320: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:242: window.rs:1865-1874: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:246: event.rs:416,337: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:263: event.rs:95-101: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:266: event.rs:363: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:288: event.rs:347,426: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:304: event.rs:402-404: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:304: event.rs:408-413: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:325: window.rs:648: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:386: window.rs:1824-1830: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:402: event.rs:441,282: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:419: window.rs:635: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:419: window.rs:1821: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:436: window.rs:1461-1463: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:484: window.rs:1880-1891: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:484: window.rs:1807: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:487: event.rs:77-84: ambiguous (3 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:490: window.rs:628-649: ambiguous (6 matches)
+docs/analysis/aes-audit/p2-event-queue-ctrl.md:507: menu.rs:861-864: ambiguous (8 matches)
+docs/analysis/aes-object-form-render-audit.md:120: object.rs:1657-1663: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:180: object.rs:1857-1860: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:219: object.rs:1599: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:220: object.rs:1607-1611: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:221: object.rs:1901-1905: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:239: object.rs:1666-1672: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:257: object.rs:1861-1864: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:259: object.rs:2167-2175: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:271: object.rs:1950-1959: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:307: object.rs:1691-1696: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:320: object.rs:1963-1997: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:320: object.rs:2037-2102: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:321: object.rs:1742-1802: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:359: object.rs:1735-1741: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:394: object.rs:1840-1842: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:424: object.rs:1261-1270: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:456: object.rs:1871-1897: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:470: object.rs:1861-1864: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:474: object.rs:1871-1882: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:478: object.rs:1886-1889: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:480: object.rs:1893-1897: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:482: object.rs:1804-1828: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:484: object.rs:1550-1585: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:486: object.rs:1492-1500: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:488: object.rs:1522-1539: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:490: object.rs:1449-1471: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:492: object.rs:1704-1708: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:497: object.rs:868-947: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:499: object.rs:1652-1657: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:549: object.rs:1742-1802,1963-1997,2037-2102: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:550: object.rs:1857-1860: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:551: object.rs:1657-1663: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:552: object.rs:1950-1959: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:553: object.rs:1840-1842: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:554: object.rs:1599,1607-1611,1901-1905: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:555: object.rs:1261-1270: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:556: object.rs:1735-1741: ambiguous (3 matches)
+docs/analysis/aes-object-form-render-audit.md:557: object.rs:1871-1897: ambiguous (3 matches)
+docs/analysis/aes-r1-findings.md:136: window.rs:131: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:137: window.rs:938-952: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:155: window.rs:1565: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:208: mod.rs:96-104: ambiguous (22 matches)
+docs/analysis/aes-r1-findings.md:210: mod.rs:54: ambiguous (22 matches)
+docs/analysis/aes-r1-findings.md:223: cases/COVERAGE-AES.md:204: missing
+docs/analysis/aes-r1-findings.md:258: window.rs:905-911: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:260: window.rs:1633-1639: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:285: window.rs:1634: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:289: window.rs:2000-2004: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:304: window.rs:2377-2387: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:327: core/runner_aes.h:33-41: missing
+docs/analysis/aes-r1-findings.md:386: window.rs:496-510: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:388: window.rs:446: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:391: window.rs:479-482: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:395: window.rs:520-524: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:418: cases/COVERAGE-AES.md:199-216: missing
+docs/analysis/aes-r1-findings.md:423: aes-r1.tsv:205-207: ambiguous (2 matches)
+docs/analysis/aes-r1-findings.md:533: 00-MASTER.md:30: ambiguous (2 matches)
+docs/analysis/aes-r1-findings.md:645: mod.rs:176-181: ambiguous (22 matches)
+docs/analysis/aes-r1-findings.md:677: kernel/src/desk/mod.rs:425-433: missing
+docs/analysis/aes-r1-findings.md:678: kernel/src/desk/global.rs:233-236: missing
+docs/analysis/aes-r1-findings.md:682: kernel/src/desk/global.rs:55-59: missing
+docs/analysis/aes-r1-findings.md:751: core/runner_aes.h:33-41: missing
+docs/analysis/aes-r1-findings.md:793: window.rs:479-482: ambiguous (6 matches)
+docs/analysis/aes-r1-findings.md:921: window.rs:147-150: ambiguous (6 matches)
+docs/analysis/arch03-freemint-memory-model.md:47: mem.h:121-125: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:57: mem.h:107: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:100: memory.c:1369: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:106: memory.c:1521-1533: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:115: memory.c:1494-1499: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:116: memory.c:1699-1815: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:122: ldglib.c:134-137: missing
+docs/analysis/arch03-freemint-memory-model.md:144: memory.c:1494: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:179: proc.c:249-251,358-359: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:226: mmu.rs:184-197: ambiguous (2 matches)
+docs/analysis/arch03-freemint-memory-model.md:249: lib.rs:742-775: ambiguous (7 matches)
+docs/analysis/arch03-freemint-memory-model.md:262: NT/usermem.rs:26,308-363: line 363 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-freemint-memory-model.md:263: NT/usermem.rs:596-612: line 612 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-freemint-memory-model.md:295: init.c:1237: ambiguous (4 matches)
+docs/analysis/arch03-freemint-memory-model.md:320: arch/arm64/include/asm/pgtable-hwdef.h: missing
+docs/analysis/arch03-freemint-memory-model.md:358: NT/usermem.rs:433-534: line 534 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:39: NT/usermem.rs:26-31,308-363: line 363 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:76: ldgapp.c:37-38: missing
+docs/analysis/arch03-implementation-plan.md:137: NT/usermem.rs:308-363: line 363 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:258: kernel/src/desk/: missing
+docs/analysis/arch03-implementation-plan.md:284: NT/usermem.rs:433-534: line 534 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:306: NT/usermem.rs:462-468: line 468 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:311: NT/usermem.rs:606-616: line 616 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:317: NT/usermem.rs:606-612: line 612 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:317: NT/usermem.rs:610-612: line 612 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-implementation-plan.md:447: NT/process.rs: missing
+docs/analysis/arch03-implementation-plan.md:447: kernel/src/desk/dosbind.rs: missing
+docs/analysis/arch03-implementation-plan.md:593: NT/usermem.rs:596-604: line 604 beyond end (362 lines) of tos-api/src/bdos/process/usermem.rs
+docs/analysis/arch03-stage0b-spike.md:3: method/: missing
+docs/analysis/arch03-stage0b-spike.md:3: serial/: missing
+docs/analysis/arch03-stage0b-spike.md:3: shots/: missing
+docs/analysis/arch03-stage0b-spike.md:25: method/arch03-0b-spike.diff: missing
+docs/analysis/arch03-stage0b-spike.md:30: kernel/src/spike_arch03.rs: missing
+docs/analysis/arch03-stage0b-spike.md:37: ESR/FAR/ELR/x0..x3: missing
+docs/analysis/arch03-stage0b-spike.md:43: method/: missing
+docs/analysis/arch03-stage0b-spike.md:49: serial/raspi4b-release-pause.log: missing
+docs/analysis/arch03-stage0b-spike.md:49: shots/raspi4b-release-page1.png: missing
+docs/analysis/arch03-stage0b-spike.md:59: serial/raspi4b-release-run1.log:37-44: missing
+docs/analysis/arch03-stage0b-spike.md:59: serial/virt-debug-run1.log:56-63: missing
+docs/analysis/arch03-stage3-access-inventory.md:23: window.rs:3932: ambiguous (6 matches)
+docs/analysis/arch03-stage3-access-inventory.md:34: console.rs:537: ambiguous (2 matches)
+docs/analysis/arch03-stage3-access-inventory.md:36: fs/mod.rs:23: missing
+docs/analysis/arch03-stage3-access-inventory.md:42: drive.rs:87: ambiguous (2 matches)
+docs/analysis/arch03-stage3-access-inventory.md:65: event.rs:522: ambiguous (3 matches)
+docs/analysis/arch03-stage3-access-inventory.md:67: menu.rs:339: ambiguous (8 matches)
+docs/analysis/arch03-stage3-access-inventory.md:74: object.rs:142: ambiguous (3 matches)
+docs/analysis/arch03-stage3-access-inventory.md:76: object.rs:1937: ambiguous (3 matches)
+docs/analysis/arch03-stage3-access-inventory.md:78: menu.rs:1077: ambiguous (8 matches)
+docs/analysis/arch03-stage3-access-inventory.md:99: desk/dosbind.rs: missing
+docs/analysis/arch03-stage3-access-inventory.md:107: desk/dosbind.rs: missing
+docs/analysis/bios-audit/b1-lowmem-feasibility.md:37: mmu.rs:70-77,124-131,272-277: ambiguous (2 matches)
+docs/analysis/bios-audit/bios-findings.md:12: tosvars.ld:22-135: line 135 beyond end (134 lines) of references/emutos/tosvars.ld
+docs/analysis/bios-audit/bios-findings.md:14: main.c:56: ambiguous (14 matches)
+docs/analysis/bios-audit/bios-findings.md:15: cookie.c:28,56: ambiguous (4 matches)
+docs/analysis/bios-audit/bios-findings.md:57: bios.c:948-956: ambiguous (2 matches)
+docs/analysis/bios-audit/bios-findings.md:71: config.h:1367-1372: ambiguous (6 matches)
+docs/analysis/bios-audit/bios-findings.md:75: mod.rs:159-165: ambiguous (22 matches)
+docs/analysis/bios-audit/bios-findings.md:76: drive.rs:14-15,71: ambiguous (2 matches)
+docs/analysis/bios-audit/bios-findings.md:79: mod.rs:83-94: ambiguous (22 matches)
+docs/analysis/bios-audit/bios-findings.md:80: mod.rs:44,58: ambiguous (22 matches)
+docs/analysis/bios-audit/bios-findings.md:80: bios.c:1096: ambiguous (2 matches)
+docs/analysis/bios-audit/bios-findings.md:81: mod.rs:69: ambiguous (22 matches)
+docs/analysis/bios-audit/bios-findings.md:81: vectors.S:1323-1327: ambiguous (2 matches)
+docs/analysis/coop-kernel/00-effort-comparison.md:73: event.rs:131-467: ambiguous (3 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:55: signal.h:107-120: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:70: signal.h:120: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:75: object.rs:85-95: ambiguous (3 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:81: context.h:84-86: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:418: proc.c:452-454: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:466: event.rs:308-382: ambiguous (3 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:467: event.rs:7-12: ambiguous (3 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:504: mint/proc.h:296-305: missing
+docs/analysis/coop-kernel/10-upcall-signal-design.md:524: proc.c:490-716: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:530: proc.c:665-701: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:532: proc.h:146: ambiguous (3 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:548: signal.h:107-120: ambiguous (2 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:585: object.rs:85-95: ambiguous (3 matches)
+docs/analysis/coop-kernel/10-upcall-signal-design.md:590: event.rs:308-382: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:33: event.rs:139-140,310-382,452: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:35: kernel/src/desk/mod.rs:101-114,512-533: missing
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:49: event.rs:139-140: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:54: event.rs:7-12: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:65: desk/mod.rs:534: missing
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:65: desk/main.rs:50: missing
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:104: event.rs:7-12: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:146: desk/mod.rs:101-114: missing
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:224: proc.h:262-265: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:257: event.rs:22-28,310-376: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:264: event.rs:91-92: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:305: event.rs:310-388: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:343: event.rs:359: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:351: event.rs:96-97: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:424: event.rs:279: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:428: event.rs:385-388: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:436: event.rs:91-92: ambiguous (3 matches)
+docs/analysis/coop-kernel/20-sleepwake-substrate-design.md:448: event.rs:481-483: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:36: window.rs:571-612: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:36: window.rs:645: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:37: window.rs:2245,2247,2253,2255,2283: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:39: object.rs:2356-2358: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:39: object.rs:1987-2031: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:44: object.rs:85-91,161-166: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:45: object.rs:107-124: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:46: object.rs:126-149: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:48: object.rs:2017-2026: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:50: object.rs:2027-2030: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:58: mmu.rs:89-90,137,140,158: ambiguous (2 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:63: object.rs:139-141: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:116: init.c:242-246: ambiguous (4 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:117: init.c:676-684: ambiguous (4 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:123: init.c:693-696: ambiguous (4 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:322: object.rs:1230-1265: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:414: object.rs:2027-2030: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:503: object.rs:126-149: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:503: window.rs:398-404: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:510: window.rs:383-404: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:552: object.rs:697-725: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:558: object.rs:671-689: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:559: object.rs:74-174: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:560: window.rs:398-404: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:596: object.rs:2027-2030: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:644: window.rs:383-404: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:646: object.rs:126-136: ambiguous (3 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:649: window.rs:428-429: ambiguous (6 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:711: mmu.rs:89-90: ambiguous (2 matches)
+docs/analysis/coop-kernel/30-aes-thread-design.md:727: object.rs:1230-1265: ambiguous (3 matches)
+docs/analysis/coop-kernel/emutos-cooperative-model.md:588: event.rs:7-12: ambiguous (3 matches)
+docs/analysis/coop-kernel/emutos-cooperative-model.md:597: event.rs:131-467: ambiguous (3 matches)
+docs/analysis/coop-kernel/freemint-multitasking-model.md:114: proc.c:226-234: ambiguous (2 matches)
+docs/analysis/coop-kernel/freemint-multitasking-model.md:240: references/freemint/sys/k_kthread.c:47-155: line 155 beyond end (154 lines) of references/freemint/sys/k_kthread.c
+docs/analysis/coop-kernel/freemint-multitasking-model.md:323: arch/user_things.h: missing
+docs/analysis/coop-kernel/freemint-multitasking-model.md:365: mint/proc.h:149: missing
+docs/analysis/coop-kernel/freemint-multitasking-model.md:594: proc.h:20: ambiguous (3 matches)
+docs/analysis/coop-kernel/freemint-multitasking-model.md:594: proc.c:242-255: ambiguous (2 matches)
+docs/analysis/coop-kernel/freemint-multitasking-model.md:596: mint/proc.h:296-305: missing
+docs/analysis/coop-kernel/freemint-multitasking-model.md:599: proc.h:75: ambiguous (3 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:74: window.rs:1088: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:83: kernel/src/desk/redraw.rs:117-126: missing
+docs/analysis/desk-window-content-redraw-rootcause.md:85: kernel/src/desk/main.rs:97-107: missing
+docs/analysis/desk-window-content-redraw-rootcause.md:109: window.rs:650-654: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:111: window.rs:1109-1136: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:117: kernel/src/desk/main.rs:1556-1616: missing
+docs/analysis/desk-window-content-redraw-rootcause.md:119: window.rs:1089: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:132: kernel/src/desk/mod.rs:550-552: missing
+docs/analysis/desk-window-content-redraw-rootcause.md:135: main.rs:1287-1295: ambiguous (5 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:137: main.rs:1639-1678: ambiguous (5 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:141: main.rs:339: ambiguous (5 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:149: kernel/src/desk/win.rs:285-450: missing
+docs/analysis/desk-window-content-redraw-rootcause.md:198: window.rs:582-602: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:199: event.rs:331-349: ambiguous (3 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:216: kernel/src/desk/main.rs:1556-1616: missing
+docs/analysis/desk-window-content-redraw-rootcause.md:217: mod.rs:552: ambiguous (22 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:218: main.rs:1294: ambiguous (5 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:236: window.rs:1089: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:238: window.rs:537-563: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:256: main.rs:1677: ambiguous (5 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:272: window.rs:824-838: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:273: window.rs:598-599: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:273: event.rs:331-349: ambiguous (3 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:303: window.rs:1109-1136: ambiguous (6 matches)
+docs/analysis/desk-window-content-redraw-rootcause.md:306: main.rs:1620-1635: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:12: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:26: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:53: shell_loop.rs:430: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:54: kernel/src/desk/mod.rs:57-89: missing
+docs/analysis/desktop-userspace-plan-v2.md:55: mod.rs:169: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan-v2.md:55: dosbind.rs:50-52: missing
+docs/analysis/desktop-userspace-plan-v2.md:55: kernel/src/desk/dosbind.rs:50: missing
+docs/analysis/desktop-userspace-plan-v2.md:61: Cargo.toml:11-13: ambiguous (10 matches)
+docs/analysis/desktop-userspace-plan-v2.md:69: dir.rs:1086: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:69: dir.rs:2557: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:70: kernel/src/desk/vdibind.rs:1-31,140: missing
+docs/analysis/desktop-userspace-plan-v2.md:75: kernel/src/desk/main.rs:1243-1249: missing
+docs/analysis/desktop-userspace-plan-v2.md:107: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:137: dir.rs:53: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:137: menu.rs:38: ambiguous (8 matches)
+docs/analysis/desktop-userspace-plan-v2.md:137: dir.rs:1623: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:139: dir.rs:53: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:152: dir.rs:54: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:152: menu.rs:31: ambiguous (8 matches)
+docs/analysis/desktop-userspace-plan-v2.md:153: dir.rs:54: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:153: menu.rs:31: ambiguous (8 matches)
+docs/analysis/desktop-userspace-plan-v2.md:162: kernel/src/desk/mod.rs:501: missing
+docs/analysis/desktop-userspace-plan-v2.md:163: vdibind.rs:140: missing
+docs/analysis/desktop-userspace-plan-v2.md:171: kernel/src/desk/main.rs:1247: missing
+docs/analysis/desktop-userspace-plan-v2.md:180: main.rs:1021,1031,1089,1141,1170: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:180: mod.rs:970: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan-v2.md:181: main.rs:1022,1090: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:182: main.rs:1478: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:183: main.rs:1245: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:186: mod.rs:44: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan-v2.md:186: dir.rs:2558: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:200: kernel/src/desk/main.rs:1053-1075: missing
+docs/analysis/desktop-userspace-plan-v2.md:201: kernel/src/desk/main.rs:1100-1130,1234: missing
+docs/analysis/desktop-userspace-plan-v2.md:202: kernel/src/desk/mod.rs:928-936: missing
+docs/analysis/desktop-userspace-plan-v2.md:205: kernel/src/desk/dosbind.rs: missing
+docs/analysis/desktop-userspace-plan-v2.md:215: kernel/src/desk/mod.rs:968-978: missing
+docs/analysis/desktop-userspace-plan-v2.md:217: shell_loop.rs:436: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:218: kernel/src/desk/mod.rs:995-1001: missing
+docs/analysis/desktop-userspace-plan-v2.md:233: mod.rs:57-89: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan-v2.md:302: shell_loop.rs:96-99: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:307: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:341: kernel/src/desk/mod.rs:150: missing
+docs/analysis/desktop-userspace-plan-v2.md:341: dosbind.rs:127: missing
+docs/analysis/desktop-userspace-plan-v2.md:364: kernel/src/desk/mod.rs: missing
+docs/analysis/desktop-userspace-plan-v2.md:412: kernel/src/desk/pro.rs:121: missing
+docs/analysis/desktop-userspace-plan-v2.md:416: main.rs:1022,1090: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:417: main.rs:1088-1094: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:427: shell_loop.rs:418-437: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:429: main.rs:1855-1871: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:476: main.rs:1472-1487: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:479: main.rs:1243-1249: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:494: kernel/src/desk/inf.rs: missing
+docs/analysis/desktop-userspace-plan-v2.md:497: dir.rs:2557: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:503: lib.rs:62: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan-v2.md:504: shell_loop.rs:430: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:504: lib.rs:475: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan-v2.md:538: Cargo.toml:11-13: ambiguous (10 matches)
+docs/analysis/desktop-userspace-plan-v2.md:546: kernel/src/desk/mod.rs: missing
+docs/analysis/desktop-userspace-plan-v2.md:595: kernel/src/desk/mod.rs:501: missing
+docs/analysis/desktop-userspace-plan-v2.md:617: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:637: main.rs:1196-1199: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan-v2.md:646: shell_loop.rs:418-437: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:678: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:679: lib.rs:62: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan-v2.md:692: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:714: docs/STATUS.md:540: line 540 beyond end (296 lines) of docs/STATUS.md
+docs/analysis/desktop-userspace-plan-v2.md:717: kernel/src/desktop.rs: missing
+docs/analysis/desktop-userspace-plan-v2.md:727: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:730: docs/STATUS.md:573: line 573 beyond end (296 lines) of docs/STATUS.md
+docs/analysis/desktop-userspace-plan-v2.md:739: desk/main.rs: missing
+docs/analysis/desktop-userspace-plan-v2.md:743: docs/STATUS.md:540: line 540 beyond end (296 lines) of docs/STATUS.md
+docs/analysis/desktop-userspace-plan-v2.md:924: shell_loop.rs:448: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan-v2.md:1008: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan-v2.md:1013: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan.md:37: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan.md:44: kernel/src/desk/mod.rs:104-113: missing
+docs/analysis/desktop-userspace-plan.md:50: desk/mod.rs:159: missing
+docs/analysis/desktop-userspace-plan.md:51: kernel/src/desk/mod.rs:169: missing
+docs/analysis/desktop-userspace-plan.md:56: main.rs:443: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:57: main.rs:484: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:57: main.rs:522: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:58: main.rs:452: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:60: menu.rs:209: ambiguous (8 matches)
+docs/analysis/desktop-userspace-plan.md:60: main.rs:768: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:251: kernel/src/desk/inf.rs:366-369: missing
+docs/analysis/desktop-userspace-plan.md:384: kernel/src/desk/global.rs:75-78: missing
+docs/analysis/desktop-userspace-plan.md:428: window.rs:577-600: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:434: window.rs:631-666: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:442: main.rs:465-580: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:469: dir.rs:1086: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:535: lib.rs:329: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan.md:552: window.rs:520-524: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:554: window.rs:2166: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:576: dir.rs:186: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:577: dir.rs:192: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:578: dir.rs:207: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:579: dir.rs:197: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:580: dir.rs:202: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:581: dir.rs:160: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:582: dir.rs:180: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:583: dir.rs:215: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:584: dir.rs:172: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:585: dir.rs:166: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:586: dir.rs:270: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:587: dir.rs:274: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:588: dir.rs:288: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:599: main.rs:729: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:599: mod.rs:619: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:607: mod.rs:615: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:607: mod.rs:604-613: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:613: menu.rs:504: ambiguous (8 matches)
+docs/analysis/desktop-userspace-plan.md:613: dlg.rs:123: line 123 beyond end (118 lines) of programs/desktop/src/dlg.rs
+docs/analysis/desktop-userspace-plan.md:613: mod.rs:545: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:614: main.rs:578: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:614: main.rs:562-565: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:620: main.rs:543: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:620: main.rs:543: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:621: main.rs:537: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:621: window.rs:631-648: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:622: main.rs:556: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:622: window.rs:656-666: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:625: mod.rs:257: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:646: main.rs:484: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:646: main.rs:522: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:649: main.rs:726: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:650: main.rs:483: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:651: main.rs:575: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:686: dir.rs:1086: ambiguous (2 matches)
+docs/analysis/desktop-userspace-plan.md:688: main.rs:768: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:760: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan.md:840: main.rs:529-531: ambiguous (5 matches)
+docs/analysis/desktop-userspace-plan.md:892: Cargo.toml:11-13: ambiguous (10 matches)
+docs/analysis/desktop-userspace-plan.md:896: kernel/src/desk/mod.rs:40-540: missing
+docs/analysis/desktop-userspace-plan.md:908: target/newtos-programs/HELLOGEM.NAP: missing
+docs/analysis/desktop-userspace-plan.md:950: lib.rs:329: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan.md:954: mod.rs:615: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:977: lib.rs:329: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan.md:1006: desk/mod.rs: missing
+docs/analysis/desktop-userspace-plan.md:1096: window.rs:631-666: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:1111: window.rs:1619: ambiguous (6 matches)
+docs/analysis/desktop-userspace-plan.md:1126: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan.md:1126: lib.rs:61: ambiguous (7 matches)
+docs/analysis/desktop-userspace-plan.md:1130: mod.rs:5-7: ambiguous (22 matches)
+docs/analysis/desktop-userspace-plan.md:1134: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan.md:1215: kernel/src/desk/: missing
+docs/analysis/desktop-userspace-plan.md:1247: kernel/src/desk/: missing
+docs/analysis/emutos-full-function-inventory.md:78: console.rs:81: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:79: console.rs:111: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:80: console.rs:126: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:81: console.rs:144: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:82: console.rs:165: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:83: console.rs:243: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:84: console.rs:256: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:85: console.rs:505: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:86: console.rs:463: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:87: console.rs:556: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:89: console.rs:574: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:90: console.rs:583: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:91: console.rs:592: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:92: console.rs:601: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:120: memory.rs:155: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:121: memory.rs:190: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:122: memory.rs:223: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:187: console.rs:380: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:188: console.rs:54: ambiguous (2 matches)
+docs/analysis/emutos-full-function-inventory.md:195: kernel/src/fbcon.rs:91: line 91 beyond end (67 lines) of kernel/src/fbcon.rs
+docs/analysis/emutos-full-function-inventory.md:211: fs/cache.rs:122: missing
+docs/analysis/emutos-full-function-inventory.md:212: fs/cache.rs: missing
+docs/analysis/emutos-full-function-inventory.md:239: fs/find.rs:319: missing
+docs/analysis/emutos-full-function-inventory.md:246: fs/find.rs:142: missing
+docs/analysis/emutos-full-function-inventory.md:353: mem/pool.rs:187: missing
+docs/analysis/emutos-full-function-inventory.md:354: mem/pool.rs:294: missing
+docs/analysis/emutos-full-function-inventory.md:377: mem/mdpool.rs:392: missing
+docs/analysis/emutos-full-function-inventory.md:379: mem/mdpool.rs:224: missing
+docs/analysis/emutos-full-function-inventory.md:381: mem/mdpool.rs:219: missing
+docs/analysis/emutos-full-function-inventory.md:425: mem/traps.rs:417: missing
+docs/analysis/emutos-full-function-inventory.md:648: kernel/src/desk/dir.rs:211: missing
+docs/analysis/emutos-full-function-inventory.md:699: kernel/src/desk/inf.rs:305: missing
+docs/analysis/emutos-full-function-inventory.md:701: kernel/src/desk/model.rs:319: missing
+docs/analysis/emutos-full-function-inventory.md:712: kernel/src/desk/redraw.rs:221: missing
+docs/analysis/emutos-memory-model.md:58: mem.h:24,26: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:83: mem.h:34: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:180: proc.c:179: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:205: proc.c:305-307: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:206: proc.c:110,136-139: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:310: mem.h:105: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:324: memory.c:1511,1513: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:342: memory.c:210-211: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:343: memory.c:222-223: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:344: memory.c:667,686: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:347: mem.h:147: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:347: memory.c:1241-1242: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:348: memory.c:511-551: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:355: mem.h:28: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:357: memory.c:1877-1918: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:361: memory.c:613-652: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:366: memory.c:1006-1007: ambiguous (2 matches)
+docs/analysis/emutos-memory-model.md:456: mmu.rs:326: ambiguous (2 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:191: main.c:1268-1277: ambiguous (14 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:376: Applications/mintlib-src/.../mint/sysvars.h:60: missing
+docs/analysis/memory-layout-and-reported-free-memory.md:608: lib.rs:417: ambiguous (7 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:747: heap.rs:323: ambiguous (2 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:844: lib.rs:575: ambiguous (7 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:844: lib.rs:644: ambiguous (7 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:845: heap.rs:323: ambiguous (2 matches)
+docs/analysis/memory-layout-and-reported-free-memory.md:958: mmu.rs:100,159-165: ambiguous (2 matches)
+docs/analysis/open-tasks-desk-rebuild.md:31: startprg.c:583: missing
+docs/analysis/open-tasks-desk-rebuild.md:131: docs/api/desktop/desksupp.md: missing
+docs/analysis/open-tasks-desk-rebuild.md:153: fsexists.c:41: missing
+docs/analysis/open-tasks-desk-rebuild.md:175: sdk/apps/build-teradesk-ilp32.sh: missing
+docs/analysis/open-tasks-desk-rebuild.md:176: pictures/: missing
+docs/analysis/qed-launch-findings-log.md:138: window.rs:227: ambiguous (6 matches)
+docs/analysis/qed-launch-findings-log.md:183: object.rs:28: ambiguous (3 matches)
+docs/analysis/qed-launch-findings-log.md:195: menu.rs:713,1156: ambiguous (8 matches)
+docs/analysis/qed-launch-findings-log.md:196: object.rs:646: ambiguous (3 matches)
+docs/analysis/qed-launch-findings-log.md:209: desk/main.rs:465-485: missing
+docs/analysis/qed-launch-findings-log.md:257: a_wind_set_str.c:25: ambiguous (2 matches)
+docs/analysis/qed-launch-findings-log.md:258: window.rs:955: ambiguous (6 matches)
+docs/analysis/qed-launch-findings-log.md:283: aktion.c:46: missing
+docs/analysis/qed-launch-findings-log.md:286: crt0.S:49: ambiguous (2 matches)
+docs/analysis/qed-launch-findings-log.md:289: userdef.c:493: missing
+docs/analysis/qed-redraw-rootcause.md:8: kernel/src/desk/: missing
+docs/analysis/qed-typing-redraw/findings.md:111: window.c:267: missing
+docs/analysis/qed-typing-redraw/findings.md:149: cases/vdi-all.tsv: missing
+docs/analysis/qed-typing-redraw/findings.md:176: cases/aes-r2-wind.tsv: missing
+docs/analysis/qed-typing-redraw/findings.md:215: cases/aes-r1.tsv: missing
+docs/analysis/qed-typing-redraw/findings.md:215: cases/aes-r2-wind.tsv: missing
+docs/analysis/qed-typing-redraw/findings.md:234: nkccgton.c:30: missing
+docs/analysis/qed-typing-redraw/findings.md:235: nkccinit.c:142: missing
+docs/analysis/qed-typing-redraw/findings.md:237: nkccinit.c:93-104: missing
+docs/analysis/qed-typing-redraw/findings.md:252: nkccinit.c:247: missing
+docs/analysis/qed-typing-redraw/findings.md:263: nkccinit.c:300-313: missing
+docs/analysis/qed-typing-redraw/findings.md:284: cases/aes-r2b-rlist.tsv: missing
+docs/analysis/sysvar-osheader-lowmem-gap.md:37: main.c:56: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:87: main.c:56: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:88: main.c:57: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:89: main.c:58: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:90: main.c:60: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:91: main.c:59: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:92: cookie.c:28,56: ambiguous (4 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:126: main.c:55-60: ambiguous (14 matches)
+docs/analysis/sysvar-osheader-lowmem-gap.md:126: library/utility/cookie.c:28,56: missing
+docs/analysis/vdi-audit/emutos-vdi-function-inventory.md:250: input.rs:98: ambiguous (5 matches)
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:270: mod.rs:263: ambiguous (22 matches)
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:615: references/emutos/vdi/vdi_col.c:1-56,204-467,491-758,801-936: line 936 beyond end (934 lines) of references/emutos/vdi/vdi_col.c
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:645: attributes/_mode-clip-color.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:645: attributes/_line-marker.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:646: attributes/_fill.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:646: attributes/_text.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:646: inquiry/_color-pixel-input.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:647: input/_mouse.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:647: output/_fill.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:647: raster/_raster.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:648: workstation/100-v_opnvwk.md: missing
+docs/analysis/vdi-audit/truecolor-conversion-plan.md:648: workstation/102-vq_extnd.md: missing
+docs/analysis/vdi-audit/v1-control-workstation.md:114: mod.rs:205-317: ambiguous (22 matches)
+docs/analysis/vdi-audit/v1-control-workstation.md:144: input.rs:43-54: ambiguous (5 matches)
+docs/api/structures/iorec.md:74: sdk/libc/overlay/include/mint/ostruct.h:576-583@_IOREC: sdk/libc/overlay/include/mint/ostruct.h: @_IOREC not within ±5 of lines 576-583; nearest occurrence: line 599
+docs/audits/2026-10-28-bios-storage.md:38: tos-api/src/bios/mod.rs:269@mediach: tos-api/src/bios/mod.rs: @mediach not within ±5 of line 269; nearest occurrence: line 301
+docs/audits/2026-10-28-bios-storage.md:39: tos-api/src/bios/bpb.rs:284@getbpb: tos-api/src/bios/bpb.rs: @getbpb not within ±5 of line 284; nearest occurrence: line 268
+docs/audits/2026-10-28-bios-storage.md:76: tos-api/src/bios/mod.rs:173@resolve: tos-api/src/bios/mod.rs: @resolve not within ±5 of line 173; nearest occurrence: line 274
+docs/audits/2026-10-28-bios-storage.md:77: tos-api/src/bios/mod.rs:189@RW_NOTRANSLATE: tos-api/src/bios/mod.rs: @RW_NOTRANSLATE not within ±5 of line 189; nearest occurrence: line 205
+docs/audits/2026-10-28-bios-storage.md:97: tos-api/src/bios/mod.rs:164@numb: tos-api/src/bios/mod.rs: @numb not within ±5 of line 164; nearest occurrence: line 173
+docs/audits/2026-10-28-bios-storage.md:112: tos-api/src/bios/bpb.rs:135@MAX_LOGSEC_SIZE: tos-api/src/bios/bpb.rs: @MAX_LOGSEC_SIZE not within ±5 of line 135; nearest occurrence: line 148
+docs/audits/2026-10-28-bios-storage.md:133: tos-api/src/bios/bpb.rs:186@part_sectors: tos-api/src/bios/bpb.rs: @part_sectors not within ±5 of line 186; it does not occur in the file
+docs/audits/2026-10-28-bios-storage.md:146: tos-api/src/bios/mod.rs:173@resolve: tos-api/src/bios/mod.rs: @resolve not within ±5 of line 173; nearest occurrence: line 274
+docs/audits/2026-10-28-bios-storage.md:161: tos-api/src/bios/mod.rs:173@resolve: tos-api/src/bios/mod.rs: @resolve not within ±5 of line 173; nearest occurrence: line 274
+docs/audits/2026-10-28-bios-storage.md:175: tos-api/src/bios/mod.rs:189@RW_NOTRANSLATE: tos-api/src/bios/mod.rs: @RW_NOTRANSLATE not within ±5 of line 189; nearest occurrence: line 205
+docs/audits/2026-10-28-bios-storage.md:221: tos-api/src/bios/bpb.rs:284@getbpb: tos-api/src/bios/bpb.rs: @getbpb not within ±5 of line 284; nearest occurrence: line 268
+docs/audits/2026-10-28-bios-storage.md:222: tos-api/src/bios/mod.rs:269@mediach: tos-api/src/bios/mod.rs: @mediach not within ±5 of line 269; nearest occurrence: line 301
+docs/audits/2026-10-28-bios-storage.md:223: tos-api/src/bios/mod.rs:312@drvmap: tos-api/src/bios/mod.rs: @drvmap not within ±5 of line 312; nearest occurrence: line 359
+docs/audits/2026-10-28-bios-storage.md:320: tools/hatari-oracle.sh:66@PRG: tools/hatari-oracle.sh: @PRG not within ±5 of line 66; nearest occurrence: line 46
+docs/benchmarks/coremark.md:8: atari/: missing
+docs/emutos-map.md:302: bios/tosvars.S: missing
+docs/hardware/desktop-hw-test-plan.md:11: kernel/src/drivers/bcm2711/ikbd_uart.rs: missing
+docs/hardware/emmc-sd.md:32: include/circle/bcm2835.h:256: missing
+docs/hardware/emmc-sd.md:61: include/circle/bcm2711.h:31: missing
+docs/hardware/emmc-sd.md:325: addon/SDCard/emmc.cpp:2367: missing
+docs/hardware/mailbox-framebuffer.md:28: include/circle/bcmpropertytags.h: missing
+docs/hardware/mailbox-framebuffer.md:28: lib/bcmframebuffer.cpp: missing
+docs/hardware/mailbox-framebuffer.md:28: lib/2dgraphics.cpp: missing
+docs/hardware/mailbox-framebuffer.md:28: addon/linux/raspberrypi-firmware.h: missing
+docs/hardware/mailbox-framebuffer.md:28: lib/koptions.cpp: missing
+docs/hardware/mailbox-framebuffer.md:28: doc/cmdline.txt: missing
+docs/hardware/mailbox-framebuffer.md:29: documentation/asciidoc/computers/config_txt/overclocking.adoc: missing
+docs/hardware/mailbox-framebuffer.md:230: lib/bcmframebuffer.cpp:405-410: missing
+docs/hardware/mailbox-framebuffer.md:407: lib/cputhrottle.cpp:408-418: missing
+docs/hardware/mailbox-framebuffer.md:433: include/circle/bcmpropertytags.h:72: missing
+docs/hardware/mailbox-framebuffer.md:433: addon/linux/raspberrypi-firmware.h:113: missing
+docs/hardware/mailbox-framebuffer.md:434: bcmpropertytags.h:305-310: missing
+docs/hardware/mailbox-framebuffer.md:435: lib/koptions.cpp:53: missing
+docs/hardware/mailbox-framebuffer.md:435: bcmpropertytags.h:321: missing
+docs/hardware/mailbox-framebuffer.md:435: lib/bcmpropertytags.cpp:49-71: missing
+docs/hardware/mailbox-framebuffer.md:436: bcmpropertytags.cpp:64-68: missing
+docs/hardware/mailbox-framebuffer.md:436: koptions.cpp:58-61: missing
+docs/hardware/mailbox-framebuffer.md:437: doc/cmdline.txt:3-4: missing
+docs/hardware/mailbox-framebuffer.md:440: doc/cmdline.txt:3: missing
+docs/hardware/mailbox-framebuffer.md:442: lib/koptions.cpp:29-61: missing
+docs/hardware/mailbox-framebuffer.md:482: bcmpropertytags.h:184: missing
+docs/hardware/mailbox-framebuffer.md:483: bcmpropertytags.h:234-241: missing
+docs/hardware/mailbox-framebuffer.md:485: lib/cputhrottle.cpp:326-336: missing
+docs/hardware/mailbox-framebuffer.md:523: documentation/asciidoc/computers/config_txt/overclocking.adoc: missing
+docs/hardware/mailbox-framebuffer.md:580: qemu_virt/ramfb.rs: missing
+docs/hardware/pm-watchdog-reset.md:24: freemint/sys/syscalls.master: missing
+docs/hardware/pm-watchdog-reset.md:33: include/circle/bcm2835.h:29-30: missing
+docs/hardware/pm-watchdog-reset.md:36: bcm2835.h:267-269: missing
+docs/hardware/pm-watchdog-reset.md:38: bcm2835.h:274-279: missing
+docs/hardware/pm-watchdog-reset.md:42: lib/sysinit.cpp:231-241: missing
+docs/hardware/pm-watchdog-reset.md:46: lib/bcmwatchdog.cpp: missing
+docs/hardware/pm-watchdog-reset.md:64: drivers/watchdog/bcm2835_wdt.c: missing
+docs/hardware/pm-watchdog-reset.md:74: hw/misc/bcm2835_powermgt.c: missing
+docs/hardware/pm-watchdog-reset.md:82: hw/arm/bcm2835_peripherals.c: missing
+docs/hardware/pm-watchdog-reset.md:85: hw/arm/bcm2838_peripherals.c: missing
+docs/hardware/pm-watchdog-reset.md:101: sysinit.cpp:231-241: missing
+docs/hardware/pwm-audio.md:58: sd-card-backup-20260618/boot-files/: missing
+docs/hardware/pwm-audio.md:59: lib/sound/pwmsoundbasedevice.cpp: missing
+docs/hardware/pwm-audio.md:59: lib/gpioclock.cpp: missing
+docs/hardware/pwm-audio.md:59: include/circle/bcm2835.h: missing
+docs/hardware/pwm-audio.md:59: include/circle/gpioclock.h: missing
+docs/hardware/pwm-audio.md:69: arm-arm/: missing
+docs/hardware/pwm-audio.md:275: lib/sound/pwmsoundbasedevice.cpp:165-166: missing
+docs/hardware/pwm-audio.md:367: lib/gpioclock.cpp:66: missing
+docs/hardware/pwm-audio.md:367: include/circle/gpioclock.h:37: missing
+docs/hardware/pwm-audio.md:409: lib/sound/pwmsoundbasedevice.cpp:40: missing
+docs/hardware/pwm-audio.md:434: lib/sound/pwmsoundbasedevice.cpp:109: missing
+docs/hardware/pwm-audio.md:924: pwmsoundbasedevice.cpp:161-163: missing
+docs/hardware/pwm-audio.md:961: hw/arm/bcm2835_peripherals.c: missing
+doc-check: 329 files, 22786 path cites and 677 ADR cites checked, 762 failures, 0 skipped (reference tree missing); 638 anchored line cites, 2188 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+xtask: doc-check: 762 failures (see above)

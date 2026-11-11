@@ -1,0 +1,6 @@
+build rpi4 rc=0 warnings=159
+build qemu-virt rc=0 warnings=159
+clippy kernel rpi4 rc=0 warnings=196
+clippy kernel qemu-virt rc=0 warnings=196
+clippy xtask --tests rc=0 warnings=10
+done
