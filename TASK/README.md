@@ -70,7 +70,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A16](A16.md) | wind_close: WS_CURR/WS_PREV/WS_WORK bleiben unaktualisiert | Belegter Defekt / bedingte Reparatur | P1 | IMPLEMENTIERT — HW OFFEN | — |
 | [A17](A17.md) | wind_open: PREV-Rechteck im Soll nachtragen, Zeilenbelege richtigstellen | Spec-/Belegkorrektur | P2 | ERLEDIGT (2026-09-19) | — |
 | [A18](A18.md) | Rechteckliste: Soll in der Spec nachtragen statt lizenzieren | Spec-Korrektur | P1 | ERLEDIGT (2026-09-19) | A13 |
-| [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | ERLEDIGT (2026-09-14) | — |
+| [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | IMPLEMENTED | — |
 | [A20](A20.md) | Menüleistenhöhe konstant 19 statt abgeleitet | Belegter Defekt / Geräteableitung | P2 | ERLEDIGT (2026-09-19) | — |
 | [A21](A21.md) | Rechteckliste verwirft Stücke jenseits von 16 | Belegter Defekt / Robustheit | P2 | ERLEDIGT (2026-09-19) | A13, A14 |
 | [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A13, A14 |

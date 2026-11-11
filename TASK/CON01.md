@@ -1,5 +1,10 @@
 # CON01 — Spaltenzaehler (`glbcolumn`) und BDOS-Typeahead fuer die Konsole
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 04862df4b | Missing: real-Pi test
+
+Migrated (owner batch 14, 2026-11-11, to IMPLEMENTED), evidence: commit 04862df4b (feat(gemdos): EmuTOS console layer - typeahead, Ctrl-S/Q/X, tabs (CON0), VERIFIED: diff of 04862df4b (feat(gemdos): EmuTOS console layer - typeahead, Ctrl-S/Q/X, ) touches tos-api/src/gemdos/console.rs, names the id by subject, 57 files, legacy line: ERLEDIGT 2026-10-18 (QEMU, `5d2a3812`, Pi offen)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-18 (QEMU, `5d2a3812`; Pi offen) · Prioritaet: **P3** · Typ: Konformitaet — Anwenderentscheidung 2026-10-13 bei der FS11-Spec
 
 Abhaengigkeiten: [FS11](FS11.md) (Geraeteweiche)

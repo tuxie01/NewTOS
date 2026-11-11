@@ -1,5 +1,10 @@
 # BIOS06 — `Getmpb`: Kern und SDK-Header sind sich ueber das `MD`-Layout nicht einig
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: f77ba8bac | Missing: owner decision on the silent-success case O3
+
+Migrated (owner batch 14, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/BIOS06-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit f77ba8bac (fix(bios): Getmpb publishes the LP64 header layout (BIOS06)), VERIFIED: diff of f77ba8bac (fix(bios): Getmpb publishes the LP64 header layout (BIOS06)) touches tos-api/src/bios/getmpb.rs, kernel/src/selftest_bios.rs, sdk/apps/apitest/apitest.c (+6), names the id by subject, 212 files, legacy line: ERLEDIGT 2026-10-29 ([Quittung](BIOS06-STATUS-DONE.MD)), O3 gemessen (EmuTOS: Bu
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS06-STATUS-DONE.MD)); O3 gemessen (EmuTOS: Busfehler + Panic), stiller Erfolg bleibt bis zur Anwenderentscheidung · Prioritaet: **P1** · Typ: Researcher (Vertrag festlegen), danach Developer oder SDK — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt
