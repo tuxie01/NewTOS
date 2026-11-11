@@ -1,5 +1,10 @@
 # KEYOWNER — Tasten gehen an den Maus-/Tastatur-Eigentuemer (EmuTOS `gl_mowner`); Ssystem 2020 Eingabemodus
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt KEYOWNER-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 20, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: f642c797f (fix(aes): keys go to the mouse owner like EmuTOS, Ssystem 20) added the receipt TASK/KEYOWNER-STATUS-DONE.MD itself, the report of this research or measurement ticket (498 files), bookkeeping or bulk commit, not accepted as evidence
+
+Line 3 before the migration:
 Status: **ERLEDIGT (QEMU), 2026-10-08** — [Quittung](KEYOWNER-STATUS-DONE.MD) · Prioritaet: **P1** (sichtbar im Demo-Stand: Esc/Return/Pfeile im SYSINFO02-Aufklappfeld) · Typ: EmuTOS-Abweichung (Kernel-AES) + kleine NewTOS-Erweiterung (Ssystem)
 
 Abhaengigkeiten: [SYSINFO02](SYSINFO02.md) (offener Punkt „Esc",

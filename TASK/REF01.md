@@ -1,5 +1,10 @@
 # REF01 — Die Referenzkonfiguration festschreiben, statt sie je Extraktion neu zu raten
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: a0eeebb3c | Receipt: REF01-STATUS-DONE.MD
+
+Migrated (owner batch 20, 2026-11-11, to DONE), evidence: receipt TASK/REF01-STATUS-DONE.MD exists, commit a0eeebb3c (docs(api): pin the EmuTOS reference configuration as a generated table), VERIFIED: a0eeebb3c (docs(api): pin the EmuTOS reference configuration as a gener) added the receipt TASK/REF01-STATUS-DONE.MD itself, the report of this research or measurement ticket (6 files), legacy line: ERLEDIGT (2026-09-24)
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-24)** · Prioritaet: **P2** · Typ: Werkzeugkette / Quellenanalyse
 
 Abhaengigkeiten: —

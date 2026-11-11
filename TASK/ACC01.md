@@ -1,5 +1,10 @@
 # ACC01 — Quellenanalyse: der vollstaendige `.ACC`-Lebenszyklus in EmuTOS
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: aace85f98 | Receipt: ACC01-STATUS-DONE.MD
+
+Migrated (owner batch 20, 2026-11-11, to DONE), evidence: receipt TASK/ACC01-STATUS-DONE.MD exists, commit aace85f98 (docs(aes): extract the .ACC lifecycle from EmuTOS), VERIFIED: aace85f98 (docs(aes): extract the .ACC lifecycle from EmuTOS) added the receipt TASK/ACC01-STATUS-DONE.MD itself, the report of this research or measurement ticket (4 files), legacy line: ERLEDIGT (2026-09-24)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-24) · Prioritaet: **P2** · Typ: Quellenanalyse (Researcher) — Voraussetzung fuer ACC02–ACC05
 
 Abhaengigkeiten: —

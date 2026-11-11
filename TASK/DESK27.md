@@ -1,5 +1,10 @@
 # DESK27 — `docs/api/xbios/26-supexec.md` widerspricht sich
 
+Status: DONE (2026-11-11) | Priority: P4 | Commit: f497ec8d7 | Receipt: DESK27-STATUS-DONE.MD
+
+Migrated (owner batch 20, 2026-11-11, to DONE), evidence: receipt TASK/DESK27-STATUS-DONE.MD exists, commit f497ec8d7 (docs(xbios): the Supexec spec contradicted itself, the head was right), VERIFIED: f497ec8d7 (docs(xbios): the Supexec spec contradicted itself, the head ) added the receipt TASK/DESK27-STATUS-DONE.MD itself, the report of this research or measurement ticket (3 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-23)** · Prioritaet: **P4** · Typ: Dokumentationsfehler — Nebenbefund DESK13
 
 Abhaengigkeiten: —

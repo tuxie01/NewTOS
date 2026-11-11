@@ -1,5 +1,10 @@
 # PORT08 — Die Ball-Demo parkt beim Beenden in einem AES-Aufruf
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt PORT08-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 20, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: 39d8c53e2 (docs(task): SCHED01 - a launched GEM program is never in the) added the receipt TASK/PORT08-STATUS-DONE.MD itself, the report of this research or measurement ticket (16 files), bookkeeping or bulk commit, not accepted as evidence
+
+Line 3 before the migration:
 Status: **GEKLAERT — Ursache getrennt** (2026-09-29) · Prioritaet: **P2** · Typ: Belegter Defekt — Pi-Lauf 2026-09-28
 
 Abhaengigkeiten: [PORT07](PORT07.md) (dort als ungeprueft benannt)

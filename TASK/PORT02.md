@@ -1,5 +1,10 @@
 # PORT02 — Welche Anwendungen koennen wir bis zum Termin portieren?
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt PORT02-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 20, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: 526ad8ac0 (docs(task): close six open tickets per the open-list review) added the receipt TASK/PORT02-STATUS-DONE.MD itself, the report of this research or measurement ticket (16 files), bookkeeping or bulk commit, not accepted as evidence
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-17 ([Quittung](PORT02-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Bewertung / Portierbarkeit — Anwenderwunsch 2026-09-25
 
 Abhaengigkeiten: [PORT01](PORT01.md) (Kommandozeile erreicht die Anwendung)

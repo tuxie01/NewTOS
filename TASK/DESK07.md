@@ -1,5 +1,10 @@
 # DESK07 — File → Shutdown: Zustand pruefen
 
+Status: DONE (2026-11-11) | Priority: P4 | Commit: 5336331a3 | Receipt: DESK07-STATUS-DONE.MD
+
+Migrated (owner batch 20, 2026-11-11, to DONE), evidence: receipt TASK/DESK07-STATUS-DONE.MD exists, commit 5336331a3 (docs(desk): record why Shutdown is greyed, and why Execute EmuCON is n), VERIFIED: 5336331a3 (docs(desk): record why Shutdown is greyed, and why Execute E) added the receipt TASK/DESK07-STATUS-DONE.MD itself, the report of this research or measurement ticket (3 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-23)** · Prioritaet: **P4** · Typ: Pruefung / ggf. gegenstandslos
 
 Abhaengigkeiten: —

@@ -1,5 +1,10 @@
 # GUI07 — `mem_to_screen` liest je Pixel den Bildschirm und rechnet um, auch wenn es das Ergebnis wegwirft
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt GUI07-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 20, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: e1cb3eabd (perf(vdi): vro_cpyfm copies row-wise and skips the screen re) added the receipt TASK/GUI07-STATUS-DONE.MD itself, the report of this research or measurement ticket (221 files), bookkeeping or bulk commit, not accepted as evidence
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-10-03, [Statusdatei](GUI07-STATUS-DONE.MD); vorgezogen; **Pi 2026-10-03: Doom x3/x4 40–75 fps** statt 7,6/4,2) · Prioritaet: **P2** · Typ: Durchsatz — aus [PORT07](PORT07.md), berichtet statt behoben
 
 Abhaengigkeiten: — · **nicht vor dem OFAM-Termin** (kein Kerneleingriff in den Zeichenpfad)

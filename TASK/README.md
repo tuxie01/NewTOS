@@ -48,41 +48,41 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 
 | ID | Aufgabe | Typ | Priorität | Status | Abhängigkeiten |
 |---|---|---|---|---|---|
-| [M01](M01.md) | Aktuellen Pi-Fensterlauf archivieren | Hardwaremessung | P1 | ERLEDIGT | — |
-| [M02](M02.md) | Rechtecklisten-Referenz auf Atari TT aufnehmen | Hardwaremessung | P1 | ERLEDIGT | — |
-| [M03](M03.md) | Rechtecklisten auf aktuellem Pi aufnehmen | Hardwaremessung | P1 | ERLEDIGT | — |
-| [M04](M04.md) | Laufmanifest und gemessenes Kernelabbild eindeutig verbinden | Messverfahren | P2 | ERLEDIGT | — |
-| [A01](A01.md) | wind_get(0, WF_WXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
-| [A02](A02.md) | wind_get(0, WF_CXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
-| [A03](A03.md) | wind_get(0, WF_PXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
-| [A04](A04.md) | wind_get(0, WF_FXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
-| [A05](A05.md) | wind_get WF_OWNER: Versionsabweichung belegen | Versionsprüfung | P2 | ERLEDIGT (2026-09-19) — Versionsunterschied | — |
+| [M01](M01.md) | Aktuellen Pi-Fensterlauf archivieren | Hardwaremessung | P1 | PARKED | — |
+| [M02](M02.md) | Rechtecklisten-Referenz auf Atari TT aufnehmen | Hardwaremessung | P1 | PARKED | — |
+| [M03](M03.md) | Rechtecklisten auf aktuellem Pi aufnehmen | Hardwaremessung | P1 | PARKED | — |
+| [M04](M04.md) | Laufmanifest und gemessenes Kernelabbild eindeutig verbinden | Messverfahren | P2 | PARKED | — |
+| [A01](A01.md) | wind_get(0, WF_WXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | DONE | — |
+| [A02](A02.md) | wind_get(0, WF_CXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | DONE | — |
+| [A03](A03.md) | wind_get(0, WF_PXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | DONE | — |
+| [A04](A04.md) | wind_get(0, WF_FXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | DONE | — |
+| [A05](A05.md) | wind_get WF_OWNER: Versionsabweichung belegen | Versionsprüfung | P2 | PARKED | — |
 | [A06](A06.md) | appl_init: ap_id | Global-Feldprüfung | P2 | PARKED | — |
 | [A07](A07.md) | appl_init: ap_private | Global-Feldprüfung | P2 | PARKED | — |
 | [A08](A08.md) | appl_init: ap_planes | Global-Feldprüfung | P2 | PARKED | — |
 | [A09](A09.md) | appl_init: ap_3resv | Global-Feldprüfung | P2 | PARKED | — |
-| [A10](A10.md) | wind_create: Kapazitätsgrenze | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
-| [A11](A11.md) | wind_get WF_CXYWH: erzeugtes ungeöffnetes Fenster | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
-| [A12](A12.md) | wind_get WF_PXYWH: Zustand nach wind_open | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
-| [A13](A13.md) | wind_get WF_FIRSTXYWH: erstes sichtbares Rechteck | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
-| [A14](A14.md) | wind_get WF_NEXTXYWH: Iteratorfortschritt | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
-| [A15](A15.md) | wind_get: geschriebene Felder am Listenende | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
+| [A10](A10.md) | wind_create: Kapazitätsgrenze | Nachmessung auswerten | P1 | PARKED | M01 |
+| [A11](A11.md) | wind_get WF_CXYWH: erzeugtes ungeöffnetes Fenster | Nachmessung auswerten | P1 | PARKED | M01 |
+| [A12](A12.md) | wind_get WF_PXYWH: Zustand nach wind_open | Nachmessung auswerten | P1 | PARKED | M01 |
+| [A13](A13.md) | wind_get WF_FIRSTXYWH: erstes sichtbares Rechteck | Messlücke / bedingte Reparatur | P1 | PARKED | M02, M03 |
+| [A14](A14.md) | wind_get WF_NEXTXYWH: Iteratorfortschritt | Messlücke / bedingte Reparatur | P1 | PARKED | M02, M03 |
+| [A15](A15.md) | wind_get: geschriebene Felder am Listenende | Messlücke / bedingte Reparatur | P1 | PARKED | M02, M03 |
 | [A16](A16.md) | wind_close: WS_CURR/WS_PREV/WS_WORK bleiben unaktualisiert | Belegter Defekt / bedingte Reparatur | P1 | PARKED | — |
-| [A17](A17.md) | wind_open: PREV-Rechteck im Soll nachtragen, Zeilenbelege richtigstellen | Spec-/Belegkorrektur | P2 | ERLEDIGT (2026-09-19) | — |
-| [A18](A18.md) | Rechteckliste: Soll in der Spec nachtragen statt lizenzieren | Spec-Korrektur | P1 | ERLEDIGT (2026-09-19) | A13 |
+| [A17](A17.md) | wind_open: PREV-Rechteck im Soll nachtragen, Zeilenbelege richtigstellen | Spec-/Belegkorrektur | P2 | DONE | — |
+| [A18](A18.md) | Rechteckliste: Soll in der Spec nachtragen statt lizenzieren | Spec-Korrektur | P1 | DONE | A13 |
 | [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | IMPLEMENTED | — |
-| [A20](A20.md) | Menüleistenhöhe konstant 19 statt abgeleitet | Belegter Defekt / Geräteableitung | P2 | ERLEDIGT (2026-09-19) | — |
-| [A21](A21.md) | Rechteckliste verwirft Stücke jenseits von 16 | Belegter Defekt / Robustheit | P2 | ERLEDIGT (2026-09-19) | A13, A14 |
+| [A20](A20.md) | Menüleistenhöhe konstant 19 statt abgeleitet | Belegter Defekt / Geräteableitung | P2 | DONE | — |
+| [A21](A21.md) | Rechteckliste verwirft Stücke jenseits von 16 | Belegter Defekt / Robustheit | P2 | DONE | A13, A14 |
 | [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | PARKED | A13, A14 |
-| [A23](A23.md) | Kompensationsanalyse vor dem Fix-Durchgang | Gate / Analyse vor Reparatur | P1 | ERLEDIGT (2026-09-10, siehe A23-STATUS-DONE.MD) | A13, A14, A15 |
-| [A24](A24.md) | Messlücke: verschachtelte FIRST/NEXT über zwei Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A14 |
+| [A23](A23.md) | Kompensationsanalyse vor dem Fix-Durchgang | Gate / Analyse vor Reparatur | P1 | PARKED | A13, A14, A15 |
+| [A24](A24.md) | Messlücke: verschachtelte FIRST/NEXT über zwei Fenster | Messlücke / Messdesign | P1 | PARKED | A14 |
 | [A26](A26.md) | Erratum: Kopfkommentar der Rechtecklisten-Tabelle | Erratum / Dokumentation | P2 | PARKED | A15 |
 | [A27](A27.md) | Unterschreibender Handler: bewusste Abweichung belegen, Spec richtigstellen | Bewertung / Spec | P2 | PARKED | — |
 | [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | PARKED | A25, A29 |
 | [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | PARKED | — |
-| [A30](A30.md) | Messdesign: appl_init-Wiederaufruf ohne Hängerrisiko | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-19) — Entwurf; Ausfuehrung als Folgeauftr… | A25, A28 |
+| [A30](A30.md) | Messdesign: appl_init-Wiederaufruf ohne Hängerrisiko | Messlücke / Messdesign | P1 | DONE | A25, A28 |
 | [A31](A31.md) | Testlücke: Rechteckliste über save/restore_windows | Testlücke | P2 | OBSOLETE | A14 |
-| [A32](A32.md) | Abnahme der Rechtecklisten-Reparatur auf echter Hardware | Hardwareabnahme | P1 | ERLEDIGT (2026-09-19) | A13, A14, A15 |
+| [A32](A32.md) | Abnahme der Rechtecklisten-Reparatur auf echter Hardware | Hardwareabnahme | P1 | PARKED | A13, A14, A15 |
 | [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | PARKED | A16 |
 | [V01](V01.md) | vq_extnd(0): Bildschirmgrenzen | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V02](V02.md) | vq_extnd(0): Farbanzahl | Geräteunterschied / Test | P2 | OBSOLETE | — |
@@ -109,7 +109,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [Q03](Q03.md) | vr_recfl: XOR-Cursor zweimal zeichnen | Pixel-Messlücke | P1 | OBSOLETE | Q01 |
 | [Q04](Q04.md) | evnt_multi: ein Tastaturereignis vermessen | Interaktive Messlücke | P1 | OBSOLETE | — |
 | [Q05](Q05.md) | graf_mouse: Hide/Show um Textausgabe | Interaktive Pixel-Messlücke | P1 | OBSOLETE | Q01 |
-| [Q06](Q06.md) | QED restore_edit: abgebrochene Verzweigung bestimmen | Anwendungsdiagnose → belegter Defekt | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
+| [Q06](Q06.md) | QED restore_edit: abgebrochene Verzweigung bestimmen | Anwendungsdiagnose → belegter Defekt | P1 | PARKED | — |
 | [A25](A25.md) | appl_init: Nachrichten/Flags bei Wiederaufruf | Bestätigter Zustandsfehler | P1 | DONE | — |
 
 ## Späterer Backlog: genau eine Funktion pro Messdesign-Task
