@@ -1,5 +1,10 @@
 # DESK26 — Infozeile bleibt nach `fun_rebld` auf der alten Auswahl stehen
 
+Status: DONE (2026-11-11) | Priority: P4 | Commit: b7356cf8b | Receipt: DESK26-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK26-STATUS-DONE.MD exists, commit b7356cf8b (feat(desk): the folder name conflict, STDELDIS, and the info line afte), VERIFIED: b7356cf8b (feat(desk): the folder name conflict, STDELDIS, and the info) names the id by body, its message names the ticket-title identifier fun_rebld, touches code (12 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P4** · Typ: Defekt — Nebenbefund DESK13
 
 Abhaengigkeiten: [A110](A110.md) (erledigt)

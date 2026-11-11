@@ -1,5 +1,10 @@
 # DESK20 — `Install application` vergibt keine Funktionstaste (`APFUNKEY`)
 
+Status: DONE (2026-11-11) | Priority: P4 | Commit: b402747df | Receipt: DESK20-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK20-STATUS-DONE.MD exists, commit b402747df (feat(desk): dropping a file on a program launches it, Install applicat), VERIFIED: b402747df (feat(desk): dropping a file on a program launches it, Instal) names the id by body, its message names the ticket-title identifier apfunkey, touches code (18 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P4** · Typ: Funktionsluecke — Nebenbefund DESK05
 
 Abhaengigkeiten: [DESK05](DESK05.md) (erledigt)

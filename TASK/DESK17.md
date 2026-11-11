@@ -1,5 +1,10 @@
 # DESK17 — `men_update`: `ntrash`-Regel fehlt; Menuetitel bleibt invertiert
 
+Status: DONE (2026-11-11) | Priority: P4 | Commit: 561b99326 | Receipt: DESK17-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK17-STATUS-DONE.MD exists, commit 561b99326 (feat(desk): the removable-media icon, the ntrash rule, Set background ), VERIFIED: 561b99326 (feat(desk): the removable-media icon, the ntrash rule, Set b) names the id by body, its message names the ticket-title identifier men_update, touches code (19 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P4** · Typ: Konformitaet — Nebenbefunde DESK03
 
 Abhaengigkeiten: [DESK03](DESK03.md) (erledigt)

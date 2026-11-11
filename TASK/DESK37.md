@@ -1,5 +1,10 @@
 # DESK37 — Hinter einer laufenden GEM-Anwendung steht Weiss statt des Desktop-Hintergrunds
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt DESK37-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 081ef4be5 (feat(desk): desktop background behind an app, drag), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** · Prioritaet: **P2** · Typ: Belegter Defekt — Pi-Runde + Hatari-Gegenprobe 2026-09-24
 
 Abhaengigkeiten: [DESK35](DESK35.md) (erledigt)

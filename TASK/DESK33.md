@@ -1,5 +1,10 @@
 # DESK33 — `process_funkey`: F1…F20 starten die gebundene Anwendung nicht
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: aa76e41f3 | Receipt: DESK33-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK33-STATUS-DONE.MD exists, commit aa76e41f3 (feat(desk): the last four of the desktop series), VERIFIED: aa76e41f3 (feat(desk): the last four of the desktop series) names the id by body, its message names the ticket-title identifier process_funkey, touches code (20 files), legacy line: ERLEDIGT
+
+Line 3 before the migration:
 Status: **ERLEDIGT** · Prioritaet: **P3** · Typ: Funktionsluecke — Nebenbefund DESK20
 
 Abhaengigkeiten: [DESK20](DESK20.md) (erledigt)

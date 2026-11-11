@@ -1,5 +1,10 @@
 # PORT03 — cflib und QED sind sich ueber den Pfadtrenner uneinig
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt PORT03-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 38f9bd649 (fix(sdk): pin cflib to ce57817, where upstream fix), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-25) · Prioritaet: **P2** · Typ: Versionswechsel — Nebenbefund PORT01
 
 Abhaengigkeiten: [PORT01](PORT01.md) (erledigt)

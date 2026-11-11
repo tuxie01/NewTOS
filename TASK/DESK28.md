@@ -1,5 +1,10 @@
 # DESK28 — `\AUTO\` setzt kein Arbeitsverzeichnis
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt DESK28-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by b48703149 (fix(desk): AUTO launches start from the root again), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-24, teils zurueckgezogen) · Prioritaet: **P2** · Typ: Kompatibilitaetsdefekt — Nebenbefund DESK18
 
 Abhaengigkeiten: [DESK18](DESK18.md) (erledigt)

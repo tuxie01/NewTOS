@@ -1,5 +1,10 @@
 # PORT05 — QED aus TeraDesk gestartet: die Pi friert ein, oder QED beendet sich sofort
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt PORT05-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by d45eff86c (fix(sched): suspend the parent across Pexec, so th), named by body
+
+Line 3 before the migration:
 Status: **BEHOBEN — auf echter Pi 4 abgenommen** (2026-09-26) · Prioritaet: **P1** · Typ: Belegter Defekt — Anwender 2026-09-25
 
 Abhaengigkeiten: —

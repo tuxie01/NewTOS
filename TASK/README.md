@@ -86,7 +86,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | PARKED | A16 |
 | [V01](V01.md) | vq_extnd(0): Bildschirmgrenzen | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V02](V02.md) | vq_extnd(0): Farbanzahl | Geräteunterschied / Test | P2 | OBSOLETE | — |
-| [V03](V03.md) | vq_extnd(0): Palettenpräzision | Geräteunterschied / Quellenprüfung | P2 | ERLEDIGT (2026-09-21) | — |
+| [V03](V03.md) | vq_extnd(0): Palettenpräzision | Geräteunterschied / Quellenprüfung | P2 | PARKED | — |
 | [V04](V04.md) | vq_extnd(1): Planes | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V05](V05.md) | vq_extnd(1): Video-Lookup-Tabelle | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V06](V06.md) | vq_extnd(1): Clip-Rechteck nach Ein/Aus | Geräteunterschied / Test | P1 | OBSOLETE | — |

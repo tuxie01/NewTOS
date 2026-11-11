@@ -1,5 +1,10 @@
 # DESK31 — Reste des Dateiwerks: `d_dofileren`, `STILLDIR`, `desk_verify`, `fun_rebld_marked`
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: aa76e41f3 | Receipt: DESK31-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK31-STATUS-DONE.MD exists, commit aa76e41f3 (feat(desk): the last four of the desktop series), VERIFIED: aa76e41f3 (feat(desk): the last four of the desktop series) names the id by body, its message names the ticket-title identifier desk_verify, d_dofileren, touches code (20 files), legacy line: ERLEDIGT
+
+Line 3 before the migration:
 Status: **ERLEDIGT** · Prioritaet: **P3** · Typ: Funktionsluecken — Nebenbefunde DESK24/DESK25/DESK26
 
 Abhaengigkeiten: [DESK24](DESK24.md), [DESK25](DESK25.md), [DESK26](DESK26.md) (erledigt)

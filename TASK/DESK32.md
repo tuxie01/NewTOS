@@ -1,5 +1,10 @@
 # DESK32 — Drei Klappmenues sind eine Zeichenzelle zu breit
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: legacy, evidence unverified; receipt DESK32-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by aa76e41f3 (feat(desk): the last four of the desktop series), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** · Prioritaet: **P4** · Typ: Kosmetik — Nebenbefund DESK21
 
 Abhaengigkeiten: [DESK21](DESK21.md) (erledigt)

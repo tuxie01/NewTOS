@@ -1,5 +1,10 @@
 # DESK21 — `Set background` steht im falschen Menue
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: legacy, evidence unverified; receipt DESK21-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 561b99326 (feat(desk): the removable-media icon, the ntrash r), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P4** · Typ: Konformitaet — Nebenbefund DESK05
 
 Abhaengigkeiten: —

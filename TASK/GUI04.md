@@ -1,5 +1,10 @@
 # GUI04 — `CONF_WITH_EXTENDED_MOUSE`: Mausrad und Tasten 3 bis 5
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt GUI04-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 88a9a2b78 (feat(vdi,aes): the mouse wheel scrolls - USB byte ), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT — auf echter Pi 4 abgenommen** (2026-09-28) · Prioritaet: **P2** · Typ: Funktionsluecke USB/AES + **benannte Erweiterung ueber EmuTOS hinaus** — aus der Schaltertabelle (REF01)
 
 Abhaengigkeiten: —

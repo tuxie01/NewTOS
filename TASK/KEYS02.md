@@ -1,5 +1,10 @@
 # KEYS02 — Tastaturvektor (`Kbdvbase` / `kbdvec` / `ikbdsys`) fuer Programme (Luecke K4)
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt KEYS02-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by f8b9116d0 (feat(sdk): Doom reads exact key press and release ), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT — Pi-Abnahme 2026-10-04** ([Statusdatei](KEYS02-STATUS-DONE.MD); TT in Hatari bestanden) · Prioritaet: **P1** (Anwender 2026-10-04: „B richtig") · Typ: Fehlende TOS-Funktion — aus [KEYS01](KEYS01.md) / [PORT06](PORT06.md)
 
 Abhaengigkeiten: [KEYS01](KEYS01.md) (Tastenwiederholung, erledigt)

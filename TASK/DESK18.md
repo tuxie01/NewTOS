@@ -1,5 +1,10 @@
 # DESK18 — Kein Arbeitsverzeichnis beim Programmstart (`set_default_path`)
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: cd6afabeb | Receipt: DESK18-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK18-STATUS-DONE.MD exists, commit cd6afabeb (feat(desk): a program started from the desktop gets a working director), VERIFIED: cd6afabeb (feat(desk): a program started from the desktop gets a workin) names the id by body, its message names the ticket-title identifier set_default_path, touches code (16 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P2** · Typ: Kompatibilitaetsdefekt — Nebenbefund DESK05
 
 Abhaengigkeiten: [DESK05](DESK05.md) (erledigt)

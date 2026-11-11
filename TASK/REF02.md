@@ -1,5 +1,10 @@
 # REF02 — Die SD-Spezifikationen fehlen in `references/`, und die Hardwarenotiz nennt keine Zeitgrenzen
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt REF02-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by f3a468fb2 (fix(fs,emmc): a failed write now reaches the appli), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-28) · Prioritaet: **P2** · Typ: Quellenlage (Researcher) — aus dem EMMC-Audit
 
 Abhaengigkeiten: `docs/api/hw/emmc-audit.md` (Befund S1)

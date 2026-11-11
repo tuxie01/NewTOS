@@ -1,5 +1,10 @@
 # DESK24 — Ordner-Namenskonflikt fragt nicht (`output_path`/`get_new_name`)
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: b7356cf8b | Receipt: DESK24-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK24-STATUS-DONE.MD exists, commit b7356cf8b (feat(desk): the folder name conflict, STDELDIS, and the info line afte), VERIFIED: b7356cf8b (feat(desk): the folder name conflict, STDELDIS, and the info) names the id by body, its message names the ticket-title identifier get_new_name, output_path, touches code (12 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P3** · Typ: Funktionsluecke — Nebenbefund DESK13
 
 Abhaengigkeiten: [DESK13](DESK13.md) (erledigt)

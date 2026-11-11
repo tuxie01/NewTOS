@@ -1,5 +1,10 @@
 # ZVIEW02 — double-click on a folder tile in zView's browser only selects
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt ZVIEW02-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 388c6bcd8 (fix(aes): the double-click window runs on the AES ), named by body
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P2** · Typ: Defekt, Ursache unbekannt — aus [ZVIEW01](ZVIEW01-STATUS-DONE.MD)
 
 ## Sachverhalt

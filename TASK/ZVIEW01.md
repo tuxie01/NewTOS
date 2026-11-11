@@ -1,5 +1,10 @@
 # ZVIEW01 — zView browser shows no file or folder names
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt ZVIEW01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 3b9f155f2 (fix(sdk): zView's own text renderer builds its gly), named by body
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P1** (Vorfuehrung) · Typ: Defekt, Ursache unbekannt — Anwender auf der echten Pi 4, 2026-10-07
 
 ## Sachverhalt

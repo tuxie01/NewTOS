@@ -1,5 +1,10 @@
 # KEYS01 — Tastenwiederholung fehlt (Doom bleibt bei gehaltener Taste stehen)
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt KEYS01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 20f6b941d (feat(ikbd): held keys repeat like EmuTOS, driven f), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT — Pi-Abnahme 2026-10-03** · Prioritaet: **P1** (vor dem Termin) · Typ: Kernel / BIOS-Tastatur — aus [PORT06-KEYS-DIAGNOSIS](PORT06-KEYS-DIAGNOSIS.MD), Anwenderentscheidung 2026-10-02
 
 Abhaengigkeiten: —

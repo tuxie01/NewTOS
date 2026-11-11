@@ -1,5 +1,10 @@
 # DESK16 — `IG_REMOV` (5) hat kein Raster
 
+Status: DONE (2026-11-11) | Priority: P4 | Commit: 561b99326 | Receipt: DESK16-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK16-STATUS-DONE.MD exists, commit 561b99326 (feat(desk): the removable-media icon, the ntrash rule, Set background ), VERIFIED: 561b99326 (feat(desk): the removable-media icon, the ntrash rule, Set b) names the id by body, its message names the ticket-title identifier ig_remov, touches code (19 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P4** · Typ: Ressourcenluecke — gemeldet in DESK03
 
 Abhaengigkeiten: [DESK03](DESK03.md) (erledigt)

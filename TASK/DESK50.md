@@ -1,5 +1,10 @@
 # DESK50 — `do_wopen`/`do_diropen` fehlen; der Fensterschwanz ist bei uns verteilt
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt DESK50-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 19, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: hand-check rejected the automatic match: 4b3d73828 (feat(desk): opn_appl asks a .NTP for its parameters, and the) names the id by body, its message names the ticket-title identifier do_wopen,
+
+Line 3 before the migration:
 Status: **ERLEDIGT — Pi-Abnahme 2026-10-04** ([Statusdatei](DESK50-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Fehlende EmuTOS-Funktion — abgegrenzt aus [DESK47](DESK47.md)
 
 Abhaengigkeiten: [DESK47](DESK47.md) (dort als eigenes Paket erkannt), [DESK43](DESK43.md) U3 (machte den Zweig erreichbar)

@@ -1,5 +1,10 @@
 # DESK19 — Ablegen auf ein Programm startet es nicht (`fun_win2win`)
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: cd6afabeb | Receipt: DESK19-STATUS-DONE.MD
+
+Migrated (owner batch 19, 2026-11-11, to DONE), evidence: receipt TASK/DESK19-STATUS-DONE.MD exists, commit cd6afabeb (feat(desk): a program started from the desktop gets a working director), VERIFIED: cd6afabeb (feat(desk): a program started from the desktop gets a workin) names the id by body, its message names the ticket-title identifier fun_win2win, touches code (16 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P3** · Typ: Funktionsluecke — Nebenbefund DESK05
 
 Abhaengigkeiten: [DESK05](DESK05.md) (erledigt)
