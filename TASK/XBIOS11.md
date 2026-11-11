@@ -1,5 +1,10 @@
 # XBIOS11 — `Random` holt den ersten Seed aus der 60-Hz-Bildfrequenzuhr statt aus `_hz_200`
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: no card program depends on the seed origin (only user is TeraDesk formatting) | Reopen: a program depends on the seed origin
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS11.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Kartenprogramm haengt am Seed-Ursprung (einziger Nutzer
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Kartenprogramm haengt am Seed-Ursprung (einziger Nutzer TeraDesk-Formatieren)) · Prioritaet: **P3** · Typ: Developer (Seed aus `_hz_200`) oder Researcher (COMPATIBILITY-Eintrag) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt

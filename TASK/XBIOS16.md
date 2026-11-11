@@ -1,5 +1,10 @@
 # XBIOS16 — `Jdisint`/`Jenabint`: Rueckgabewert gegen das Orakel messen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: no program calls Jdisint/Jenabint/Mfpint | Reopen: a program calls one of them
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS16.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm ruft Jdisint/Jenabint/Mfpint)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm ruft Jdisint/Jenabint/Mfpint) · Prioritaet: **P3** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Nebenbefund aus [BIOS15](BIOS15.md)
 
 ## Sachverhalt

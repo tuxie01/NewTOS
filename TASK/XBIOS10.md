@@ -1,5 +1,10 @@
 # XBIOS10 — `NVMaccess` ist nicht verdrahtet: jede Operation liefert `0x2E`
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner 2026-10-30: until a port needs it (no NVRAM, answer like EmuTOS without an NVRAM chip) | Reopen: a port needs it
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS10.md status line: GEPARKT 2026-10-30 (Anwender: bis ein Port es braucht)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-30 (Anwender: bis ein Port es braucht) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28: kein NVRAM, Antwort wie EmuTOS ohne NVRAM-Chip — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt

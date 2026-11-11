@@ -1,5 +1,10 @@
 # TOOL27 — `rsprobe`-Faelle nach tosdiff
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner 2026-10-30: resume with MIDI/IO01 | Reopen: IO01 (MIDI) is taken up
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL27.md status line: GEPARKT 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md), geparkt)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md); geparkt) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, Folgeticket von [XBIOS06](XBIOS06.md) (Sondenregel, CLAUDE.md "Testing")
 
 ## Sachverhalt

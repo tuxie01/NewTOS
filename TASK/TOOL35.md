@@ -1,5 +1,10 @@
 # TOOL35 — tosdiff-Fall fuer `dumpflg` nach `Scrdmp` und `v_hardcopy`
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: associated fix V34 accepted via probe, tool ticket behind the VDI work (2026-11-07) | Reopen: the owner wants the probe moved to tosdiff
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL35.md status line: GEPARKT 2026-11-07 (zugehoeriger Fix [V34](V34.md) per Sonde abgenommen, Werkzeug-Ticket hinter der VDI-Arbeit
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-11-07 (zugehoeriger Fix [V34](V34.md) per Sonde abgenommen; Werkzeug-Ticket hinter der VDI-Arbeit) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket der Sondenregel (CLAUDE.md "Testing") aus V34
 
 ## Sachverhalt

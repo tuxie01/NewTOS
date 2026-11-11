@@ -1,5 +1,10 @@
 # TOOL34 — tosdiff-Fall mit mehr als 1024 `PTSIN`-Punkten
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: associated fix V23 accepted via probe, tool ticket behind the VDI work (2026-11-06) | Reopen: the owner wants the probe moved to tosdiff
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL34.md status line: GEPARKT 2026-11-06 (zugehoeriger Fix [V23](V23.md) per Sonde abgenommen, Werkzeug-Ticket hinter der VDI-Arbeit
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-11-06 (zugehoeriger Fix [V23](V23.md) per Sonde abgenommen; Werkzeug-Ticket hinter der VDI-Arbeit) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket der Sondenregel (CLAUDE.md "Testing") aus V23
 
 ## Sachverhalt

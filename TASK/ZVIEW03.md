@@ -1,5 +1,10 @@
 # ZVIEW03 — thumbnail cache per directory (future)
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: future (owner 2026-10-07): perhaps a per-directory cache, not now | Reopen: the owner takes up the thumbnail cache
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/ZVIEW03.md status line: ZUKUNFT (Anwender 2026-10-07: „perspektivisch mit einem Cache im jeweiligen Verzeichnis, aber nicht jetzt")
+
+Line 3 before the migration:
 Status: **ZUKUNFT** (Anwender 2026-10-07: „perspektivisch mit einem Cache im jeweiligen Verzeichnis, aber nicht jetzt") · Prioritaet: **P3**
 
 zView dekodiert bei jedem Ordnerbesuch alle Vorschaubilder neu

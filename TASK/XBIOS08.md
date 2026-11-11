@@ -1,5 +1,10 @@
 # XBIOS08 — `Settime` normalisiert bzw. klemmt unmoegliche Felder statt sie roh zu uebernehmen
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner 2026-10-30: until a port needs it | Reopen: a port needs it
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS08.md status line: GEPARKT 2026-10-30 (Anwender: bis ein Port es braucht)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-30 (Anwender: bis ein Port es braucht) · Prioritaet: **P2** · Typ: Developer (rohe Felder halten wie EmuTOS) oder Researcher (Abweichung in COMPATIBILITY, Spec korrigieren) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt

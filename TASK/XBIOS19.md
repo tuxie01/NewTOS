@@ -1,5 +1,10 @@
 # XBIOS19 — `Bioskeys` liefert einen Zeiger auf die Ausgangsstruktur, nicht auf die aktuelle
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: no program calls Bioskeys | Reopen: a program calls Bioskeys
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS19.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm ruft Bioskeys)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm ruft Bioskeys) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29 („wenn es in EmuTOS so ist“), Nachlauf aus [XBIOS02](XBIOS02.md)
 
 ## Sachverhalt

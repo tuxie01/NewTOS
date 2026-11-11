@@ -1,5 +1,10 @@
 # XBIOS13 — Spec `docs/api/xbios/` (`Settime`, `Gettime`, NVRAM) widerspricht Messung und Code
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: pure spec maintenance | Reopen: the spec place is read by open work
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS13.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Spec-Pflege)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Spec-Pflege) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt

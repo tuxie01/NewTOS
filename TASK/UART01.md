@@ -1,5 +1,10 @@
 # UART01 — Unechtes `0x00` auf offener RXD0-Leitung (GPIO 15) landet im AUX-Ring
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner 2026-10-30: resume with MIDI/IO01 | Reopen: IO01 (MIDI) is taken up
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/UART01.md status line: GEPARKT 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md), geparkt)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md); geparkt) · Prioritaet: **P2** · Typ: Messung zuerst (Pi), danach Developer — Anwenderentscheidung 2026-10-30, Folge von [BIOS09](BIOS09.md)
 
 Abhaengigkeiten: [BIOS09](BIOS09.md) (seit dort erreicht das Byte den AUX-Ring); Richtung [IO01](IO01.md) (weitere UARTs, MIDI)

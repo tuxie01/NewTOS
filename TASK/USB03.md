@@ -1,5 +1,10 @@
 # USB03 — Mausrad von Kabelmaeusen, die es nur im Report-Protokoll schicken (B100, GitHub #8)
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue, parked 2026-11-05 until Ragnar feedback on #19 and the USB state (docs/STATUS.md:121) | Reopen: Ragnar feedback arrives
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/USB03.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P1** (Anwender 2026-11-04, vorher P2; der USB-Rest aus [USB01](USB01.md)) · Typ: Treiberluecke — aus Ragnars USB-Test 2 (2026-10-25)
 
 ## Befund

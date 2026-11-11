@@ -1,5 +1,10 @@
 # XBIOS07 — Spec und Doku der Zeichengeraete/Tastatur widersprechen Messung und Code
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: doc correction without a user | Reopen: a user needs the corrected doc
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS07.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Doku-Korrektur ohne Nutzer)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Doku-Korrektur ohne Nutzer) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # TOOL26 — DUMPBIOS: Fallart „Speicher im Super-Zustand schreiben“ (Sonde `vwprobe` nach tosdiff)
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: associated fix BIOS16 accepted via probe | Reopen: the owner wants the probe moved to tosdiff
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL26.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (BIOS16) per Sonde abgenommen)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (BIOS16) per Sonde abgenommen) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket nach CLAUDE.md „Testing“ (Sonde als Abnahme), aus [BIOS16](BIOS16.md)
 
 ## Sachverhalt

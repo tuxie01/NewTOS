@@ -1,5 +1,10 @@
 # XBIOS06 — `Rsconf(-1 x6)`: TSR-Byte ohne Bit 7, obere 32 Bit null statt vorzeichenerweitert
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner 2026-10-30: resume with MIDI/IO01, fix parked, measurement xbios06-rsprobe stays as evidence | Reopen: IO01 (MIDI) is taken up
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS06.md status line: GEPARKT 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md), Fix geparkt, Messung `measurements/me
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-30 (Anwender: wieder aufnehmen mit MIDI/[IO01](IO01.md); Fix geparkt; Messung `measurements/measurement-2026-10-30-xbios06-rsprobe/RUNINFO.TXT` bleibt Beleg) · Prioritaet: **P2** · Typ: Developer (Erweiterung) + Researcher (Spec gegen ABI, Geraeteprofil der Registerbytes) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt

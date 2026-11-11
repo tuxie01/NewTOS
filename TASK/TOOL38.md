@@ -1,5 +1,10 @@
 # TOOL38 — `wkprobe`: Wartegrenze vor dem ersten Mauspaket zu knapp
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: runs are accepted by repeating them, blocks no fix (2026-11-08) | Reopen: a fix acceptance is blocked by it
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL38.md status line: GEPARKT (2026-11-08, Laeufe sind durch Wiederholen abnehmbar, blockiert keinen Fix)
+
+Line 3 before the migration:
 Status: **GEPARKT** (2026-11-08; Laeufe sind durch Wiederholen abnehmbar, blockiert keinen Fix) · Prioritaet: **P3** · Typ: Werkzeug — Nebenfund aus [V54](V54.md)
 
 `tosdump/probes/wkprobe.c` wartet hoechstens 2 000 000 Abfragen auf das erste Mauspaket; der Kommentar nennt "30 s". Bei

@@ -1,5 +1,10 @@
 # TOOL31 — `sbprobe`-Faelle nach tosdiff
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: associated fix A128 accepted via probe, tool ticket behind the product fixes (2026-11-04) | Reopen: the owner wants the probe moved to tosdiff
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL31.md status line: GEPARKT 2026-11-04 (zugehoeriger Fix A128 per Sonde abgenommen, Werkzeug-Ticket hinter den Produkt-Fixes)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-11-04 (zugehoeriger Fix A128 per Sonde abgenommen; Werkzeug-Ticket hinter den Produkt-Fixes) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Pflicht-Folgeticket der Sondenregel (CLAUDE.md "Testing") aus [A128](A128.md)
 
 ## Sachverhalt

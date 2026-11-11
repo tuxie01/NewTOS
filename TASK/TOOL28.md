@@ -1,5 +1,10 @@
 # TOOL28 — `host_clang` und `optional_missing` automatisch ins RUNINFO
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: the manual rule in CLAUDE.md covers it | Reopen: the manual rule fails or the owner wants it automated
+
+Migrated (owner batch 12, 2026-11-11), evidence: TASK/TOOL28.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Handregel in CLAUDE.md deckt es ab)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Handregel in CLAUDE.md deckt es ab) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, Folge von [SDK08](SDK08.md)
 
 ## Sachverhalt
