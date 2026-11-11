@@ -1,5 +1,10 @@
 # MEM10 — Speicherschutz-Synchronisierung ohne volle Momentaufnahme
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/MEM10.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Laufzeit — Anwenderentscheidung 2026-10-13 (MEM05 Teil A)
 
 `memprot.rs` baut bei jeder Synchronisierung (jedes `Malloc`/`Mfree` mit

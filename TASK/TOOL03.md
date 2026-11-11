@@ -1,5 +1,10 @@
 # TOOL03 — Reproduzierbare Messabbilder: gleiche Eingaben, gleiche sha256
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner pre-start check 2026-10-31: only needed for DUMPGDOS/FS19 | Reopen: DUMPGDOS or FS19 is taken up
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TOOL03.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: nur fuer DUMPGDOS/FS19 noetig)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: nur fuer DUMPGDOS/FS19 noetig) · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt

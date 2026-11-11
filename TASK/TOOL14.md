@@ -1,5 +1,10 @@
 # TOOL14 — Trace-Betriebsart fuer `tools/hatari-oracle.sh` (Eingabepruefung EmuTOS-Seite)
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner pre-start check 2026-10-31: probes run without a trace mode | Reopen: a probe needs the trace mode
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TOOL14.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Sonden laufen ohne Trace-Betriebsart)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Sonden laufen ohne Trace-Betriebsart) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, Vorschlag aus [TOOL08](TOOL08.md)
 
 ## Sachverhalt

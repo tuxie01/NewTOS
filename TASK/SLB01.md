@@ -1,5 +1,10 @@
 # SLB01 — FreeMiNT shared libraries (SLB) and th-otto's zView
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: future plan (owner 2026-10-06): leave as is for now | Reopen: the owner takes up shared libraries
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/SLB01.md status line: ZUKUNFT (Anwender 2026-10-06: „erstmal so belassen, das ist ein Zukunftsplan")
+
+Line 3 before the migration:
 Status: **ZUKUNFT** (Anwender 2026-10-06: „erstmal so belassen, das ist ein Zukunftsplan") · Prioritaet: **P3** · Typ: FreeMiNT-Erweiterung
 
 Abhaengigkeiten: [ARCH03](ARCH03.md) (gemeinsamer Adressraum, PROT_G) · zView-LDG-Weg (M1–M4) laeuft vorher fertig

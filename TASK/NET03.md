@@ -1,5 +1,10 @@
 # NET03 — `inet4` portieren: ARP, IP, ICMP, UDP, TCP, Routing
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/NET03.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Portierung (gross)
 
 Abhaengigkeiten: [NET02](NET02.md)

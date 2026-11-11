@@ -1,5 +1,10 @@
 # RTC01 — Battery-backed clock: DS3231 on I2C as a BIOS clock driver
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue, after the Atari meeting, needs the RTC hardware (H01) | Reopen: the RTC module is available (see H01)
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/RTC01.md status line: OFFEN (after the Atari meeting), no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** (after the Atari meeting) · Priority: P3 · Type: new hardware driver
 
 ## Background

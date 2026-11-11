@@ -1,5 +1,10 @@
 # TOOL23 — Release-Bau mit `--features aes-trace` linkt nicht
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: debug feature | Reopen: an AES fix needs the capture
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TOOL23.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Debug-Feature, wieder aufnehmen, wenn ein AES-Fix den Mitsch
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Debug-Feature; wieder aufnehmen, wenn ein AES-Fix den Mitschnitt braucht) · Prioritaet: **P3** · Typ: Developer (Werkzeug) — Fund aus [XBIOS02](XBIOS02.md) (2026-10-29)
 
 ## Sachverhalt

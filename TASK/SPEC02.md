@@ -1,5 +1,10 @@
 # SPEC02 — XBIOS-Inventar: Summen und Liste der unbeantworteten Funktionen veraltet
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: pure follow-up maintenance, open work does not read those places | Reopen: open work reads those spec places
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/SPEC02.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Nachpflege, offene Arbeit liest die Stellen nicht)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Nachpflege; offene Arbeit liest die Stellen nicht) · Prioritaet: **P3** · Typ: Researcher (Doku) — Fund aus [XBIOS02](XBIOS02.md) (2026-10-29)
 
 ## Sachverhalt

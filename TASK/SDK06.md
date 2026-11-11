@@ -1,5 +1,10 @@
 # SDK06 — `Getcookie()` Zeigerform: Wert vorzeichenerweitert wie die Regel
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: no program reads a cookie with bit 31 set | Reopen: a program reads such a cookie
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/SDK06.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm liest einen Cookie mit gesetztem Bit 31)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm liest einen Cookie mit gesetztem Bit 31) · Prioritaet: **P3** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

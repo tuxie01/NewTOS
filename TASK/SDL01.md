@@ -1,5 +1,10 @@
 # SDL01 — Ein SDL-Backend fuer NewTOS: ein Traeger statt fuenf Portierungen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/SDL01.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** (nach dem OFAM-Termin) · Typ: Portierung / Unterbau — Anwenderidee 2026-09-28
 
 Abhaengigkeiten: [SND01](SND01.md) (fuer den Audio-Teil; Video/Eingabe/Timer gehen ohne)

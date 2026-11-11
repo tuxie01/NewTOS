@@ -1,5 +1,10 @@
 # REF03 — Drei falsche Spec-Zitate, zwei davon im Produktcode
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/REF03.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Quellenpflege — aus REF02
 
 Abhaengigkeiten: [REF02](REF02.md) (dort gefunden und gegen die gepinnte Fassung geprueft)

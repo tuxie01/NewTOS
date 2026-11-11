@@ -1,5 +1,10 @@
 # TOOL13 — xtask-Pruefung: Debug-Feature aus = Kernel bytegleich bis auf `panic::Location`
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner pre-start check 2026-10-31: no upcoming fix brings a debug feature | Reopen: a fix needs a debug feature
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TOOL13.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein anstehender Fix bringt ein Debug-Feature)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein anstehender Fix bringt ein Debug-Feature) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [TOOL08](TOOL08.md)
 
 ## Sachverhalt

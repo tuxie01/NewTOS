@@ -99,7 +99,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [V13](V13.md) | vq_chcells: Textzellen aus Bildschirm und Font | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V14](V14.md) | v_opnvwk: ausgegebene Gerätemetriken | Geräteunterschied / Test | P2 | OBSOLETE | V01, V02, V03 |
 | [V15](V15.md) | v_opnvwk: Handle-Identität statt Zahlenvergleich | Messauswertung | P2 | OBSOLETE | — |
-| [R01](R01.md) | vro_cpyfm: oversized destination, D-VDI-25 | Zurückgestellte Vertragsabweichung | P3 | ZURÜCKGESTELLT | — |
+| [R01](R01.md) | vro_cpyfm: oversized destination, D-VDI-25 | Zurückgestellte Vertragsabweichung | P3 | PARKED | — |
 | [R02](R02.md) | vro_cpyfm: Screen → Memory messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
 | [R03](R03.md) | vro_cpyfm: Memory → Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
 | [R04](R04.md) | vro_cpyfm: überlappende Screen-Kopie messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |

@@ -1,5 +1,10 @@
 # RST02 — Warmstart EmuTOS-treu: Kern-Neueinstieg mit erhaltenen Systemvariablen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/RST02.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Abweichung von EmuTOS — Rest aus [RST01](RST01.md) (Anwenderentscheidung 2026-10-17)
 
 RST01 macht Ctrl+Alt+Del vorerst zum echten Pi-Neustart (wie kalt). EmuTOS'

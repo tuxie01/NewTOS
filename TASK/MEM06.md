@@ -1,5 +1,10 @@
 # MEM06 — Heap als reservierter virtueller Bereich, Speicher beim ersten Zugriff
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: idea (owner 2026-10-13, from MEM05): direction note | Reopen: the owner takes up the memory-management idea
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/MEM06.md status line: IDEE (Anwender 2026-10-13, aus MEM05)
+
+Line 3 before the migration:
 Status: **IDEE** (Anwender 2026-10-13, aus MEM05) · Prioritaet: **P3** · Typ: Speicherverwaltung — Richtungsnotiz
 
 Abhaengigkeiten: [MEM05](MEM05.md)

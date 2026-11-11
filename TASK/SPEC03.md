@@ -1,5 +1,10 @@
 # SPEC03 — Altlast der Doku-Fehler abbauen (doc-check ohne Dateiliste)
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: pure cleanup, the hook does not block the legacy backlog | Reopen: the owner schedules the cleanup
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/SPEC03.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Aufraeumarbeit, der Hook blockiert die Altlast nicht)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Aufraeumarbeit; der Hook blockiert die Altlast nicht) · Prioritaet: **P3** · Typ: Researcher (Doku), stapelweise — Anwenderentscheidung 2026-10-30
 
 ## Sachverhalt

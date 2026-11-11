@@ -1,5 +1,10 @@
 # SDK02 — `RW_*` in mintlibs `ostruct.h` sind Bitnummern: Kommentar und Bau-Pruefung
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: no user of the constants | Reopen: a program uses the constants
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/SDK02.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Nutzer der Konstanten)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Nutzer der Konstanten) · Prioritaet: **P3** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28 (korrigiert am selben Tag), Nebenbefund aus [BIOS02](BIOS02.md)
 
 ## Sachverhalt

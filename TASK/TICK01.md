@@ -1,5 +1,10 @@
 # TICK01 — `_hz_200` ($4BA) nur in der Seite 0 des laufenden Prozesses
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner 2026-10-31: resume when the testers see failure pattern K6 from DOOM01 | Reopen: the testers see pattern K6
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TICK01.md status line: GEPARKT 2026-10-31 (Anwender: wieder aufnehmen, wenn die Tester Fehlerbild K6 aus DOOM01 sehen)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender: wieder aufnehmen, wenn die Tester Fehlerbild K6 aus DOOM01 sehen) · Prioritaet: **P3** · Typ: Developer — Fund F1 aus [PITEST01](PITEST01.md) Teil 1 (2026-10-31)
 
 ## Sachverhalt (gemessen)

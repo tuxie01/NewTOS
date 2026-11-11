@@ -1,5 +1,10 @@
 # MEM11 — Anwenderadressen < 2 GiB nur zufaellig: die Abbildungsgrenze erlaubt 4 GiB
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner 2026-10-31: not reachable today, a host test holds the memory layout below 2 GiB | Reopen: user addresses can exceed 2 GiB or the layout changes
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/MEM11.md status line: GEPARKT 2026-10-31 (Anwender: heute nicht erreichbar, der Hosttest, der die Speicheraufteilung unter 2 GiB fes
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender: heute nicht erreichbar; der Hosttest, der die Speicheraufteilung unter 2 GiB festhaelt, ist umgesetzt 2026-10-31, siehe *Stand*) · Prioritaet: **P2** · Typ: Kernfehler (Vertragsgrenze nicht erzwungen) — Anwenderbefund 2026-10-26
 
 Prioritaet P2 wie die uebrigen Defekte der Reihe (MEM01–MEM05): der Vertrag

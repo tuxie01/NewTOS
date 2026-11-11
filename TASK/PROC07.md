@@ -1,5 +1,10 @@
 # PROC07 — `trap #2` mit `d0.w = 0` beendet den Prozess wie `Pterm0`
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: undocumented CP/M relic, gemlib sends only opcodes != 0 | Reopen: a program sends opcode 0
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/PROC07.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: undokumentierte CP/M-Reliquie, gemlib sendet nur Opcodes !=
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: undokumentierte CP/M-Reliquie; gemlib sendet nur Opcodes != 0) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29 (Empfehlung des Leads: wie EmuTOS), aus [TOOL17](TOOL17.md) Gruppe F
 
 ## Sachverhalt

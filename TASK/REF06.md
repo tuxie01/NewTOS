@@ -1,5 +1,10 @@
 # REF06 — BCM2835 ARM Peripherals fehlt in `references/`; Track B nennt die SD-Spezifikationen nicht
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/REF06.md status line: OFFEN — braucht den Lead, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN — braucht den Lead** · Prioritaet: **P3** · Typ: Quellenlage — Restpunkte aus [REF02](REF02.md) (2026-09-28), aus dem STATUS-Log uebertragen 2026-10-26
 
 Abhaengigkeiten: [REF02](REF02.md) (dort gefunden und gemeldet)

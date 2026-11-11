@@ -1,5 +1,10 @@
 # TOOL22 — `mapping.tsv`: TOOL17-Gruppen B, C, F einordnen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: table maintenance, depends on PROC07 | Reopen: PROC07 is taken up
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TOOL22.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Tabellenpflege, haengt an PROC07)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Tabellenpflege, haengt an PROC07) · Prioritaet: **P3** · Typ: Developer (Doku/Werkzeugdaten) — Anwenderentscheidung 2026-10-29 (Empfehlungen des Leads uebernommen), aus [TOOL17](TOOL17.md)
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # TOOL15 — Orakel: mtools pinnen, `--fast-forward` als Profilparameter
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner pre-start check 2026-10-31: blocks no acceptance | Reopen: an acceptance is blocked by it
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/TOOL15.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: blockiert keine Abnahme)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: blockiert keine Abnahme) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

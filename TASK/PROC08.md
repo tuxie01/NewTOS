@@ -1,5 +1,10 @@
 # PROC08 — Rueckkehr aus `Pexec(4)` findet die Code-Seite des Elternprozesses nicht
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: waiting for recurrence (owner 2026-11-04): fix 01eb7709 on the card, 60 zView starts without a crash, keep watching in daily use and with the testers | Reopen: the crash recurs
+
+Migrated (owner batch 11, 2026-11-11), evidence: TASK/PROC08.md status line: ZURUECKGESTELLT — to be tested 2026-11-04 (Anwender: Fix `01eb7709` auf der Karte, 60 zView-Starts ohne Abstur
+
+Line 3 before the migration:
 Status: **ZURUECKGESTELLT — to be tested** 2026-11-04 (Anwender: Fix `01eb7709` auf der Karte, 60 zView-Starts ohne Absturz; nicht schliessen, im Alltag und bei den Testern weiter beobachten; Kartenkern mit `crash-walk` samt Leiter) · Prioritaet: **P1** · Typ: Kernfehler — Ursachenforschung zuerst, Fix erst nach Vorlage der Ursache — Fund C1-2 aus [PITEST01](PITEST01.md), Lauf C1
 
 Vor-Start-Pruefung: Produkt-Ticket, Kartenprogramm betroffen (zView laedt
