@@ -128,7 +128,7 @@ fn approval_line_and_batch_syntax() {
 #[test]
 fn migrated_text_keeps_the_old_status_below_and_parses() {
     let old = "# X1 — t\n\nStatus: OFFEN · Prioritaet: P2\n· Typ: x\n\nBody.\n";
-    let new = migrated_text(old, "Status: OPEN (2026-11-12) | Priority: P2", &migrated_line("3", D, "ev")).unwrap();
+    let new = migrated_text(old, "Status: OPEN (2026-11-12) | Priority: P2", &migrated_line("3", D, State::Open, "ev")).unwrap();
     let l: Vec<&str> = new.lines().collect();
     assert_eq!(
         l,
@@ -137,7 +137,7 @@ fn migrated_text_keeps_the_old_status_below_and_parses() {
             "",
             "Status: OPEN (2026-11-12) | Priority: P2",
             "",
-            "Migrated (owner batch 3, 2026-11-12), evidence: ev",
+            "Migrated (owner batch 3, 2026-11-12, to OPEN), evidence: ev",
             "",
             "Line 3 before the migration:",
             "Status: OFFEN · Prioritaet: P2",
@@ -191,7 +191,7 @@ fn a_batch_of_every_target_state_migrates_in_one_commit() {
         let t = read(&r, &format!("TASK/{id}.md"));
         let l: Vec<&str> = t.lines().collect();
         assert_eq!(l[2], format!("Status: {st} ({D}) | {f}"), "{id}");
-        assert_eq!(l[4], format!("Migrated (owner batch 1, {D}), evidence: {ev}"), "{id}");
+        assert_eq!(l[4], format!("Migrated (owner batch 1, {D}, to {st}), evidence: {ev}"), "{id}");
         assert_eq!(l[6], "Line 3 before the migration:", "{id}");
         assert!(l[7].starts_with("Status: "), "{id}: {}", l[7]);
         assert!(Ticket::from_text(id, &t).parsed.is_ok(), "{id}");
@@ -260,9 +260,13 @@ fn refusals_change_nothing() {
     // `Commit: self`.
     batch(&r, "11", &format!("{APPROVAL}\nL7\tIMPLEMENTED\tPriority: P1 | Commit: self | Missing: m\tev\n"));
     assert_refused(&r, "11", "Commit: self");
-    // A state that leaves a rejecting gap: L3 has a DONE receipt.
+    // A state that leaves a rejecting gap: L3's DONE receipt is newer than
+    // the migration (changed in the working tree; TOOL55 rework a).
     batch(&r, "12", &format!("{APPROVAL}\nL3\tOBSOLETE\tPriority: P1 | Reason: withdrawn\tev\n"));
+    let l3_receipt = read(&r, "TASK/L3-STATUS-DONE.MD");
+    r.write("TASK/L3-STATUS-DONE.MD", "# L3 — receipt\n\nEdited.\n");
     assert_refused(&r, "12", "after the migration: [done-receipt-not-done]");
+    r.write("TASK/L3-STATUS-DONE.MD", &l3_receipt);
     // A Target that is no ticket.
     batch(&r, "13", &format!("{APPROVAL}\nL4\tOBSOLETE\tPriority: P3 | Reason: duplicate | Target: Q9\tev\n"));
     assert_refused(&r, "13", "[bad-target]");
@@ -342,7 +346,7 @@ fn the_real_commit_map_translates_the_a01_receipt_hash() {
     assert!(evidence_names_commit(&map, &receipt, &[], "87b03c250"));
     // The ticket's Migrated line counts as evidence too; nothing names a
     // foreign commit.
-    let m = [migrated_line("1", D, "fix 1234abcd5")];
+    let m = [migrated_line("1", D, State::Done, "fix 1234abcd5")];
     assert!(evidence_names_commit(&CommitMap::default(), "no hash here", &m, "1234abcd5"));
     assert!(!evidence_names_commit(&CommitMap::default(), "no hash here", &[], "1234abcd5"));
     assert!(!evidence_names_commit(&map, &receipt, &m, "abcdef123"));
@@ -486,4 +490,30 @@ fn historical_receipts_are_no_orphans_once_listed() {
     r.git(&["add", "-A"]);
     let s = check(&r.0, &CheckOpts { staged: true, new_only: true, message: None, history: false }).unwrap();
     assert!(s.rejected.is_empty(), "{:?}", s.rejected);
+}
+
+/// TOOL55: a row to a non-DONE state for a legacy ticket whose committed
+/// DONE receipt exists migrates (the Migrated line records the target
+/// state, the exception of `stray_done_receipts`); while the receipt has an
+/// uncommitted change (newer than the migration) the row is refused.
+#[test]
+fn an_implemented_row_with_a_legacy_done_receipt_migrates() {
+    let (r, h) = setup("migrate-tool55");
+    let legacy_receipt = "# L7 — receipt\n\nLegacy DONE, open clause.\n";
+    r.write("TASK/L7-STATUS-DONE.MD", legacy_receipt);
+    commit(&r, "docs(task): legacy receipt (L7)");
+    // L7's receipt changed in the working tree: refused.
+    batch(&r, "1", &format!("{APPROVAL}\nL7\tIMPLEMENTED\tPriority: P1 | Commit: {h} | Missing: tester acceptance\twork in {h}\n"));
+    r.write("TASK/L7-STATUS-DONE.MD", "# L7 — receipt\n\nEdited.\n");
+    assert_refused(&r, "1", "[done-receipt-not-done]");
+    r.write("TASK/L7-STATUS-DONE.MD", legacy_receipt);
+    // L7 (DONE receipt) to IMPLEMENTED: migrates.
+    batch(&r, "2", &format!("{APPROVAL}\nL7\tIMPLEMENTED\tPriority: P1 | Commit: {h} | Missing: tester acceptance\twork in {h}\n"));
+    migrate(&r.0, &args(&["--batch", "2"]), D).unwrap();
+    let t = read(&r, "TASK/L7.md");
+    assert_eq!(t.lines().nth(4), Some(format!("Migrated (owner batch 2, {D}, to IMPLEMENTED), evidence: work in {h}").as_str()));
+    assert_eq!(migrated_not_done(&Ticket::from_text("L7", &t)).len(), 1);
+    assert_eq!(read(&r, "TASK/L7-STATUS-DONE.MD"), legacy_receipt, "the receipt is untouched");
+    let c = check(&r.0, &CheckOpts::default()).unwrap();
+    assert!(c.rejected.is_empty(), "{:?}", c.rejected);
 }

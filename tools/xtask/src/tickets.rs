@@ -127,7 +127,7 @@ Ticket tools (ADR-037, TOOL41; tools/xtask/src/tickets.rs):
                                    IMPLEMENTED, <hash> on the history and
                                    naming <ID>, nothing else staged, <name>
                                    not the recorded developer; PASS writes
-                                   <ID>-STATUS-DONE.MD and line 3 DONE, FAIL
+                                   a new <ID>-STATUS-DONE[-n].MD, line 3 DONE; FAIL
                                    appends to <ID>-STATUS-UNFINISHED.MD;
                                    commits by itself (decision e)
   set-status <ID> PARKED --reason R --reopen T | OBSOLETE --reason R
@@ -396,8 +396,8 @@ fn check_value(id: &str, st: State, key: &str, v: &str) -> Option<FieldError> {
         "Commit" if st == State::Done && !is_hash(v) => {
             Some(err(key, format!("a commit hash (7-40 hex digits), found {v:?}")))
         }
-        "Receipt" if v != format!("{id}-STATUS-DONE.MD") => {
-            Some(err(key, format!("`{id}-STATUS-DONE.MD`, found {v:?}")))
+        "Receipt" if done_receipt_number(id, v).is_none() => {
+            Some(err(key, format!("`{id}-STATUS-DONE.MD` or `{id}-STATUS-DONE-<n>.MD`, found {v:?}")))
         }
         "Ref" if !is_ref(v) => Some(err(key, format!("`ADR-NNN` or a `docs/COMPATIBILITY.md` entry, found {v:?}"))),
         "Target" if !is_id(v) => Some(err(key, format!("a ticket id, found {v:?}"))),
@@ -695,7 +695,7 @@ impl Analysis {
             if let Some(id) = name.strip_suffix(".md") {
                 let text = view.read(&format!("{TASK_DIR}/{name}"))?.unwrap_or_default();
                 tickets.insert(id.to_string(), Ticket::from_text(id, &text));
-            } else if receipt_name(name).is_some_and(|(_, s)| RECEIPT_STATES.contains(&s)) {
+            } else if receipt_name(name).is_some_and(|(_, s)| is_receipt_state(s)) {
                 receipt_files.push(name.clone());
             } else {
                 unknown.insert(name.clone());
@@ -727,9 +727,9 @@ impl Analysis {
         self.receipts.values().filter(move |r| r.ticket.as_deref() == Some(id))
     }
 
-    /// The direct DONE receipt `<id>-STATUS-DONE.MD`.
+    /// The DONE receipt line 3 names, else `<id>-STATUS-DONE.MD` (TOOL55).
     pub fn done_receipt(&self, id: &str) -> Option<&Receipt> {
-        self.receipts.get(&format!("{id}-STATUS-DONE.MD"))
+        self.receipts.get(&line3_done_receipt(self, id))
     }
 
     /// The developer agents recorded for `id` (point 12).
@@ -907,8 +907,8 @@ pub fn names_commit(text: &str, hash: &str) -> bool {
     hex_tokens(text).iter().any(|t| t.starts_with(hash) || hash.starts_with(t))
 }
 
-/// What the checks ask git: does a commit exist.
-pub trait Repo {
+/// What the checks ask git: does a commit exist; a receipt's history ([`History`]).
+pub trait Repo: History {
     fn commit_exists(&mut self, hash: &str) -> bool;
 }
 
@@ -959,17 +959,17 @@ pub fn ticket_violations(a: &Analysis, id: &str, adrs: &BTreeSet<u16>, repo: &mu
         }
     }
     let done_receipt = a.done_receipt(id);
-    if done_receipt.is_some() && t.effective != Some(State::Done) {
+    for r in stray_done_receipts(a, t, repo) {
         let st = t.effective.map_or("unmapped".to_string(), |s| s.name().to_string());
         out.push(v(
             id,
             Code::DoneReceiptNotDone,
-            format!("{TASK_DIR}/{id}-STATUS-DONE.MD exists while line 3 of {file} is not DONE ({st})"),
+            format!("{TASK_DIR}/{} exists while line 3 of {file} is not DONE ({st})", r.file),
         ));
     }
     if t.effective == Some(State::Done) {
         match (done_receipt, &t.parsed) {
-            (None, _) => out.push(v(id, Code::DoneNoReceipt, format!("{file}:3: DONE without {id}-STATUS-DONE.MD"))),
+            (None, _) => out.push(v(id, Code::DoneNoReceipt, format!("{file}:3: DONE without {}", line3_done_receipt(a, id)))),
             (Some(r), Ok(l)) => {
                 let c = l.get("Commit").unwrap_or("");
                 if !evidence_names_commit(&a.aids.map, &r.text, &t.migrated, c) {
@@ -1008,7 +1008,7 @@ pub fn ticket_violations(a: &Analysis, id: &str, adrs: &BTreeSet<u16>, repo: &mu
         }
         // Reporting: self-acceptance (point 12).
         if l.state == State::Done {
-            if let Some(r) = done_receipt {
+            if let Some(r) = done_receipt.filter(|r| !legacy_developer_receipt(r)) {
                 let dev = a.developers(id);
                 for acc in r.header("Agent") {
                     if dev.iter().any(|d| agent_key(d) == agent_key(&acc)) {
@@ -1785,7 +1785,8 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
         return Err(format!("accept: other changes are staged; it commits only its own:\n{}", staged.trim_end()));
     }
     let rel = format!("{TASK_DIR}/{id}.md");
-    let done_rel = format!("{TASK_DIR}/{id}-STATUS-DONE.MD");
+    let done_name = next_done_receipt(root, id)?; // TOOL55: never an existing one
+    let done_rel = format!("{TASK_DIR}/{done_name}");
     let unf_rel = format!("{TASK_DIR}/{id}-STATUS-UNFINISHED.MD");
     let mut own = vec![rel.clone(), if pass { done_rel.clone() } else { unf_rel.clone() }, BASELINE_FILE.to_string()];
     let readme_names_it = fs::read_to_string(root.join(README_FILE)).is_ok_and(|r| r.contains(&format!("[{id}]({id}.md)")));
@@ -1827,7 +1828,7 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
     let mut view = View::disk(root);
     let a = Analysis::load(&mut view)?;
     let devs = a.developers(id);
-    if devs.is_empty() {
+    if devs.is_empty() && t.migrated.is_empty() {
         return Err(format!(
             "accept: no developer recorded for {id}: a receipt {TASK_DIR}/{id}-STATUS-*.MD needs `Role: developer` and `Agent: <name>` in its header (before the first `## `)"
         ));
@@ -1839,20 +1840,20 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
     let what = if pass { "PASS" } else { "FAIL" };
     if pass {
         if root.join(&done_rel).exists() {
-            return Err(format!("accept: {done_rel} exists already"));
+            return Err(format!("accept: {done_rel} exists already; a receipt is never overwritten"));
         }
         let receipt = format!(
-            "# {id} — receipt DONE ({date})\n\nRole: tester\nAgent: {agent}\nCommit: {short}\nResult: PASS\n\n\
+            "# {id} — receipt DONE ({date})\n\nRole: tester\nAgent: {agent}\n{}Commit: {short}\nResult: PASS\n\n\
              Written by `cargo xtask accept` (ADR-037 point 11). Developer: {}. Line 3 before: `{}`.\n\n## Note\n\n{note_text}\n",
-            devs.iter().cloned().collect::<Vec<_>>().join(", "),
+            legacy_developer_header(&devs), developer_text(&devs),
             t.line3
         );
-        fs::write(root.join(&done_rel), receipt).map_err(|e| format!("accept: {done_rel}: {e}"))?;
+        write_new(&root.join(&done_rel), &receipt).map_err(|e| format!("accept: {done_rel}: {e}"))?;
         let done = Line3 {
             state: State::Done,
             date: date.to_string(),
             priority: line.priority,
-            fields: vec![("Commit".into(), short.clone()), ("Receipt".into(), format!("{id}-STATUS-DONE.MD"))],
+            fields: vec![("Commit".into(), short.clone()), ("Receipt".into(), done_name.clone())],
         };
         fs::write(root.join(&rel), with_line3(&text, &done.render())?).map_err(|e| format!("accept: {rel}: {e}"))?;
     } else {
@@ -1876,7 +1877,7 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
     let body = format!(
         "{subject}\n\nGenerated by `cargo xtask accept` (ADR-037 point 11, decision e).\nRole: tester, agent: {agent}. Result: {what}.\n{}\n\n{ACCEPT_TRAILER}\n",
         if pass {
-            format!("Line 3 is DONE; receipt {id}-STATUS-DONE.MD.")
+            format!("Line 3 is DONE; receipt {done_name}.")
         } else {
             format!("Line 3 stays IMPLEMENTED; the note is in {id}-STATUS-UNFINISHED.MD.")
         }
@@ -2176,3 +2177,214 @@ impl Aids {
         Ok(Aids { map, historical })
     }
 }
+
+// ---------------------------------------------------------------------------
+// TOOL55 (owner 2026-11-11, LEGACY01 collision 1, option b): numbered DONE
+// receipts, and the exception for migrated IMPLEMENTED tickets
+// ---------------------------------------------------------------------------
+
+/// The number `n` of a receipt state `DONE-<n>`: decimal, `n >= 2`, no
+/// leading zero. `accept` writes `<ID>-STATUS-DONE-<n>.MD` when a DONE
+/// receipt of the ticket exists already; a receipt is never overwritten.
+pub fn done_number(state: &str) -> Option<u32> {
+    let n = state.strip_prefix("DONE-")?;
+    if n.is_empty() || n.starts_with('0') || !n.bytes().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    n.parse().ok().filter(|n| *n >= 2)
+}
+
+/// A receipt state of `<prefix>-STATUS-<state>.MD`: one of
+/// [`RECEIPT_STATES`] or a numbered `DONE-<n>` ([`done_number`]).
+pub fn is_receipt_state(state: &str) -> bool {
+    RECEIPT_STATES.contains(&state) || done_number(state).is_some()
+}
+
+/// The number of `file` as a DONE receipt of ticket `id`:
+/// `<id>-STATUS-DONE.MD` is 1, `<id>-STATUS-DONE-<n>.MD` is `n`; a sub-step
+/// receipt (`<id>-<step>-STATUS-DONE.MD`, point 6) or any other file is none.
+pub fn done_receipt_number(id: &str, file: &str) -> Option<u32> {
+    let (prefix, state) = receipt_name(file)?;
+    if prefix != id {
+        return None;
+    }
+    if state == "DONE" {
+        Some(1)
+    } else {
+        done_number(state)
+    }
+}
+
+/// The file name of DONE receipt number `n` of `id` (the inverse of
+/// [`done_receipt_number`]).
+pub fn done_receipt_file(id: &str, n: u32) -> String {
+    if n <= 1 {
+        format!("{id}-STATUS-DONE.MD")
+    } else {
+        format!("{id}-STATUS-DONE-{n}.MD")
+    }
+}
+
+/// The DONE receipt line 3 of `id` names (`Receipt:` of a parsed `DONE`),
+/// else `<id>-STATUS-DONE.MD`.
+pub fn line3_done_receipt(a: &Analysis, id: &str) -> String {
+    a.tickets
+        .get(id)
+        .and_then(|t| t.parsed.as_ref().ok())
+        .and_then(|l| l.get("Receipt"))
+        .map_or_else(|| done_receipt_file(id, 1), String::from)
+}
+
+/// The target state a `Migrated` line records — the marker
+/// `Migrated (owner batch <N>, <YYYY-MM-DD>, to <STATE>), evidence: ...`
+/// that `migrate` writes since TOOL55 ([`migrate::migrated_line`]). The
+/// parenthesis holds exactly these three parts; a line of batches 1-3
+/// (`Migrated (owner batch <N>, <date>), evidence: ...`) records none.
+pub fn migrated_target(line: &str) -> Option<State> {
+    let rest = line.strip_prefix("Migrated (owner batch ")?;
+    let (head, _) = rest.split_once("), evidence: ")?;
+    let parts: Vec<&str> = head.split(", ").collect();
+    let [n, date, to] = parts[..] else { return None };
+    if n.is_empty() || !n.bytes().all(|c| c.is_ascii_digit()) || !is_date(date) {
+        return None;
+    }
+    State::parse(to.strip_prefix("to ")?)
+}
+
+/// The `Migrated` lines of `t` whose target state is not `DONE`
+/// ([`migrated_target`]; owner 2026-11-11, TOOL55 rework a: every migrated
+/// state but `DONE` keeps its legacy receipt).
+pub fn migrated_not_done(t: &Ticket) -> Vec<&str> {
+    t.migrated.iter().map(String::as_str).filter(|m| migrated_target(m).is_some_and(|s| s != State::Done)).collect()
+}
+
+/// The DONE receipts of ticket `t` that are a `done-receipt-not-done` gap
+/// (point 13): while line 3 is not `DONE`, every DONE receipt of the ticket,
+/// plain or numbered, except the legacy `<ID>-STATUS-DONE.MD` of a ticket
+/// migrated to a state other than `DONE` ([`migrated_not_done`]) when that
+/// receipt is older than the migration ([`receipt_predates_migration`]).
+/// No other ticket and no other receipt gets the exception (TOOL55).
+pub fn stray_done_receipts<'a>(a: &'a Analysis, t: &Ticket, repo: &mut dyn Repo) -> Vec<&'a Receipt> {
+    if t.effective == Some(State::Done) {
+        return Vec::new();
+    }
+    let lines = migrated_not_done(t);
+    let mut out = Vec::new();
+    for r in a.receipts.values() {
+        match done_receipt_number(&t.id, &r.file) {
+            None => {}
+            Some(1) if receipt_predates_migration(repo, &t.id, &lines, r) => {}
+            Some(_) => out.push(r),
+        }
+    }
+    out
+}
+
+/// The DONE receipt `accept` writes for `id`: `<id>-STATUS-DONE.MD` while
+/// `TASK/` holds no DONE receipt of `id`, else the number after the highest
+/// one (`-2`, `-3`, ...), so no existing receipt is ever overwritten.
+pub fn next_done_receipt(root: &Path, id: &str) -> Result<String, String> {
+    let dir = root.join(TASK_DIR);
+    let entries = fs::read_dir(&dir).map_err(|e| format!("accept: {}: {e}", dir.display()))?;
+    let mut highest = 0;
+    for e in entries {
+        let e = e.map_err(|e| format!("accept: {}: {e}", dir.display()))?;
+        if let Some(n) = e.file_name().to_str().and_then(|f| done_receipt_number(id, f)) {
+            highest = highest.max(n);
+        }
+    }
+    Ok(done_receipt_file(id, highest + 1))
+}
+
+/// Writes `text` to the new file `path`; refuses an existing one.
+fn write_new(path: &Path, text: &str) -> std::io::Result<()> {
+    use std::io::Write as _;
+    fs::OpenOptions::new().write(true).create_new(true).open(path)?.write_all(text.as_bytes())
+}
+
+// ---------------------------------------------------------------------------
+// TOOL55 rework (owner 2026-11-11): the receipt-age rule, and the accept of a
+// migrated ticket without a recorded developer
+// ---------------------------------------------------------------------------
+
+/// What the checks ask git about a receipt's history (a supertrait of
+/// [`Repo`]).
+pub trait History {
+    /// The text of `rel` just before the commit that wrote `line` into
+    /// `ticket_rel`, i.e. at the first parent of the oldest commit
+    /// `git log -S<line> -- <ticket_rel>` lists; at `HEAD` while no commit
+    /// holds the line yet (the migration commit being made). `None`: absent
+    /// there, or no such revision.
+    fn text_before_line(&mut self, ticket_rel: &str, line: &str, rel: &str) -> Option<String>;
+}
+
+impl History for GitRepo {
+    fn text_before_line(&mut self, ticket_rel: &str, line: &str, rel: &str) -> Option<String> {
+        let o = Command::new("git")
+            .args(["log", "--format=%H", &format!("-S{line}"), "--", ticket_rel])
+            .current_dir(&self.0)
+            .output()
+            .ok()
+            .filter(|o| o.status.success())?;
+        let log = String::from_utf8_lossy(&o.stdout);
+        let rev = match log.lines().rfind(|l| !l.trim().is_empty()) {
+            Some(m) => format!("{}^", m.trim()),
+            None => "HEAD".to_string(),
+        };
+        let o = Command::new("git")
+            .args(["show", &format!("{rev}:{rel}")])
+            .current_dir(&self.0)
+            .output()
+            .ok()
+            .filter(|o| o.status.success())?;
+        String::from_utf8(o.stdout).ok()
+    }
+}
+
+/// The receipt-age rule of the TOOL55 rework: receipt `r` of ticket `id` is
+/// older than the migration when, for one of the ticket's `Migrated` lines
+/// `lines`, its text as the check sees it (working tree or index) equals its
+/// text just before the commit that wrote that line ([`History`]). A receipt
+/// added or changed in or after the migration commit, committed or not,
+/// differs there (or is absent) and gets no exception.
+pub fn receipt_predates_migration(repo: &mut dyn Repo, id: &str, lines: &[&str], r: &Receipt) -> bool {
+    let ticket_rel = format!("{TASK_DIR}/{id}.md");
+    let rel = format!("{TASK_DIR}/{}", r.file);
+    lines.iter().any(|m| repo.text_before_line(&ticket_rel, m, &rel).is_some_and(|old| old == r.text))
+}
+
+/// The header value `accept` writes into the DONE receipt of a migrated
+/// ticket with no recorded developer (TOOL55 rework b).
+pub const LEGACY_DEVELOPER: &str = "legacy, developer unknown";
+
+/// The header lines `accept` adds when `devs` is empty (only possible for
+/// a migrated ticket): `Developer: legacy, developer unknown` and the note
+/// that the self-acceptance check does not apply.
+pub fn legacy_developer_header(devs: &BTreeSet<String>) -> String {
+    if devs.is_empty() {
+        format!(
+            "Developer: {LEGACY_DEVELOPER}\nSelf-acceptance: not applicable (ADR-037 point 12); a migrated legacy ticket with no developer recorded\n"
+        )
+    } else {
+        String::new()
+    }
+}
+
+/// The developers as the receipt's body names them.
+pub fn developer_text(devs: &BTreeSet<String>) -> String {
+    if devs.is_empty() {
+        LEGACY_DEVELOPER.to_string()
+    } else {
+        devs.iter().cloned().collect::<Vec<_>>().join(", ")
+    }
+}
+
+/// A DONE receipt `accept` wrote for a migrated ticket without a recorded
+/// developer (its header `Developer: legacy, developer unknown`): the
+/// self-acceptance flag of `status-check` does not fire for it.
+pub fn legacy_developer_receipt(r: &Receipt) -> bool {
+    r.header("Developer").iter().any(|d| d == LEGACY_DEVELOPER)
+}
+
+#[cfg(test)]
+mod tool55_tests;

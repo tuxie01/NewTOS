@@ -40,7 +40,7 @@
 //!
 //! ```text
 //! <empty>
-//! Migrated (owner batch <N>, <date>), evidence: <evidence>
+//! Migrated (owner batch <N>, <date>, to <STATE>), evidence: <evidence>
 //! <empty>
 //! Line 3 before the migration:
 //! <the old line 3, verbatim, then the ticket's old line 4 onward>
@@ -68,7 +68,7 @@
 //! exist or whose evidence does not name that receipt and the commit (an old
 //! hash that `docs/commit-map.txt` translates to the commit counts,
 //! [`evidence_names_commit`], the rule `status-check` applies too); a migrated ticket that would still have a
-//! rejecting gap (`status-check`, e.g. a DONE receipt under a non-DONE state);
+//! rejecting gap (`status-check`, e.g. a DONE receipt under a non-DONE state, save an older legacy receipt of a non-DONE row: TOOL55);
 //! anything staged, or uncommitted changes in a file it writes. It never
 //! writes a `-STATUS-DONE.MD` and is no acceptance (point 17).
 
@@ -94,7 +94,7 @@ Legacy migration (ADR-037 points 15-17, TOOL54; tools/xtask/src/tickets/migrate.
                                    rows `id<TAB>STATE<TAB>Priority: Pn | Key:
                                    value ...<TAB>evidence` (the fields of
                                    point 1, in order); adds `Migrated (owner
-                                   batch <N>, <date>), evidence: ...` below
+                                   batch <N>, <date>, to <STATE>), evidence: ...` below
                                    line 3, removes the ids from the baseline,
                                    commits once; refuses an id not in the
                                    baseline (a second run), a missing field,
@@ -219,9 +219,9 @@ pub fn parse_batch(file: &str, text: &str, date: &str) -> Result<Batch, Vec<Stri
     }
 }
 
-/// The line written below line 3 (point 15).
-pub fn migrated_line(n: &str, date: &str, evidence: &str) -> String {
-    format!("Migrated (owner batch {n}, {date}), evidence: {evidence}")
+/// The line written below line 3 (point 15), recording the target state (TOOL55, [`migrated_target`]).
+pub fn migrated_line(n: &str, date: &str, state: State, evidence: &str) -> String {
+    format!("Migrated (owner batch {n}, {date}, to {}), evidence: {evidence}", state.name())
 }
 
 /// `text` with line 3 replaced by `line3`, followed by the migrated line and
@@ -335,7 +335,7 @@ pub fn migrate(root: &Path, args: &[String], date: &str) -> Result<(), String> {
                 errors.push(format!("{at}: Commit: {c} is no commit on the current history{hint}"));
             }
         }
-        let migrated = migrated_line(&n, date, &row.evidence);
+        let migrated = migrated_line(&n, date, row.line3.state, &row.evidence);
         if row.line3.state == State::Done {
             let receipt = row.line3.get("Receipt").unwrap_or("");
             let commit = row.line3.get("Commit").unwrap_or("");
