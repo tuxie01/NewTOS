@@ -1,0 +1,3 @@
+# approved: owner 2026-11-11
+id	state	fields	evidence
+A41	IMPLEMENTED	Priority: P2 | Commit: fa72363b6 | Missing: real-Pi test of colour icons (owner 2026-11-11: never tested on the real Pi, no colour setup available)	owner decision 2026-11-11: commits 8e998fc5d (old f4e6435, part 1: convert, load, draw CICON) and fa72363b6 (part 2: native RSHDR, ship cicons.rsc); receipt TASK/A41-STATUS-DONE.MD says real Pi 4 open; the 2026-09-20 hardware confirmation is withdrawn (docs/HW-TEST-LOG.md correction row 2026-11-11)
