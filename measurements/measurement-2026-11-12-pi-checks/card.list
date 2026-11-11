@@ -1,0 +1,10 @@
+# pi-checks-card.list -- what tools/sync-card.sh puts onto the owner's Pi card for the three real-Pi checks of 2026-11-12:
+#   BIOS06 (Getmpb(NULL) crash screen + key), BIOS11 (Bconin(2) shift state, real USB keyboard), BIOS09 (Bconin(1) waits).
+# Format: tools/sync-card.sh header. The kernel is not in this list: `--kernels <run>/kernels --active kern1112.img` adds it
+# (BOOT:kern1112.img + BOOT:kernel8.img; the old kernel8.img is saved to card-before/). On this card BOOT is C:.
+# The card's own NEWDESK.INF, cmdline.txt, config.txt and every other file stay untouched.
+# Probes (built into measurements/measurement-2026-11-12-pi-checks/probes/ by method/build-nap.sh and tosdump/build-awprobe-newtos.sh):
+C:\PITEST\GNPROBE.NAP | measurements/measurement-2026-11-12-pi-checks/probes/GNPROBE.NAP | method/build-nap.sh (see RUNINFO.TXT)
+C:\PITEST\GNSUPER.NAP | measurements/measurement-2026-11-12-pi-checks/probes/GNSUPER.NAP | method/build-nap.sh (see RUNINFO.TXT)
+C:\PITEST\KPROBE.NAP  | measurements/measurement-2026-11-12-pi-checks/probes/KPROBE.NAP  | method/build-nap.sh (see RUNINFO.TXT)
+C:\PITEST\AWPROBE.NAP | measurements/measurement-2026-11-12-pi-checks/probes/AWPROBE.NAP | tosdump/build-awprobe-newtos.sh

@@ -1,0 +1,50 @@
+measurement-2026-11-12-bios06-bios09-pi -- owner's real-Pi run of the pi-checks package (BIOS06, BIOS09; BIOS11 not measured)
+===========================================================================================================================
+Date: 2026-11-12. Run on the real Pi 4 by the owner; photos sent in the chat, logs read from the card (read-only) and
+recorded by the lead. Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1). No image built for this run.
+
+Card and package: measurements/measurement-2026-11-12-pi-checks/RUNINFO.TXT (kernel8.img = kern1112.img, HEAD f1fb97b59,
+features none), test sheet measurements/measurement-2026-11-12-pi-checks/TESTBLATT.md (German, as handed to the owner).
+Card kernel8.img read after the run: sha256 ac44f0b2d1fc70fbf76c00daeb280f761f5b36f3a1b9323f5a0342355dbf467e (= kern1112.img).
+Card mount /Volumes/BOOT (C:); logs in C:\PITEST\ (the program's directory on a desktop double click).
+
+FILES (sha256)
+  photos/1-bus-error-a.jpg     2576x1932, 2050400 B  608bd854ad8e87b254b32d1d2dec7444356ad153fe3337104ab00d772f95eaa1
+  photos/1-bus-error-b.jpg     2016x1512, 1202031 B  f0c02a02612da92d65691d4e99b1511b7f104e7c0f18d24cbb0f140efe309387
+  photos/3-awprobe-waiting.jpg 2576x1932, 1218478 B  53fe3d6cddce08e8070ba0a9d31e7b78df871e00c66aefc51e9f8f4cacb399ce
+  card/AWPROBE.LOG   2ccb4d98d689f828b657ad8fd582966f052beb4d300e431a73369e57713cc06e
+  card/GNPROBE.LOG   0c7d1679c915e0e371315a0a15de5c1ced466d6494136e9e9cb6a6f6ea543306
+  card/GNPROB2.LOG   d646285311c67a01a69f5d508183e8928e3f1d365d4b147ea5d71ba4ad5bee69  (written by GNSUPER.NAP)
+  card/KPROBE.LOG    76a66db6a48530a4436387ff7f0e1ce189ae967dc051c1ae8c56fe3690c2c10a
+  The log files' FAT dates (2026-11-11 00:0x/00:2x) come from the Pi's clock without RTC, not the real time.
+
+1. BIOS06 -- Getmpb(NULL): crash screen, real key, desktop back
+  Photos 1-bus-error-a/-b (lead, by looking): "Panic: Bus Error", esr=9600004f, addr=0000000000000000, sr=00000000,
+  pc=ffff0000000c9918, "Memory violation: page-0 system-variable memory, write (permission fault, level 3)",
+  register dump, basepage=01c85000, "*** Press any key to continue ***". The two photos differ in data/bss
+  (01ca1580/01ca25f0 vs 01ca1a80/01ca2af0), i.e. two different programs: GNPROBE and GNSUPER; which photo is which
+  the owner did not say.
+  GNPROBE.LOG ends after G06 (group G, Getmpb(&mpb), as before); group N (the NULL call) ends in the crash.
+  GNPROB2.LOG ends after "S01 calling Getmpb(NULL) inside Supexec": the super-state variant crashed at the same call.
+  Owner, asked "GNPROBE: Desktop nach der Taste wieder da?": "1 ja" (yes: the key brought the desktop back).
+  -> BIOS06 real-Pi step: PASS (the key-press step the QEMU tester could not drive,
+     measurements/measurement-2026-11-11-bios06-o3-test/RUNINFO.TXT).
+  Side observation (not pursued, no ticket): X0-X30 are all zero in the dump, the program's registers are not shown;
+  the fault is raised by the kernel (pc in the kernel, FAR 0) per the BIOS06 design.
+
+2. BIOS11 -- not measured
+  KPROBE.LOG: K11 Bconin(2)=001e0061 ('a', equal to the reference); K12-K16 "no key queued". Cause: the probe reads
+  400 hz_200 ticks (2 s) after the first key (measurement-2026-10-29-xbios01/method/kprobe.c lines 41-45), built for
+  injected keys; the test sheet wrongly said "pauses between keys under 2 s". A hand typist cannot give six keys in 2 s.
+  Owner, asked whether to build a variant with a longer window: "3 nein schift und alles funktioniert doch,was müssen
+  wir denn da noch testen ?" (no: shift and everything works). BIOS11 stays DONE on its QEMU/EmuTOS evidence; no
+  real-Pi value for K16.
+
+3. BIOS09 -- Bconin(1) waits on AUX without a serial device
+  Photo 3-awprobe-waiting (lead, by looking): header line, "H01 kbdvec held a vector before the hook: 1",
+  "AWPROBE:WAIT", "W1 Bconstat(1)=0, waiting in Bconin(1) (hook calls so far 0)", then only key bytes from the hook:
+  22 23 a3 a2 23 a3 21 20 a0 a1 23 13 a3 93 21 22 a1 a2 39 b9 11 10 12 90 91 92 14 94 15 95 (make/break pairs,
+  e.g. 22/a2 G, 39/b9 space). No R1/W2 lines: Bconin(1) did not return. Ctrl+Alt+Del bytes not in the photo (taken before).
+  AWPROBE.LOG holds only the header and H01 (the probe never got past the waiting Bconin(1)).
+  Owner, asked "AWPROBE: Neustart mit Strg+Alt+Entf?": "2 ja" (yes: Ctrl+Alt+Del rebooted the Pi).
+  -> BIOS09 real-Pi step (waiting part): PASS. Not testable here: reception of real bytes (no serial/MIDI device).

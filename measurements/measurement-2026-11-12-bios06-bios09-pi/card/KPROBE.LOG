@@ -1,0 +1,10 @@
+K00 conterm=07 Bconstat(2)=00000000 Kbshift=00000000
+K01 first Bconstat(2)!=0 after 118 ticks (66006 polls): ret=ffffffff
+K02 Kbshift(-1) before reading=00000000
+K11 Bconstat=ffffffff Bconin(2)=001e0061
+K12 no key queued (Bconstat 0)
+K13 no key queued (Bconstat 0)
+K14 no key queued (Bconstat 0)
+K15 no key queued (Bconstat 0)
+K16 no key queued (Bconstat 0)
+K20 after: Bconstat(2)=00000000

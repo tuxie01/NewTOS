@@ -1,0 +1,60 @@
+measurement-2026-11-12-pi-checks -- preparation of three real-Pi checks (BIOS06, BIOS11, BIOS09)
+================================================================================================
+Tester (Sonnet, agent af40e817c9ea0c090), 2026-11-12. Preparation only: nothing written to the card, no hardware run, no commit.
+HEAD f1fb97b59342a15b288c778d8222b72b18cd34e4 (tree clean at the kernel build).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1; no image manifest in this run)
+optional_missing: none (no image built; the list has no optional entries)
+
+WHAT / WHY
+  Owner has the real Pi card inserted and wants: (1) BIOS06 Getmpb(NULL) -> "Bus Error" crash screen + real key returns to desktop;
+  (2) BIOS11 Bconin(2) with conterm bit 3 returns the shift state at the key press (real USB keyboard); (3) BIOS09 Bconin(1) waits.
+  This run builds kernel + probes, writes the sync list, runs the sync-card dry run (writes nothing) and the owner's test sheet (TESTBLATT.md).
+
+KERNEL
+  tools/sync-card.sh kernels target-agents/agent-af40e817c9ea0c090/kernels kern1112.img=none
+  Built in the agent scratch (not into the repo: an out dir inside the repo dirties the tree and sync-card refuses KERNELS.TXT, as in the
+  A41 retest), then copied to kernels/ here. kernels/KERNELS.TXT: commit f1fb97b59342a15b288c778d8222b72b18cd34e4 tree_dirty=no
+  kernel_inputs_dirty=no, rustc 1.97.0-nightly (a5c825cd8 2026-04-14), cargo xtask build --board rpi4 --release, features none.
+  kernels/kern1112.img (gitignored) sha256 ac44f0b2d1fc70fbf76c00daeb280f761f5b36f3a1b9323f5a0342355dbf467e (1538288 B)
+  Card's current kernel8.img (read-only look): sha256 e788dc5811fb7ffb4088d92c0eb7395941de9f9f24a8e5d99fd0a4e924ed015c.
+
+PROBES (aarch64 NAPs; sha256; sources unchanged from the cited runs)
+  GNPROBE.NAP  60c03261ea1a2129e52f8eee2f1ae820443b21a8dac36ac8ad70cb089dfcdcd7  method/build-nap.sh <repo> measurement-2026-10-29-bios06/method/gnprobe.c
+               = byte-equal to the October probe/GNPROBE.NAP (60c03261...). Group G (Getmpb(&mpb)), then group N: Getmpb(NULL).
+  GNSUPER.NAP  071743d4a2b0550f77c16ef266a529070c09d85366b3d71d121d7c44e73a9452  build-nap.sh ... measurement-2026-11-11-bios06-o3-test/method/gnprobe-super.c
+               -DSUPERVARIANT -Wno-unused-function. It does NOT build cleanly with the script's -Werror alone (group_g/group_n unused under
+               SUPERVARIANT: -Werror,-Wunused-function); I added -Wno-unused-function, source untouched. Measurement-only copy (Getmpb(NULL) in super state).
+  KPROBE.NAP   78d748c92eea7ab28a629764d8c61d74fda897786bfabde45b371efee911588e  build-nap.sh ... measurement-2026-10-29-xbios01/method/kprobe.c
+               = the October KPROBE.NAP (78d748c9...). The K11-K16/K20 probe (six keys: a, Shift+a, F1, Ctrl+c, Return, Shift+b).
+               Reference result (NewTOS injector, EmuTOS equal): measurement-2026-10-29-xbios01/runs/KEYS-NEWTOS-raspi4b-injector/KPROBE.LOG,
+               K16 = 02300042.
+  AWPROBE.NAP  e5d9954293fde76e9f85740b6e84e071ce8d194943ac27cc18d67415110fcee4  tosdump/build-awprobe-newtos.sh <out.NAP> (tosdump/probes/awprobe.c,
+               the permanent BIOS09 probe written for exactly this "MEM12 real-Pi step": no serial adapter, Bconin(1) must wait, kbdvec hook prints key bytes).
+  Files in probes/ (same hashes). Probes live on the card as C:\PITEST\*.NAP (8.3).
+
+LIST AND CARD
+  method/pi-checks-card.list sha256 521a96f8ae847e06b2efc46f7ef387f3d3a79caa6b7786d924015333c9bebccb
+  Card mount: /Volumes/BOOT, label BOOT, msdos, disk6s1 = C: (dry run output: "volume C BOOT MS-DOS_FAT16 disk6s1 boot"; same form as the A41 retest).
+  Boot config on the card: kernel=kernel8.img, cmdline.txt empty -> --kernels accepted. Desktop of the card = EmuDESK (NEWDESK.INF, *.NAP -> #G).
+  Dry run command (repo root):
+    tools/sync-card.sh sync \
+      --list measurements/measurement-2026-11-12-pi-checks/method/pi-checks-card.list \
+      --boot /Volumes/BOOT BOOT --drive C /Volumes/BOOT BOOT \
+      --kernels measurements/measurement-2026-11-12-pi-checks/kernels --active kern1112.img
+  Dry run output: method/dryrun-output.txt (123 "extra" lines, left untouched). Summary line:
+    summary: 5 new, 1 changed, 0 same, 123 extra, 0 optional missing, 0 error(s)
+    new C:\PITEST\{GNPROBE,GNSUPER,KPROBE,AWPROBE}.NAP, new C:\kern1112.img, changed C:\kernel8.img.
+  Write (owner's word only): same command plus  --write --run-dir measurements/measurement-2026-11-12-pi-checks
+  (card-before/ and card.manifest land there; the old kernel8.img, cmdline.txt, config.txt are backed up first).
+  The write path creates the folder C:\PITEST\ itself (tools/sync-card.sh line 636, mkdir -p); not exercised, the dry run writes nothing.
+
+OPEN POINTS / LIMITS
+  - KPROBE.LOG / GNPROBE logs go to the program's current directory; which one the EmuDESK sets on a double click I did not measure (probably C:\PITEST\).
+  - BIOS09: only the "waits" part is checkable (no serial/MIDI device); received-byte path not testable without hardware.
+  - Nothing was run on QEMU or the Pi here; all expected values are from earlier runs (cited).
+
+SCRATCH (TOOL46)
+  /Volumes/Daten/Development/PiRusTOS/target-agents/agent-af40e817c9ea0c090/  2.1M (du -sh): kernels/ (kern1112.img ac44f0b2..., KERNELS.TXT), probes/ (the four NAPs, hashes above).
+
+FILES
+  TESTBLATT.md, RUNINFO.TXT, kernels/{KERNELS.TXT,kern1112.img}, probes/*.NAP, method/{pi-checks-card.list,dryrun-output.txt,build-nap.sh}
