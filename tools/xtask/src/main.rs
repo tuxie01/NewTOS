@@ -159,6 +159,7 @@ fn main() -> ExitCode {
         "run" => cmd_run(&rest),
         "test" => cmd_test(&rest),
         "tosdump" => tosdump::cmd(&workspace_root(), &rest),
+        "worktree-setup" => worktree_setup::cmd(&workspace_root(), &rest),
         "help" | "--help" | "-h" => {
             print_usage();
             Ok(())
@@ -299,8 +300,7 @@ Commands:
                                    bios-arg-trace adds the input check
                                    (tools/biostrace-check.py, TOOL08)
   help
-{}", tickets::USAGE
-    );
+{}{}", tickets::USAGE, worktree_setup::USAGE);
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -1286,3 +1286,7 @@ mod gen_deps_tests;
 /// TOOL41 — the ADR-037 ticket tools: `status-check`, `accept`,
 /// `set-status`, `report` (dispatched by [`tickets::cmd`]).
 mod tickets;
+
+/// TOOL44 — `worktree-setup`: a linked worktree gets the gitignored inputs
+/// of the main tree as symlinks.
+mod worktree_setup;

@@ -1,0 +1,20 @@
+TOOL44 tester run, 2026-11-11
+What: acceptance of `cargo xtask worktree-setup` (commit 2240f381b, branch worktree-agent-ac57b09f973d6b6ff).
+Why: ticket TASK/TOOL44.md acceptance checks 1-5. No image booted (no manifest, optional_missing: not applicable).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Worktree: /Volumes/Daten/Development/PiRusTOS/target/agents/tool44-wt (detached at 2240f381b), CARGO_TARGET_DIR=<wt>/target, size before removal 5.0G.
+
+How/results:
+1. --check in fresh wt: exit 1, 21 MISSING (16 references/*, 5 sdk/apps/*). worktree-setup: 21 linked, exit 0. git status --porcelain empty.
+   Rerun and --check: "nothing changed (21 inputs linked)", exit 0. Full cargo xtask test: 2400 passed / 0 failed / 6 ignored, exit 0.
+2. Real CLI refusal NOT drivable: the binary uses the xtask workspace root fixed at build time, so running it with cwd = main tree or
+   tools/xtask of the worktree operates on the worktree ("nothing changed", exit 0). Refusal covered only by host tests
+   (refuses_in_the_main_tree_and_outside_a_worktree_root, refuses_outside_a_git_checkout), which pass.
+3. Adversarial (dangling link, link to wrong main dir, real dir with file): all three reported (WRONG/WRONG/real directory kept), untouched, exit 1
+   (--check exit 1). Main tree references/usb, references/xhci, sdk/apps/qed intact. Main git status empty. info/exclude md5 unchanged
+   (0355aaf3...) before/after both runs; it holds one TOOL44 header and 5 anchored /sdk/apps/<app> entries (written earlier by the developer's
+   run), no duplicates. Fresh-header creation not re-exercised (entries already existed).
+4. Mutation (wt only, reverted from a copy, git diff empty after): (a) disable main-tree refusal -> refuses_in_the_main_tree... FAILED;
+   (b) wrong symlink -> Missing -> wrong_link_and_real_dir_are_reported_not_replaced FAILED. Unmutated: 4 passed.
+5. clippy -p xtask --all-targets: 12 warning lines on branch and on main, identical, none in worktree_setup.rs: delta 0.
+   doc-check TASK/TOOL44.md TASK/TOOL44-STATUS-UNFINISHED.MD: 0 failures.

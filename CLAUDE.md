@@ -423,6 +423,10 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   `git merge --squash <branch>` and a normal `git commit -F` in the main
   tree, one commit per ticket, so main's stable hooks check it (owner
   2026-11-11).
+- A fresh git worktree first runs `cargo xtask worktree-setup`: it links
+  the main tree's gitignored inputs (`references/*`, `sdk/apps/<app>/`)
+  into it, so `cargo xtask test` runs the main tree's set (`--check` lists
+  what is missing; TASK/TOOL44.md).
 - A line cite into NewTOS code (git-tracked files under `kernel/`, `tos-api/`,
   `tos-types/`, `programs/`, `tools/`, `tosdump/`, `sdk/`, `boot/`,
   `keyboards/`) carries a symbol anchor, `<path>:<line>@<symbol>`: doc-check
