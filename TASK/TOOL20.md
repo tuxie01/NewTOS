@@ -1,5 +1,10 @@
 # TOOL20 — Sondenfaelle `pxprobe`/`gcprobe` nach tosdiff
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 2e183f025 | Receipt: TOOL20-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL20-STATUS-DONE.MD exists, commit 2e183f025, TASK/TOOL20-STATUS-DONE.MD, commit 2e183f025 (feat(tosdump): FS20/FS22 probes as tosdiff tables (TOOL20)), fix/feat commits naming the id: 2e183f025 (n=1), measurements/measurement-2026-10-29-tool20/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL20-STATUS-DONE.MD)); drei Funde zur Triage beim Anwender · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-29, Folgeticket aus [FS22](FS22.md) (Sondenregel, CLAUDE.md „Testing“)
 
 ## Sachverhalt

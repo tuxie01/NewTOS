@@ -1,5 +1,10 @@
 # TOOL16 — Dumper liest durch zurueckgegebene Zeiger (Strukturlayout aus `docs/api/`)
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 47d81a210 | Receipt: TOOL16-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL16-STATUS-DONE.MD exists, commit 47d81a210, TASK/TOOL16-STATUS-DONE.MD, commit 47d81a210 (feat(tosdump): read and write through returned pointers (TOOL16)), fix/feat commits naming the id: 47d81a210 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL16-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

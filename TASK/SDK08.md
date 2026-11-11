@@ -1,5 +1,10 @@
 # SDK08 — SDK-Paritaetstests scheitern nach dem clang-Update
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: d3d67c671 | Receipt: SDK08-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/SDK08-STATUS-DONE.MD exists, commit d3d67c671, TASK/SDK08-STATUS-DONE.MD, commit d3d67c671 (fix(sdk): parity tests ignore only the compiler ident (SDK08)), fix/feat commits naming the id: d3d67c671 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-30 ([Quittung](SDK08-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Werkzeug/SDK) — Anwenderentscheidung 2026-10-30, Fund aus [COOK02](COOK02.md) (`_IDT`-Lauf)
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # XBIOS12 — Startuhr ohne RTC: 1980-01-01 bzw. FAT-Datum von `KERNEL8.IMG`, EmuTOS Baudatum des ROMs
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 6796787ce | Receipt: XBIOS12-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/XBIOS12-STATUS-DONE.MD exists, commit 6796787ce, TASK/XBIOS12-STATUS-DONE.MD, commit 6796787ce (fix(clock): start at the kernel build date without an RTC (XBIOS12)), fix/feat commits naming the id: 6796787ce (n=1), measurements/measurement-2026-10-28-xbios-system-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-31 ([Quittung](XBIOS12-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-system.md` · Bezug: [RTC01](RTC01.md)
 
 ## Sachverhalt

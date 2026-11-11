@@ -1,5 +1,10 @@
 # TOOL10 — `cargo xtask build` legt `kernel8.img` im Repo-Wurzelverzeichnis ab
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 04ed0b76d | Receipt: TOOL10-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL10-STATUS-DONE.MD exists, commit 04ed0b76d, TASK/TOOL10-STATUS-DONE.MD, commit 04ed0b76d (fix(xtask): kernel8.img beside the kernel ELF, not in the root (TOOL10), fix/feat commits naming the id: 04ed0b76d (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL10-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Werkzeug — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

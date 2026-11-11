@@ -1,5 +1,10 @@
 # TOOL21 — `mapping.tsv`: ADR-Beleg mit Fundstelle, Gruppe A als Hardware, AUX-Pfad nach XBIOS15
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: daa2973ea | Receipt: TOOL21-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL21-STATUS-DONE.MD exists, commit daa2973ea, TASK/TOOL21-STATUS-DONE.MD, commit daa2973ea (feat(deps): ADR evidence with location, hardware slots, AUX path (TOOL), fix/feat commits naming the id: daa2973ea (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL21-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Werkzeug + Zuordnung) — Anwenderentscheidung 2026-10-29, aus [TOOL17](TOOL17.md)
 
 ## Sachverhalt

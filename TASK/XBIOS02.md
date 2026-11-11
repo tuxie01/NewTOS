@@ -1,5 +1,10 @@
 # XBIOS02 — `Bioskeys` ist nicht verdrahtet: per `Keytbl` installierte Tabelle bleibt aktiv
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 7bc047a63 | Receipt: XBIOS02-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/XBIOS02-STATUS-DONE.MD exists, commit 7bc047a63, TASK/XBIOS02-STATUS-DONE.MD, commit 7bc047a63 (fix(xbios): Bioskeys restores the power-up key tables (XBIOS02)), fix/feat commits naming the id: 7bc047a63 (n=1), measurements/measurement-2026-10-28-xbios-chardev-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS02-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt

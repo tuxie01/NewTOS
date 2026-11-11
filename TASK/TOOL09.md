@@ -1,5 +1,10 @@
 # TOOL09 — Ein Befehl fuer einen tosdump-Lauf auf NewTOS
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 2c11c7866 | Receipt: TOOL09-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL09-STATUS-DONE.MD exists, commit 2c11c7866, TASK/TOOL09-STATUS-DONE.MD, commit 2c11c7866 (feat(xtask): tosdump runs a case table on NewTOS in one call (TOOL09)), fix/feat commits naming the id: 2c11c7866 (n=1), measurements/measurement-2026-10-27-dumpbios/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL09-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Werkzeug (Messablauf) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

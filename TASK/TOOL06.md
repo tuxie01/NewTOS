@@ -1,5 +1,10 @@
 # TOOL06 — Orakel-Plattenprofil: EmuTOS liest dieselbe FAT16-Karte wie NewTOS
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: dedde4dea | Receipt: TOOL06-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL06-STATUS-DONE.MD exists, commit dedde4dea, TASK/TOOL06-STATUS-DONE.MD, commit dedde4dea (feat(oracle): disk profile with its own canary (TOOL06)), fix/feat commits naming the id: dedde4dea (n=1), measurements/measurement-2026-10-28-bios-storage-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL06-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Orakel) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

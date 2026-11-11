@@ -1,5 +1,10 @@
 # TOOL07 — DUMPBIOS-Plattenrunde: `Rwabs`, `Getbpb`, `Mediach`, `Drvmap` per tosdiff
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 5f105c39c | Receipt: TOOL07-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL07-STATUS-DONE.MD exists, commit 5f105c39c, TASK/TOOL07-STATUS-DONE.MD, commit 5f105c39c (feat(tosdump): destructive disk tables, unit token, bios-r2 canary (TO), fix/feat commits naming the id: 5f105c39c, 0495d622c (n=2), measurements/measurement-2026-10-28-bios-storage-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL07-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Messung) — Anwenderentscheidung 2026-10-28 · haengt an [TOOL06](TOOL06.md)
 
 ## Sachverhalt

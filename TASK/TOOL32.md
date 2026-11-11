@@ -1,5 +1,10 @@
 # TOOL32 — `mapping.tsv` fuer die VDI-Ebene (EmuTOS `vdi/` → NewTOS)
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 10ae3d852 | Receipt: TOOL32-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL32-STATUS-DONE.MD exists, commit 10ae3d852, TASK/TOOL32-STATUS-DONE.MD, commit 10ae3d852 (feat(deps): require a mapping row for every EmuTOS vdi/ function (TOOL), fix/feat commits naming the id: 10ae3d852 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-05 ([Quittung](TOOL32-STATUS-DONE.MD)) · Prioritaet: **P1** (Anwender 2026-11-05: vor [A119](A119.md), VDI vor AES, weil sie ueber dem BIOS liegt) · Typ: Researcher (Zuordnung lesen), danach Lead (Pruefregel) — Werkzeug, das die Lokalisierung der folgenden Fixes braucht (CLAUDE.md "Testing")
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # TOOL17 — `mapping.tsv`: „kein Gegenstueck mit Absicht“ von „noch nicht abgebildet“ trennen; Abdeckung je Schicht
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 639c3aa02 | Receipt: TOOL17-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL17-STATUS-DONE.MD exists, commit 639c3aa02, TASK/TOOL17-STATUS-DONE.MD, commit 639c3aa02 (feat(deps): classify mapping gaps, coverage per layer (TOOL17), XBIOS1), fix/feat commits naming the id: 639c3aa02 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL17-STATUS-DONE.MD)); Ermessensfaelle (Gruppe G) zur Bestaetigung beim Anwender · Prioritaet: **P1** · Typ: Developer (Werkzeug + Zuordnung) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

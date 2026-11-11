@@ -1,5 +1,10 @@
 # XBIOS15 — qemu-virt: serielle Bytes landen mit Scancode 0 im Tastaturring
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 532cb52eb | Receipt: XBIOS15-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/XBIOS15-STATUS-DONE.MD exists, commit 532cb52eb, TASK/XBIOS15-STATUS-DONE.MD, commit 532cb52eb (feat(console): serial RX into device 0's ring on qemu-virt, xtask run ), fix/feat commits naming the id: 532cb52eb (n=1), measurements/measurement-2026-10-29-xbios01/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS15-STATUS-DONE.MD)), vom Anwender abgenommen (`532cb52e`, wartendes `Bconin(1)`/`Cauxin` bestaetigt) · Prioritaet: **P2** · Typ: Developer (Messung zuerst) — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS01](XBIOS01.md)
 
 ## Sachverhalt

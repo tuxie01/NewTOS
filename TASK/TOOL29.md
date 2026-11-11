@@ -1,5 +1,10 @@
 # TOOL29 — doc-check als git-pre-commit-Hook
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 46bb1c0ca | Receipt: TOOL29-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL29-STATUS-DONE.MD exists, commit 46bb1c0ca, TASK/TOOL29-STATUS-DONE.MD, commit 46bb1c0ca (feat(xtask): doc-check as a pre-commit hook (TOOL29)), fix/feat commits naming the id: 46bb1c0ca (n=1), measurements/measurement-2026-10-30-tool29/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-30 ([Quittung](TOOL29-STATUS-DONE.MD)) · Prioritaet: **P2** (klein) · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-30, direkt nach [A126](A126.md)
 
 ## Sachverhalt

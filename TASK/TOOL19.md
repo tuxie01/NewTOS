@@ -1,5 +1,10 @@
 # TOOL19 — `DISKUNIT.TXT`: Inhalt im RUNINFO, Abweisung bei fehlender oder falscher Einheit
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 6f38e9b9f | Receipt: TOOL19-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL19-STATUS-DONE.MD exists, commit 6f38e9b9f, TASK/TOOL19-STATUS-DONE.MD, commit 6f38e9b9f (feat(tosdump): profile values from one definition, recorded, no defaul), fix/feat commits naming the id: 6f38e9b9f (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL19-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [TOOL07](TOOL07.md)
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # XBIOS01 — `Iorec` ist nicht verdrahtet: Funktionsnummer als Ergebnis, Tastaturpuffer-Leeren endet mit Bus Error
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: a32921d5b | Receipt: XBIOS01-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/XBIOS01-STATUS-DONE.MD exists, commit a32921d5b, TASK/XBIOS01-STATUS-DONE.MD, commit a32921d5b (feat(xbios): Iorec wired, the IKBD IOREC is the key queue (XBIOS01, BI), fix/feat commits naming the id: a32921d5b (n=1), measurements/measurement-2026-10-28-xbios-chardev-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS01-STATUS-DONE.MD)), vom Anwender abgenommen (`a32921d5`) · Prioritaet: **P1** · Typ: Developer (Vertrag des IOREC-Abbilds: Researcher) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md`; kommt nach BIOS01 Befund 001 sofort (Reihenfolge laut [BIOS01](BIOS01.md))
 
 ## Sachverhalt

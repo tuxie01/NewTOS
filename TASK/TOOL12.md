@@ -1,5 +1,10 @@
 # TOOL12 — Abhaengigkeitsgraph Track B: Trap #2 aufloesen, Vektoraufruf-Kanten, Abschlusskriterium
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: e70700d69 | Receipt: TOOL12-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL12-STATUS-DONE.MD exists, commit e70700d69, TASK/TOOL12-STATUS-DONE.MD, commit e70700d69 (feat(deps): resolve trap #2 per opcode, add vector-call edges (TOOL12)), fix/feat commits naming the id: e70700d69 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL12-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

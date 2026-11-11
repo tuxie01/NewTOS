@@ -1,5 +1,10 @@
 # TOOL08 — BIOS/XBIOS-Argumente im NewTOS-Tracer
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 61f39de22 | Receipt: TOOL08-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL08-STATUS-DONE.MD exists, commit 61f39de22, TASK/TOOL08-STATUS-DONE.MD, commit 61f39de22 (feat(kernel): BIOS/XBIOS argument tracer behind bios-arg-trace (TOOL08), fix/feat commits naming the id: 61f39de22 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL08-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Eingabepruefung) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

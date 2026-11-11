@@ -1,5 +1,10 @@
 # XBIOS05 — `Bconmap` meldet „nicht vorhanden“ (`0x2C`) fuer jedes Argument
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 9badab94a | Receipt: XBIOS05-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/XBIOS05-STATUS-DONE.MD exists, commit 9badab94a, TASK/XBIOS05-STATUS-DONE.MD, commit 9badab94a (fix(xbios): Bconmap with a one-entry table like EmuTOS (XBIOS05)), fix/feat commits naming the id: 9badab94a (n=1), measurements/measurement-2026-10-28-xbios-chardev-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS05-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Researcher (Profil „ein Port, `maptabsize` 1“ oder Abweichung in COMPATIBILITY), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md` · Voraussetzung fuer [BIOS08](BIOS08.md)
 
 ## Sachverhalt

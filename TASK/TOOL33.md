@@ -1,5 +1,10 @@
 # TOOL33 — `mapping.tsv` fuer die AES-Ebene (EmuTOS `aes/` → NewTOS)
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: d352f9ff8 | Receipt: TOOL33-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL33-STATUS-DONE.MD exists, commit d352f9ff8, TASK/TOOL33-STATUS-DONE.MD, commit d352f9ff8 (feat(deps): require a mapping row for every EmuTOS aes/ function (TOOL), fix/feat commits naming the id: d352f9ff8 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-05 ([Quittung](TOOL33-STATUS-DONE.MD)) · Prioritaet: **P1** (Anwender 2026-11-05: nach [TOOL32](TOOL32.md) VDI, vor [A119](A119.md)) · Typ: Researcher (Zuordnung lesen), danach Lead (Pruefregel) — Werkzeug, das die Lokalisierung der folgenden Fixes braucht (CLAUDE.md "Testing")
 
 ## Sachverhalt

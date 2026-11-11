@@ -1,5 +1,10 @@
 # TOOL11 — `PTR_RAM` laesst die Funktionsnummer als Zeiger durch
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 55d11bd07 | Receipt: TOOL11-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL11-STATUS-DONE.MD exists, commit 55d11bd07, TASK/TOOL11-STATUS-DONE.MD, commit 55d11bd07 (fix(tosdump): PTR_RAM refuses values below 0x400, runner obeys the bou), fix/feat commits naming the id: 55d11bd07 (n=1), measurements/measurement-2026-10-27-dumpbios/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL11-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Werkzeug (Vergleichsregel) — Befund des Leads 2026-10-28
 
 ## Sachverhalt

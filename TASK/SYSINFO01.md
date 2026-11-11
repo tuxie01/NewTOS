@@ -1,5 +1,10 @@
 # SYSINFO01 — SYSACC wird ein kleines Systeminformations-Werkzeug (Version 1)
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 8521acc2d | Receipt: SYSINFO01-STATUS-DONE.MD
+
+Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/SYSINFO01-STATUS-DONE.MD exists, commit 8521acc2d, TASK/SYSINFO01-STATUS-DONE.MD, commit 8521acc2d (feat(sysacc): read-only System Info dialog, Ssystem 2003-2019 (SYSINFO), fix/feat commits naming the id: 8521acc2d (n=1), measurements/measurement-2026-10-07-acctitle/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT (QEMU), 2026-10-07** — [Quittung](SYSINFO01-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: NewTOS-Erweiterung (Accessory + Ssystem 2000+) — Anwender 2026-10-07
 
 Abhaengigkeiten: [ACC06](ACC06.md) (Ssystem 2000/2001, SYSACC als `form_alert`),
