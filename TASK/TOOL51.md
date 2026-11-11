@@ -1,6 +1,6 @@
 # TOOL51 — accept refuses the developer under either spelling of the agent name
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 68bbdca69 | Receipt: TOOL51-STATUS-DONE.MD
 
 Type: tool (enforcement), follow-up of [TOOL41](TOOL41.md) (DONE). Owner decision 2026-11-11: own ticket; the fix may
 land in the [TOOL46](TOOL46.md) squash commit that names both ids, and TOOL51 is accepted separately.
