@@ -1,6 +1,6 @@
 # TOOL46 — worker scratch off the system disk
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept; live measurement whether SubagentStop fires while a worker waits on its own background work
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 68bbdca69 | Receipt: TOOL46-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decision 2026-11-11. Small. Changes `tools/hooks/**` and `.claude/settings.json`, the
 live hooks of every agent session: developed in its own git worktree and landed by `git merge --squash` after the
