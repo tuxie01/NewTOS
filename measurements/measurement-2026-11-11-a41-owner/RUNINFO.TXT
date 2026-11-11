@@ -1,0 +1,22 @@
+A41 — owner confirmation: colour icons work in TeraDesk
+
+Date: 2026-11-11. Recorded by the lead from the owner's chat message; no lead measurement, no image built for it.
+Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1).
+
+Owner statement, verbatim (German):
+  "Ich kann bestätigen das die Farbicons in Teradesk Funktioniere, das kannst du im Ticket quittieren"
+(translated from German: "I can confirm that the colour icons in TeraDesk work; you can record that in the ticket.")
+
+Context:
+  - Earlier the same day the owner withdrew the 2026-09-20 hardware confirmation ("colour icons were never tested on
+    the real Pi", docs/HW-TEST-LOG.md, correction row 2026-11-11). A retest package was prepared:
+    measurements/measurement-2026-11-11-a41-retest/RUNINFO.TXT (TeraDesk's cicons.rsc ee7de7f3...).
+  - The owner then stated that A41's colour icons work in TeraDesk, as quoted above. The statement does not name the
+    device, the card or the kernel; the lead did not see the screen. No photos are attached to this run.
+  - Scope: A41 is the AES colour-icon support (converter, loader, G_CICON drawer), whose user is TeraDesk. Colour icons
+    in the NewTOS desktop (programs/desktop) were never built (it draws 1-bpp G_ICON from EmuTOS icon.rsc) and are not
+    covered by this confirmation.
+  - Not confirmed by this statement: A39, A40, A46, H05 (still unconfirmed on hardware per the correction row).
+
+Consequence (owner): A41 is recorded DONE through migration batch 22 (TASK/migration/batch-22.tsv), evidence this run,
+receipt TASK/A41-STATUS-DONE.MD (names f4e6435 = 8e998fc5d) and commit fa72363b6 (part 2).
