@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A01	DONE	Priority: P2 | Commit: 09d55d6e0 | Receipt: A01-STATUS-DONE.MD	receipt TASK/A01-STATUS-DONE.MD exists, commit 09d55d6e0 (test(aes): pin the desktop rectangles of wind_get(0) to the device geo), VERIFIED: 09d55d6e0 (test(aes): pin the desktop rectangles of wind_get(0) to the ) added the receipt TASK/A01-STATUS-DONE.MD itself, the report of this research or measurement ticket (10 files), legacy line: ERLEDIGT (2026-09-19)
 A02	DONE	Priority: P2 | Commit: 09d55d6e0 | Receipt: A02-STATUS-DONE.MD	receipt TASK/A02-STATUS-DONE.MD exists, commit 09d55d6e0 (test(aes): pin the desktop rectangles of wind_get(0) to the device geo), VERIFIED: 09d55d6e0 (test(aes): pin the desktop rectangles of wind_get(0) to the ) added the receipt TASK/A02-STATUS-DONE.MD itself, the report of this research or measurement ticket (10 files), legacy line: ERLEDIGT (2026-09-19)

@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 TOOL25	PARKED	Priority: P3 | Reason: owner pre-start check 2026-10-31: associated fix BIOS07 accepted via probe | Reopen: the owner wants the probe moved to tosdiff	TASK/TOOL25.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (BIOS07) per Sonde abgenommen)
 TOOL26	PARKED	Priority: P3 | Reason: owner pre-start check 2026-10-31: associated fix BIOS16 accepted via probe | Reopen: the owner wants the probe moved to tosdiff	TASK/TOOL26.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: zugehoeriger Fix (BIOS16) per Sonde abgenommen)

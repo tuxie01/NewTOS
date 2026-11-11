@@ -1,0 +1,4 @@
+# approved: owner 2026-11-11
+id	state	fields	evidence
+ARCH01	PARKED	Priority: P1 | Reason: legacy, evidence unverified (only docs(task) commit); receipt ARCH01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	owner 2026-11-11 (batch 6 review): only commit 920c49549 is docs(task); receipt TASK/ARCH01-STATUS-DONE.MD names the old hash 7e9b4aa; reopen-derived
+SCHED01	PARKED	Priority: P1 | Reason: legacy, evidence unverified (only docs(task) commit); receipt SCHED01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	owner 2026-11-11 (batch 6 review): only commit 9d6ef6916 is docs(task); receipt TASK/SCHED01-STATUS-DONE.MD names the old hash 3460eef; reopen-derived

@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A127	OPEN	Priority: P1	TASK/A127.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P1 product bug, cause first, on the STATUS P1 list)
 HW04	OPEN	Priority: P2	TASK/HW04.md status line: OFFEN (teilweise: Durchsatzpunkte 1-Bit-Bus und Nur-Einzelblock erledigt mit FS08 Teil 1 `e8fe4137`,, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P2 partial on the STATUS list)

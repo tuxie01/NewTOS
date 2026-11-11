@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 SDK08	DONE	Priority: P2 | Commit: d3d67c671 | Receipt: SDK08-STATUS-DONE.MD	receipt TASK/SDK08-STATUS-DONE.MD exists, commit d3d67c671, TASK/SDK08-STATUS-DONE.MD, commit d3d67c671 (fix(sdk): parity tests ignore only the compiler ident (SDK08)), fix/feat commits naming the id: d3d67c671 (n=1), the receipt names no hash for this commit, the Migrated line names it
 SYSINFO01	DONE	Priority: P2 | Commit: 8521acc2d | Receipt: SYSINFO01-STATUS-DONE.MD	receipt TASK/SYSINFO01-STATUS-DONE.MD exists, commit 8521acc2d, TASK/SYSINFO01-STATUS-DONE.MD, commit 8521acc2d (feat(sysacc): read-only System Info dialog, Ssystem 2003-2019 (SYSINFO), fix/feat commits naming the id: 8521acc2d (n=1), measurements/measurement-2026-10-07-acctitle/, the receipt names no hash for this commit, the Migrated line names it

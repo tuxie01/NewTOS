@@ -168,7 +168,6 @@ ACC07	done-no-receipt
 ACC08	form
 ACC09	form
 ACC10	form
-ACCTITLE-STATUS-DONE.MD	orphan-receipt
 ARCH01	form
 ARCH03	form
 ARCH04	form
@@ -292,12 +291,6 @@ DOOM01	form
 DOOM01	parked-no-reason
 EMU01	form
 EMU01	parked-no-reason
-FIX-01-STATUS-DONE.MD	orphan-receipt
-FIX-02-STATUS-DONE.MD	orphan-receipt
-FIX-03-STATUS-DONE.MD	orphan-receipt
-FIX-04-STATUS-DONE.MD	orphan-receipt
-FIX-05-STATUS-DONE.MD	orphan-receipt
-FIX-06-STATUS-DONE.MD	orphan-receipt
 FS01	form
 FS02	form
 FS02	done-no-receipt
@@ -386,17 +379,10 @@ KEYS03	form
 KEYS04	form
 KEYS04	parked-no-reason
 KEYS05	form
-LDG-M1-STATUS-DONE.MD	orphan-receipt
-LDG-M2-STATUS-DONE.MD	orphan-receipt
-LDG-M3-B1-STATUS-DONE.MD	orphan-receipt
-LDG-M3-B2-STATUS-DONE.MD	orphan-receipt
-LDG-M3-STATUS-DONE.MD	orphan-receipt
-LDG-M3-STATUS-UNFINISHED.MD	orphan-receipt
 LIBC-BUF	form
 LIBC-BUF	done-no-receipt
 LIBC-FSTAT	form
 LIBC-IOCTL	form
-LIBC-MAIN-STATUS-DONE.MD	orphan-receipt
 LIBC-TTY	form
 M01	form
 M02	form
@@ -437,7 +423,6 @@ NET05	form
 NET06	form
 NET06	parked-no-reason
 PITEST01	form
-PORT-WAITH-STATUS-DONE.MD	orphan-receipt
 PORT01	form
 PORT02	form
 PORT03	form
@@ -450,7 +435,6 @@ PORT09	form
 PORT10	form
 PORT11	form
 PORT12	form
-PPARENT-STATUS-DONE.MD	orphan-receipt
 PRESENT01	form
 PROC01	form
 PROC01	done-no-receipt
@@ -478,7 +462,6 @@ R04	form
 R04	done-no-receipt
 R05	form
 R05	done-no-receipt
-R3-TABELLE-STATUS-DONE.MD	orphan-receipt
 REF01	form
 REF02	form
 REF03	form
@@ -595,7 +578,6 @@ UART01	parked-no-reason
 USB02	form
 USB03	form
 USB04	form
-V-SERIES-STATUS-DONE.MD	orphan-receipt
 V01	form
 V01	done-no-receipt
 V02	form
@@ -686,9 +668,6 @@ XBIOS17	form
 XBIOS17	done-no-receipt
 XBIOS19	form
 XBIOS19	parked-no-reason
-ZVIEW-M4-K1-STATUS-DONE.MD	orphan-receipt
-ZVIEW-M4-STATUS-DONE.MD	orphan-receipt
-ZVIEW-M4-STATUS-UNFINISHED.MD	orphan-receipt
 ZVIEW01	form
 ZVIEW01	done-receipt-not-done
 ZVIEW02	form

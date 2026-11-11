@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 DESK65	PARKED	Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it	TASK/DESK65.md status line: OFFEN (Erweiterung), no DONE receipt, no fix/feat commit names the id
 DESK66	PARKED	Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it	TASK/DESK66.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id

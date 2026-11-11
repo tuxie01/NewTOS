@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A119	PARKED	Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it	TASK/A119.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
 A120	PARKED	Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it	TASK/A120.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id

@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A31	OBSOLETE	Priority: P2 | Reason: moot: save_windows/restore_windows have no caller in the product since the desk/ cut-back 343b3c5	TASK/A31.md status line (GEGENSTANDSLOS (2026-09-19)), TASK/A31-STATUS-DONE.MD exists
 A51	OBSOLETE	Priority: P2 | Reason: moot: the recycled-handle case is covered by A16/A34	TASK/A51.md status line (GEGENSTANDSLOS (2026-09-20)), TASK/A51-STATUS-DONE.MD exists

@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A126	DONE	Priority: P2 | Commit: 6ea5f8835 | Receipt: A126-STATUS-DONE.MD	receipt TASK/A126-STATUS-DONE.MD exists, commit 6ea5f8835, TASK/A126-STATUS-DONE.MD, commit 6ea5f8835 (fix(aes): kstate carries only bits 0-3 like EmuTOS (A126)), fix/feat commits naming the id: 6ea5f8835 (n=1), measurements/measurement-2026-10-30-a126/, the receipt names no hash for this commit, the Migrated line names it
 ARCH06	DONE	Priority: P2 | Commit: 86f39d28e | Receipt: ARCH06-STATUS-DONE.MD	receipt TASK/ARCH06-STATUS-DONE.MD exists, commit 86f39d28e, TASK/ARCH06-STATUS-DONE.MD, commit 86f39d28e (feat(cookie): _MCH = 0xFFFFFFFF, EmuTOS's "no Atari hardware" (ARCH06)), fix/feat commits naming the id: 86f39d28e (n=1), the receipt names no hash for this commit, the Migrated line names it

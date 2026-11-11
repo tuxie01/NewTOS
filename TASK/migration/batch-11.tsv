@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 MEM06	PARKED	Priority: P3 | Reason: idea (owner 2026-10-13, from MEM05): direction note | Reopen: the owner takes up the memory-management idea	TASK/MEM06.md status line: IDEE (Anwender 2026-10-13, aus MEM05)
 MEM08	PARKED	Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it	TASK/MEM08.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id

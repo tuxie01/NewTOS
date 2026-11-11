@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A07	PARKED	Priority: P2 | Reason: legacy, evidence unverified; receipt A07-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by d6ff251ba (fix(gemdos): re-log a drive after a media change l), named by body
 A103	PARKED	Priority: P4 | Reason: legacy, evidence unverified; receipt A103-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by cf31f1d14 (fix(desk,aes): menu widths, info-line origin, subm), named by body

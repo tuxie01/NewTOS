@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 A06	PARKED	Priority: P2 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	was comment with a placeholder commit, NOT VERIFIED: no commit evidence
 A08	PARKED	Priority: P2 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	was comment with a placeholder commit, NOT VERIFIED: no commit evidence

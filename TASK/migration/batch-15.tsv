@@ -1,3 +1,4 @@
+# approved: owner 2026-11-11
 id	state	fields	evidence
 DESK03	PARKED	Priority: P3 | Reason: legacy, evidence unverified; receipt DESK03-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 7dd743e1f (feat(desk): Read .INF file asks, checks and report), named by body
 DESK04	PARKED	Priority: P3 | Reason: legacy, evidence unverified; receipt DESK04-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it	was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 7dd743e1f (feat(desk): Read .INF file asks, checks and report), named by body
