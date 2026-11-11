@@ -1,0 +1,144 @@
+RUNINFO -- A41 retest package for the owner's real Pi 4 (prepared 2026-11-11, not yet run on the Pi)
+
+WHAT
+  A card package and a one-page test sheet (TESTBLATT.md, German by owner request) that the OWNER runs on
+  the real Pi 4: A41 colour icons in TeraDesk (drives, trash, folders), A46 dotted menu separators,
+  A40 full-width menu bars, A39/H05 launching a program from TeraDesk and returning with windows,
+  info lines and icons intact.
+
+WHY
+  Owner correction 2026-11-11 (docs/HW-TEST-LOG.md, row 2026-11-11): the 2026-09-20 row ("card 4aa3bf2
+  accepted: colour icons, ...") is wrong -- colour icons were never tested on the real Pi. A41 is not
+  confirmed on hardware; A39, A40, A46, H05 from that row are unconfirmed until retested.
+
+STEP A -- WHICH DEPTH THE PI USES, WHAT SELECTS IT, AND WHETHER TERADESK GATES COLOUR ICONS ON IT
+  1. Physical framebuffer: always 32 bpp XRGB8888. The VideoCore mailbox request sets depth tag
+     0x00048005 to the constant DEPTH_BPP = 32 (kernel/src/drivers/bcm2711/framebuffer.rs:34@DEPTH_BPP,
+     kernel/src/drivers/bcm2711/framebuffer.rs:243-247@DEPTH_BPP in build_request), pixel order BGR,
+     alpha mode "ignored". Only the geometry is taken from the firmware: init asks the current physical
+     size (query_physical_size, kernel/src/drivers/bcm2711/framebuffer.rs:311@query_physical_size;
+     kernel/src/drivers/bcm2711/framebuffer.rs:476@init), fallback 1920x1080
+     (kernel/src/drivers/mod.rs:31@BOOT_WIDTH).
+  2. VDI/AES device: always 16 planes, Falcon RGB565 truecolor over the 32-bpp store (ADR-024,
+     docs/MEMORY.md). kernel/src/vdi_backend.rs:44@PLANES (const PLANES = 16) is what planes() returns
+     (kernel/src/vdi_backend.rs:465@planes); vq_extnd reports the same (tos-api/src/vdi/eddi.rs:52@DEVICE_PLANES).
+  3. Colour-icon selection: fix_cicons asks CiconDevice::live, which takes gl_nplanes from the raster
+     backend = 16 (tos-api/src/aes/resource.rs:3075@live); best_match then picks the deepest variant
+     not deeper than 16 (tos-api/src/aes/resource.rs:3241@best_match, EmuTOS gemrslib.c:267-282), i.e.
+     the 4-plane variant of TeraDesk's cicons.rsc (TASK/A41-STATUS-DONE.MD part 1), transformed into the
+     16-bit device form (tos-api/src/aes/resource.rs:3290@fix_cicons). No depth threshold exists in NewTOS.
+  4. Settings: NO config.txt, cmdline.txt, NEWDESK.INF or TERADESK.INF setting selects colour depth.
+     boot/rpi4/config.txt:15-16@hdmi_mode (hdmi_group=2, hdmi_mode=82) selects only the HDMI mode
+     1920x1080; gpu_mem=256 (boot/rpi4/config.txt:25@gpu_mem) is needed for the framebuffer at all.
+     kernel/src/bootargs.rs has no video token (serial, memprot, asid, emmc, cpuclk, input,
+     bcache, bcachepct, mdlimit only).
+  5. TeraDesk's gate (vendored sources sdk/apps/teradesk/, untracked, line cites): TeraDesk loads
+     cicons.rsc only if `colour_icons` is set (sdk/overlays/teradesk/icon.c:2745-2753@colour_icons;
+     upstream sdk/apps/teradesk/icon.c:2724-2733), and falls back to icons.rsc otherwise or when
+     aes_supports_coloricons() fails (icon.c:2669-2697: tree 0 object 1 must be G_CICON with a non-zero
+     ob_spec that is not ap_rscmem). `colour_icons` comes from appl_getinfo(2) only if has_appl_getinfo()
+     (sdk/apps/teradesk/library/xdialog/xdialog.c:2259-2274: AES >= 0x400 or appl_find("?AGI") >= 0);
+     NewTOS reports AES 0x0340 (tos-api/src/aes/appl.rs:114@AES_VERSION) and appl_find knows no "?AGI"
+     (returns -1), so TeraDesk takes its fallback branch xdialog.c:2446-2451: TOS >= 0x400 and AES >= 0x330
+     -> colour_icons = TRUE. NewTOS os_version is 0x0404 (tos-api/src/bdos/process/loader.rs:1082@OS_VERSION),
+     read by the overlay's get_tosversion (sdk/overlays/teradesk/library/utility/gettos.c:52@get_tosversion).
+     TeraDesk itself checks no plane count for loading (xd_nplanes, xdialog.c, is only stored).
+  CONCLUSION: the owner's card needs no special setting; the default (32 bpp physical, 16 VDI planes,
+  1920x1080) shows colour icons provided C:\Apps\TERADESK\cicons.rsc is the v13 conversion (ee7de7f3...).
+  The card had exactly that file on 2026-11-04 (measurements/measurement-2026-11-02-proc08-pi/card-check/inventory.txt).
+  Directory windows show icons only in TeraDesk's icon mode (options mode=1, ICONMODE, desk.h:74); the
+  generated TERADESK.INF has mode=1; the sheet tells the owner to switch View -> Show as icons otherwise.
+
+STEP B -- COLOUR-ICON RESOURCE
+  TeraDesk's own cicons.rsc (GPL, in the vendored TeraDesk sources), converted by sdk/apps/build-teradesk.sh
+  (python3 tools/mkrsc.py convert, NRSC v13 LP64, 38 CICONBLK, 63650 bytes):
+    sdk/apps/teradesk/build/dist/cicons.rsc  sha256 ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241
+  Source file sdk/apps/teradesk/cicons.rsc sha256 b322a3d72d49905f59adcf13ac169519ecd5e98da6b181a11916bb716753ff87.
+  A second, separate conversion into scratch gave the same hash (reproducible). No own test RSC needed.
+
+SOURCE STATE
+  commit 624ac336f2330028936747e76e730e096905ff2a, tree clean before this run (the run dir is untracked).
+  host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)  (manifest line, below)
+  Kernel: tools/sync-card.sh kernels <scratch>/kernels kern1111.img=none
+    = cargo xtask build --board rpi4 --release (no feature), copied to kernels/ (kernels/KERNELS.TXT,
+    kernels/build-kern1111.log; commit 624ac336f... tree_dirty=no kernel_inputs_dirty=no; rustc 1.97.0-nightly
+    a5c825cd8 2026-04-14). The out dir was in scratch because an out dir inside the repo dirties the tree
+    during the build and sync-card refuses KERNELS.TXT (see OBSERVATIONS).
+    kernels/kern1111.img (gitignored)  sha256 5853cf79974f298a0040941386a1e1eae42aeaff202cb9e923bc979ec8582704
+  TeraDesk rebuilt at 624ac336f with sdk/apps/build-teradesk.sh (exit 0); no commit touched sdk/ or
+  tools/mkrsc.py since the previous build (2026-11-08). dist (gitignored):
+    DESKTOP.NAP 15bf0993a29e30d7467747b0de996a047b2dfc1d50567c81ca6941fef72fd569 (353312 B)
+    desktop.rsc 409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08
+    icons.rsc   8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75
+    cicons.rsc  ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241
+    (the three .rsc are byte-equal to the 2026-09-20 card; DESKTOP.NAP of the 2026-11-08 build was
+    2f2d50f3..., same inputs -- the link is not byte-reproducible.)
+  QED: existing build of 2026-11-08 (no sdk/ commit since), not rebuilt:
+    sdk/apps/qed/build/QED.NAP 8f1431975b18f33c0aba3aa1ca33acb9fc7dfcacce5b07d0ca2305e07479a8d9
+    sdk/apps/qed/build/qed.rsc 30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79
+
+STEP D -- IMAGE (QEMU mirror of the card's C:/BOOT partition, firmware not included)
+  method/mkcard-call.sh (the one tools/mkcard.sh call; A41_IMG = image path). Built in the session
+  scratchpad, then moved to <scratch>/a41-retest.img (see OBSERVATIONS: mount point on /Volumes/Daten).
+    a41-retest.img (gitignored, 64 MiB)  sha256 5dea94a5370491b2b3913691a1979a9836632f7ec393684de87ad47ed44db356
+  Manifest: a41-retest.img.manifest (copied unchanged; written by tools/sd-manifest.sh). Lines verbatim:
+    host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+    host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+    switch n/a
+    optional_missing none
+    file ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241 63650 C:\Apps\TERADESK\cicons.rsc
+    file 5853cf79974f298a0040941386a1e1eae42aeaff202cb9e923bc979ec8582704 1538288 C:\kernel8.img
+  The image manifest has no commit line; the kernel's commit is kernels/KERNELS.TXT (624ac336f...).
+  NEWDESK.INF on the image = method/newdesk-teradesk.inf (#Z autorun TeraDesk, copied from
+  measurements/measurement-2026-09-19-a41/part2/method/newdesk-user.inf) -- QEMU smoke only, NOT for the
+  card. TERADESK.INF on the image = method/teradesk.inf = the heredoc of tools/make-sd-image.sh
+  (f659c896..., equal to the card's copy on 2026-11-04).
+
+QEMU SMOKE (developer check, not the acceptance; method/run-smoke.sh, driver method/qmp_multi.py =
+  A41 part-2 driver copied unchanged)
+  raspi4b, kern1111.img, -append "serial=on", fresh copy of the image. TeraDesk started by #Z
+  (serial/smoke-serial.log, 54 lines, no EXC/panic); 30 s later
+  screendumps/smoke-tera-colour-icons-idle.png (sha256 5148fde2...): four colour HARD DISC icons and the
+  colour TRASH; 0 pixels differ from measurements/measurement-2026-09-19-a41/part2/screendumps/product1-tera-colour-icons-idle.png.
+  QEMU raspi4b shows 640x480, so A40 (full width at 1920) is visible only on the Pi.
+  The image's sha256 was unchanged after the run.
+
+CARD SYNC -- PREPARED, NOT RUN (workers never touch card or Pi)
+  List: method/a41-retest-card.list (TeraDesk 4 files, QED 2 files; the card's own NEWDESK.INF,
+  TERADESK.INF, cmdline.txt, config.txt are not listed). Kernel via --kernels/--active.
+  Dry run (needs the card mounted; no card was attached, so no output exists). From the repo root, with
+  the mount point and volume label of the card's first partition (BOOT = C:; on the 2026-11-04 card
+  /Volumes/BOOT, label BOOT -- check before running):
+    tools/sync-card.sh sync \
+      --list measurements/measurement-2026-11-11-a41-retest/method/a41-retest-card.list \
+      --boot /Volumes/BOOT BOOT --drive C /Volumes/BOOT BOOT \
+      --kernels measurements/measurement-2026-11-11-a41-retest/kernels --active kern1111.img
+  Expected from the 2026-11-04 inventory (may have changed since): new C:\kern1111.img, changed
+  C:\kernel8.img, changed C:\Apps\TERADESK\DESKTOP.NAP and C:\Apps\QED\QED.NAP, same for the four .rsc.
+  Before --write, check the six sources still hash as listed above (dist/ is rebuilt by any later
+  build-teradesk.sh/build-qed.sh run). The write, only on the owner's word, adds
+  --write --run-dir measurements/measurement-2026-11-11-a41-retest (card-before/ and card.manifest
+  land there; kernel8.img, cmdline.txt and config.txt are backed up first).
+
+FILES OF THIS RUN
+  TESTBLATT.md, RUNINFO.TXT, a41-retest.img.manifest, kernels/{KERNELS.TXT,build-kern1111.log,
+  kern1111.img (gitignored)}, method/{mkcard-call.sh,a41-retest-card.list,newdesk-teradesk.inf,
+  teradesk.inf,run-smoke.sh,qmp_multi.py}, serial/smoke-serial.log (1b275bf5...),
+  screendumps/smoke-tera-colour-icons-idle.png.
+
+SCRATCH (TOOL46)
+  /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa875caac6c6fde36/  130M (du -sh):
+  a41-retest.img 5dea94a5... (the image), a41-retest.img.manifest, kernels/ (the kernel build, same
+  kern1111.img 5853cf79...), smoke/run.img (5dea94a5..., unchanged by the run), rsc/cicons.rsc
+  (ee7de7f3..., reproducibility check), TERADESK.INF.gen (f659c896...), logs/build-teradesk.log.
+
+OBSERVATIONS (not changed)
+  - tools/sync-card.sh kernels refuses an out dir inside the repo on a clean tree: its own log/img
+    files make tree_dirty flip between the two tree_state calls.
+  - tools/mkcard.sh fails when the image lies on /Volumes/Daten: diskutil refuses a mount point there
+    ("Volume on diskNs1 failed to mount"), the same partition mounts under /private/tmp. TOOL46 puts
+    agent scratch on /Volumes/Daten, so mkcard images cannot live there.
+  - The TeraDesk link is not byte-reproducible (DESKTOP.NAP hash differs between two builds of the same inputs).
+
+RESULT
+  Pending: the owner runs TESTBLATT.md on the Pi.

@@ -1,0 +1,16 @@
+# a41-retest-card.list -- what tools/sync-card.sh puts onto the owner's Pi card for the A41 retest
+# (owner 2026-11-11: A41 colour icons never tested on the Pi; A39, A40, A46, H05 to be retested with it).
+# Format: tools/sync-card.sh header. The kernel is not in this list: `--kernels <run>/kernels --active
+# kern1111.img` adds it (C:\kern1111.img + C:\kernel8.img; the old kernel8.img is saved to card-before/).
+# The card's own configuration (NEWDESK.INF, TERADESK.INF, cmdline.txt, config.txt) is NOT listed and stays.
+# Paths are those of the owner's card (C:\Apps\<APP>\, measurements/measurement-2026-11-02-proc08-pi/card-check/inventory.txt).
+
+# --- TeraDesk with its three resources (A41: cicons.rsc = the colour icons, NRSC v13) ----------------
+C:\Apps\TERADESK\DESKTOP.NAP  | sdk/apps/teradesk/build/dist/DESKTOP.NAP | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\desktop.rsc  | sdk/apps/teradesk/build/dist/desktop.rsc | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\icons.rsc    | sdk/apps/teradesk/build/dist/icons.rsc   | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\cicons.rsc   | sdk/apps/teradesk/build/dist/cicons.rsc  | sdk/apps/build-teradesk.sh
+
+# --- QED: the program started from TeraDesk for A39/H05 (calls rsrc_load/rsrc_free itself) ------------
+C:\Apps\QED\QED.NAP           | sdk/apps/qed/build/QED.NAP               | sdk/apps/build-qed.sh
+C:\Apps\QED\qed.rsc           | sdk/apps/qed/build/qed.rsc               | sdk/apps/build-qed.sh

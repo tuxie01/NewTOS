@@ -1,0 +1,20 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/a41-retest.img
+image_sha256 5dea94a5370491b2b3913691a1979a9836632f7ec393684de87ad47ed44db356
+size_mib 64
+created 2026-11-11T14:59:58Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+metadata C:\.Spotlight-V100 (macOS volume metadata, not hashed)
+file 8f1431975b18f33c0aba3aa1ca33acb9fc7dfcacce5b07d0ca2305e07479a8d9 544280 C:\Apps\QED\QED.NAP
+file 30ac6bf24a28ce2c95fab6a7c663bf29f40de9ad9ee1dd6b80ec36c146264a79 41378 C:\Apps\QED\qed.rsc
+file 15bf0993a29e30d7467747b0de996a047b2dfc1d50567c81ca6941fef72fd569 353312 C:\Apps\TERADESK\DESKTOP.NAP
+file f659c896166de17c45111839a556b151c7839f0383a63117905d459520bd30e5 3058 C:\Apps\TERADESK\TERADESK.INF
+file ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241 63650 C:\Apps\TERADESK\cicons.rsc
+file 409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08 39278 C:\Apps\TERADESK\desktop.rsc
+file 8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75 13284 C:\Apps\TERADESK\icons.rsc
+file 457a70e75015075bf5aaebdcbde0eade6079308b26b3bfd769cf5b862897063e 411 C:\NEWDESK.INF
+file 5853cf79974f298a0040941386a1e1eae42aeaff202cb9e923bc979ec8582704 1538288 C:\kernel8.img

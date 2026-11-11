@@ -1,0 +1,5 @@
+# NewTOS kernels for tools/sync-card.sh -- written by tools/sync-card.sh kernels
+created 2026-11-11T14:54:01Z
+commit 624ac336f2330028936747e76e730e096905ff2a tree_dirty=no kernel_inputs_dirty=no
+host_rustc rustc 1.97.0-nightly (a5c825cd8 2026-04-14)
+kernel kern1111.img 5853cf79974f298a0040941386a1e1eae42aeaff202cb9e923bc979ec8582704 features=none board=rpi4 profile=release cmd=cargo xtask build --board rpi4 --release
