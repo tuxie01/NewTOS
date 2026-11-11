@@ -1,0 +1,41 @@
+A39 / H05 / A40 — three owner screenshots from the real Pi: before, during and after QED launched from TeraDesk
+
+Date: 2026-11-11. Taken by the owner on the real Pi 4 (NewTOS screenshot files written to the card), copied by the lead
+read-only from /Volumes/BOOT (cp -p). Owner messages (verbatim, German):
+  "ok ich mache drei screenshot, vor qed geöffnet, während qed geöffnet und danach, und versuche immer so 1min zu warten
+   damit es im zeitstempel sichtbar ist"
+  (translated from German: "ok, I take three screenshots, before QED is opened, while QED is open, and after, and try to
+   wait about 1 min each so it shows in the timestamp")
+  "kannst dir die drei bilder holen"  (translated from German: "you can fetch the three pictures")
+Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1). No image built for it.
+Card: kernel8.img sha256 e788dc5811fb7ffb4088d92c0eb7395941de9f9f24a8e5d99fd0a4e924ed015c (b744febc release kernel,
+measurements/measurement-2026-11-11-a41-screenshot/RUNINFO.TXT). The Pi has no RTC: the clock starts at the kernel
+build time at boot and runs on, so the file times order the shots within one session.
+
+Files (all PNG 1920 x 1080, 6222418 B):
+  SHOT0001.PNG  2026-11-08 00:00:36  sha256 9bdc7874d35e41469ad9af99632ef0d77c32fbcd40093dbd7ca65e43bd961ccf
+  SHOT0002.PNG  2026-11-08 00:01:28  sha256 8b13ff4cc1cf96889aac09374ea4ab4ff083f10d5a9db7064879acafc19a6a6e
+  SHOT0003.PNG  2026-11-08 00:02:14  sha256 e3cd6980a962c2c28d61ceb9f962aeedb9599940e1ea053aa92ad60f6f0ebda4
+  (52 s and 46 s apart; sha256 identical on the card and here.)
+
+What the shots show (lead, by looking at them):
+  SHOT0001 (before): TeraDesk, menu bar "Desk File View Window Options" across the full width; one window C:\*.*,
+    info line "20247K bytes used in 27 items.", yellow folders, colour drive and trash icons; window at the same place
+    and size as in SHOT0003.
+  SHOT0002 (during): QED running, its menu bar "qed Datei Bearbeiten Fenster Suchen Spezial Optionen Shell" runs to
+    the right screen edge (A40 in QED); one empty window "Namenlos" (translated from German: "Untitled"), status
+    "Z: 1  S: 1"; QED's own cyan desktop.
+  SHOT0003 (after): back in TeraDesk; the same window at the same place and size, now showing C:\APPS\QED\*.*,
+    info line "628760 bytes used in 4 items." (CONFIG.TXT, QED.HYP, QED.NAP, QED.RSC), colour drive and trash icons,
+    TeraDesk's menu bar back across the full width.
+
+Assessment:
+  - A40 (full-width menu bar): met in TeraDesk (SHOT0001, SHOT0003; also measurements/measurement-2026-11-11-a40-fullscreen/)
+    and in QED (SHOT0002).
+  - A39 / H05 (launch and return): after the return the TeraDesk window is back at the same place and size with
+    its info line, colour icons and menu bar intact. The path differs from SHOT0001 (C:\*.* before, C:\APPS\QED\*.*
+    after): most likely the owner navigated the window to the QED folder after SHOT0001 to launch QED.NAP from it, so
+    the state after the return matches the state at the launch; no shot shows the state right before the launch, so
+    this is the lead's inference, supported by the owner's statement
+    (measurements/measurement-2026-11-11-a39-h05-owner/RUNINFO.TXT).
+  - Not shown: TeraDesk Quit back to the NewTOS desktop (test sheet step 9).
