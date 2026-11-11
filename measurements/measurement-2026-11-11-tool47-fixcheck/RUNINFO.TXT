@@ -1,0 +1,11 @@
+TOOL47 addendum, 2026-11-11, check of fix commit fa1ded95d (on c4e8d1c6b). host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Host tests only, no image. references/emutos* untouched. Clone removed after the run.
+- M3b (require forces Skip for absent): require_on_an_absent_input_fails_without_the_switch FAILED (6 pass/1 fail/1 ignored).
+- Reverse (require ignores env, decide(Some("0"))): require_on_an_absent_input_skips_under_the_switch FAILED.
+- Mutations reverted; worktree git diff empty.
+- Worktree with inputs, cargo xtask test: exit 0, 2407 passed / 0 failed / 7 ignored, 0 SKIPPED.
+- Clone at fa1ded95d, NEWTOS_CI=1: exit 0, 2407/0/7, 8 SKIPPED. Unset: exit 1, 2399 passed / 8 failed / 6 ignored, same 8 as before;
+  the new require_* tests pass in both.
+- Child test: shown "ignored" in the run (not run by xtask test; no --ignored flag); run only by the parent via Command with
+  --exact --ignored; env set on the Command only (no set_var/remove_var in xtask sources), so no leak into other tests.
+- clippy -p xtask --all-targets in clone: 1 + 9 warnings, same as base: delta 0.

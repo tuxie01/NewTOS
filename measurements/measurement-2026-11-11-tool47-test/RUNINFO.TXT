@@ -1,0 +1,23 @@
+TOOL47 tester run, 2026-11-11, macOS host. host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+No SD image booted (host tests only); no image manifest / optional_missing applicable.
+Subject: commit c4e8d1c6b (base b76a31c6b), worktree .claude/worktrees/agent-a8b2d21b93aa0c6b8.
+Clone: target/agents/tool47-test/clone, 1.7G before removal (no references/ content, no sdk/apps inputs); removed.
+references/emutos* never touched (owner rule 2026-11-11).
+
+1. Worktree with inputs, cargo xtask test: exit 0, 2405 passed / 0 failed / 6 ignored, 0 SKIPPED.
+2. Clone, NEWTOS_CI=1: exit 0, 2405/0/6, 8 SKIPPED lines in stream + summary.
+   Without switch / NEWTOS_CI=true / =0 / empty: each exit 1, 2397 passed / 8 failed / 5 ignored, 0 SKIPPED, identical failing set.
+   Failing set: emutos_resolves_at_the_pin + 7 rsc_* (cicon x2, obfix x3, recolour x2).
+   resolves_against_the_workspace passes (code read + run).
+3. Skip lines name: references/emutos at <pin>, references/emutos/aes/gem.rsc (x4), sdk/apps/teradesk/cicons.rsc,
+   sdk/apps/hypview/hyp_view.rsc, references/freemint/xaaes/src.km/pal/nvdi.pal. Worktree NEWTOS_CI=1: 2405/0/6, 0 SKIPPED.
+4. doc_check.rs diff: 3 hunks (2080, 2522, 2532), all after `pub(crate) mod tests` (line 1750): test-only.
+5. Mutations (test_inputs.rs, restored, git diff empty):
+   M1 decide accepts any non-empty: only_the_exact_value_1_is_the_switch FAILED.
+   M2 skip line not printed/logged: absent_under_the_switch_skips_with_one_logged_line FAILED.
+   M3a decide (absent, no switch) -> Skip: 2 tests FAILED.
+   M3b require() forces Skip when absent regardless of switch: NO test fails (worktree 5/5 ok; clone without inputs and
+       without switch: cargo test -p xtask 281 passed 0 failed). Coverage gap: require() itself is untested.
+6. clippy -p xtask --all-targets: base 1+9 warnings, new 1+9, lists identical, delta 0.
+   doc-check TASK/TOOL47.md, receipt, docs/STATUS.md: 0 failures. (docs/analysis/ci-backstop-2026-11-11.md, not requested:
+   2 failures, "Applications/" missing and anchor emutos_resolves_at_the_pin shifted 2519 -> 2528.)

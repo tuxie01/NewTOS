@@ -503,6 +503,11 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   touches. A retest set is complete only if its `--up` set has no
   `unmapped` entry in the touched layers; otherwise the ticket lists them
   (`no counterpart by design` needs a reason: an ADR or hardware; TOOL17).
+- Tests that read gitignored inputs (`references/…`, `sdk/apps/<app>/`) fail
+  when they are absent; only with `NEWTOS_CI=1` (exactly `1`, for a machine
+  without them, e.g. the TOOL43 runner) they print `SKIPPED <test>: <input>
+  absent (NEWTOS_CI=1)` and pass, and `cargo xtask test` lists them at the
+  end. New such tests call `test_inputs::require_paths` (TASK/TOOL47.md).
 - Hardware tests on RPi4 are manual, documented in `docs/HW-TEST-LOG.md`.
 - Every TOS API function gets at least one test that verifies the documented
   return value for documented input, and one that verifies the documented
