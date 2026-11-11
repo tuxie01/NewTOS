@@ -1,5 +1,10 @@
 # DESK59 — `act_chg` prueft `ob_flags & DISABLED` statt `ob_state`
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: d890e322f | Receipt: DESK59-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/DESK59-STATUS-DONE.MD exists, commit d890e322f, TASK/DESK59-STATUS-DONE.MD, commit d890e322f (fix(desk): act_chg tests DISABLED in ob_state, not ob_flags (DESK59)), fix/feat commits naming the id: d890e322f (n=1), measurements/measurement-2026-10-16-desk59/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-16 ([Quittung](DESK59-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Konformitaet — Nebenfund DESK43 U5b (2026-10-14)
 
 `kernel/src/desk/act.rs:75` bricht ab, wenn `ob_flags & DISABLED` gesetzt ist.

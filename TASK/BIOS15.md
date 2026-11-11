@@ -1,5 +1,10 @@
 # BIOS15 — ADR-031 umsetzen: nicht bediente OS-Haken melden, Besitz, `prt_*`-Standard
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 2327f049c | Receipt: BIOS15-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS15-STATUS-DONE.MD exists, commit 2327f049c, TASK/BIOS15-STATUS-DONE.MD, commit 2327f049c (feat(bios): ADR-031 hooks warn once, ownership, prt_*, Mfpint/Xbtimer ), fix/feat commits naming the id: 2327f049c (n=1), measurements/measurement-2026-10-29-bios15/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS15-STATUS-DONE.MD)), vom Anwender abgenommen · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 (ADR-031, aus [BIOS03](BIOS03.md))
 
 ## Sachverhalt

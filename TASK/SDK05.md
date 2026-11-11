@@ -1,5 +1,10 @@
 # SDK05 — cflib `getcookie`: Cookie-Name per Byte-Union, auf Little-Endian verdreht
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 8258ccacc | Receipt: SDK05-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/SDK05-STATUS-DONE.MD exists, commit 8258ccacc, TASK/SDK05-STATUS-DONE.MD, commit 8258ccacc (fix(sdk): cflib getcookie builds the tag big-endian (SDK05)), fix/feat commits naming the id: 8258ccacc (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK05-STATUS-DONE.MD)); QED-Anzeige unveraendert (siehe Quittung) · Prioritaet: **P1** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28, aus `docs/analysis/abi-assumptions-check-2026-10-28.md` §3
 
 ## Sachverhalt

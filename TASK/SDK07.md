@@ -1,5 +1,10 @@
 # SDK07 — TeraDesk: Overscan-Option ohne Atari-Hardware sperren (Bus Error)
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 58e35ac87 | Receipt: SDK07-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/SDK07-STATUS-DONE.MD exists, commit 58e35ac87, TASK/SDK07-STATUS-DONE.MD, commit 58e35ac87 (fix(teradesk): disable overscan without Atari hardware (SDK07)), fix/feat commits naming the id: 58e35ac87 (n=1), measurements/measurement-2026-10-29-arch06/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK07-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Developer (SDK-Overlay) — Anwenderentscheidung 2026-10-29, Fund aus [ARCH06](ARCH06.md)
 
 ## Sachverhalt

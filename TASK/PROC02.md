@@ -1,5 +1,10 @@
 # PROC02 — Kind erbt umgelenkte Standardhandles nicht; `Fforce` zaehlt keine Benutzung
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 88bf8192b | Receipt: PROC02-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/PROC02-STATUS-DONE.MD exists, commit 88bf8192b, TASK/PROC02-STATUS-DONE.MD, commit 88bf8192b (fix(bdos): children inherit forced handles, Fforce counts uses (PROC02), fix/feat commits naming the id: 88bf8192b (n=1), measurements/measurement-2026-10-02-port10b/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-06 ([Quittung](PROC02-STATUS-DONE.MD)) · Prioritaet: **P2** (nach dem OFAM-Termin) · Typ: Abweichung von EmuTOS — aus [PORT10](PORT10.md)
 
 Abhaengigkeiten: —

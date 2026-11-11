@@ -1,5 +1,10 @@
 # PORT09 — `PT_ARGV` bei `*.NAP` verspricht ARGV, unser Splitter kennt es nicht
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 861ad0380 | Receipt: PORT09-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/PORT09-STATUS-DONE.MD exists, commit 861ad0380, TASK/PORT09-STATUS-DONE.MD, commit 861ad0380 (feat(libc): argv and environ from p_env like mintlib parseargs (PORT09), fix/feat commits naming the id: 861ad0380 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-06 ([Quittung](PORT09-STATUS-DONE.MD); vorher blockiert durch [MEM03](MEM03.md), [Statusdatei](PORT09-STATUS-UNFINISHED.MD)) · Anwenderentscheidung: Konvention wird umgesetzt · Prioritaet: **P3** · Typ: SDK / Startschnittstelle — Nebenfund aus [DESK41](DESK41.md)
 
 Abhaengigkeiten: [MEM03](MEM03.md)

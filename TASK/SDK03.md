@@ -1,5 +1,10 @@
 # SDK03 — mintlib `sysinfo(SI_PLATFORM)`: NULL-Pruefung und fehlendes Komma
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 1b28ba371 | Receipt: SDK03-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/SDK03-STATUS-DONE.MD exists, commit 1b28ba371, TASK/SDK03-STATUS-DONE.MD, commit 1b28ba371 (fix(sdk): mintlib sysinfo(SI_PLATFORM) for _MCH 0xFFFFFFFF (SDK03)), fix/feat commits naming the id: 1b28ba371 (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK03-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (SDK) — Anwenderentscheidung 2026-10-28, aus [ARCH05](ARCH05.md)
 
 ## Sachverhalt

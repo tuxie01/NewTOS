@@ -1,5 +1,10 @@
 # DESK58 — `BLKDEVNUM` im Desktop ist 16 statt 26
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 3b8098415 | Receipt: DESK58-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/DESK58-STATUS-DONE.MD exists, commit 3b8098415, TASK/DESK58-STATUS-DONE.MD, commit 3b8098415 (fix(desk): valid_drive checks against BLKDEVNUM 26 like EmuTOS (DESK58), fix/feat commits naming the id: 3b8098415 (n=1), measurements/measurement-2026-10-16-desk58/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-16 ([Quittung](DESK58-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Konformitaet — gefunden in der DESK43-Pruefung, gelistet von U5a (2026-10-14)
 
 `kernel/src/desk/main.rs:1471` setzt `BLKDEVNUM = 16` und zitiert dafuer

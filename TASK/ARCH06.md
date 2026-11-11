@@ -1,5 +1,10 @@
 # ARCH06 — `_MCH` = `0xFFFFFFFF` umsetzen; `_VDO` erst messen
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 86f39d28e | Receipt: ARCH06-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/ARCH06-STATUS-DONE.MD exists, commit 86f39d28e, TASK/ARCH06-STATUS-DONE.MD, commit 86f39d28e (feat(cookie): _MCH = 0xFFFFFFFF, EmuTOS's "no Atari hardware" (ARCH06)), fix/feat commits naming the id: 86f39d28e (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](ARCH06-STATUS-DONE.MD)); `_VDO`-Entscheidung beim Anwender · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28 (Nachtrag ADR-012, aus [ARCH05](ARCH05.md))
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # BIOS08 — Bconmap-Handles 6–9 sind auf NewTOS abwesende Geraete (`Bcostat`/`Bconout`/`Bconin`)
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 5b059a0a0 | Receipt: BIOS08-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS08-STATUS-DONE.MD exists, commit 5b059a0a0, TASK/BIOS08-STATUS-DONE.MD, commit 5b059a0a0 (fix(bios): handles 6 and up go through the Bconmap table (BIOS08)), fix/feat commits naming the id: 5b059a0a0 (n=1), measurements/measurement-2026-10-28-bios-core-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-30 ([Quittung](BIOS08-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Profil folgt aus XBIOS05 Option 1) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md` · haengt an [XBIOS05](XBIOS05.md) (Wurzel: NewTOS hat kein `Bconmap`)
 
 ## Sachverhalt

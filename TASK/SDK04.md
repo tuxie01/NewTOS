@@ -1,5 +1,10 @@
 # SDK04 — LP64: `long`-Zugriffe auf TOS-Strukturen in allen Ports; Typen fester Breite im SDK
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 1ca7d09a9 | Receipt: SDK04-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/SDK04-STATUS-DONE.MD exists, commit 1ca7d09a9, TASK/SDK04-STATUS-DONE.MD, commit 1ca7d09a9 (feat(sdk): fixed-width TOS struct types, HypView .REF, zView colours (), fix/feat commits naming the id: 1ca7d09a9, 8da6370ea (n=2), measurements/measurement-2026-10-29-sdk04-c6/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](SDK04-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Researcher (Erhebung) + Developer (SDK-Typen, Fixes nach Messung) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

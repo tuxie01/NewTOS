@@ -1,5 +1,10 @@
 # BIOS16 — Direkt geschriebene Vektorzelle in Seite 0 wird nicht uebernommen
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 9c4c29c5d | Receipt: BIOS16-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS16-STATUS-DONE.MD exists, commit 9c4c29c5d, TASK/BIOS16-STATUS-DONE.MD, commit 9c4c29c5d (fix(bios): adopt directly written page-0 vectors into Setexc cells (BI), fix/feat commits naming the id: 9c4c29c5d (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **OFFEN** (entschieden 2026-10-30) · Prioritaet: **P2** · Typ: Developer — Fund aus [BIOS07](BIOS07.md) (2026-10-29)
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # INPUT01 — the mouse pointer freezes for 2-3 s while zView starts
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 22171a83e | Receipt: INPUT01-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/INPUT01-STATUS-DONE.MD exists, commit 22171a83e, TASK/INPUT01-STATUS-DONE.MD, commit 22171a83e (feat(input): the timer interrupt moves the mouse while a program compu), fix/feat commits naming the id: 22171a83e (n=1), the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P2** · Typ: Abweichung, Ursache unbekannt — Anwender auf der echten Pi 4, 2026-10-07
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # BIOS01 — BIOS-Speicher an EmuTOS angleichen (Befunde des Audits 2026-10-28)
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: c68939fca | Receipt: BIOS01-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS01-STATUS-DONE.MD exists, commit c68939fca, TASK/BIOS01-STATUS-DONE.MD, commit c68939fca (fix(bios): BIOS-STOR-002 to -007 per the approved spec (BIOS01)), fix/feat commits naming the id: c68939fca, 45ed73d0d (n=2), measurements/measurement-2026-10-28-bios01-s2/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS01-STATUS-DONE.MD), S2: [BIOS01-S2-STATUS-DONE.MD](BIOS01-S2-STATUS-DONE.MD)); 004-Laufzeitgrenze vom Anwender bestaetigt 2026-10-29 · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28 · haengt an [TOOL07](TOOL07.md); Spec [BIOS02](BIOS02.md) freigegeben
 
 ## Sachverhalt

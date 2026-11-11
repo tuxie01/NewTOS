@@ -1,5 +1,10 @@
 # BIOS17 — `swv_vec` mit dem Reset-Einstieg vorbelegen; `RESET_STUB_VA` → `RESET_ENTRY_VA`
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 46947fab1 | Receipt: BIOS17-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS17-STATUS-DONE.MD exists, commit 46947fab1, TASK/BIOS17-STATUS-DONE.MD, commit 46947fab1 (fix(bios): swv_vec starts at the reset entry, rename reset entry (BIOS), fix/feat commits naming the id: 46947fab1 (n=1), measurements/measurement-2026-10-30-bios16/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-30, Nachlauf aus [BIOS16](BIOS16.md)
 
 ## Sachverhalt

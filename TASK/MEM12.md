@@ -1,5 +1,10 @@
 # MEM12 — EL0 may write page 0
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 60d3c4fdf | Receipt: MEM12-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/MEM12-STATUS-DONE.MD exists, commit 60d3c4fdf, TASK/MEM12-STATUS-DONE.MD, commit 60d3c4fdf (feat(sdk): Super/Supexec are kernel traps again (MEM12)), fix/feat commits naming the id: 60d3c4fdf, 345307915, 0edf53d06 (n=4), measurements/measurement-2026-10-27-mem12/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-30 ([Quittung](MEM12-STATUS-DONE.MD); Pi-Lauf des Anwenders 2026-10-29, Kern `58e35ac8`) · Prioritaet: **P1** · Typ: Kernfehler (Schutzgrenze fehlt) — Anwenderentscheidung 2026-10-26
 
 ## Facts

@@ -1,5 +1,10 @@
 # BIOS10 — `Kbshift(flag)` verwirft die Bits 5–7
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 10419230d | Receipt: BIOS10-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS10-STATUS-DONE.MD exists, commit 10419230d, TASK/BIOS10-STATUS-DONE.MD, commit 10419230d (fix(bios): Kbshift keeps the full shift byte (BIOS10)), fix/feat commits naming the id: 10419230d (n=1), measurements/measurement-2026-10-28-bios-core-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS10-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt

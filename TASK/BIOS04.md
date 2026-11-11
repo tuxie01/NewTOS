@@ -1,5 +1,10 @@
 # BIOS04 — MIDI und IKBD melden „nie bereit“ und verweigern Ausgabe (`Bcostat`/`Bconout` 3, 4)
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 4039f1d64 | Receipt: BIOS04-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS04-STATUS-DONE.MD exists, commit 4039f1d64, TASK/BIOS04-STATUS-DONE.MD, commit 4039f1d64 (fix(bios): MIDI and IKBD answer like the oracle (BIOS04)), fix/feat commits naming the id: 4039f1d64 (n=1), measurements/measurement-2026-10-28-bios-core-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS04-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Researcher (FS11-Entscheidung neu treffen), danach Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt

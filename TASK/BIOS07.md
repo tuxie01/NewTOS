@@ -1,5 +1,10 @@
 # BIOS07 — `Setexc(n, -1)`: NULL, 64-Bit-Platzhalter und Schatten statt der EmuTOS-Werte
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: fe13475a9 | Receipt: BIOS07-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/BIOS07-STATUS-DONE.MD exists, commit fe13475a9, TASK/BIOS07-STATUS-DONE.MD, commit fe13475a9 (fix(bios): Setexc queries return real handler addresses (BIOS07)), fix/feat commits naming the id: fe13475a9 (n=1), measurements/measurement-2026-10-28-bios-core-audit/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](BIOS07-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (004 ggf. Researcher, falls als Abweichung sanktioniert) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt

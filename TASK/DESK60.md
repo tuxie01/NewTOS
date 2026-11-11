@@ -1,5 +1,10 @@
 # DESK60 — Shell meldet „starting DESKTOP.NAP“ nach einem `#Z`-gestarteten Programm
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: a217b1aa0 | Receipt: DESK60-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/DESK60-STATUS-DONE.MD exists, commit a217b1aa0, TASK/DESK60-STATUS-DONE.MD, commit a217b1aa0 (fix(tools,shell): injector arms on launch, honest desktop log line (T1), fix/feat commits naming the id: a217b1aa0 (n=1), measurements/measurement-2026-10-15-desk43-acceptance/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-16 ([Quittung](DESK60-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Diagnose/Log — Nebenfund DESK43-Abnahme (2026-10-15)
 
 Endet ein per `#Z` gestartetes TeraDesk, protokolliert die Shell in beiden

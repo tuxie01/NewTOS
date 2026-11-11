@@ -1,5 +1,10 @@
 # PITEST01 — Testkarte und Ablauf fuer die Tester (echte Pi 4)
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: f55fb4919 | Receipt: PITEST01-STATUS-DONE.MD
+
+Migrated (owner batch 4, 2026-11-11), evidence: receipt TASK/PITEST01-STATUS-DONE.MD exists, commit f55fb4919, TASK/PITEST01-STATUS-DONE.MD, commit f55fb4919 (feat(tools): back up boot files, switch cmdline.txt with the kernel (P), fix/feat commits naming the id: f55fb4919, 334aa8b39, 7d29d89af (n=3), measurements/measurement-2026-10-31-pitest01-part1/, the receipt names no hash for this commit, the Migrated line names it
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-02 (Quittung [PITEST01-STATUS-DONE.MD](PITEST01-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Sonden, Debug-Feature, Werkzeug) — Anwenderentscheidung 2026-10-31
 
 Grundlage: `docs/analysis/tester-scenario-draft-2026-10-31.md` (Entwurf, Schritte
