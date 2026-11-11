@@ -1,5 +1,10 @@
 # SCHED01 — `dsptch` legt den Aufrufer nicht in die Laufmenge ein; ein Vollbildprogramm ohne Ereignisschleife haengt in `appl_exit`
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified (only docs(task) commit); receipt SCHED01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 21, 2026-11-11, to PARKED), evidence: owner 2026-11-11 (batch 6 review): only commit 9d6ef6916 is docs(task); receipt TASK/SCHED01-STATUS-DONE.MD names the old hash 3460eef; reopen-derived
+
+Line 3 before the migration:
 Status: **BEHOBEN — auf echter Pi 4 abgenommen** (2026-09-29) · Prioritaet: **P1** · Typ: Belegter Defekt / Haenger — aus [PORT08](PORT08.md), gemessen 2026-09-29
 
 Abhaengigkeiten: — · **Tragweite am 2026-09-29 korrigiert, siehe unten**

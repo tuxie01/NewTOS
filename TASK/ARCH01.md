@@ -1,5 +1,10 @@
 # ARCH01 — Wettlauf beim EL0-Eintritt: eine IRQ zwischen `msr elr_el1` und `eret` verwirft das Sprungziel
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified (only docs(task) commit); receipt ARCH01-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 21, 2026-11-11, to PARKED), evidence: owner 2026-11-11 (batch 6 review): only commit 920c49549 is docs(task); receipt TASK/ARCH01-STATUS-DONE.MD names the old hash 7e9b4aa; reopen-derived
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-24)** · Prioritaet: **P1** · Typ: Belegter Defekt / Architektur — gefunden bei DESK19
 
 Abhaengigkeiten: —
