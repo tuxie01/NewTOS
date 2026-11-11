@@ -1,5 +1,10 @@
 # DESK35 — Beim Start einer GEM-Anwendung bleiben die Desktop-Fenster stehen und frieren ein
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; receipt DESK35-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 16, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by c0906fe4f (fix(desk): a folder navigates its window, a GEM ap), named by body
+
+Line 3 before the migration:
 Status: **IMPLEMENTIERT — HW OFFEN** · Prioritaet: **P1** · Typ: Belegter Defekt — Pi-Runde 2026-09-24
 
 Abhaengigkeiten: [DESK06](DESK06.md) (erledigt), [DESK14](DESK14.md) §4 (zurueckgestellt)

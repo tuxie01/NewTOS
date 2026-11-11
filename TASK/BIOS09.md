@@ -1,5 +1,10 @@
 # BIOS09 — `Bconin` auf AUX, MIDI und Bconmap-Ports kehrt sofort mit 0 zurueck
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: aac91ba69 | Missing: Pi measurement in the later test scenario
+
+Migrated (owner batch 16, 2026-11-11, to IMPLEMENTED), evidence: commit aac91ba69 (fix(bios): AUX waits for a byte on rpi4 as on EmuTOS (BIOS09)), VERIFIED: diff of aac91ba69 (fix(bios): AUX waits for a byte on rpi4 as on EmuTOS (BIOS09) touches tos-api/src/bios/chardev.rs, kernel/src/lib.rs, kernel/src/drivers/gic.rs (+4), names the id by subject, 209 files, legacy line: UMGESETZT 2026-10-30, Pi-Messung im spaeteren Testszenario (MEM12-Schritt entfer
+
+Line 3 before the migration:
 Status: **UMGESETZT** 2026-10-30, Pi-Messung im spaeteren Testszenario (MEM12-Schritt entfernt, Anwender 2026-10-30) · Prioritaet: **P2** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt

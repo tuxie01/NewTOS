@@ -1,5 +1,10 @@
 # ACC06 — Ein kleines Accessory als Pruefling fuer ACC02/ACC03
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt ACC06-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 16, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by d26a5fe1d (feat(gemdos): Ssystem reports ARM clock and SoC te), named by body
+
+Line 3 before the migration:
 Status: **TEIL 1 ERLEDIGT (2026-09-24), TEIL 2 ALS QUELLTEXT** · Prioritaet: **P2** · Typ: Abnahmefall + Kernelbindung
 
 Abhaengigkeiten: [ACC01](ACC01.md) (Quellenanalyse, offen) — der Pruefling

@@ -67,7 +67,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A13](A13.md) | wind_get WF_FIRSTXYWH: erstes sichtbares Rechteck | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
 | [A14](A14.md) | wind_get WF_NEXTXYWH: Iteratorfortschritt | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
 | [A15](A15.md) | wind_get: geschriebene Felder am Listenende | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
-| [A16](A16.md) | wind_close: WS_CURR/WS_PREV/WS_WORK bleiben unaktualisiert | Belegter Defekt / bedingte Reparatur | P1 | IMPLEMENTIERT — HW OFFEN | — |
+| [A16](A16.md) | wind_close: WS_CURR/WS_PREV/WS_WORK bleiben unaktualisiert | Belegter Defekt / bedingte Reparatur | P1 | PARKED | — |
 | [A17](A17.md) | wind_open: PREV-Rechteck im Soll nachtragen, Zeilenbelege richtigstellen | Spec-/Belegkorrektur | P2 | ERLEDIGT (2026-09-19) | — |
 | [A18](A18.md) | Rechteckliste: Soll in der Spec nachtragen statt lizenzieren | Spec-Korrektur | P1 | ERLEDIGT (2026-09-19) | A13 |
 | [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | IMPLEMENTED | — |

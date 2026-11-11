@@ -1,5 +1,10 @@
 # SDK01 — SDK fuer Fremde benutzbar machen: libc-Luecken und Portierungs-Doku
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: 2a8ef701c | Missing: acceptance
+
+Migrated (owner batch 16, 2026-11-11, to IMPLEMENTED), evidence: commit 2a8ef701c (feat(sdk): take LLVM tools from PATH, Rust only as fallback (SDK01 K)), VERIFIED: diff of 2a8ef701c (feat(sdk): take LLVM tools from PATH, Rust only as fallback ) touches sdk/README.md, sdk/toolchain.sh, names the id by subject, 115 files, legacy line: A–F, H, I, J ERLEDIGT 2026-10-21 (G gestrichen, L erledigt 2026-10-22, K umgeset
+
+Line 3 before the migration:
 Status: **A–F, H, I, J ERLEDIGT** 2026-10-21 (G gestrichen; L erledigt 2026-10-22; K umgesetzt, Abnahme Linux/Homebrew offen) · Prioritaet: **P2** · Typ: SDK / Doku — Anwender 2026-10-20 („es gibt Leute, die Apps portieren wollen, dazu braucht es eine Doku“; GitHub-Issue #4)
 
 Grundlage: `docs/analysis/sdk-inventory-2026-10-20.md` (`a36b3280`).

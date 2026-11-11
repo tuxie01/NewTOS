@@ -1,5 +1,10 @@
 # XBIOS03 — Haken in `mousevec`/`statvec`/`clockvec`/`joyvec` der `Kbdvbase`-Tabelle werden nie gerufen
 
+Status: ACCEPTED (2026-11-11) | Priority: P1 | Ref: ADR-031
+
+Migrated (owner batch 16, 2026-11-11, to ACCEPTED), evidence: TASK/XBIOS03.md status line: ACCEPTED-Abweichung 2026-10-28 (ADR-031), offen nur die Warnung in [BIOS15](BIOS15.md)
+
+Line 3 before the migration:
 Status: **ACCEPTED-Abweichung** 2026-10-28 (ADR-031), offen nur die Warnung in [BIOS15](BIOS15.md) · Prioritaet: **P1** · Typ: Developer (oder Researcher, falls die Luecke als Abweichung sanktioniert werden soll) — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-xbios-chardev.md` · verwandt mit [BIOS03](BIOS03.md) und [BIOS05](BIOS05.md) (Haken, die NewTOS nie ruft)
 
 ## Sachverhalt

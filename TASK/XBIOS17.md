@@ -1,5 +1,10 @@
 # XBIOS17 — qemu-virt: `Bconout(1)` verwirft, obwohl der Empfang jetzt arbeitet
 
+Status: ACCEPTED (2026-11-11) | Priority: P3 | Ref: docs/COMPATIBILITY.md
+
+Migrated (owner batch 16, 2026-11-11, to ACCEPTED), evidence: commit 639c3aa02 (feat(deps): classify mapping gaps, coverage per layer (TOOL1) [fix-subject], fix/feat commits naming the id: n=1
+
+Line 3 before the migration:
 Status: **GESCHLOSSEN** 2026-10-29 (ACCEPTED-Abweichung, Anwender) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md); Entscheidung offen, erst Bericht
 
 ## Sachverhalt

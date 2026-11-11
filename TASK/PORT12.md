@@ -1,5 +1,10 @@
 # PORT12 — XGDOS portieren: Speedo-Fonts und PDF-Druck
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: 6db90d4f5 | Missing: ADR decision (owner) for stage 2
+
+Migrated (owner batch 16, 2026-11-11, to IMPLEMENTED), evidence: commit 6db90d4f5 (docs(port12): measure XGDOS feasibility without kernel work (PORT12)), VERIFIED: diff of 6db90d4f5 (docs(port12): measure XGDOS feasibility without kernel work ) touches sdk/overlays/, sdk/overlays/xgdos/, names the id by subject, 82 files, legacy line: Stufe 1 erledigt, ADR-Entscheidung offen (2026-11-06)
+
+Line 3 before the migration:
 Status: **Stufe 1 erledigt, ADR-Entscheidung offen** (2026-11-06) · Prioritaet: **P2** · Typ: Port, Erweiterung; Anwender 2026-11-06: frueher einplanen, vor 1.0, nach [HW08](HW08.md)
 
 ## Warum

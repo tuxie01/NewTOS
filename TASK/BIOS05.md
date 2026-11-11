@@ -1,5 +1,10 @@
 # BIOS05 — Ein per `Setexc(0x100, …)` eingehaengter `etv_timer`-Haken wird nie aufgerufen
 
+Status: ACCEPTED (2026-11-11) | Priority: P1 | Ref: ADR-031
+
+Migrated (owner batch 16, 2026-11-11, to ACCEPTED), evidence: TASK/BIOS05.md status line: ACCEPTED-Abweichung 2026-10-28 (ADR-031), offen nur die Warnung in [BIOS15](BIOS15.md)
+
+Line 3 before the migration:
 Status: **ACCEPTED-Abweichung** 2026-10-28 (ADR-031), offen nur die Warnung in [BIOS15](BIOS15.md) · Prioritaet: **P1** · Typ: Developer — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md` · verwandt mit [BIOS03](BIOS03.md) und [XBIOS03](XBIOS03.md) (Haken, die NewTOS nie ruft)
 
 ## Sachverhalt

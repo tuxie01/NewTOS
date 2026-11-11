@@ -1,5 +1,10 @@
 # ARCH03 — Prozess- und Speicherarchitektur nach FreeMiNT: ein gemeinsamer Adressraum mit Schutzrechten
 
+Status: PARKED (2026-11-11) | Priority: P1 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 16, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by f2af53ea8 (feat(aes): foreign userdefs run in the current pro), named by subject
+
+Line 3 before the migration:
 Status: **UMGESETZT, abgenommen** (Tester auf `main` 2026-10-13; Pi mit der Vorfuehrkarte 2026-10-08) · offen nur Stufe 2b, `asid=on` auf echter Pi, Nebenfunde [FS10](FS10.md)/[MEM05](MEM05.md) · Prioritaet: **P1** · Typ: Architektur — Anwenderentscheidung 2026-10-04
 
 Abhaengigkeiten: — · blockiert spaeter: [MEM03](MEM03.md), [PROC01](PROC01.md), [PORT09](PORT09.md), LDG/SLB (zView, `docs/analysis/zview-ldg-2026-10-04.md`), Accessories/TSR, `kbdvec`-Haken fuer alle (KEYS02 D1)

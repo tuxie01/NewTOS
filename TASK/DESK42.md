@@ -1,5 +1,10 @@
 # DESK42 — Der `Show info`-Kasten sieht EmuTOS' nicht aehnlich
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; receipt DESK42-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 16, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by f7c61f863 (feat(desk): rebuild the Show-info dialogs as EmuTO), named by body
+
+Line 3 before the migration:
 Status: **IMPLEMENTIERT — HW-Abnahme offen** (2026-09-25) · Prioritaet: **P3** · Typ: Konformitaet — Pi-Runde 2026-09-25
 
 Abhaengigkeiten: [DESK38](DESK38.md) (erledigt)
