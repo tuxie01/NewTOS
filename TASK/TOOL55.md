@@ -1,6 +1,6 @@
 # TOOL55 — migrated IMPLEMENTED tickets with a legacy DONE receipt; accept never overwrites a receipt
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: c0912b390 | Receipt: TOOL55-STATUS-DONE.MD
 
 Type: tool. Owner decision 2026-11-11 (LEGACY01 collision 1, option b). Tooling slot; must land before any migration
 batch that contains such rows runs. Follows [TOOL54](TOOL54.md) and [LEGACY01](LEGACY01.md).
