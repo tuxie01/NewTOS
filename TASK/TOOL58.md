@@ -1,6 +1,6 @@
 # TOOL58 — status-check verifies every Migrated line against its approved batch file
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 42cc7d863 | Receipt: TOOL58-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decision 2026-11-11; ADR-037 addendum (c), point 18. Tooling slot, before TOOL48.
 
