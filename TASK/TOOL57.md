@@ -1,6 +1,6 @@
 # TOOL57 — the A01 migrate test reads the live ticket, which the migration changed
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 13c1b1018 | Receipt: TOOL57-STATUS-DONE.MD
 
 Type: tool (test defect). Follow-up of [TOOL54](TOOL54.md) and [TOOL55](TOOL55.md) (both DONE). Found by the tester
 accepting A39/A46 on 2026-11-11; `cargo xtask test` on `main` is red since batch 20 (`add86da91`).
