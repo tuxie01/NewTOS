@@ -1,5 +1,10 @@
 # G-AES-014 — appl_tplay (AES 14): kleinsten Messfall entwerfen
 
+Status: OBSOLETE (2026-11-11) | Priority: P3 | Reason: superseded by inventory-2026-11-11 (gaps regenerated from the graph)
+
+Migrated (owner batch 1, 2026-11-11), evidence: TASK/G-AES-014.md BACKLOG measurement-design stub (README G-* list), no receipt, no commit names the id
+
+Line 3 before the migration:
 Status: **BACKLOG** · Priorität: **P3** · Typ: Funktionsweise ungemessen / Messdesign
 
 Abhängigkeiten: Keine
