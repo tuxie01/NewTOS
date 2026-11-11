@@ -1,0 +1,21 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-bios-full/runs/bios-r1 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN
+cwd       /Volumes/Daten/Development/PiRusTOS
+tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    b57e4bde18f80ca8f1c9d5d1c9e3579e481d33a4
+dirty     1 path(s) in git status --porcelain
+  ?? measurements/measurement-2026-11-11-bios-full/
+harness commit b57e4bde18f80ca8f1c9d5d1c9e3579e481d33a4
+features  (none)
+table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (9 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (9 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 6e76c07400321440eeca3f3f3efd72f838f84d32fd43fa4d8c124dc752b1b35c
+kernel ELF  sha256 bcfc266f6760fdebda7d07de3d2a85aa346a606db4e5b605317dc4002e36bac0 (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id b57e
+DUMPBIOS.NAP sha256 92575cff5affd131279c71fa383dbdb2f7423e6f5e71ec2d6b61facf34890d70

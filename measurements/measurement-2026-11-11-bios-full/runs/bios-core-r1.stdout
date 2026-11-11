@@ -1,0 +1,37 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump bios tosdump/cases/bios-core-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-bios-full/runs/bios-core-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core-falcontc.BIN`
+tosdump: command   cargo xtask tosdump bios tosdump/cases/bios-core-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-bios-full/runs/bios-core-r1 --scratch /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-core-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    24eb0b070b6a08b77949d072d52907c275ab58b3
+tosdump: dirty     1 path(s) in git status --porcelain
+tosdump:   ?? measurements/measurement-2026-11-11-bios-full/
+tosdump: harness commit 24eb0b070b6a08b77949d072d52907c275ab58b3
+tosdump: features  (none)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-core-r1.tsv sha256 db802dc60c30099409f82399b37c42faa3f483d802bbfa7c6694e6d9d633e4dc
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (9 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (9 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 4ce62f82ee11786d6b028833e0b8ee8f66501e582e32d78e4b96e3505d5ff734
+tosdump: kernel ELF  sha256 d00e4fad2061fccbf92cdff24f5a4e63a4c2318e4ed79dce9d486b0cb13256cd (/Volumes/Daten/Development/PiRusTOS/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+tosdump: dumper build id 24eb
+tosdump: DUMPBIOS.NAP sha256 6566bdbc28f09823949ee0acf986afc02e7f6c3ad38d98736d488477a6a8341b
+tosdump: card.img.manifest: image_sha256 44207e62bc1c386737a04a3d2b74ead5270a64acfaa5ece8f0b68b9e5d9a763e
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-92151/card.img sha256 44207e62bc1c386737a04a3d2b74ead5270a64acfaa5ece8f0b68b9e5d9a763e (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 e3559bcd5673303180d34d3eb26c8727c83799b486247e54882b07c7fa3ef46d
+tosdump: BIOS.BIN 14112 bytes, sha256 7fdf5da35d32c47483a8c847a51953b175ffc53bd510cf63b4d0764167fb9913
+tosdump: BIOS.LOG 168 bytes, sha256 67f1807191071e82462ee513375bd0b396bcfa925157e5f8db72cd38769191ce
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/tosdump/host/build/tosdiff sha256 b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 44 records of 320 bytes, build 24eb, case CRC C056A3E0
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS-core.BIN vs NEWTOS.BIN: exit 1, 2 of 44 cases differ
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS-core-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 44 cases differ
+tosdump: total     44 s
+tosdump: result    run complete (differences above are findings, not failures)

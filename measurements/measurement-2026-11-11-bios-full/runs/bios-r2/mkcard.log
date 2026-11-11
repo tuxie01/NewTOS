@@ -1,0 +1,7 @@
+mkcard: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/card.img (128 MiB, test image /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/test.img as C:, program partition D: LBA 131072+131072, label NTCARD)
+  + D:\DUMPBIOS.NAP <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/DUMPBIOS.NAP
+  + D:\BIOS.TSV <- /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2.tsv
+  + D:\DISKUNIT.TXT <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/DISKUNIT.TXT
+  + D:\PROGEXT.TXT <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/PROGEXT.TXT
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/card.img
+manifest: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-93959/card.img.manifest (5 files; copy it into the measurement run, RUNINFO.TXT cites it)

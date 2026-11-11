@@ -1,0 +1,25 @@
+table	reference	cases	EQUAL	(of which relaxed class)	DIFF
+bios-core-r1	BIOS-core	44	42	14	2
+bios-core-r1	BIOS-core-falcontc	44	43	14	1
+bios-r1	BIOS	147	115	22	32
+bios-r1	BIOS-falcontc	147	110	24	37
+bios-r2	BIOS-r2-disk	51	47	3	4
+bios-r2-phys	BIOS-r2-phys-disk	12	10	0	2
+bios-r2-x001	BIOS-r2-x001-disk	8	7	2	1
+bios-r2-x004	BIOS-r2-x004-disk	10	10	1	0
+bios-r2-x005	BIOS-r2-x005-disk	13	13	3	0
+bios-r2-x006	BIOS-r2-x006-disk	11	11	1	0
+
+BIOS roll-up (trap 13): function, cases total/DIFF over all runs, verdict
+0x00 Getmpb	0 case rows	0 DIFF rows
+0x01 Bconstat	32 case rows	0 DIFF rows
+0x02 Bconin	16 case rows	0 DIFF rows
+0x03 Bconout	26 case rows	0 DIFF rows
+0x04 Rwabs	63 case rows	7 DIFF rows	bios-r2/BIOS-r2-disk L58	bios-r2/BIOS-r2-disk L73	bios-r2/BIOS-r2-disk L74	bios-r2/BIOS-r2-disk L75	bios-r2-phys/BIOS-r2-phys-disk L34	bios-r2-phys/BIOS-r2-phys-disk L36	bios-r2-x001/BIOS-r2-x001-disk L42
+0x05 Setexc	44 case rows	0 DIFF rows
+0x06 Tickcal	2 case rows	0 DIFF rows
+0x07 Getbpb	19 case rows	0 DIFF rows
+0x08 Bcostat	32 case rows	5 DIFF rows	bios-core-r1/BIOS-core L65	bios-core-r1/BIOS-core L66	bios-core-r1/BIOS-core-falcontc L65	bios-r1/BIOS L70	bios-r1/BIOS-falcontc L70
+0x09 Mediach	22 case rows	0 DIFF rows
+0x0A Drvmap	3 case rows	0 DIFF rows
+0x0B Kbshift	2 case rows	0 DIFF rows

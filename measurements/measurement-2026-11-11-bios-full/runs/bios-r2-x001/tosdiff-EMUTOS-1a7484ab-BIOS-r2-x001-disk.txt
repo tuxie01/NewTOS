@@ -1,0 +1,7 @@
+EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN vs NEWTOS.BIN -- area BIOS, 8 cases from bios-r2-x001.tsv
+
+case 42  trap 13 function 0x04  X17e read sector 0: byte 3 is the image's 'M', not 'X' -- blkde
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN = 0x34   NEWTOS.BIN                            = 0x35
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-x001-disk.BIN = 0x39   NEWTOS.BIN                            = 0x30
+
+1 of 8 cases differ

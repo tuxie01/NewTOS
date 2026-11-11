@@ -1,0 +1,121 @@
+measurement-2026-11-11-bios-full -- all BIOS case tables vs the pinned EmuTOS oracle on today's tree
+==========================================================================================
+Tester (Sonnet), owner request 2026-11-11. Measurement only: no code change, no ticket edit, no commit, no accept.
+HEAD 24eb0b070 (docs(task): TOOL53 ...), tree clean (git status: only this run dir untracked). HEAD was b57e4bde1 when the
+run started; the docs-only commit 24eb0b070 landed meanwhile (diff: TASK/TOOL53.md). bios-r2 and bios-r2-phys were first run
+at b57e (kernel8 6e76c074..., build id b57e): superseded and kept in runs/superseded-b57e/ (same 4 / 2 DIFF cases); the numbers
+below are all from HEAD 24eb0b070 (kernel8.img 4ce62f82..., build id 24eb).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every image manifest). mtools 4.0.50 (host), QEMU raspi4b via
+`cargo xtask tosdump` (TOOL09), kernel rpi4 --release built in the main tree; instruments (mkcard, mktestdisk, tosdiff) the same tree.
+Oracle side NOT re-run: every reference is the committed tosdump/reference/EMUTOS-1a7484ab-*.BIN (pin 1a7484ab), none re-recorded.
+
+METHOD (method/)
+  run-all.sh <scratch> <runs>          first pass, all 8 tables (the two non-disk ones failed, see BLOCKERS)
+  run-nondisk.sh <scratch> <runs>      bios-core-r1, bios-r1 again with --scratch in the session scratchpad
+  rerun-r2-r2phys.sh <scratch> <runs>  bios-r2, bios-r2-phys again at 24eb0b070
+  summarize.py <repo> <runs>           per-case.tsv, summary.txt (a case number printed by tosdiff = line no. in the .tsv)
+  Calls: cargo xtask tosdump bios tosdump/cases/<t>.tsv [--disk] --out runs/<t> --scratch <dir> --reference <BIN> [--reference <BIN>]
+  Disk tables (bios-r2*): --disk (test image from tools/mktestdisk.sh, card via MKCARD_TESTDISK; no hand-made images, no diskutil call
+  of mine; scripts only). The tables bind to references by CRC (tosdiff --validate per run: runs/<t>/tosdiff-validate.txt, accepted).
+BLOCKERS / retries
+  * First pass bios-core-r1 and bios-r1 (non-disk): tools/mkcard.sh failed "Volume on disk7s1 failed to mount" with --scratch under
+    /Volumes/Daten (TOOL53, the known issue). Kept as runs/failed-first-*. Rerun with --scratch in the session scratchpad: ok.
+    The disk tables ran from the target-agents scratch without that failure.
+  * No table lacked a reference; every table ran. bios-r2-phys: tosdiff --check-profile ok (u:0 = unit 26 NewTOS / 18 oracle).
+  * Getmpb (0x00) has no case in any table (excluded in COVERAGE-BIOS.md): not measured, neither EQUAL nor DIFF.
+
+INPUTS (sha256; images/kernels gitignored)
+  kernel8.img (24eb0b070, rpi4 release)  4ce62f882ee11786 ... full: 4ce62f82ee11786d6b028833e0b8ee8f66501e582e32d78e4b96e3505d5ff734 (as printed by the runner;
+                                         bios-r2/bios-r2-phys superseded pass at b57e: 6e76c07400321440eeca3f3f3efd72f838f84d32fd43fa4d8c124dc752b1b35c)
+  kernel ELF 24eb: d00e4fad2061fccbf92cdff24f5a4e63a4c2318e4ed79dce9d486b0cb13256cd
+  DUMPBIOS.NAP (build 24eb) 6566bdbc28f09823949ee0acf986afc02e7f6c3ad38d98736d488477a6a8341b
+  tosdiff 46...: b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+  test image (mktestdisk.sh)  923d06a5884fbb828f2f3641d9a53d7eb025c9cd6d8e1ab8debdac8b512d3581  (the reference was recorded on d95a60c3..., see DIFF note F1)
+  cards (card.img.manifest in every run dir, image_sha256):
+    bios-core-r1 44207e62bc1c386737a04a3d2b74ead5270a64acfaa5ece8f0b68b9e5d9a763e   bios-r1 30db543c082c1ece19cdec7c9b2b9dd42e1088c537d28bf512689dff198b6104
+    bios-r2 aaed75a8b865d184d6b5737c1cc2f8741f432a902e9afb4f68878578680208d3   bios-r2-phys addefcc9e58cbd38ffb8572f3cdc631c8499f4d5575257e3508846c793b4a52b
+    bios-r2-x001 1ffc2003e78b0b25cabb836946d34a263b89cbce7e77b385f64d80d409bac1a6   bios-r2-x004 749524e32296c607673dff4573d31ddc7afdaa7b129f094ab661aa15c25a8485
+    bios-r2-x005 4bacf966c7df7fd365237831fc8c40222eba2a35f80b8dec9263396ad7c2d15c   bios-r2-x006 95620925ae0f80f31480d592257178f0661bf85a8952c5907f5692c1a5b9fad2
+    (card images deleted by the runner after the run; non-disk cards were in the scratchpad)
+  manifests copied: runs/<t>/card.img.manifest (8) and runs/<t>/test.img.manifest (6 disk runs); every one says, verbatim:
+    optional_missing none      (14 of 14)
+  NewTOS BIN sha256: bios-core-r1 7fdf5da3...9913 (full in runs/bios-core-r1.stdout), bios-r1 3c0962b9..., bios-r2 7544b1e0..., phys 7147c089..., x001 5f70d9fe...,
+    x004 6ad26a99..., x005 536f4de3..., x006 90c2b3c4... (full hashes in runs/<t>.stdout)
+  references (sha256 of the BIN): BIOS 62c35fc1..., BIOS-falcontc 784d0c64..., BIOS-core c1f8ba32..., BIOS-core-falcontc 112ec869..., BIOS-r2-disk 072d8cd1...,
+    -r2-phys-disk 05ad06cf..., -r2-x001-disk 425b4e6d..., -x004 a17b3639..., -x005 9d546ce3..., -x006 0ccfe164...
+  Clone: none (main tree used, clean). Scratch/target-agents dir: target-agents/agent-abcd5969998eab3a1 = 256M (testpart-after.img of x001/x004/x005/x006 and run scratch;
+  gitignored, expires with the ticket-less 72 h rule). This run dir: 4.8M.
+
+SUMMARY (EQUAL = tosdiff prints no difference; "relaxed" = of those, cases whose retclass is not EXACT (IGNORE/NONZERO/HANDLE/PTR_RAM: tosdiff's
+own rule, counted inside EQUAL); ACCEPTED = DIFF cases with a documented ACCEPTED row in docs/COMPATIBILITY.md (subtracted from DIFF below); not run 0 everywhere)
+ table          reference                 cases  EQUAL(relaxed)  ACCEPTED  DIFF(open)  not run   tosdiff exit
+ bios-core-r1   BIOS-core (tt)             44     42 (14)         2         0           0         1
+ bios-core-r1   BIOS-core-falcontc         44     43 (14)         1         0           0         1
+ bios-r1        BIOS (tt)                 147    115 (22)         1         31          0         1
+ bios-r1        BIOS-falcontc             147    110 (24)         2         35          0         1
+ bios-r2        BIOS-r2-disk               51     47 (3)          0         4 (F1)      0         1
+ bios-r2-phys   BIOS-r2-phys-disk          12     10 (0)          0         2 (F1)      0         1
+ bios-r2-x001   BIOS-r2-x001-disk           8      7 (2)          0         1 (F1)      0         1
+ bios-r2-x004   BIOS-r2-x004-disk          10     10 (1)          0         0           0         0
+ bios-r2-x005   BIOS-r2-x005-disk          13     13 (3)          0         0           0         0
+ bios-r2-x006   BIOS-r2-x006-disk          11     11 (1)          0         0           0         0
+ Raw tosdiff DIFF counts (before subtracting ACCEPTED): 2,1,32,37,4,2,1,0,0,0. Total case-runs 502 (+ the 2x superseded).
+ EQUAL cells include nothing the table marks IGNORE except as printed in the "relaxed" column.
+
+DIFFS (case no = line in the table; oracle vs NewTOS; ticket/deviation)
+ Documented ACCEPTED (docs/COMPATIBILITY.md "Bconmap: one entry, the AUX port, device 6", TASK/BIOS08 DONE):
+  bios-core-r1 65 Bcostat(8)  tt+falcontc: oracle -1, NewTOS 0   ACCEPTED (no port 8)
+  bios-core-r1 66 Bcostat(9)  tt only:     oracle -1, NewTOS 0   ACCEPTED (tt; falcontc EQUAL)
+  bios-r1 70 Bcostat(7)       tt+falcontc: oracle -1, NewTOS 0   ACCEPTED (no port 7)
+  bios-r1 183 Bconmap(-1)     falcontc only: oracle 7, NewTOS 6   ACCEPTED (tt EQUAL)
+ Fixture artefact F1 (disk tables; NOT a NewTOS difference): 8 cases, every one the same two bytes of the boot sector read:
+  bios-r2 58 (Rwabs R01), 73 (R15), 74 (R16), 75 (R17); bios-r2-phys 34 (P06), 36 (control); bios-r2-x001 42 (X17e)
+  Rwabs, capture bytes 9,10 of C: sector 0: oracle 0x34 0x39 ("49"), NewTOS 0x35 0x30 ("50"). Bytes 3-10 are the OEM name written by mformat:
+  the oracle reference was recorded with mtools 4.0.49 ("MTOO4049"); today's host has mtools 4.0.50 and tools/mktestdisk.sh makes "MTOO4050"
+  (verified in the end-state image: bytes 3-10 = 4d 54 4f 4f 34 30 35 30). Image sha 923d06a5 today vs d95a60c3 at recording. Belongs to TASK/TOOL15
+  (mtools pin, PARKED). Return values and all other bytes of these 8 cases equal; the 26 other cases of these three tables equal. Until the
+  fixture is pinned, these three tables show 4+2+1 "DIFF" per run that carry no NewTOS information. Not re-recorded, not edited.
+ Open DIFFs on bios-r1 (tt = BIOS, ft = BIOS-falcontc); "fn#" returned by NewTOS = the function number (slot answers like an empty slot):
+  70 -  (see ACCEPTED)
+  87  Getrez()               ft only: oracle 2, NewTOS 4 (TT-Medium/640x480 profile)       tickets: none (related: TASK/X02 PARKED, ARCH06 decision "no Videl")
+  93  Setcolor(0,-1)         tt+ft: oracle 0x0FFF, NewTOS 0                                  none
+  94  Setcolor(1,-1)         tt+ft: oracle 0x0F00, NewTOS 0                                  none
+  105 Rsconf(-1 x6)          tt: 0x88018100 vs 0x88010100;  ft: 0x88000000 vs 0x88010100   TASK/XBIOS06 (PARKED, owner 2026-10-30, resume with IO01/MIDI)
+  128 Giaccess(0,7)          tt+ft: oracle 0xC0, NewTOS 0                                    none for the read; PSG sound: TASK/H04 (PARKED), TASK/SND01 (OPEN)
+  129 Giaccess(0,14)         tt: 0xA7, ft: 0x27, NewTOS 0                                    same as 128
+  178 Floprate(0,-1)         tt+ft: oracle 3, NewTOS -15 (EUNDEV)                            none
+  179 Floprate(0,-4)         tt+ft: oracle -1, NewTOS -15                                    none
+  183 Bconmap(-1)            ft only, see ACCEPTED
+  189 NVMaccess(0,0,48,b0)   tt+ft: oracle ret 0 + 48 bytes of NVRAM, NewTOS ret 0x2E (46) + buffer untouched   TASK/XBIOS10 (PARKED, owner 2026-10-30: no NVRAM until a port needs it)
+  190-194 NVMaccess (5 error arms: count 0, start<0, past 48, NULL, bad op)  tt+ft: oracle -5 (0xFFFB), NewTOS 0x2E   TASK/XBIOS10 (PARKED)
+  200 EgetShift()            tt: oracle 0x0400, NewTOS 0x51 (function number)               none (TT shifter; ARCH06 decision: no Shifter)
+  201 EsetBank(-1)           tt: 0 vs 0x52;  202/203/204 EsetColor(0|15|255,-1) tt: 0x0FFF/0/0 vs 0x53;  205/206 EgetPalette tt: palette bytes vs buffer untouched;
+  207 EsetGray(-1) tt: 0 vs 0x56;  208 EsetSmear(-1) tt: 0 vs 0x57                           none
+  211 VsetMode(-1)           ft: 0x1C vs 0x58;  212 VgetMonitor ft: 2 vs 0x59;  213 VgetSize(0x1C) ft: 614400 vs 0x5B;  214 VgetRGB ft: 0 + palette vs 0x5E,
+                             buffer untouched;  215 Vfixmode(0x1C) tt: -32 vs 0x5F, ft: 0x1C vs 0x5F            none (related: TASK/X02 PARKED video modes, ARCH06)
+  218 Dsp_GetWordSize ft: 3 vs 0x67;  219 Dsp_Available(x) tt: bytes FF.. ft: 0.. vs untouched;  220 Dsp_Available(y) tt/ft: 0 vs untouched; 221 Dsp_GetProgAbility ft: 0 vs 0x72;
+  222 Dsp_InqSubrAbility(0) ft: 0x17 vs 0x75;  223 Dsp_Hf0 ft: 0 vs 0x77;  224 Dsp_Hf1 ft: 0 vs 0x78;  225 Dsp_Hf2 ft: 0 vs 0x79;  226 Dsp_Hf3 ft: 0 vs 0x7A;
+  227 Dsp_Hstat ft: 6 vs 0x7D                                                                none
+  230 Soundcmd(0,-1), 231 Soundcmd(1,-1), 232 Soundcmd(6,-1) (ft: 3 vs 0x82), 233 Buffoper(-1) 0 vs 0x88, 234 Sndstatus(0) 0 vs 0x8C, 235 Buffptr(b0) 0 + 8 bytes vs 0x8D,
+                             all tt+ft: oracle 0 (ft Soundcmd(6) 3), NewTOS = function number                TASK/SND01 (OPEN: Falcon DMA sound as an API), TASK/H04 (PARKED)
+  Counts: tt 32 raw DIFF = 1 ACCEPTED (70) + 31 open; ft 37 raw = 2 ACCEPTED (70, 183) + 35 open.
+  Full per-reference text: runs/bios-r1/tosdiff-EMUTOS-1a7484ab-BIOS.txt and -BIOS-falcontc.txt; per-case EQUAL/DIFF of all 502 case-runs: per-case.tsv
+  All open bios-r1 DIFFs are hardware the machine lacks or sound/NVRAM/floppy/Falcon-TT video calls: NewTOS answers the function number or an error where
+  the oracle machine answers; no DIFF in a core BIOS memory/console/exception/disk call of bios-r1.
+
+ROLL-UP PER BIOS FUNCTION (trap 13; over all tables and references; per-case.tsv)
+  0x00 Getmpb    not measured (no case in any table)
+  0x01 Bconstat  EQUAL (32 case-runs)          0x02 Bconin  EQUAL (16)        0x03 Bconout EQUAL (26)
+  0x04 Rwabs     63 case-runs, 7 DIFF, all F1 (fixture artefact, OEM bytes); no genuine difference found -> EQUAL apart from F1
+  0x05 Setexc    EQUAL (44)                    0x06 Tickcal EQUAL (2)         0x07 Getbpb EQUAL (19)
+  0x08 Bcostat   DIFF, all 5 ACCEPTED (BIOS08: no ports 7/8/9)                 0x09 Mediach EQUAL (22)
+  0x0A Drvmap    EQUAL (3)                      0x0B Kbshift EQUAL (2)
+ROLL-UP XBIOS (trap 14): xbios-rollup.txt (per function, tt+ft). DIFF functions: 0x04 Getrez(ft), 0x07 Setcolor, 0x0F Rsconf, 0x1C Giaccess, 0x29 Floprate,
+  0x2C Bconmap(ft, ACCEPTED), 0x2E NVMaccess, 0x51-0x57 TT shifter, 0x58-0x5F Videl, 0x67-0x7D DSP, 0x82/0x88/0x8C/0x8D DMA sound. All other XBIOS
+  functions with cases (incl. the 0x30-0x4F empty slots, Kbrate, Iorec, Bioskeys, Kbdvbase, Ikbdws ...) EQUAL on both profiles.
+
+OTHER CHECKS (from the runner)
+  tosdiff --validate exit 0 for all 8 NewTOS dumps (CRC matches the table). Disk runs: testpart after bios-r2: identical to before, fsck_msdos -n exit 0
+  (runs/bios-r2/testpart-compare.txt). The 4 destructive/closing runs (phys excluded; x001, x004, x005, x006) left testpart-after.img in the scratch only.
+  x004 and x006 EQUAL on all cases with the changed boot sector, as the oracle's end state; end states not re-compared here (not asked).
+  Not covered: real Pi4 hardware; QEMU-TCG only. All verdicts are NewTOS on QEMU raspi4b vs Hatari-EmuTOS.

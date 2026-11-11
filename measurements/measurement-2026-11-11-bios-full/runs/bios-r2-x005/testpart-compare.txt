@@ -1,0 +1,16 @@
+test image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90065/test.img
+test partition LBA 63+130977
+testpart: identical
+fsck_msdos -n testpart-before.img: exit 0
+  ** /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90065/testpart-before.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 1 files, 65342 KiB free (32671 clusters)
+fsck_msdos -n testpart-after.img: exit 0
+  ** /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-11-bios-full/runs/bios-r2-x005/testpart-after.img
+  ** Phase 1 - Preparing FAT
+  ** Phase 2 - Checking Directories
+  ** Phase 3 - Checking for Orphan Clusters
+  Warning: 1 files, 65342 KiB free (32671 clusters)
+testpart after sha256 56c6a7428ff6a4f6d78663e89591aa6c34d3074581bca9cc891c7e7bf60699c7 (kept: testpart-after.img)

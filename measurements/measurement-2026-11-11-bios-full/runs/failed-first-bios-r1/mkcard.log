@@ -1,0 +1,4 @@
+mkcard: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-85085/card.img (64 MiB, MBR + FAT16, label NTCARD)
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+Volume on disk7s1 failed to mount
+If you think the volume is supported but damaged, try the "readOnly" option

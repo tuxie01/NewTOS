@@ -1,0 +1,3 @@
+mktestdisk: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-94617/test.img (64 MiB, MBR + FAT16 at LBA 63, label NTTESTDISK)
+  + C:\NEWDESK.INF <- /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-94617/NEWDESK.INF
+done: /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/bios-full/tosdump-94617/test.img sha256 923d06a5884fbb828f2f3641d9a53d7eb025c9cd6d8e1ab8debdac8b512d3581

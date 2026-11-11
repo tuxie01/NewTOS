@@ -1,0 +1,7 @@
+mkcard: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/card.img (128 MiB, test image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/test.img as C:, program partition D: LBA 131072+131072, label NTCARD)
+  + D:\DUMPBIOS.NAP <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/DUMPBIOS.NAP
+  + D:\BIOS.TSV <- /Volumes/Daten/Development/PiRusTOS/tosdump/cases/bios-r2-x006.tsv
+  + D:\DISKUNIT.TXT <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/DISKUNIT.TXT
+  + D:\PROGEXT.TXT <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/PROGEXT.TXT
+done: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/card.img
+manifest: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-abcd5969998eab3a1/scratch/tosdump-90753/card.img.manifest (5 files; copy it into the measurement run, RUNINFO.TXT cites it)

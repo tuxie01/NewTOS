@@ -1,0 +1,19 @@
+EMUTOS-1a7484ab-BIOS-r2-disk.BIN vs NEWTOS.BIN -- area BIOS, 51 cases from bios-r2.tsv
+
+case 58  trap 13 function 0x04  R01 C: sector 0, bytes 0-255 -- blkdev.c:430-481
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x34   NEWTOS.BIN                       = 0x35
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x39   NEWTOS.BIN                       = 0x30
+
+case 73  trap 13 function 0x04  R15 RW_NOMEDIACH -- blkdev.c:473-477
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x34   NEWTOS.BIN                       = 0x35
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x39   NEWTOS.BIN                       = 0x30
+
+case 74  trap 13 function 0x04  R16 RW_NORETRIES -- blkdev.c:433
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x34   NEWTOS.BIN                       = 0x35
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x39   NEWTOS.BIN                       = 0x30
+
+case 75  trap 13 function 0x04  R17 RW_NOBYTESWAP, logical: ignored -- blkdev.c:480-481
+    capture[9]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x34   NEWTOS.BIN                       = 0x35
+    capture[10]             EMUTOS-1a7484ab-BIOS-r2-disk.BIN = 0x39   NEWTOS.BIN                       = 0x30
+
+4 of 51 cases differ

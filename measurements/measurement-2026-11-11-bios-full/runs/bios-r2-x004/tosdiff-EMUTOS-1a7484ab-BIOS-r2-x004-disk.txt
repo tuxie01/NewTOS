@@ -1,0 +1,3 @@
+EMUTOS-1a7484ab-BIOS-r2-x004-disk.BIN vs NEWTOS.BIN -- area BIOS, 10 cases from bios-r2-x004.tsv
+
+0 of 10 cases differ
