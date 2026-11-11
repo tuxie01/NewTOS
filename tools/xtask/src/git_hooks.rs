@@ -182,4 +182,48 @@ mod tests {
             String::from_utf8_lossy(&out.stderr)
         );
     }
+
+    /// Runs `tools/hooks/<script>` from the repo root with `AS_TEST_TMP` set
+    /// to a fresh directory under `target/` and asserts no `FAIL` line.
+    fn hook_pipe_test(script: &str) {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+        let stem = script.trim_end_matches(".sh");
+        let tmp = root.join("target").join(format!("xtask-test-{stem}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&tmp);
+        fs::create_dir_all(&tmp).unwrap();
+        let mut c = Command::new("bash");
+        for v in ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"] {
+            c.env_remove(v);
+        }
+        let out = c
+            .arg(format!("tools/hooks/{script}"))
+            .env("AS_TEST_TMP", &tmp)
+            .current_dir(root)
+            .output()
+            .unwrap();
+        let _ = fs::remove_dir_all(&tmp);
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        let fails: Vec<&str> = stdout.lines().filter(|l| l.starts_with("FAIL")).collect();
+        assert!(
+            out.status.success() && fails.is_empty(),
+            "{script}: {:?}\n{}\n{}",
+            out.status,
+            fails.join("\n"),
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+
+    /// TOOL46: the scratch guard (PreToolUse) keeps its old cases and blocks
+    /// clones and cargo target dirs in the session scratch root.
+    #[test]
+    fn scratch_guard_pipe_tests_pass() {
+        hook_pipe_test("scratch-guard-test.sh");
+    }
+
+    /// TOOL46: the SubagentStart/SubagentStop/SessionStart hook removes only
+    /// the finished worker's `target-agents/agent-<id>/`, in a fixture repo.
+    #[test]
+    fn agent_scratch_pipe_tests_pass() {
+        hook_pipe_test("agent-scratch-test.sh");
+    }
 }

@@ -1005,7 +1005,7 @@ pub fn ticket_violations(a: &Analysis, id: &str, adrs: &BTreeSet<u16>, repo: &mu
             if let Some(r) = done_receipt {
                 let dev = a.developers(id);
                 for acc in r.header("Agent") {
-                    if dev.contains(&acc.to_lowercase()) {
+                    if dev.iter().any(|d| agent_key(d) == agent_key(&acc)) {
                         out.push(v(id, Code::SelfAccept, format!("{TASK_DIR}/{}: acceptor {acc} is the ticket's developer", r.file)));
                     }
                 }
@@ -1826,7 +1826,7 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
             "accept: no developer recorded for {id}: a receipt {TASK_DIR}/{id}-STATUS-*.MD needs `Role: developer` and `Agent: <name>` in its header (before the first `## `)"
         ));
     }
-    if devs.contains(&agent.to_lowercase()) {
+    if devs.iter().any(|d| agent_key(d) == agent_key(&agent)) {
         return Err(format!("accept: {agent} is the developer recorded for {id}; acceptance needs another agent (ADR-037 point 12)"));
     }
     let note_text = note.clone().unwrap_or_else(|| "No note.".into());
@@ -1896,6 +1896,9 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
     }
     let head = git_out(root, &["rev-parse", "--short=9", "HEAD"])?;
     println!("accept: {id} {what} on {short}, committed {}", head.trim());
+    // TOOL46: the scratch of the recorded agents goes; the acceptor's own
+    // directory is still in use by this run and expires 72 h after its stop.
+    print!("{}", crate::scratch::clean_ticket(root, id, Some(&agent)));
     Ok(())
 }
 
@@ -2040,6 +2043,15 @@ pub fn cmd_report(root: &Path, args: &[String]) -> Result<(), String> {
         println!("{line}");
     }
     Ok(())
+}
+
+/// The comparison key of an agent name: trimmed, lowercase, without a
+/// leading `agent-` (a worktree is named `agent-<id>`, the hook's id is
+/// `<id>`). One function for the self-acceptance checks of `accept` and
+/// `status-check` and for the scratch clean-up (`scratch.rs`; TOOL46).
+pub fn agent_key(name: &str) -> String {
+    let n = name.trim().to_lowercase();
+    n.strip_prefix("agent-").map(str::to_string).unwrap_or(n)
 }
 
 #[cfg(test)]

@@ -1,0 +1,40 @@
+== A: clean (script)
+ok clean [..]
+ok clean [a/b]
+ok clean ['']
+ok clean [$'real\nzz']
+ok clean [-rf]
+ok clean [../x]
+ok clean [.]
+ok clean [\*]
+ok clean [--]
+ok clean [real/../other]
+ok clean [\ ]
+ok clean [/]
+== B: scratch-clean <id> (xtask)
+ok scratch-clean [..]
+ok scratch-clean [a/b]
+ok scratch-clean ['']
+ok scratch-clean [$'real\nzz']
+ok scratch-clean [-rf]
+ok scratch-clean [../x]
+ok scratch-clean [.]
+ok scratch-clean [\*]
+ok scratch-clean [--]
+ok scratch-clean [real/../other]
+ok scratch-clean [\ ]
+ok scratch-clean [/]
+== C: positive: real removed, others survive, outside survives
+ok scratch-clean agent-real removes
+ok only real gone
+ok outside intact: inner symlink
+== D: symlinked target-agents
+ok symlinked target-agents refused (clean+xtask)
+== E: agent dir is a symlink
+ok agent dir symlink untouched
+== F: ticket receipts with hostile Agent lines (xtask --ticket)
+ok --ticket Z9 Agent: ..
+ok --ticket Z9 Agent: ../x
+ok --ticket Z9 Agent: a/b
+ok --ticket Z9 Agent: -rf
+ok --ticket Z9 Agent: /

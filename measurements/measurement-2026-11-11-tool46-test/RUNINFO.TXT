@@ -1,0 +1,19 @@
+RUNINFO: tester run for TASK/TOOL46 (commit 60cb1710d, base dd6e2690e), 2026-11-11
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+No SD image booted; no image manifest (optional_missing: not applicable). Hooks tested by piping JSON from the worktree; they are not live.
+Scratch: target/agents/tool46-test/ (removed at the end).
+
+1 Pipe tests: scratch-guard-test.sh 36 ok / 0 FAIL; agent-scratch-test.sh 38 ok / 0 FAIL; cargo xtask test in worktree 2398 passed / 0 failed / 6 ignored (both new pipe tests ok). PASS.
+2 Deletion safety (fixture repo under scratch, snapshot of whole fixture before/after):
+  agent_id empty, {}, '..', '../x', 'a/b', ' ', '*', 300 chars, 'aeoe unicode', '-rf', '--', 'real/../other': rc=0, NOCHANGE.
+  'real\nzz' (newline, passes grep line-wise but names no dir): rc=0, nothing removed.
+  'real' and 'agent-real': rc=0, removes only target-agents/agent-real (sibling agent-other, target-agents/pre, repo/sib survive).
+  target-agents symlink -> elsewhere: refused, elsewhere/agent-real survives. agent dir symlink -> outside: refused, outside files survive.
+  agent dir with inner symlinks to outside dirs: agent dir removed, outside files/subdir survive (rm -rf does not follow symlinks).
+  agent dir is a regular file: refused. missing jq (PATH without jq): rc=0 silent, nothing removed.
+  CLAUDE_PROJECT_DIR unset/empty/nonexistent/non-repo: refused, nothing removed. Worktree as project dir: resolves to main top, removes main target-agents/agent-real.
+  All exits 0.
+3 Lifecycle: docs fetched 2026-11-11 (hooks, sub-agents pages): SubagentStart 'when Claude resumes a subagent'; SubagentStop 'Runs when a Claude Code subagent has finished responding'; sub-agents: 'When Claude sends a completed subagent a message with the SendMessage tool, the subagent resumes ... Resuming starts a new run of the agent under the same ID'. Docs say nothing on SubagentStop while the agent waits on its own background work. => resume: Stop fired after the first run (design deletes dir, resumed run finds it gone; SubagentStart context not re-injected if copy still in context). Background-wait case: UNKNOWN, not testable (hooks not live).
+4 Guard: 29 ad-hoc cases, see report.
+5 SessionStart: threshold 1 KiB -> systemMessage + hookSpecificOutput.additionalContext, largest first; under threshold, default, bad env value: empty output. du -sk of real target (12452828 KiB = 11.9 GiB): 0.309 s.
+6 doc-check TOOL46.md, receipt, tester.md, developer.md: 0 failures.

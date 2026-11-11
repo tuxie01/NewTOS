@@ -1,5 +1,8 @@
 # Build artifacts
 /target
+# Worker scratch: test clones and CARGO_TARGET_DIRs, one agent-<id>/ per
+# worker run, removed by tools/hooks/agent-scratch.sh at SubagentStop (TOOL46).
+/target-agents/
 **/*.rs.bk
 Cargo.lock.bak
 

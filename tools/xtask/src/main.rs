@@ -160,6 +160,8 @@ fn main() -> ExitCode {
         "test" => cmd_test(&rest),
         "tosdump" => tosdump::cmd(&workspace_root(), &rest),
         "worktree-setup" => worktree_setup::cmd(&workspace_root(), &rest),
+        "scratch-clean" => scratch::cmd_scratch_clean(&workspace_root(), &rest),
+        "land" => scratch::cmd_land(&workspace_root(), &rest),
         "help" | "--help" | "-h" => {
             print_usage();
             Ok(())
@@ -300,7 +302,7 @@ Commands:
                                    bios-arg-trace adds the input check
                                    (tools/biostrace-check.py, TOOL08)
   help
-{}{}", tickets::USAGE, worktree_setup::USAGE);
+{}{}{}", tickets::USAGE, worktree_setup::USAGE, scratch::USAGE);
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -1290,3 +1292,7 @@ mod tickets;
 /// TOOL44 — `worktree-setup`: a linked worktree gets the gitignored inputs
 /// of the main tree as symlinks.
 mod worktree_setup;
+
+/// TOOL46 — `scratch-clean`, `land` and the clean-up after `accept`: the
+/// worker directories under `target-agents/`.
+mod scratch;

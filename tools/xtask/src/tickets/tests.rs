@@ -340,6 +340,23 @@ fn reporting_gaps_do_not_reject() {
     assert_eq!(codes, [Code::BlockedByDone, Code::SelfAccept]);
 }
 
+/// status-check flags a self-acceptance with and without the `agent-`
+/// prefix, both ways (TOOL46), and not a different agent.
+#[test]
+fn self_accept_flag_normalises_the_agent_prefix() {
+    for (dev, acc, flagged) in [("dev-1", "agent-dev-1", true), ("agent-dev-1", "Dev-1", true), ("agent-dev-1", "dev-2", false)] {
+        let r = repo("tickets-self-flag", &[("TASK/B1.md", &ticket("B1", "Status: OPEN (2026-11-10) | Priority: P2"))]);
+        let h = out(&r, &["rev-parse", "--short=9", "HEAD"]);
+        r.write("TASK/B1.md", &ticket("B1", &format!("Status: DONE (2026-11-11) | Priority: P2 | Commit: {h} | Receipt: B1-STATUS-DONE.MD")));
+        r.write("TASK/B1-STATUS-UNFINISHED.MD", &format!("# B1 — receipt\n\nRole: developer\nAgent: {dev}\n\n## Done\n"));
+        r.write("TASK/B1-STATUS-DONE.MD", &format!("# B1 — receipt DONE\n\nRole: tester\nAgent: {acc}\nCommit: {h}\n"));
+        r.git(&["add", "-A"]);
+        let c = staged(&r, None);
+        let n = c.reported.iter().filter(|v| v.code == Code::SelfAccept).count();
+        assert_eq!(n, usize::from(flagged), "{dev} / {acc}: {:?}", c.reported);
+    }
+}
+
 #[test]
 fn baseline_lets_legacy_pass_and_only_shrinks() {
     let r = repo(
@@ -474,6 +491,57 @@ fn accept_pass_commits_receipt_and_line_3() {
     assert!(c.rejected.is_empty() && c.reported.is_empty(), "{:?} {:?}", c.rejected, c.reported);
     // A second accept: line 3 is DONE now.
     assert!(accept(&r.0, &args(&["X1", "--commit", &h, "--result", "PASS", "--agent", "t"]), D).unwrap_err().contains("not IMPLEMENTED"));
+}
+
+/// TOOL46: after its commit, `accept` removes the scratch directories of the
+/// agents the ticket's receipts record, not the acceptor's own (still
+/// running) and not those of other agents.
+#[test]
+fn accept_cleans_the_recorded_agents_scratch() {
+    let (r, h) = accept_repo("tickets-accept-scratch");
+    r.write("TASK/X1-STATUS-BLOCKED.MD", "# X1 — receipt\n\nRole: developer\nAgent: agent-dev-c\n\n## Why\n");
+    commit(&r, "docs(task): second receipt (X1)");
+    for n in ["dev-a", "dev-c", "tester-b", "other"] {
+        r.write(&format!("target-agents/agent-{n}/clone/f"), "x");
+    }
+    let has = |n: &str| r.0.join(format!("target-agents/agent-{n}/clone/f")).exists();
+    accept(&r.0, &args(&["X1", "--commit", &h, "--result", "FAIL", "--note", "red", "--agent", "tester-b"]), D).unwrap();
+    assert!(!has("dev-a") && !has("dev-c"), "the recorded developers' dirs go");
+    assert!(has("tester-b"), "the acceptor's own dir stays");
+    assert!(has("other"), "an agent the receipts do not record stays");
+}
+
+/// TOOL46: the PASS path cleans the same way; the acceptor's directory,
+/// recorded by the DONE receipt `accept` itself writes, stays.
+#[test]
+fn accept_pass_cleans_the_developer_but_not_the_acceptor() {
+    let (r, h) = accept_repo("tickets-accept-scratch-pass");
+    for n in ["dev-a", "tester-b", "other"] {
+        r.write(&format!("target-agents/agent-{n}/clone/f"), "x");
+    }
+    let has = |n: &str| r.0.join(format!("target-agents/agent-{n}/clone/f")).exists();
+    accept(&r.0, &args(&["X1", "--commit", &h, "--result", "PASS", "--agent", "agent-tester-b"]), D).unwrap();
+    assert!(fs::read_to_string(r.0.join("TASK/X1-STATUS-DONE.MD")).unwrap().contains("Agent: agent-tester-b\n"));
+    assert!(!has("dev-a"), "the developer's dir goes");
+    assert!(has("tester-b"), "the acceptor's own dir stays, though the DONE receipt records it");
+    assert!(has("other"));
+}
+
+/// The developer is recognised with and without the `agent-` prefix, both
+/// ways (`agent_key`; TOOL46, a hole in the TOOL41 check).
+#[test]
+fn accept_refuses_the_developer_in_either_spelling() {
+    for (recorded, given) in [("dev-a", "agent-dev-a"), ("agent-dev-a", "dev-a"), ("Agent-Dev-A", "dev-a"), ("dev-a", "DEV-A")] {
+        let r = repo("tickets-accept-self", &[("TASK/X1.md", &ticket("X1", "Status: OPEN (2026-11-10) | Priority: P1"))]);
+        r.write("TASK/X1.md", &ticket("X1", "Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester"));
+        r.write("TASK/X1-STATUS-UNFINISHED.MD", &format!("# X1 — receipt\n\nRole: developer\nAgent: {recorded}\n\n## Done\n"));
+        let h = commit(&r, "feat(x): the change (X1)");
+        let e = accept(&r.0, &args(&["X1", "--commit", &h, "--result", "PASS", "--agent", given]), D).unwrap_err();
+        assert!(e.contains("is the developer recorded"), "{recorded} / {given}: {e}");
+    }
+    assert_eq!(agent_key(" Agent-A1b2 "), "a1b2");
+    assert_eq!(agent_key("agent-"), "");
+    assert_eq!(agent_key("tester-b"), "tester-b");
 }
 
 #[test]

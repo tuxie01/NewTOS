@@ -1,0 +1,17 @@
+== accept refusals delete nothing
+ok bad commit refused rc=1, nothing deleted
+ok developer-as-acceptor refused rc=1, nothing deleted
+ok bad result refused rc=1, nothing deleted
+ok unknown ticket refused rc=1
+ok staged changes refused rc=1, nothing deleted
+ok hook rejection: rc=1, nothing deleted
+TASK/Z1-STATUS-DONE.MD TASK/Z1.md (staged after rejection)
+== accept PASS
+accept: Z1 PASS on 1f2dcdb1b, committed f23bc0b75
+scratch-clean: Z1: tester-b is the running agent; its directory expires 72 h after its last stop
+agent-scratch: removed /Volumes/Daten/Development/PiRusTOS/target/agents/tool46-retest/fx/target-agents/agent-dev-a (4 KiB)
+agent-scratch: /Volumes/Daten/Development/PiRusTOS/target/agents/tool46-retest/fx/target-agents/agent-dev-c is a symlink; not touched
+scratch-clean: Z1: refused for at least one agent (above)
+ok dev-a gone; acceptor, other, unrelated survive
+ok symlinked recorded agent dir refused, outside intact
+docs(task): accept Z1, PASS on 1f2dcdb1b (Z1)

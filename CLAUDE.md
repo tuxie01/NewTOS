@@ -323,6 +323,17 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   stay correct.
 - **Scratch** (temporary images, scratch kernels, probes) goes to
   `$CLAUDE_JOB_DIR/tmp` or the session scratchpad, never the repo or shared `/tmp`.
+  Both lie on the small system disk: **test clones and cargo target dirs** of a
+  worker go to `target-agents/agent-<id>/` in the main repo (gitignored, data
+  volume), the directory the SubagentStart hook names in the worker's context.
+  It survives the worker's stops; `cargo xtask accept <ID>` and
+  `cargo xtask land <branch> -F <msg>` (squash merge plus commit) delete the
+  directories of the agents the ticket's receipts record, the SessionStart hook
+  those whose last stop is 72 h old, `cargo xtask scratch-clean` any by hand.
+  So the run's `RUNINFO.TXT` records the clone's path, size and the sha256 of
+  every cited gitignored output first. `tools/hooks/scratch-guard.sh` blocks a
+  clone or a target dir in the scratchpad; SessionStart warns when the
+  `target-agents` directory exceeds 20 GiB (`tools/hooks/agent-scratch.sh`; TOOL46).
 - `cargo xtask build --board rpi4 [--release]` writes `kernel8.img` beside
   the kernel ELF, `target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img`,
   and prints that path as its last line (TOOL10); nothing is built into the

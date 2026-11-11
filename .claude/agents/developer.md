@@ -116,6 +116,16 @@ You share ONE working tree with other tasks whose work is **uncommitted**.
   `brew install coreutils`) if present, or bound a hanging run with a shell
   fallback (`( cmd & pid=$!; sleep N; kill $pid 2>/dev/null )`) rather than
   assuming `timeout` exists.
+- **Scratch off the system disk (TOOL46).** `/tmp` and the session scratchpad lie
+  on the small system disk. Test clones and every `CARGO_TARGET_DIR` /
+  `--target-dir` go under `<main repo>/target-agents/agent-<id>/`, the directory the
+  SubagentStart hook names in your context (`tools/hooks/agent-scratch.sh`), or
+  your worktree's own `target/`; `scratch-guard.sh` blocks a clone or a target dir
+  in the scratchpad. The directory survives your stops and resumes; it is deleted
+  when your ticket is accepted (`cargo xtask accept`) or landed (`cargo xtask
+  land`), and 72 h after your last stop. So before you finish, the run's
+  `RUNINFO.TXT` (or your report, when there is no run) records the clone's path,
+  its size (`du -sh`) and the sha256 of every gitignored output it cites.
 
 ## Definition of done for every task
 

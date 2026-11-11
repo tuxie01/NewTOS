@@ -130,6 +130,19 @@ changed. You never touch product code except such temp scaffolding.
   selftest runs in `timeout` — it will fail (a hung QEMU run is a real risk here).
   Use `gtimeout` (coreutils, `brew install coreutils`) if present, or a shell
   fallback (`( cmd & pid=$!; sleep N; kill $pid 2>/dev/null )`) to bound a run.
+- **Clones and target dirs off the system disk (TOOL46).** `/tmp` and the session
+  scratchpad lie on the small system disk (it ran full on 2026-11-11 from three
+  tester clones). Every test clone and every `CARGO_TARGET_DIR` / `--target-dir`
+  goes under `<main repo>/target-agents/agent-<id>/`, the directory the
+  SubagentStart hook names in your context (`tools/hooks/agent-scratch.sh`); make it
+  with `mkdir -p`. `scratch-guard.sh` blocks a clone or a target dir in the
+  scratchpad. The directory survives your stops and resumes; it is deleted when
+  the ticket is accepted or landed (`cargo xtask accept` / `land`; your own
+  accept run leaves yours, it expires 72 h after your last stop). So **before you
+  finish**, the run's `RUNINFO.TXT` records the clone's path, its size
+  (`du -sh <clone>`) and the sha256 of every output it cites that stays gitignored
+  (images, kernel binaries, logs). Evidence you want kept goes into the run dir
+  under `measurements/`, not into the clone.
 
 ## Git hygiene in the shared working tree
 

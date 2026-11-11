@@ -1,0 +1,21 @@
+== refusals
+ok staged changes refused rc=1
+ok unknown branch refused rc=1
+ok checked-out branch refused rc=1
+ok no -F refused rc=1
+ok missing msg file refused rc=1
+== hook rejection leaves squash staged, deletes nothing
+REJECTED-BY-HOOK
+xtask: land: git commit failed (the hooks' output above); the squash of feat stays staged: fix, `git commit -F /Volumes/Daten/Development/PiRusTOS/target/agents/tool46-retest/msg.txt`, then `cargo xtask scratch-clean --ticket <ID>`
+ok rejected: rc=1 HEAD unchanged, dirs kept
+staged: TASK/L1-STATUS-UNFINISHED.MD TASK/L1.md code1.txt code2.txt 
+== success, hook runs
+land: feat squashed into 943cab42d
+agent-scratch: removed /Volumes/Daten/Development/PiRusTOS/target/agents/tool46-retest/fx/target-agents/agent-dev-l (4 KiB)
+ok pre-commit hook ran
+ok one parent (squash)
+feat(l): the landed change (L1)
+ok content landed
+ok dev-l gone, other stays
+ok tester-l not recorded, stays
+ok outside intact

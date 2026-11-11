@@ -1,0 +1,10 @@
+RUNINFO: addendum to measurement-2026-11-11-tool46-retest, fix commit dac18366c on top of e91e10348 (TOOL46), 2026-11-11
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+No image booted (optional_missing: not applicable). Scratch target/agents/tool46-fixcheck/ removed at the end. references/emutos* untouched.
+1 Mutation accept clean_ticket(root,id,Some(&agent)) -> None: 1 FAIL (accept_pass_cleans_the_developer_but_not_the_acceptor), 283 pass. Caught (was 0 FAIL before).
+2 Mutation agent_key without the agent- strip: 3 FAIL (accept_refuses_the_developer_in_either_spelling, self_accept_flag_normalises_the_agent_prefix, scratch_clean_by_id_and_by_ticket), 281 pass. Caught.
+  Both reverted by cp from saved copy; worktree git status 0 lines, git diff 0 lines.
+3 Fixture repo (git archive of the branch, xtask built inside): accept PASS refused rc=1, no commit, dev dir kept, for receipt/acceptor pairs agent-dev-a/dev-a, dev-a/agent-dev-a, Agent-Dev-A/DEV-a. Control: agent tester-b accepted (committed).
+4 scratch-guard-test 40/0 FAIL, agent-scratch-test 65/0, no-verify-guard-test 192/0; cargo xtask test 2408 passed / 0 failed / 6 ignored.
+5 clippy -p xtask -p tos-api -p tos-types --all-targets, b76a31c6b vs branch: 130 warning lines, 27 summary lines, 271 summed, both sides. Delta 0.
+Verdict PASS.
