@@ -1,0 +1,25 @@
+A46 (and A41) — owner photo of the real Pi screen: TeraDesk File menu
+
+Date: 2026-11-11. Photo taken by the owner of the monitor of the real Pi 4 and sent in the chat; recorded by the lead.
+Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1). No image built for it.
+Card: the owner's card at /Volumes/BOOT, kernel8.img sha256 e788dc5811fb7ffb4088d92c0eb7395941de9f9f24a8e5d99fd0a4e924ed015c
+= the b744febc release kernel (measurements/measurement-2026-11-11-a41-screenshot/RUNINFO.TXT); the owner did not
+change the card between that check and the photo (as far as the lead knows; not stated otherwise).
+Test sheet: measurements/measurement-2026-11-11-a41-retest/TESTBLATT.md, step 5 (TeraDesk menu File).
+
+File:
+  5-teradesk-file-menu.jpg   JPEG 2016 x 1512, 547172 B,
+                             sha256 6752f3ad05add0cb788d8332959536fed127e61ae8e2f992e06c4dd43a23cfb1
+
+What the photo shows (lead, by looking at it):
+  - A camera photo of a monitor (bezel, room visible): TeraDesk, menu bar "Desk File View Window Options", File open.
+  - File menu entries: Open... ^O, Info... ^I, New..., Compare..., Search... ^F, Print... ^P, Delete... ^DEL,
+    Select all ^A, Copy disk..., Format disk..., Quit/Shutdown ^Q; disabled entries greyed.
+  - The three group separators (below Delete..., below Select all, below Format disk...) are drawn as DOTTED LINES
+    across the full menu width, not as a row of '-' characters. -> A46 expectation met (step 5 PASS).
+  - Desktop: three "HARD DISC" icons in colour (grey drawer, red/yellow/blue folder stack) and "TRASH" in colour (green
+    bin, red accents) on a green desktop. -> A41 colour icons on the real Pi screen.
+  - The white menu bar runs to the right edge of the photo; the photo is cropped on the right, so whether it reaches
+    the screen's right edge (A40) is not shown.
+
+Not shown: A40 full width (cropped), A39/H05 launch and return, the NewTOS desktop's own menus (A46 there).
