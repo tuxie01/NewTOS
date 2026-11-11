@@ -58,7 +58,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A04](A04.md) | wind_get(0, WF_FXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
 | [A05](A05.md) | wind_get WF_OWNER: Versionsabweichung belegen | Versionsprüfung | P2 | ERLEDIGT (2026-09-19) — Versionsunterschied | — |
 | [A06](A06.md) | appl_init: ap_id | Global-Feldprüfung | P2 | PARKED | — |
-| [A07](A07.md) | appl_init: ap_private | Global-Feldprüfung | P2 | ERLEDIGT (2026-09-19) — Konfigurationsunterschied belegt | — |
+| [A07](A07.md) | appl_init: ap_private | Global-Feldprüfung | P2 | PARKED | — |
 | [A08](A08.md) | appl_init: ap_planes | Global-Feldprüfung | P2 | PARKED | — |
 | [A09](A09.md) | appl_init: ap_3resv | Global-Feldprüfung | P2 | PARKED | — |
 | [A10](A10.md) | wind_create: Kapazitätsgrenze | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
@@ -73,17 +73,17 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | IMPLEMENTED | — |
 | [A20](A20.md) | Menüleistenhöhe konstant 19 statt abgeleitet | Belegter Defekt / Geräteableitung | P2 | ERLEDIGT (2026-09-19) | — |
 | [A21](A21.md) | Rechteckliste verwirft Stücke jenseits von 16 | Belegter Defekt / Robustheit | P2 | ERLEDIGT (2026-09-19) | A13, A14 |
-| [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A13, A14 |
+| [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | PARKED | A13, A14 |
 | [A23](A23.md) | Kompensationsanalyse vor dem Fix-Durchgang | Gate / Analyse vor Reparatur | P1 | ERLEDIGT (2026-09-10, siehe A23-STATUS-DONE.MD) | A13, A14, A15 |
 | [A24](A24.md) | Messlücke: verschachtelte FIRST/NEXT über zwei Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A14 |
 | [A26](A26.md) | Erratum: Kopfkommentar der Rechtecklisten-Tabelle | Erratum / Dokumentation | P2 | PARKED | A15 |
-| [A27](A27.md) | Unterschreibender Handler: bewusste Abweichung belegen, Spec richtigstellen | Bewertung / Spec | P2 | ERLEDIGT (2026-09-19) | — |
-| [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | ERLEDIGT (2026-09-14) | A25, A29 |
-| [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
+| [A27](A27.md) | Unterschreibender Handler: bewusste Abweichung belegen, Spec richtigstellen | Bewertung / Spec | P2 | PARKED | — |
+| [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | PARKED | A25, A29 |
+| [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | PARKED | — |
 | [A30](A30.md) | Messdesign: appl_init-Wiederaufruf ohne Hängerrisiko | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-19) — Entwurf; Ausfuehrung als Folgeauftr… | A25, A28 |
 | [A31](A31.md) | Testlücke: Rechteckliste über save/restore_windows | Testlücke | P2 | OBSOLETE | A14 |
 | [A32](A32.md) | Abnahme der Rechtecklisten-Reparatur auf echter Hardware | Hardwareabnahme | P1 | ERLEDIGT (2026-09-19) | A13, A14, A15 |
-| [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | ERLEDIGT (2026-09-12) | A16 |
+| [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | PARKED | A16 |
 | [V01](V01.md) | vq_extnd(0): Bildschirmgrenzen | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V02](V02.md) | vq_extnd(0): Farbanzahl | Geräteunterschied / Test | P2 | OBSOLETE | — |
 | [V03](V03.md) | vq_extnd(0): Palettenpräzision | Geräteunterschied / Quellenprüfung | P2 | ERLEDIGT (2026-09-21) | — |

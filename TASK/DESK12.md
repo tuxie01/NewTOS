@@ -1,5 +1,10 @@
 # DESK12 — Baudatum: es gibt keine Konstante, der About-Kasten kann es nicht zeigen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; receipt DESK12-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 18, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 8a32d0302 (feat(tos-api): stamp the build, and give the OS he), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT (2026-09-23)** · Prioritaet: **P3** · Typ: Werkzeugkette — Nebenbefund DESK01
 
 Abhaengigkeiten: [DESK01](DESK01.md) (erledigt)

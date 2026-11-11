@@ -1,5 +1,10 @@
 # BIOS12 — Spec `docs/api/bios/` (`Setexc`, `Kbshift`) widerspricht Code und EmuTOS-Quelle
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: a69313647 | Receipt: BIOS12-STATUS-DONE.MD
+
+Migrated (owner batch 18, 2026-11-11, to DONE), evidence: receipt TASK/BIOS12-STATUS-DONE.MD exists, commit a69313647 (docs(api): Setexc and Kbshift spec corrected from source (BIOS12)), VERIFIED: diff of a69313647 (docs(api): Setexc and Kbshift spec corrected from source (BI) touches docs/api/bios/05-setexc.md, docs/api/bios/0b-kbshift.md, docs/api/bios/, names the id by subject, 4 files, legacy line: ERLEDIGT 2026-10-31 ([Quittung](BIOS12-STATUS-DONE.MD))
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-31 ([Quittung](BIOS12-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus Audit `docs/audits/2026-10-28-bios-core.md`
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # DESK15 — Fenstersymbole und Desktop-Verknuepfungen (`ADINSWIN`)
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 0364966cd | Receipt: DESK15-STATUS-DONE.MD
+
+Migrated (owner batch 18, 2026-11-11, to DONE), evidence: receipt TASK/DESK15-STATUS-DONE.MD exists, commit 0364966cd (feat(desk): window icons - a file's icon can come from its name), VERIFIED: 0364966cd (feat(desk): window icons - a file's icon can come from its n) names the id by body, its message names the ticket-title identifier adinswin, touches code (12 files), legacy line: ERLEDIGT (2026-09-23)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-23) · Prioritaet: **P3** · Typ: Funktionsluecke — gemeldet in DESK03
 
 Abhaengigkeiten: [DESK03](DESK03.md) (erledigt)

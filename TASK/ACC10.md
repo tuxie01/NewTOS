@@ -1,5 +1,10 @@
 # ACC10 — `appl_exit` blockiert headless fuer immer in `wait_for_accs`
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: d45eff86c | Receipt: ACC10-STATUS-DONE.MD
+
+Migrated (owner batch 18, 2026-11-11, to DONE), evidence: receipt TASK/ACC10-STATUS-DONE.MD exists, commit d45eff86c (fix(sched): suspend the parent across Pexec, so the child cannot resta), VERIFIED: d45eff86c (fix(sched): suspend the parent across Pexec, so the child ca) names the id by body, its message names the ticket-title identifier appl_exit, wait_for_accs, touches code (33 files), legacy line: BEHOBEN (2026-09-26)
+
+Line 3 before the migration:
 Status: **BEHOBEN** (2026-09-26) · Prioritaet: **P2** · Typ: Belegter Defekt — aus PORT05 herausgefallen
 
 Abhaengigkeiten: —

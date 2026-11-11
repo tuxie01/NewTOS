@@ -1,5 +1,10 @@
 # ACC05 — Format und Endung: was ist ein NewTOS-Accessory?
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; receipt ACC05-STATUS-DONE.MD exists | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 18, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 96f178544 (feat(aes): NewTOS can run desk accessories), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-25) · Prioritaet: **P2** · Typ: Entscheidung + Werkzeugkette
 
 Abhaengigkeiten: [ACC01](ACC01.md)

@@ -1,5 +1,10 @@
 # ACC04 — Desk-Menue: registrierte Titel, `AC_OPEN`/`AC_CLOSE`
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 96f178544 | Receipt: ACC04-STATUS-DONE.MD
+
+Migrated (owner batch 18, 2026-11-11, to DONE), evidence: receipt TASK/ACC04-STATUS-DONE.MD exists, commit 96f178544 (feat(aes): NewTOS can run desk accessories), VERIFIED: 96f178544 (feat(aes): NewTOS can run desk accessories) names the id by body, its message names the ticket-title identifier ac_open, ac_close, touches code (31 files), legacy line: ERLEDIGT (2026-09-25)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-25) · Prioritaet: **P2** · Typ: Funktionsluecke
 
 Abhaengigkeiten: [ACC01](ACC01.md), [ACC03](ACC03.md)
