@@ -1,0 +1,12 @@
+TOOL55 tester run 2026-11-11 (agent aa275ae37d61dd757), branch worktree-agent-ac416cda8b0fce8e5 head d25303e97, base c73f2ca84
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+No SD image booted (host-tool ticket); no image manifest, optional_missing: n/a.
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa275ae37d61dd757/clone (1.8G), target dirs target (121M), target2 (481M); clone built/run inside itself (TOOL52), hooks tools/git-hooks, newtos.ticketChecks true.
+sha256 cargo xtask binary used in clone: 89f4bc3bdbf4d8b703ff1bb49feb71c7dc15b2f743df7a3b665983a560472e96
+Results:
+1 worktree cargo xtask test: exit 0, 2442 passed / 0 failed / 7 ignored (logs/xtask-test.log); tool55: 5/5; tickets::migrate: 10/10.
+2 clone: migrate --batch 7 (13 tickets, commit 11df3ee29) and --batch 21 (2 tickets, 657755418) ok, hooks 0 rejected; 411 DONE receipts sha256 identical before/after; status-check 0 rejected. Appending a line to TASK/A31-STATUS-DONE.MD: status-check REJECT done-receipt-not-done (OBSOLETE); pre-commit hook refused the commit.
+3 clone: batch 18 (main's version, A46 IMPLEMENTED) migrated ee210b523; accept A46 PASS -> A46-STATUS-DONE-2.MD with Developer: legacy, developer unknown, line 3 Receipt: A46-STATUS-DONE-2.MD, old receipt sha unchanged, status-check 0 rejected, no self-acceptance flag. Fixture ZZFIX1 (not migrated, no developer): accept refused.
+4 mutations in worktree (reverted, diff vs saved copy empty, git status clean): age check always exempt -> tool55 1 fail + migrate 2 fails; exception for DONE target -> 1 fail; accept overwrite (exists check removed, number fixed to 1, truncate) -> 3 tool55 fails.
+6 warnings: xtask test build 2 vs 2 on base, clippy 1 vs 1; doc-check TOOL55.md + receipt: 0 failures.
+9c9e5928d35c8a233621d3cd88cb51cefea3ee010951ee595c58286ff3d61357  logs/xtask-test.log
