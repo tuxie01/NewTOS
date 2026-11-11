@@ -1,5 +1,10 @@
 # RST01 — Neustart: Warm- und Kaltstart, Ctrl+Alt+Del
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 95be2e0dd | Receipt: RST01-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/RST01-STATUS-DONE.MD exists; commit 95be2e0dd; TASK/RST01-STATUS-DONE.MD, commit 95be2e0dd (feat(bios): software restart, Ctrl+Alt+Del and OSHEADER reset entry (R), fix/feat commits naming the id: 95be2e0dd (n=1)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-17 (QEMU, `f63c39c1`; Pi abgenommen 2026-10-18, `docs/HW-TEST-LOG.md`) — [Quittung](RST01-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: fehlende Funktion — Anwender 2026-10-17
 
 ## Anlass

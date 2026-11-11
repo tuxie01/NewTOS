@@ -1,5 +1,10 @@
 # TOOL04 — Testlaufzeit: schnelle Stufe fuer jede Aenderung, volle Stufe fuer Meilensteine
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 6c9433107 | Receipt: TOOL04-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/TOOL04-STATUS-DONE.MD exists; commit 6c9433107; TASK/TOOL04-STATUS-DONE.MD, commit 6c9433107 (feat(xtask): fast and full host-test tiers (TOOL04)), fix/feat commits naming the id: 6c9433107 (n=1)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 ([Quittung](TOOL04-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Werkzeug (Testbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt

@@ -1,5 +1,10 @@
 # USB01 — USB-Maus: nur Boot-Protokoll, Steckkombinationen, Diagnosewerkzeug
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 0a1b80f43 | Receipt: USB01-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/USB01-STATUS-DONE.MD exists; commit 0a1b80f43; TASK/USB01-STATUS-DONE.MD, commit 0a1b80f43 (fix(usb): log every silent enumeration limit and count commands), fix/feat commits naming the id: be5063001, 46d37272f, cf3963826 (n=3), measurements/measurement-2026-10-23-usb01-con04-pi/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-04 ([Quittung](USB01-STATUS-DONE.MD); Anwender 2026-11-04: Rest auf USB03, A127, USB04 und das Testszenario verteilt) · Prioritaet: **P1** · Typ: Treiberluecke + offene Defekte — Anwender 2026-10-22 („die Maus ist wichtig“)
 
 ## Sachverhalt

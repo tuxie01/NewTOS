@@ -1,5 +1,10 @@
 # DESK70 — Textprogramm vom Desktop gestartet: Ausgabe verschwindet sofort (GitHub #12)
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 729bab3b9 | Receipt: DESK70-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/DESK70-STATUS-DONE.MD exists; commit 729bab3b9; TASK/DESK70-STATUS-DONE.MD, commit 729bab3b9 (feat(coremark): hold the result until a key after a desktop launch (DE), fix/feat commits naming the id: c07fa71a1, 729bab3b9 (n=2), measurements/measurement-2026-11-07-hw08-pi4-card/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-07 (Tester PASS, Pi ok, #12 beantwortet und geschlossen) · Prioritaet: **P3** · Typ: Frage, erst EmuTOS-Verhalten pruefen — wosch163 (#12, 2026-10-22)
 
 ## Befund

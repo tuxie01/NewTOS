@@ -1,5 +1,10 @@
 # TOOL02 — Jedes Abbild eines Messlaufs bekommt ein Manifest, auch die `mkcard.sh`-Karten
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 69b8d2276 | Receipt: TOOL02-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/TOOL02-STATUS-DONE.MD exists; commit 69b8d2276; TASK/TOOL02-STATUS-DONE.MD, commit 69b8d2276 (feat(tools): one manifest writer for make-sd-image and mkcard (TOOL02)), fix/feat commits naming the id: 69b8d2276 (n=1), measurements/measurement-2026-10-27-mem12-td-lp64/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-27 — [Quittung](TOOL02-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: Werkzeug (Reproduzierbarkeit) — Anwenderentscheidung 2026-10-27
 
 ## Sachverhalt

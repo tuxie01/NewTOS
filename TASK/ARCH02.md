@@ -1,5 +1,10 @@
 # ARCH02 — `Pexec`-Eltern verlieren ihre FP/SIMD-Register
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 4e668641a | Receipt: ARCH02-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/ARCH02-STATUS-DONE.MD exists; commit 4e668641a; TASK/ARCH02-STATUS-DONE.MD, commit 4e668641a (fix(process): restore a Pexec caller's FP/SIMD registers), fix/feat commits naming the id: - (n=0), measurements/measurement-2026-10-17-arch02/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-10-17, QEMU; Pi abgenommen 2026-10-17, `docs/HW-TEST-LOG.md`) · Prioritaet: **P2** · Typ: Belegter Defekt / Architektur — Nebenbefund ACC03
 
 Abhaengigkeiten: [ACC03](ACC03.md) (erledigt)

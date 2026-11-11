@@ -1,5 +1,10 @@
 # DESK64 — Hintergrund-Dialog: zeigt EmuTOS eine Vorschau von Farbe und Muster?
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: 0e95dcedc | Receipt: DESK64-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/DESK64-STATUS-DONE.MD exists; commit 0e95dcedc; TASK/DESK64-STATUS-DONE.MD, commit 0e95dcedc (feat(desktop): Set background is EmuTOS ADBKGND with live sample (DESK), fix/feat commits naming the id: 0e95dcedc (n=1), measurements/measurement-2026-10-17-desk64/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-17, auf echter Pi 4 abgenommen · Prioritaet: **P3** · Typ: Konformitaetsfrage — Befund des Anwenders auf echter Pi 4 (2026-10-16)
 
 ## Beobachtung

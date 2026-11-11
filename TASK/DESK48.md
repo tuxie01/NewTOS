@@ -1,5 +1,10 @@
 # DESK48 — Vier weitere `redraw_desktop()`-Stellen, die EmuTOS nicht hat
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 70fb5dc5b | Receipt: DESK48-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/DESK48-STATUS-DONE.MD exists; commit 70fb5dc5b; TASK/DESK48-STATUS-DONE.MD, commit 70fb5dc5b (fix(desktop): replace redraw_desktop() after file ops with EmuTOS repa), fix/feat commits naming the id: - (n=0)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-17 (QEMU, `f2f127a7`; Pi abgenommen 2026-10-17, `docs/HW-TEST-LOG.md`) — [Quittung](DESK48-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: Konformitaet / Laufzeit — aus [GUI06](GUI06.md), bewusst zurueckgestellt
 
 Abhaengigkeiten: — · ~~nicht vor dem OFAM-Termin anfassen~~ (Termin 9./10. Oktober vorbei)

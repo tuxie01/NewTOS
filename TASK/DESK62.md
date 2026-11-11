@@ -1,5 +1,10 @@
 # DESK62 — Sanduhr bleibt nach Drop einer Datei auf eine Desktop-Verknuepfung
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: b3e095d64 | Receipt: DESK62-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/DESK62-STATUS-DONE.MD exists; commit b3e095d64; TASK/DESK62-STATUS-DONE.MD, commit b3e095d64 (fix(desk): pass exit_desktop back from drop-launches (DESK62)), fix/feat commits naming the id: b3e095d64 (n=1), measurements/measurement-2026-10-16-desk62/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-16 ([Quittung](DESK62-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Fehler — Befund des Anwenders auf echter Pi 4 (2026-10-16, Abnahme DESK43 U9-6)
 
 ## Befund

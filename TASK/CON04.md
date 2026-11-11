@@ -1,5 +1,10 @@
 # CON04 — `Bconout(2)` wertet keine VT52-Folgen aus
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 9409f35a4 | Receipt: CON04-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/CON04-STATUS-DONE.MD exists; commit 9409f35a4; TASK/CON04-STATUS-DONE.MD, commit 9409f35a4 (feat(vt52): VT52 escape automaton for Bconout(2), raw Bconout(5)), fix/feat commits naming the id: - (n=0), measurements/measurement-2026-10-23-usb01-con04-pi/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-23 (implementiert 2026-10-22, QEMU raspi4b + Hatari-Falcon-Gegenprobe; Tester-Abnahme PASS `5ca5fa30`; echte Pi abgenommen 2026-10-23, `measurements/measurement-2026-10-23-usb01-con04-pi/RUNINFO.TXT`, [Quittung](CON04-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Abweichung von der Spec / TOS-API-Luecke — Befund CON03-Spec (2026-10-22)
 
 ## Befund

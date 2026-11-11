@@ -1,5 +1,10 @@
 # REL07 — Release NewTOS 0.7 (Alpha) fuer die Tester
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 26918e74f | Receipt: REL07-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/REL07-STATUS-DONE.MD exists; commit 26918e74f; TASK/REL07-STATUS-DONE.MD, commit 26918e74f (feat(tools): package-release.sh builds the tester release ZIP (REL07)), fix/feat commits naming the id: 26918e74f, 797e00785 (n=2), measurements/measurement-2026-11-04-rel07-version/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-11-04 ([Quittung](REL07-STATUS-DONE.MD)) · Prioritaet: **P1** · Typ: Release — Anwenderentscheidung 2026-11-04
 
 ## Anlass

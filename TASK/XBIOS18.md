@@ -1,5 +1,10 @@
 # XBIOS18 — `give_way` fehlt im AUX-Warten: `kbdvec`-Bytes verzoegert, solange ein Prozess auf AUX wartet
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: daa2973ea | Receipt: XBIOS18-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/XBIOS18-STATUS-DONE.MD exists; commit daa2973ea; TASK/XBIOS18-STATUS-DONE.MD, commit daa2973ea (feat(deps): ADR evidence with location, hardware slots, AUX path (TOOL), fix/feat commits naming the id: dcaeb4c94 (n=1)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](XBIOS18-STATUS-DONE.MD)) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md)
 
 ## Sachverhalt

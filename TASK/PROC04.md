@@ -1,5 +1,10 @@
 # PROC04 — Remaining GEMDOS handle deviations found during PROC02
 
+Status: DONE (2026-11-11) | Priority: P3 | Commit: a37f0c7d4 | Receipt: PROC04-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/PROC04-STATUS-DONE.MD exists; commit a37f0c7d4; TASK/PROC04-STATUS-DONE.MD, commit a37f0c7d4 (feat(gemdos): character functions follow p_uft redirection (PROC04 pt ), fix/feat commits naming the id: f5efac771, a37f0c7d4, 40ca78f70 (n=4), measurements/measurement-2026-10-06-proc02/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-19 (QEMU) — [Quittung](PROC04-STATUS-DONE.MD) · Prioritaet: **P3** · Typ: Abweichungen von EmuTOS — aus [PROC02](PROC02-STATUS-DONE.MD)
 
 Abhaengigkeiten: —

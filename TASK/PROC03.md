@@ -1,5 +1,10 @@
 # PROC03 — Desktop/AES als echter EL0-Prozess mit eigenem PD (`p_parent` exakt wie EmuTOS)
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: a0cf613bb | Receipt: PROC03-STATUS-DONE.MD
+
+Migrated (owner batch 3, 2026-11-11), evidence: receipt TASK/PROC03-STATUS-DONE.MD exists; commit a0cf613bb; TASK/PROC03-STATUS-DONE.MD, commit a0cf613bb (feat(bdos): EmuTOS parent chain with accdesk/EmuCON PDs, Pterm via p_p), fix/feat commits naming the id: ee92d3f93, a0cf613bb (n=2), measurements/measurement-2026-10-06-post-e9/
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-19 (QEMU) — [Quittung](PROC03-STATUS-DONE.MD) · Prioritaet: **P2** · Typ: Abweichung von EmuTOS — aus [ARCH03](ARCH03.md) Nacharbeit E9 (Punkt 1, Weg B)
 
 Abhaengigkeiten: zuerst Weg A (Stellvertreter-PDs) aus der E9-Nacharbeit; Bezug Memory „Desktop must run in user scope“
