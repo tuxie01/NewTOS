@@ -1,5 +1,10 @@
 # SND02 — HDMI-Ton: die Quellenlage ist ungeklaert, nicht guenstig
 
+Status: OPEN (2026-11-11) | Priority: P2
+
+Migrated (owner batch 13, 2026-11-11), evidence: TASK/SND02.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (1.0 scope (owner 2026-10-23))
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P2** (gehoert zu 1.0, Anwender 2026-10-23; vorher P3) · Typ: Track-B-Recherche — aus [SND01](SND01.md) Schritt 2
 
 Abhaengigkeiten: [SND01](SND01.md) (Klinke zuerst; HDMI ist der zweite Ausgang)

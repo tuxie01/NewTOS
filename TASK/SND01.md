@@ -1,5 +1,10 @@
 # SND01 — Ton: Falcon-DMA-Sound als API, HDMI als Ausgang
 
+Status: OPEN (2026-11-11) | Priority: P2
+
+Migrated (owner batch 13, 2026-11-11), evidence: TASK/SND01.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (1.0 scope (owner 2026-10-23))
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P2** (gehoert zu 1.0, Anwender 2026-10-23; vorher P3) · Typ: Treiber + API-Ebene — Anwenderwunsch 2026-09-28
 
 Abhaengigkeiten: — · Vorbedingung fuer [SDL01](SDL01.md)

@@ -1,5 +1,10 @@
 # TOOL05 — doc-check prueft auch die Doku, die eine geaenderte Datei zitiert
 
+Status: OPEN (2026-11-11) | Priority: P2
+
+Migrated (owner batch 13, 2026-11-11), evidence: TASK/TOOL05.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (P2 on the STATUS list)
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P2** · Typ: Werkzeug (Zitierfestigkeit) — Anwenderentscheidung 2026-10-28
 
 ## Sachverhalt

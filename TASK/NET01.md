@@ -1,5 +1,10 @@
 # NET01 — Netzwerk fuer NewTOS (Ziel Version 1.2): STinG/STiK-kompatibel
 
+Status: OPEN (2026-11-11) | Priority: P2
+
+Migrated (owner batch 13, 2026-11-11), evidence: TASK/NET01.md status line: OFFEN — Vorrecherche, no DONE receipt, no fix/feat commit names the id, owner 2026-11-11: stays OPEN (target 1.2, preliminary research (owner 2026-10-20))
+
+Line 3 before the migration:
 Status: **OFFEN — Vorrecherche** · Prioritaet: **P2 (Ziel 1.2, Pflicht)** · Typ: Erweiterung — Anwender 2026-10-20
 
 Anwender: Netzwerk ist fuer **1.2 absolut Pflicht**; WLAN waere lieber, aber fuer

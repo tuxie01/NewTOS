@@ -41,7 +41,6 @@ A122	form
 A123	form
 A124	form
 A125	form
-A127	form
 A128	form
 A129	form
 A13	form
@@ -289,7 +288,6 @@ GUI04	form
 GUI06	form
 GUI07	form
 HW03	form
-HW04	form
 HW05	form
 HW06	form
 HW06	done-no-receipt
@@ -326,7 +324,6 @@ MEM11	form
 MEM11	parked-no-reason
 MEMPROT-FAST	form
 MOD01	form
-NET01	form
 NET02	form
 NET03	form
 NET04	form
@@ -388,8 +385,6 @@ SDL01	form
 SER01	form
 SLB01	form
 SLB01	parked-no-reason
-SND01	form
-SND02	form
 SPEC01	form
 SPEC01	done-no-receipt
 SPEC02	form
@@ -420,7 +415,6 @@ TICK01	form
 TICK01	parked-no-reason
 TOOL03	form
 TOOL03	parked-no-reason
-TOOL05	form
 TOOL13	form
 TOOL13	parked-no-reason
 TOOL14	form
@@ -443,9 +437,6 @@ V17	done-receipt-not-done
 V18	form
 V36	form
 V36	done-no-receipt
-V39	form
-V41	form
-W01	form
 X03	form
 X04	form
 XBIOS03	form
