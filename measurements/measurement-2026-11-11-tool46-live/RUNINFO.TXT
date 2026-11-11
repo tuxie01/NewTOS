@@ -1,0 +1,36 @@
+TOOL46 live measurement: does SubagentStop fire while a worker waits on its own background work?
+
+Date: 2026-11-11 (UTC times below). Lead run, after the TOOL46 hooks went live with 68bbdca69
+(.claude/settings.json registers tools/hooks/agent-scratch.sh for SubagentStart, SubagentStop, SessionStart).
+Host clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image, no kernel.
+
+Why: owner decision 2026-11-11 (TASK/TOOL46.md, Owner decision): measure after the merge whether SubagentStop
+fires while a worker waits on its own background work; the hooks documentation does not say. The first TOOL46
+design deleted the worker directory on every stop; the rework only records a marker.
+
+How: one throw-away general-purpose subagent, briefed to
+  1. take the directory the SubagentStart hook named in its context
+     (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac6ca6fbf34152f9d/), write `date -u` to fg-start;
+  2. start `sleep 120; date -u > bg-done` in the background (Bash run_in_background);
+  3. end its turn at once ("waiting on background sleep");
+  4. when woken by the background completion, write fg-done and report.
+The harness reported the agent as "waiting on its own background work" after step 3.
+The lead read .stop-log during the wait (09:31:36Z) and again after the agent ended.
+
+Result (stop-log.txt and timestamps.txt in this directory, copied from the agent directory):
+  fg-start  2026-11-11T09:31:20Z
+  stop      2026-11-11T09:31:27Z   <- SubagentStop while the background sleep still ran
+  bg-done   2026-11-11T09:33:25Z
+  start     2026-11-11T09:33:25Z   <- SubagentStart when the background completion woke the agent
+  fg-done   2026-11-11T09:33:30Z
+  stop      2026-11-11T09:33:36Z   <- SubagentStop at the real end; .stopped written (09:33:36Z)
+
+Verdict: CONFIRMED. SubagentStop fires when a worker ends its turn to wait on its own background work, and
+SubagentStart fires again when the background completion resumes it. The first TOOL46 design (delete on stop)
+would have deleted the clone under the still running background job; the reworked design kept the directory and
+its files through the wait (directory listing at 09:31:36Z showed fg-start, .stop-log, .stopped).
+
+Note: the very first SubagentStart wrote no "start" line because the directory did not exist yet (the agent created
+it in step 1); the hook only logs into an existing directory.
+
+After the run: the agent directory is removed with `cargo xtask scratch-clean agent-ac6ca6fbf34152f9d`.
