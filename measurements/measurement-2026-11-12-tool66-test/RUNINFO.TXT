@@ -1,0 +1,17 @@
+measurement-2026-11-12-tool66-test -- tester run of TASK/TOOL66 (branch worktree-agent-ae04ff118fe96d5ef, head 4e78435d2)
+Tester agent-a897b4b76c47d7523. host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1). mtools 4.0.50 ("mtools (GNU mtools) 4.0.50").
+Worktree: .claude/worktrees/agent-ae04ff118fe96d5ef (no clone). Scratch: target-agents/agent-a897b4b76c47d7523 (du: 194M).
+optional_missing none (all 6 manifests in runs/*.manifest, verbatim).
+
+1 run-disk.sh: bios-r2 0 of 51, bios-r2-phys 0 of 12, bios-r2-x001 0 of 8 differ (exit 0 each). test.img sha256 in all three
+  d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 (cards: 95d7fbf4..., 26696278..., b8481f7b...).
+2 byte check (same NEWDESK.INF, main's vs worktree mktestdisk.sh): cmp -l = exactly 2 bytes, at offsets 32265,32266 (0-based)
+  = PSTART*512+3 (32259) +6,+7, the "50" vs "49" of the OEM name; nothing else. old.img 4b1b24bb..., new.img c8451a10...
+3 probe: tosdump/probes/run-wfprobe.sh emutos a1 (hatari-oracle.sh disk, mktestdisk.sh): ran, WFPROBE.LOG complete (END);
+  fsck_msdos exit 206 (orphan clusters, caused by the probe's deliberately refused write), see measurements/fsck.txt.
+4 mutation (OEM write line replaced by ':', then restored from a copy, git status empty after): bios-r2 4 of 51 differ,
+  test.img sha256 923d06a5884fbb828f2f3641d9a53d7eb025c9cd6d8e1ab8debdac8b512d3581 (the pre-fix value).
+5 cargo xtask test: 2454 passed / 0 failed / 7 ignored. doc-check of TASK/TOOL66.md, receipt, dev RUNINFO, tools/mktestdisk.sh: 0 failures.
+Not covered: real Pi4; oracle side of the disk tables not re-run (committed references).
+  4b1b24bbcb52f31140c85d345dc2f8007df0cdb18b6f4500da250201bf507ce4  target-agents/agent-a897b4b76c47d7523/cmp/old.img
+  c8451a108899c17728b0aa5b4c095cdcf042ae3374f548657862704fafdf9f0f  target-agents/agent-a897b4b76c47d7523/cmp/new.img

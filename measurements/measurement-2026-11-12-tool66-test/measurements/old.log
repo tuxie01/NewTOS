@@ -1,0 +1,3 @@
+mktestdisk: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a897b4b76c47d7523/cmp/old.img (64 MiB, MBR + FAT16 at LBA 63, label NTTESTDISK)
+  + C:\NEWDESK.INF <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a897b4b76c47d7523/cmp/n.inf
+done: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a897b4b76c47d7523/cmp/old.img sha256 4b1b24bbcb52f31140c85d345dc2f8007df0cdb18b6f4500da250201bf507ce4
