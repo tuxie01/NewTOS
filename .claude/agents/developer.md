@@ -96,6 +96,11 @@ You share ONE working tree with other tasks whose work is **uncommitted**.
 - To try a **scratch experiment**, edit the file and **edit it back by hand** (or
   copy it aside and restore from the copy) — never revert via git.
 - **Do not commit** unless the lead asks. Leave your work in the tree and report.
+- **Ticket state (ADR-037).** When a `fix(...)`/`feat(...)` commit names a ticket, the same commit sets its line 3
+  to `Status: IMPLEMENTED (YYYY-MM-DD) | Priority: Pn | Commit: self | Missing: <what acceptance is missing>`. The
+  receipt `TASK/<ID>-STATUS-UNFINISHED.MD` starts with `# <ID> — receipt ...`, an empty line, `Role: developer` and
+  `Agent: <your agent name>`. Before reporting run `cargo xtask status-check --new-only` (0 rejected). Never write a
+  DONE receipt or line 3 `DONE` yourself.
 - If the tree looks inconsistent (a module you expect isn't wired in), STOP and
   report — don't "fix" it with git.
 

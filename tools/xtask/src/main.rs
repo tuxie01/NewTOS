@@ -163,7 +163,7 @@ fn main() -> ExitCode {
             print_usage();
             Ok(())
         }
-        other => Err(format!("unknown subcommand: {other}")),
+        other => tickets::cmd(other, &workspace_root(), &rest),
     };
 
     match result {
@@ -238,10 +238,10 @@ Commands:
                                    into the embedded native blob
                                    tos-api/src/aes/gem_fsel.nrsc
   install-hooks                  — git config core.hooksPath tools/git-hooks:
-                                   the checked-in pre-commit hook runs
-                                   doc-check --staged; refuses to shadow
-                                   other hooks (bypass: git commit
-                                   --no-verify; TOOL29)
+                                   pre-commit + commit-msg (ticket checks
+                                   only if newtos.ticketChecks is true,
+                                   TOOL41); refuses to shadow other hooks
+                                   (bypass: --no-verify; TOOL29)
   prgflags <file> [<value>]      — show a NewTOS program's PRGFLAGS (its
                                    ELF note, ARCH03 E8b) or set them to
                                    <value> (0x... or decimal) in place;
@@ -299,7 +299,7 @@ Commands:
                                    bios-arg-trace adds the input check
                                    (tools/biostrace-check.py, TOOL08)
   help
-"
+{}", tickets::USAGE
     );
 }
 
@@ -1282,3 +1282,7 @@ mod prgflags_tests {
 /// cflow pinned in `tools/oracle/oracle.env` is there at its version.
 #[cfg(test)]
 mod gen_deps_tests;
+
+/// TOOL41 — the ADR-037 ticket tools: `status-check`, `accept`,
+/// `set-status`, `report` (dispatched by [`tickets::cmd`]).
+mod tickets;

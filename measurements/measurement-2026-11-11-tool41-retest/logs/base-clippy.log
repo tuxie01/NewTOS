@@ -1,0 +1,12 @@
+    Checking xtask v0.1.0 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool41-retest/c1/tools/xtask)
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/main.rs:459:12
+    |
+459 |         if c % 2 == 0 {
+    |            ^^^^^^^^^^ help: replace with: `c.is_multiple_of(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_is_multiple_of
+    = note: `#[warn(clippy::manual_is_multiple_of)]` on by default
+
+warning: `xtask` (bin "xtask") generated 1 warning (run `cargo clippy --fix --bin "xtask" -p xtask -- ` to apply 1 suggestion)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.61s

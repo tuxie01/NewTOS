@@ -1,0 +1,101 @@
+    Checking xtask v0.1.0 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool41-test/c1/tools/xtask)
+warning: constant `PROPTAG_GET_MAX_CLOCK_RATE` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:25:11
+   |
+25 | pub const PROPTAG_GET_MAX_CLOCK_RATE: u32 = 0x0003_0004;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `PROPTAG_GET_CLOCK_RATE_MEASURED` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:29:11
+   |
+29 | pub const PROPTAG_GET_CLOCK_RATE_MEASURED: u32 = 0x0003_0047;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: slow zero-filling initialization
+  --> tools/xtask/src/rsc_cicon_tests.rs:92:17
+   |
+92 |       let mut d = Vec::new();
+   |  _________________^
+93 | |     // Header (18 × u16), filled in at the end.
+94 | |     d.resize(36, 0);
+   | |___________________^ help: consider replacing this with: `vec![0; 36]`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#slow_vector_initialization
+   = note: `#[warn(clippy::slow_vector_initialization)]` on by default
+
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/rsc_cicon_tests.rs:368:13
+    |
+368 |     assert!(pmask % 2 == 0 && pdata % 2 == 0, "rasters on even offsets");
+    |             ^^^^^^^^^^^^^^ help: replace with: `pmask.is_multiple_of(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_is_multiple_of
+    = note: `#[warn(clippy::manual_is_multiple_of)]` on by default
+
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/rsc_cicon_tests.rs:368:31
+    |
+368 |     assert!(pmask % 2 == 0 && pdata % 2 == 0, "rasters on even offsets");
+    |                               ^^^^^^^^^^^^^^ help: replace with: `pdata.is_multiple_of(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_is_multiple_of
+
+warning: this assertion has a constant value
+   --> tools/xtask/src/../../../kernel/src/input_gate.rs:445:9
+    |
+445 |         assert!(3 + 2 * 128 <= HELD_CAP);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving this into a const block: `const { assert!(..) }`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#assertions_on_constants
+    = note: `#[warn(clippy::assertions_on_constants)]` on by default
+
+warning: this assertion has a constant value
+   --> tools/xtask/src/../../../kernel/src/input_gate.rs:447:9
+    |
+447 |         assert!(20 <= HELD_CAP);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: consider moving this into a const block: `const { assert!(..) }`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#assertions_on_constants
+
+warning: for loop over a single element
+   --> tools/xtask/src/programs_tests.rs:245:5
+    |
+245 | /     for name in ["INDEPENDENCE_NOTICE"] {
+246 | |         let b = const_str(&boot, name).unwrap_or_else(|| panic!("initinfo.rs: no const {name}"));
+247 | |         let found: Vec<(String, String)> = desk
+248 | |             .iter()
+...   |
+252 | |         assert_eq!(found[0].1, b, "{name}: desktop {} vs boot screen kernel/src/initinfo.rs", found[0].0);
+253 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#single_element_loop
+    = note: `#[warn(clippy::single_element_loop)]` on by default
+help: try
+    |
+245 ~     {
+246 +         let name = "INDEPENDENCE_NOTICE";
+247 +         let b = const_str(&boot, name).unwrap_or_else(|| panic!("initinfo.rs: no const {name}"));
+248 +         let found: Vec<(String, String)> = desk
+249 +             .iter()
+250 +             .filter_map(|(p, t)| const_str(t, name).map(|v| (p.display().to_string(), v)))
+251 +             .collect();
+252 +         assert_eq!(found.len(), 1, "desktop: exactly one const {name} expected, found {found:?}");
+253 +         assert_eq!(found[0].1, b, "{name}: desktop {} vs boot screen kernel/src/initinfo.rs", found[0].0);
+254 +     }
+    |
+
+warning: manual implementation of `.is_multiple_of()`
+   --> tools/xtask/src/main.rs:459:12
+    |
+459 |         if c % 2 == 0 {
+    |            ^^^^^^^^^^ help: replace with: `c.is_multiple_of(2)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_is_multiple_of
+
+warning: `xtask` (bin "xtask" test) generated 9 warnings (run `cargo clippy --fix --bin "xtask" -p xtask --tests -- ` to apply 4 suggestions)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 1.86s

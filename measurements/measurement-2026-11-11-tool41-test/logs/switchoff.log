@@ -1,0 +1,22 @@
+== switch UNSET
+SAME ticket-legacy-change: exit=0 stdout=0B stderr=601B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME unrelated-code: exit=0 stdout=0B stderr=337B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME fix-names-OPEN: exit=0 stdout=0B stderr=336B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME broken-new-ticket: exit=0 stdout=0B stderr=600B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME memory-md: exit=0 stdout=0B stderr=870B cargo-calls=[cargo -q xtask doc-check --staged;cargo -q xtask deps --check-mapping --staged;]
+SAME doc-check-failure: exit=1 stdout=0B stderr=877B cargo-calls=[cargo -q xtask doc-check --staged;]
+== switch false
+SAME ticket-legacy-change: exit=0 stdout=0B stderr=601B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME unrelated-code: exit=0 stdout=0B stderr=337B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME fix-names-OPEN: exit=0 stdout=0B stderr=336B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME broken-new-ticket: exit=0 stdout=0B stderr=600B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME memory-md: exit=0 stdout=0B stderr=870B cargo-calls=[cargo -q xtask doc-check --staged;cargo -q xtask deps --check-mapping --staged;]
+SAME doc-check-failure: exit=1 stdout=0B stderr=877B cargo-calls=[cargo -q xtask doc-check --staged;]
+== switch no
+SAME ticket-legacy-change: exit=0 stdout=0B stderr=601B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME unrelated-code: exit=0 stdout=0B stderr=337B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME fix-names-OPEN: exit=0 stdout=0B stderr=336B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME broken-new-ticket: exit=0 stdout=0B stderr=600B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME memory-md: exit=0 stdout=0B stderr=870B cargo-calls=[cargo -q xtask doc-check --staged;cargo -q xtask deps --check-mapping --staged;]
+SAME doc-check-failure: exit=1 stdout=0B stderr=877B cargo-calls=[cargo -q xtask doc-check --staged;]
+?? tools/xtask/src/clock_tags.rs

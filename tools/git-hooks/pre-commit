@@ -1,7 +1,7 @@
 #!/bin/sh
 #
-# pre-commit -- doc-check (TOOL29) and the mapping check (TOOL40) on what
-# this commit records.
+# pre-commit -- doc-check (TOOL29), the mapping check (TOOL40) and, when
+# switched on, the ticket gap check (TOOL41) on what this commit records.
 #
 # Installed by `cargo xtask install-hooks` (core.hooksPath = tools/git-hooks).
 # Both checks read the index (GIT_INDEX_FILE if git set it), not the
@@ -29,6 +29,14 @@
 #    renames) docs/MEMORY.md, mapping.tsv, edges.tsv, or a file the staged
 #    mapping.tsv names (newtos_file, ADR file, source: path); otherwise it
 #    is skipped without starting cargo.
+# 3. Only with `git config newtos.ticketChecks true` (off until the owner's
+#    OK, ADR-037 point 14; off, this hook behaves exactly as after TOOL40):
+#    `cargo xtask status-check --staged --new-only`
+#    (tools/xtask/src/tickets.rs): the ADR-037 point 13 gaps of every
+#    ticket whose file or receipt the commit stages, legacy ones recorded in
+#    tools/xtask/ticket-baseline.tsv excepted (the baseline only shrinks).
+#    Runs only when the commit stages TASK/ or that baseline. The checks
+#    that need the message run in commit-msg.
 # Any failure, or a check that cannot run, rejects the commit: `git
 # commit` itself exits non-zero, however the command line chains or pipes
 # around it.
@@ -79,6 +87,15 @@ else
     map=yes
 fi
 
+# The ticket gap check (TOOL41): only when switched on, and only for a
+# staged TASK/ path or baseline (both are under the doc pre-filter's trees,
+# so tick=yes implies doc=yes).
+tick=no
+if [ "$(git config --bool --get newtos.ticketChecks 2>/dev/null)" = true ]; then
+    git diff --cached --quiet --no-renames HEAD -- TASK/ tools/xtask/ticket-baseline.tsv 2>/dev/null
+    [ $? -eq 0 ] || tick=yes
+fi
+
 [ "$doc" = no ] && [ "$map" = no ] && exit 0
 
 if ! command -v cargo >/dev/null 2>&1; then
@@ -94,6 +111,10 @@ if [ "$doc" = yes ] && ! cargo -q xtask doc-check --staged; then
 fi
 if [ "$map" = yes ] && ! cargo -q xtask deps --check-mapping --staged; then
     echo "pre-commit: the mapping check failed on rows this commit breaks (above, $map_file)." >&2
+    rc=1
+fi
+if [ "$tick" = yes ] && ! cargo -q xtask status-check --staged --new-only; then
+    echo "pre-commit: the ticket gap check failed (above; ADR-037 point 13, TOOL41)." >&2
     rc=1
 fi
 if [ $rc -ne 0 ]; then

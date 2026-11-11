@@ -80,7 +80,7 @@ Developer, 2026-11-11, worktree branch `worktree-agent-a15921e5b605761cb` on bas
 - **Tests:** `tools/hooks/no-verify-guard-test.sh`, 192 cases (17 old, unchanged); scratch clone by `git clone
   --shared --no-checkout` under `mktemp -d` in `$NVG_TEST_TMP` or `$TMPDIR`, removed by an EXIT trap. Wired into
   `cargo xtask test` as `git_hooks::tests::no_verify_guard_pipe_tests_pass`
-  (`tools/xtask/src/git_hooks.rs:146@no_verify_guard_pipe_tests_pass`), scratch under `target/`, about 10 s.
+  (`tools/xtask/src/git_hooks.rs:159@no_verify_guard_pipe_tests_pass`), scratch under `target/`, about 10 s.
 
 ## Owner decision (2026-11-11)
 

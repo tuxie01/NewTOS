@@ -1,0 +1,34 @@
+report: 664 tickets in TASK/: 8 ADR-037 line 3, 0 malformed, 656 legacy
+  state         ADR-037   legacy
+  OPEN                3      105
+  IMPLEMENTED         3       15
+  DONE                1      371
+  PARKED              1      147
+  ACCEPTED            0        3
+  OBSOLETE            0       11
+  unmapped            -        4
+  gap groups (tickets/files; machine rules, not the inventory's classes C1-C6):
+    done-not-closed               28
+    closed-without-evidence       53
+    status-md-mismatch             1
+    parked-without-fields        147
+    not-adr037-form              656
+    dangling-reference            21
+  violations by code (R = rejecting, r = reporting):
+    R form                     656
+    R parked-no-reason         147
+    R done-receipt-not-done     22
+    R done-no-receipt           53
+    R orphan-receipt            21
+    r fix-commit-not-closed     11
+    r status-md                  1
+  status-check: 0 rejected, 899 legacy (baseline), 12 reported
+  ADR-037 tickets:
+    TOOL01     Status: PARKED (2026-10-31) | Priority: P2 | Reason: owner, pre-start check: blocks no acceptance | Reopen: a host tool blocks an acceptance or a run is not reproducible because of one
+    TOOL39     Status: DONE (2026-11-11) | Priority: P1 | Commit: b7bd932a | Receipt: TOOL39-STATUS-DONE.MD
+    TOOL40     Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: DONE through cargo xtask accept (TOOL41); tester PASS in measurements/measurement-2026-11-11-tool40-test/RUNINFO.TXT  [self = 8a08a9b7a]
+    TOOL41     Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance  [self = 7330019db]
+    TOOL42     Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: DONE through cargo xtask accept (TOOL41); tester PASS in measurements/measurement-2026-11-11-tool42-retest/RUNINFO.TXT  [self = 9bc27d82b]
+    TOOL43     Status: OPEN (2026-11-11) | Priority: P1
+    TOOL44     Status: OPEN (2026-11-11) | Priority: P2
+    TOOL45     Status: OPEN (2026-11-11) | Priority: P2

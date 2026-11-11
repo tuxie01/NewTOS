@@ -138,6 +138,12 @@ run `git checkout`/`restore`/`clean`/`stash`/`reset` on any shared or uncommitte
 path. Do not commit unless the lead asks. If the tree looks inconsistent (a module
 you expect isn't wired in), STOP and report — don't "fix" it.
 
+Your verdict on a ticket lands only through `cargo xtask accept <ID> --commit <hash> --result PASS|FAIL --note "<run
+dir / short reason>" --agent <your agent name>`, run with nothing staged; it is the one commit you make yourself
+(ADR-037, owner decision e). It refuses unless line 3 is `IMPLEMENTED`, `<hash>` is on the history and names the id,
+and you are not the recorded developer. PASS writes `<ID>-STATUS-DONE.MD` and line 3 `DONE` in one commit; FAIL
+appends your note to `<ID>-STATUS-UNFINISHED.MD`. Do not edit line 3 or receipts by hand.
+
 ## Output
 
 German prose; English identifiers. Report:

@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# commit-msg -- the ticket checks that need the commit message (TOOL41,
+# ADR-037 points 11, 13 and 14, decision g).
+#
+# Installed by `cargo xtask install-hooks` (core.hooksPath = tools/git-hooks).
+#
+# OFF unless `git config newtos.ticketChecks true` (the owner switches it on;
+# ADR-037 point 14). Off, this hook exits 0 at once, without output and
+# without starting cargo.
+#
+# On: `cargo xtask status-check --staged --new-only --message-file <msg>`
+# (tools/xtask/src/tickets.rs) reads the index and the message's subject
+# line (the first non-empty line that is no `#` comment):
+#   - a `fix(...)`/`feat(...)` subject: every ticket id it names (word
+#     boundary) must have line 3 `IMPLEMENTED (date) | Priority | Commit: ...
+#     | Missing: ...` in the index (point 11; `OPEN` or `DONE` reject,
+#     point 13);
+#   - every id the subject names gets the gap checks of point 13, legacy
+#     violations recorded in tools/xtask/ticket-baseline.tsv excepted
+#     (decision g).
+# The tickets the commit stages are checked by pre-commit.
+#
+# Bypass for one commit: git commit --no-verify (git's own switch; there is
+# no other). Agents cannot use it: tools/hooks/no-verify-guard.sh.
+
+set -u
+
+[ "$(git config --bool --get newtos.ticketChecks 2>/dev/null)" = true ] || exit 0
+
+msg=$1
+case $msg in
+    /*) ;;
+    *) msg=$(pwd)/$msg ;;
+esac
+
+top=$(git rev-parse --show-toplevel) || exit 1
+cd "$top" || exit 1
+
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "commit-msg: cargo not in PATH; cannot run the ticket checks on the message." >&2
+    echo "commit-msg: commit rejected (git commit --no-verify bypasses the check)." >&2
+    exit 1
+fi
+
+if ! cargo -q xtask status-check --staged --new-only --message-file "$msg"; then
+    echo "commit-msg: the ticket checks failed on the message (above; ADR-037 points 11 and 13, TOOL41)." >&2
+    echo "commit-msg: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check." >&2
+    exit 1
+fi
+exit 0

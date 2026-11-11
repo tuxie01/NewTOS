@@ -1,0 +1,21 @@
+== switch UNSET
+SAME ticket-legacy-change: exit=0 stdout=0B stderr=603B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME unrelated-code: exit=0 stdout=0B stderr=339B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME fix-names-OPEN: exit=0 stdout=0B stderr=0B cargo-calls=[]
+SAME broken-new-ticket: exit=0 stdout=0B stderr=602B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME memory-md: exit=0 stdout=0B stderr=874B cargo-calls=[cargo -q xtask doc-check --staged;cargo -q xtask deps --check-mapping --staged;]
+SAME doc-check-failure: exit=1 stdout=0B stderr=879B cargo-calls=[cargo -q xtask doc-check --staged;]
+== switch false
+SAME ticket-legacy-change: exit=0 stdout=0B stderr=603B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME unrelated-code: exit=0 stdout=0B stderr=339B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME fix-names-OPEN: exit=0 stdout=0B stderr=0B cargo-calls=[]
+SAME broken-new-ticket: exit=0 stdout=0B stderr=602B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME memory-md: exit=0 stdout=0B stderr=874B cargo-calls=[cargo -q xtask doc-check --staged;cargo -q xtask deps --check-mapping --staged;]
+SAME doc-check-failure: exit=1 stdout=0B stderr=879B cargo-calls=[cargo -q xtask doc-check --staged;]
+== switch no
+SAME ticket-legacy-change: exit=0 stdout=0B stderr=603B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME unrelated-code: exit=0 stdout=0B stderr=339B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME fix-names-OPEN: exit=0 stdout=0B stderr=0B cargo-calls=[]
+SAME broken-new-ticket: exit=0 stdout=0B stderr=602B cargo-calls=[cargo -q xtask doc-check --staged;]
+SAME memory-md: exit=0 stdout=0B stderr=874B cargo-calls=[cargo -q xtask doc-check --staged;cargo -q xtask deps --check-mapping --staged;]
+SAME doc-check-failure: exit=1 stdout=0B stderr=879B cargo-calls=[cargo -q xtask doc-check --staged;]

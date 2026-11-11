@@ -1,0 +1,13 @@
+status-check: report [status-md] docs/STATUS.md:159: lists TOOL01 as Open, line 3 of TASK/TOOL01.md is PARKED
+status-check: report [fix-commit-not-closed] TASK/A127.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/A132.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/A133.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/BIOS16.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/BIOS17.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/COOK02.md is PARKED and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/FS09.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/FS23.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/INPUT01.md is OPEN and 1 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/MEM11.md is PARKED and 2 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/PROC08.md is PARKED and 4 fix/feat commit(s) name it
+status-check: 685 checked, 0 rejected, 12 reported, 899 legacy (in tools/xtask/ticket-baseline.tsv)

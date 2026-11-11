@@ -399,6 +399,23 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   any non-squash `git merge` into `main` (TASK/TOOL42.md); in a scratch clone
   plumbing stays allowed. A pattern guard is never complete (`fetch` + `reset`,
   `rebase`, scripts are not seen; owner 2026-11-11): the backstop is TASK/TOOL43.md.
+- **Ticket states (ADR-037).** Line 3 of `TASK/<ID>.md` is the ticket's
+  state; `cargo xtask status-check` validates it, `cargo xtask report` counts
+  (its gap groups are machine rules, not the inventory's C1-C6). Roles: the
+  **developer** sets `IMPLEMENTED (date) | Priority | Commit: self | Missing:
+  ...` in the same `fix`/`feat` commit that names the id, and records
+  `Role: developer` and `Agent: <name>` in the header of the receipt (before
+  its first `## `). The **tester** accepts only with `cargo xtask accept <ID>
+  --commit <hash> --result PASS|FAIL [--note ...] --agent <name>`, which
+  commits by itself (nothing else staged) and refuses the developer's own
+  agent. The **lead** closes nothing; after an owner decision `cargo xtask
+  set-status <ID> PARKED|OBSOLETE|ACCEPTED|OPEN` with the required fields, then
+  commits. Legacy violations are recorded in `tools/xtask/ticket-baseline.tsv`,
+  which only shrinks (`status-check --prune-baseline`).
+- The ticket checks in `pre-commit` (`status-check --staged --new-only`) and
+  `commit-msg` (the `fix`/`feat` subject and every id it names) run only with
+  `git config newtos.ticketChecks true`, switched on by the owner (ADR-037
+  point 14); off, the hooks behave as after TOOL40.
 - A ticket that changes `tools/git-hooks/**` is developed in its own git
   worktree; the main tree's hooks change only when it is merged after the
   tester's acceptance (owner 2026-11-11).

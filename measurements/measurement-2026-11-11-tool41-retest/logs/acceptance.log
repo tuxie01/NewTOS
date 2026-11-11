@@ -1,0 +1,184 @@
+CASE setup-open-tickets: expect PASS -> exit=0 time=4.77s
+    | doc-check --staged: 2 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1945 docs the commit leaves alone, 16 of their cites name one of the 2 changed paths, 0 broken by this commit
+    | status-check --staged: 2 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 2 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+CASE fix-names-OPEN: expect REJECT -> exit=1 time=0.67s
+    | status-check (commit-msg): REJECT [fix-feat-state] the subject is fix/feat and names ZZ1: line 3 of TASK/ZZ1.md must be `IMPLEMENTED (date) | Priority | Commit: self | Missing: ...` in this commit, it is OPEN
+    | status-check (commit-msg): 1 checked, 1 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | xtask: status-check: 1 rejected (above)
+    | commit-msg: the ticket checks failed on the message (above; ADR-037 points 11 and 13, TOOL41).
+    | commit-msg: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+CASE fix-names-IMPLEMENTED: expect PASS -> exit=0 time=2.81s
+    | doc-check --staged: 2 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1946 docs the commit leaves alone, 16 of their cites name one of the 3 changed paths, 0 broken by this commit
+    | status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+CASE multi-id-one-OPEN: expect REJECT -> exit=1 time=0.68s
+    | status-check (commit-msg): REJECT [fix-feat-state] the subject is fix/feat and names ZZ2: line 3 of TASK/ZZ2.md must be `IMPLEMENTED (date) | Priority | Commit: self | Missing: ...` in this commit, it is OPEN
+    | status-check (commit-msg): 2 checked, 1 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | xtask: status-check: 1 rejected (above)
+    | commit-msg: the ticket checks failed on the message (above; ADR-037 points 11 and 13, TOOL41).
+    | commit-msg: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+CASE multi-id-both-IMPLEMENTED: expect PASS -> exit=0 time=2.84s
+    | doc-check --staged: 2 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1947 docs the commit leaves alone, 16 of their cites name one of the 3 changed paths, 0 broken by this commit
+    | status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 2 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+CASE done-receipt-line3-not-DONE: expect REJECT -> exit=1 time=2.32s
+    | doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1949 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: REJECT [done-receipt-not-done] TASK/ZZ1-STATUS-DONE.MD exists while line 3 of TASK/ZZ1.md is not DONE (IMPLEMENTED)
+    | status-check --staged: 1 checked, 1 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | xtask: status-check: 1 rejected (above)
+    | pre-commit: the ticket gap check failed (above; ADR-037 point 13, TOOL41).
+    | pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+CASE line3-DONE-no-receipt: expect REJECT -> exit=1 time=2.31s
+    | doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1948 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: REJECT [done-no-receipt] TASK/ZZ1.md:3: DONE without ZZ1-STATUS-DONE.MD
+    | status-check --staged: 1 checked, 1 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | xtask: status-check: 1 rejected (above)
+    | pre-commit: the ticket gap check failed (above; ADR-037 point 13, TOOL41).
+    | pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+CASE IMPLEMENTED-no-Missing: expect REJECT -> exit=1 time=2.32s
+    | doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1949 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: REJECT [implemented-fields] TASK/ZZ3.md:3: Missing: expected `Missing: ...` (required for IMPLEMENTED, in the order Commit, Missing)
+    | status-check --staged: 1 checked, 1 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | xtask: status-check: 1 rejected (above)
+    | pre-commit: the ticket gap check failed (above; ADR-037 point 13, TOOL41).
+    | pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+CASE PARKED-no-Reopen: expect REJECT -> exit=1 time=2.29s
+    | doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1949 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: REJECT [parked-no-reason] TASK/ZZ3.md:3: Reopen: expected `Reopen: ...` (required for PARKED, in the order Reason, Reopen)
+    | status-check --staged: 1 checked, 1 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | xtask: status-check: 1 rejected (above)
+    | pre-commit: the ticket gap check failed (above; ADR-037 point 13, TOOL41).
+    | pre-commit: commit rejected. Fix and stage the fix; git commit --no-verify bypasses the check.
+status before accept:
+CASE accept-self: expect REFUSE -> exit=1 time=0.24s
+    | xtask: accept: dev-a is the developer recorded for ZZ1; acceptance needs another agent (ADR-037 point 12)
+CASE accept-staged-dirty: expect REFUSE -> exit=1 time=0.16s
+    | xtask: accept: other changes are staged; it commits only its own:
+    | stage.txt
+CASE set-status-PARKED-no-reopen: expect REFUSE -> exit=1 time=0.14s
+    | xtask: set-status: PARKED needs --reopen (ADR-037 point 1)
+CASE set-status-DONE: expect REFUSE -> exit=1 time=0.14s
+    | xtask: set-status: DONE is not set by hand: IMPLEMENTED by the developer's commit, DONE only by `cargo xtask accept` (ADR-037 point 11)
+CASE set-status-IMPLEMENTED: expect REFUSE -> exit=1 time=0.14s
+    | xtask: set-status: IMPLEMENTED is not set by hand: IMPLEMENTED by the developer's commit, DONE only by `cargo xtask accept` (ADR-037 point 11)
+status after refusals:
+CASE accept-PASS-other: expect OK-one-commit -> exit=0 time=3.13s
+    | doc-check --staged: 2 files, 0 path cites and 1 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1948 docs the commit leaves alone, 16 of their cites name one of the 2 changed paths, 0 broken by this commit
+    | status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | accept: ZZ1 PASS on a2bb56c09, committed 4aea0a88e
+commits added: 1
+docs(task): accept ZZ1, PASS on a2bb56c09 (ZZ1)
+Generated by `cargo xtask accept` (ADR-037 point 11, decision e).
+Role: tester, agent: tester-1. Result: PASS.
+Line 3 is DONE; receipt ZZ1-STATUS-DONE.MD.
+
+
+ TASK/ZZ1-STATUS-DONE.MD | 12 ++++++++++++
+ TASK/ZZ1.md             |  2 +-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
+tree status lines:        0
+Status: DONE (2026-11-11) | Priority: P2 | Commit: a2bb56c09 | Receipt: ZZ1-STATUS-DONE.MD
+# ZZ1 — receipt DONE (2026-11-11)
+
+Role: tester
+Agent: tester-1
+Commit: a2bb56c09
+Result: PASS
+
+Written by `cargo xtask accept` (ADR-037 point 11). Developer: dev-a. Line 3 before: `Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance`.
+
+## Note
+
+acc test
+CASE accept-FAIL: expect OK -> exit=0 time=3.10s
+    | doc-check --staged: 1 files, 0 path cites and 1 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1949 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | accept: ZZ2 FAIL on 9309a67ba, committed c15ef64af
+commits added: 1
+docs(task): accept ZZ2, FAIL on 9309a67ba (ZZ2)
+
+ TASK/ZZ2-STATUS-UNFINISHED.MD | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+line3 unchanged: yes
+# ZZ2 — receipt
+
+Role: developer
+Agent: dev-b
+
+## Done
+
+w
+
+## Acceptance 2026-11-11 — FAIL
+
+Role: tester
+Agent: tester-1
+Commit: 9309a67ba
+Result: FAIL
+
+Written by `cargo xtask accept` (ADR-037 point 11); line 3 stays IMPLEMENTED.
+
+broken
+tree status lines:        0
+doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1950 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+CASE set-status-PARKED-ok: expect OK -> exit=0 time=0.19s
+    | set-status: TASK/ZZ4.md: Status: PARKED (2026-11-11) | Priority: P3 | Reason: waits | Reopen: dep lands
+    | set-status: not committed; the lead commits (git add TASK/ZZ4.md ...).
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: waits | Reopen: dep lands
+CASE commit-parked: expect OK -> exit=0 time=2.90s
+    | doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1950 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+CASE set-status-OPEN-ok: expect OK -> exit=0 time=0.19s
+    | set-status: TASK/ZZ4.md: Status: OPEN (2026-11-11) | Priority: P3
+    | set-status: not committed; the lead commits (git add TASK/ZZ4.md ...).
+Status: OPEN (2026-11-11) | Priority: P3
+Body.
+
+## Status history
+
+- 2026-11-11: set to PARKED by `cargo xtask set-status` (was "Status: OPEN (2026-11-11) | Priority: P3")
+- 2026-11-11: reopened (was "Status: PARKED (2026-11-11) | Priority: P3 | Reason: waits | Reopen: dep lands"): dep landed
+CASE set-status-OPEN-from-OPEN: expect REFUSE -> exit=1 time=0.14s
+    | xtask: set-status: OPEN is for a PARKED ticket after an owner decision (decision f); ZZ4 is OPEN
+doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+doc-check --staged: 1950 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+status-check --staged: 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+--- Commit:self resolution via report
+    ZZ1        Status: DONE (2026-11-11) | Priority: P2 | Commit: a2bb56c09 | Receipt: ZZ1-STATUS-DONE.MD
+    ZZ2        Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance  [self = 9309a67ba]
+    ZZ4        Status: OPEN (2026-11-11) | Priority: P3
+=== blocked-by-DONE report
+CASE blocked-by-DONE-commit: expect PASS-with-report -> exit=0 time=2.76s
+    | doc-check --staged: 1 files, 0 path cites and 0 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1951 docs the commit leaves alone, 16 of their cites name one of the 1 changed paths, 0 broken by this commit
+    | status-check --staged: report [blocked-by-done] TASK/ZZ5.md:3: Reason: blocked by ZZ1, which is DONE
+    | status-check --staged: 1 checked, 0 rejected, 1 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): report [blocked-by-done] TASK/ZZ5.md:3: Reason: blocked by ZZ1, which is DONE
+    | status-check (commit-msg): 1 checked, 0 rejected, 1 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+status-check: report [blocked-by-done] TASK/ZZ5.md:3: Reason: blocked by ZZ1, which is DONE
+=== rename of ticket file, Commit: self still resolves
+CASE rename-commit: expect PASS -> exit=0 time=2.77s
+    | doc-check --staged: 2 files, 0 path cites and 1 ADR cites checked, 0 failures, 0 legacy failures ignored (on lines unchanged since HEAD, failing there too), 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+    | doc-check --staged: 1950 docs the commit leaves alone, 16 of their cites name one of the 4 changed paths, 0 broken by this commit
+    | status-check --staged: 3 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    | status-check (commit-msg): 1 checked, 0 rejected, 0 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+    ZZ8        Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance  [self = 9309a67ba]
+expected self = 9309a67baf237df377aa2663678e453eae2389fd

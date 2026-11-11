@@ -23,7 +23,7 @@ use std::process::Command;
 /// written to `core.hooksPath`.
 pub const HOOKS_DIR: &str = "tools/git-hooks";
 /// The hooks [`HOOKS_DIR`] holds; each must exist and be executable.
-pub const HOOKS: &[&str] = &["pre-commit"];
+pub const HOOKS: &[&str] = &["pre-commit", "commit-msg"];
 
 /// What to do, given the current `core.hooksPath` and the active hooks (not
 /// `*.sample`) in the hooks directory git uses now.
@@ -109,7 +109,20 @@ pub fn cmd(root: &Path, args: &[String]) -> Result<(), String> {
             println!("install-hooks: core.hooksPath = {HOOKS_DIR} ({})", HOOKS.join(", "));
         }
     }
+    println!(
+        "install-hooks: the ticket checks (TOOL41) run only with `git config {} true`; now: {}",
+        crate::tickets::SWITCH,
+        if ticket_checks_on(root) { "on" } else { "off" }
+    );
     Ok(())
+}
+
+/// The switch of the ticket checks in `pre-commit` and `commit-msg`
+/// (TOOL41, [`crate::tickets::SWITCH`]) as the hooks read it: `git config
+/// --bool --get` prints `true`. `install-hooks` reports it, never sets it.
+pub fn ticket_checks_on(root: &Path) -> bool {
+    git(root, &["config", "--bool", "--get", crate::tickets::SWITCH])
+        .is_ok_and(|o| o.status.success() && String::from_utf8_lossy(&o.stdout).trim() == "true")
 }
 
 #[cfg(test)]

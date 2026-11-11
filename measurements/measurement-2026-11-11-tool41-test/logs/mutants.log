@@ -1,0 +1,11 @@
+MUTANT a-parser-missing-field-accepted rc=101 KILLED by ['tickets::tests::every_missing_field_is_named', 'tickets::tests::staged_gap_check_rejects_each_gap_of_point_13'] ['test result: FAILED. 16 passed; 2 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.48s']
+MUTANT b-accept-allows-self rc=101 KILLED by ['tickets::tests::accept_refuses'] ['test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.46s']
+MUTANT c1-baseline-may-grow rc=101 KILLED by ['tickets::tests::baseline_lets_legacy_pass_and_only_shrinks'] ['test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.44s']
+MUTANT c2-stale-entry-not-rejected rc=101 KILLED by ['tickets::tests::baseline_lets_legacy_pass_and_only_shrinks'] ['test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.45s']
+MUTANT c3-baseline-matches-key-only rc=101 KILLED by ['tickets::tests::baseline_lets_legacy_pass_and_only_shrinks'] ['test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.83s']
+MUTANT d1-fixfeat-first-id-only rc=0 SURVIVED [] ['test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.94s']
+MUTANT d2-msg-gapcheck-first-id-only rc=0 SURVIVED [] ['test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.90s']
+MUTANT d3-both-first-id-only rc=0 SURVIVED [] ['test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 3.91s']
+MUTANT e1-commit-msg-ignores-switch rc=101 KILLED by ['tickets::tests::hooks_with_the_switch_off_behave_as_after_tool40'] ['test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 1.69s']
+MUTANT e2-pre-commit-ignores-switch rc=101 KILLED by ['tickets::tests::hooks_with_the_switch_off_behave_as_after_tool40'] ['test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 1.78s']
+python3 $S/method/mutants.py $S $S/c1  199,75s user 43,51s system 314% cpu 1:17,26 total

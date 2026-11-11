@@ -1,0 +1,4 @@
+TASK/README.md:24: run2-pi4-r2wind/: missing
+TASK/README.md:24: run3-pi4-rlist/: missing
+doc-check: 2 files, 171 path cites and 5 ADR cites checked, 2 failures, 0 skipped (reference tree missing); 0 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+xtask: doc-check: 2 failures (see above)

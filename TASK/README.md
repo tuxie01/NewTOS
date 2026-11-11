@@ -1,5 +1,16 @@
 # Messvergleich und kleine Entwickleraufgaben — 2026-09-09
 
+## Ticket states (ADR-037)
+
+Every ticket `TASK/<ID>.md` carries its state on line 3 in the form of ADR-037 (`docs/MEMORY.md`): one of the six
+states `OPEN`, `IMPLEMENTED`, `DONE`, `PARKED`, `ACCEPTED`, `OBSOLETE` with the fields that state requires. The
+**Status** column of the tables below is generated from line 3 by `cargo xtask report --readme` (`--check` tells
+whether it is stale); a legacy ticket, written before ADR-037, shows its raw status text. Do not edit the column by
+hand. The tools (TOOL41, `tools/xtask/src/tickets.rs`): `cargo xtask status-check` (the gap check), `cargo xtask
+accept` (the tester), `cargo xtask set-status` (the lead), `cargo xtask report`.
+A receipt records role and agent in its header, the lines before its first `## ` heading: `Role: developer` or
+`Role: tester`, and `Agent: <name>`; `accept` refuses an acceptor who is a recorded developer of the ticket.
+
 ## Einstieg
 
 > **Hinweis für den laufenden Audit — 2026-09-10:** Im gemeinsamen Arbeitsbaum liegt bereits der **uncommitted A25-Fix** zu `appl_init`: [pd.rs](../tos-api/src/aes/pd.rs), [neuer Dispatcher-Test](../tos-api/tests/aes_appl_init.rs) und [aktualisierte Spezifikation](../docs/api/aes/application.md). `pd::open` erhält bei bestehender PID Queue und Flags; neue Slots bleiben leer initialisiert. Nicht als fremden Zwischenstand versehentlich zurücksetzen oder durch eine alte Dateikopie überschreiben. Den Fix bitte unabhängig gegen `EmuTOS aes/gemaplib.c:54–63` prüfen; [Vorher-/Nachher-Beleg und Status](A25-STATUS-UNFINISHED.MD) liegen vor. **UNFINISHED bedeutet hier: Hardwareabnahme fehlt, nicht: Implementierung fehlt.** Keine Änderungen an A13/A14 durch diesen Fix.
@@ -41,13 +52,13 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [M02](M02.md) | Rechtecklisten-Referenz auf Atari TT aufnehmen | Hardwaremessung | P1 | ERLEDIGT | — |
 | [M03](M03.md) | Rechtecklisten auf aktuellem Pi aufnehmen | Hardwaremessung | P1 | ERLEDIGT | — |
 | [M04](M04.md) | Laufmanifest und gemessenes Kernelabbild eindeutig verbinden | Messverfahren | P2 | ERLEDIGT | — |
-| [A01](A01.md) | wind_get(0, WF_WXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | OFFEN | — |
-| [A02](A02.md) | wind_get(0, WF_CXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | OFFEN | — |
-| [A03](A03.md) | wind_get(0, WF_PXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | OFFEN | — |
-| [A04](A04.md) | wind_get(0, WF_FXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | OFFEN | — |
-| [A05](A05.md) | wind_get WF_OWNER: Versionsabweichung belegen | Versionsprüfung | P2 | OFFEN | — |
+| [A01](A01.md) | wind_get(0, WF_WXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
+| [A02](A02.md) | wind_get(0, WF_CXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
+| [A03](A03.md) | wind_get(0, WF_PXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
+| [A04](A04.md) | wind_get(0, WF_FXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
+| [A05](A05.md) | wind_get WF_OWNER: Versionsabweichung belegen | Versionsprüfung | P2 | ERLEDIGT (2026-09-19) — Versionsunterschied | — |
 | [A06](A06.md) | appl_init: ap_id | Global-Feldprüfung | P2 | ERLEDIGT | — |
-| [A07](A07.md) | appl_init: ap_private | Global-Feldprüfung | P2 | OFFEN | — |
+| [A07](A07.md) | appl_init: ap_private | Global-Feldprüfung | P2 | ERLEDIGT (2026-09-19) — Konfigurationsunterschied belegt | — |
 | [A08](A08.md) | appl_init: ap_planes | Global-Feldprüfung | P2 | ERLEDIGT | — |
 | [A09](A09.md) | appl_init: ap_3resv | Global-Feldprüfung | P2 | ERLEDIGT | — |
 | [A10](A10.md) | wind_create: Kapazitätsgrenze | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
@@ -57,49 +68,49 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A14](A14.md) | wind_get WF_NEXTXYWH: Iteratorfortschritt | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
 | [A15](A15.md) | wind_get: geschriebene Felder am Listenende | Messlücke / bedingte Reparatur | P1 | ERLEDIGT | M02, M03 |
 | [A16](A16.md) | wind_close: WS_CURR/WS_PREV/WS_WORK bleiben unaktualisiert | Belegter Defekt / bedingte Reparatur | P1 | IMPLEMENTIERT — HW OFFEN | — |
-| [A17](A17.md) | wind_open: PREV-Rechteck im Soll nachtragen, Zeilenbelege richtigstellen | Spec-/Belegkorrektur | P2 | OFFEN | — |
-| [A18](A18.md) | Rechteckliste: Soll in der Spec nachtragen statt lizenzieren | Spec-Korrektur | P1 | OFFEN | A13 |
-| [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | ERLEDIGT | — |
-| [A20](A20.md) | Menüleistenhöhe konstant 19 statt abgeleitet | Belegter Defekt / Geräteableitung | P2 | OFFEN | — |
-| [A21](A21.md) | Rechteckliste verwirft Stücke jenseits von 16 | Belegter Defekt / Robustheit | P2 | OFFEN | A13, A14 |
-| [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | OFFEN | A13, A14 |
-| [A23](A23.md) | Kompensationsanalyse vor dem Fix-Durchgang | Gate / Analyse vor Reparatur | P1 | ERLEDIGT | A13, A14, A15 |
-| [A24](A24.md) | Messlücke: verschachtelte FIRST/NEXT über zwei Fenster | Messlücke / Messdesign | P1 | OFFEN | A14 |
-| [A26](A26.md) | Erratum: Kopfkommentar der Rechtecklisten-Tabelle | Erratum / Dokumentation | P2 | OFFEN | A15 |
-| [A27](A27.md) | Unterschreibender Handler: bewusste Abweichung belegen, Spec richtigstellen | Bewertung / Spec | P2 | OFFEN | — |
-| [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | IMPLEMENTIERT — HW OFFEN | A25, A29 |
-| [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | IMPLEMENTIERT — HW OFFEN | — |
-| [A30](A30.md) | Messdesign: appl_init-Wiederaufruf ohne Hängerrisiko | Messlücke / Messdesign | P1 | OFFEN | A25, A28 |
-| [A31](A31.md) | Testlücke: Rechteckliste über save/restore_windows | Testlücke | P2 | OFFEN | A14 |
-| [A32](A32.md) | Abnahme der Rechtecklisten-Reparatur auf echter Hardware | Hardwareabnahme | P1 | OFFEN | A13, A14, A15 |
-| [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | OFFEN | A16 |
-| [V01](V01.md) | vq_extnd(0): Bildschirmgrenzen | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V02](V02.md) | vq_extnd(0): Farbanzahl | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V03](V03.md) | vq_extnd(0): Palettenpräzision | Geräteunterschied / Quellenprüfung | P2 | ERLEDIGT | — |
-| [V04](V04.md) | vq_extnd(1): Planes | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V05](V05.md) | vq_extnd(1): Video-Lookup-Tabelle | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V06](V06.md) | vq_extnd(1): Clip-Rechteck nach Ein/Aus | Geräteunterschied / Test | P1 | ERLEDIGT | — |
-| [V07](V07.md) | vsl_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V08](V08.md) | vsm_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V09](V09.md) | vq_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V10](V10.md) | v_get_pixel: Rückgabeformat Palette gegen Truecolor | Geräteunterschied / Test | P1 | ERLEDIGT | — |
-| [V11](V11.md) | v_get_pixel: Weiß und OVERLAY_BIT isolieren | Diagnose eines bekannten Defekts | P1 | ERLEDIGT — HW OFFEN | — |
-| [V12](V12.md) | Weiß-/Overlayfehler lokal korrigieren | Bedingte Implementierung | P1 | ERLEDIGT — HW OFFEN | V11 |
-| [V13](V13.md) | vq_chcells: Textzellen aus Bildschirm und Font | Geräteunterschied / Test | P2 | ERLEDIGT | — |
-| [V14](V14.md) | v_opnvwk: ausgegebene Gerätemetriken | Geräteunterschied / Test | P2 | ERLEDIGT | V01, V02, V03 |
-| [V15](V15.md) | v_opnvwk: Handle-Identität statt Zahlenvergleich | Messauswertung | P2 | ERLEDIGT | — |
+| [A17](A17.md) | wind_open: PREV-Rechteck im Soll nachtragen, Zeilenbelege richtigstellen | Spec-/Belegkorrektur | P2 | ERLEDIGT (2026-09-19) | — |
+| [A18](A18.md) | Rechteckliste: Soll in der Spec nachtragen statt lizenzieren | Spec-Korrektur | P1 | ERLEDIGT (2026-09-19) | A13 |
+| [A19](A19.md) | AES-Dispatcher: int_in ohne IN_LEN-Klammer gelesen | Belegter Defekt / ABI | P1 | ERLEDIGT (2026-09-14) | — |
+| [A20](A20.md) | Menüleistenhöhe konstant 19 statt abgeleitet | Belegter Defekt / Geräteableitung | P2 | ERLEDIGT (2026-09-19) | — |
+| [A21](A21.md) | Rechteckliste verwirft Stücke jenseits von 16 | Belegter Defekt / Robustheit | P2 | ERLEDIGT (2026-09-19) | A13, A14 |
+| [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A13, A14 |
+| [A23](A23.md) | Kompensationsanalyse vor dem Fix-Durchgang | Gate / Analyse vor Reparatur | P1 | ERLEDIGT (2026-09-10, siehe A23-STATUS-DONE.MD) | A13, A14, A15 |
+| [A24](A24.md) | Messlücke: verschachtelte FIRST/NEXT über zwei Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A14 |
+| [A26](A26.md) | Erratum: Kopfkommentar der Rechtecklisten-Tabelle | Erratum / Dokumentation | P2 | ERLEDIGT (2026-09-19) | A15 |
+| [A27](A27.md) | Unterschreibender Handler: bewusste Abweichung belegen, Spec richtigstellen | Bewertung / Spec | P2 | ERLEDIGT (2026-09-19) | — |
+| [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | ERLEDIGT (2026-09-14) | A25, A29 |
+| [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
+| [A30](A30.md) | Messdesign: appl_init-Wiederaufruf ohne Hängerrisiko | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-19) — Entwurf; Ausfuehrung als Folgeauftr… | A25, A28 |
+| [A31](A31.md) | Testlücke: Rechteckliste über save/restore_windows | Testlücke | P2 | GEGENSTANDSLOS (2026-09-19) | A14 |
+| [A32](A32.md) | Abnahme der Rechtecklisten-Reparatur auf echter Hardware | Hardwareabnahme | P1 | ERLEDIGT (2026-09-19) | A13, A14, A15 |
+| [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | ERLEDIGT (2026-09-12) | A16 |
+| [V01](V01.md) | vq_extnd(0): Bildschirmgrenzen | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V02](V02.md) | vq_extnd(0): Farbanzahl | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V03](V03.md) | vq_extnd(0): Palettenpräzision | Geräteunterschied / Quellenprüfung | P2 | ERLEDIGT (2026-09-21) | — |
+| [V04](V04.md) | vq_extnd(1): Planes | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V05](V05.md) | vq_extnd(1): Video-Lookup-Tabelle | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V06](V06.md) | vq_extnd(1): Clip-Rechteck nach Ein/Aus | Geräteunterschied / Test | P1 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V07](V07.md) | vsl_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V08](V08.md) | vsm_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V09](V09.md) | vq_color: Bereichsgrenze aus numcolors | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V10](V10.md) | v_get_pixel: Rückgabeformat Palette gegen Truecolor | Geräteunterschied / Test | P1 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V11](V11.md) | v_get_pixel: Weiß und OVERLAY_BIT isolieren | Diagnose eines bekannten Defekts | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
+| [V12](V12.md) | Weiß-/Overlayfehler lokal korrigieren | Bedingte Implementierung | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | V11 |
+| [V13](V13.md) | vq_chcells: Textzellen aus Bildschirm und Font | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
+| [V14](V14.md) | v_opnvwk: ausgegebene Gerätemetriken | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | V01, V02, V03 |
+| [V15](V15.md) | v_opnvwk: Handle-Identität statt Zahlenvergleich | Messauswertung | P2 | ERLEDIGT (2026-09-21) — Geraeteparameter, per EmuTOS bewies… | — |
 | [R01](R01.md) | vro_cpyfm: oversized destination, D-VDI-25 | Zurückgestellte Vertragsabweichung | P3 | ZURÜCKGESTELLT | — |
-| [R02](R02.md) | vro_cpyfm: Screen → Memory messen | Messlücke / Messdesign | P1 | ERLEDIGT — HW OFFEN | — |
-| [R03](R03.md) | vro_cpyfm: Memory → Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT — HW OFFEN | — |
-| [R04](R04.md) | vro_cpyfm: überlappende Screen-Kopie messen | Messlücke / Messdesign | P1 | ERLEDIGT — HW OFFEN | — |
-| [R05](R05.md) | vrt_cpyfm: monochrome Expansion auf Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT — HW OFFEN | — |
-| [Q01](Q01.md) | v_gtext: sichtbares einzelnes a messen | Pixel-Messlücke | P1 | OFFEN | — |
-| [Q02](Q02.md) | vs_clip: Text am Clip-Rand messen | Pixel-Messlücke | P1 | OFFEN | Q01 |
-| [Q03](Q03.md) | vr_recfl: XOR-Cursor zweimal zeichnen | Pixel-Messlücke | P1 | OFFEN | Q01 |
-| [Q04](Q04.md) | evnt_multi: ein Tastaturereignis vermessen | Interaktive Messlücke | P1 | OFFEN | — |
-| [Q05](Q05.md) | graf_mouse: Hide/Show um Textausgabe | Interaktive Pixel-Messlücke | P1 | OFFEN | Q01 |
-| [Q06](Q06.md) | QED restore_edit: abgebrochene Verzweigung bestimmen | Anwendungsdiagnose → belegter Defekt | P1 | IMPLEMENTIERT — HW OFFEN | — |
-| [A25](A25.md) | appl_init: Nachrichten/Flags bei Wiederaufruf | Bestätigter Zustandsfehler | P1 | IMPLEMENTIERT — HW OFFEN | — |
+| [R02](R02.md) | vro_cpyfm: Screen → Memory messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
+| [R03](R03.md) | vro_cpyfm: Memory → Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
+| [R04](R04.md) | vro_cpyfm: überlappende Screen-Kopie messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
+| [R05](R05.md) | vrt_cpyfm: monochrome Expansion auf Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
+| [Q01](Q01.md) | v_gtext: sichtbares einzelnes a messen | Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | — |
+| [Q02](Q02.md) | vs_clip: Text am Clip-Rand messen | Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
+| [Q03](Q03.md) | vr_recfl: XOR-Cursor zweimal zeichnen | Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
+| [Q04](Q04.md) | evnt_multi: ein Tastaturereignis vermessen | Interaktive Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | — |
+| [Q05](Q05.md) | graf_mouse: Hide/Show um Textausgabe | Interaktive Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
+| [Q06](Q06.md) | QED restore_edit: abgebrochene Verzweigung bestimmen | Anwendungsdiagnose → belegter Defekt | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
+| [A25](A25.md) | appl_init: Nachrichten/Flags bei Wiederaufruf | Bestätigter Zustandsfehler | P1 | ERLEDIGT (2026-10-17, QEMU-Lauf) | — |
 
 ## Späterer Backlog: genau eine Funktion pro Messdesign-Task
 
