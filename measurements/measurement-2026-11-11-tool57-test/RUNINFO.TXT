@@ -1,0 +1,11 @@
+TOOL57 test run 2026-11-11, tester agent-a7f1005a75b9b282e
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+No image booted; optional_missing: n/a (host tests only)
+Branch worktree-agent-ac7b152d2e13d3249 head f1ae79a00; main f47088192.
+1 main: cargo test -p xtask the_a01_case -> FAILED (baseline assertion, tests.rs:372).
+2 worktree: cargo xtask test exit 0, 209 targets, 2443 passed 0 failed 7 ignored.
+3 fixtures cmp identical to git show add86da91^; blobs 1e1fee28.. / 1c7b2ed7..
+4 mutation (append 'x' to fixtures/A01.md) -> provenance test FAILED; reverted, git diff empty.
+5 warnings xtask test: 2 on main, 2 in worktree; doc-check 3 files 0 failures.
+Clone/target dir: target-agents/agent-a7f1005a75b9b282e (wt-t, main-t); full.log sha256 06980cc7455aec1bde1d9d6d1d51d81f89e86a4e069715b199cbc0a35ccdab9f
+3,9G	target-agents/agent-a7f1005a75b9b282e
