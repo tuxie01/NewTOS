@@ -1,6 +1,6 @@
 # TOOL44 — `cargo xtask worktree-setup`: inputs a fresh worktree needs
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P2 | Commit: af126f6e9 | Receipt: TOOL44-STATUS-DONE.MD
 
 Type: tool. Owner decision 2026-11-11. Small.
 
