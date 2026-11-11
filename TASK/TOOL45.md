@@ -19,6 +19,10 @@ and `status-check`).
 3. **Coverage per layer, computed.** A report command derived from `edges.tsv`, `mapping.tsv`, the tosdump case tables
    and the ticket states replaces the hand-kept `docs/INVENTORY.md` (as of 2026-09-04) and
    `docs/MEASUREMENT-COVERAGE.md` (as of 2026-09-06); both become dated history or are removed, owner decides.
+   Owner 2026-11-11: the command is `cargo xtask report --coverage`, the living view that replaces the frozen
+   snapshot of [INV01](INV01.md) (docs/analysis/inventory-2026-11-11.md, once written); that snapshot's section
+   "Queries for `report --coverage`" lists what it must compute (functions, mapped, spec, measured, deviation,
+   ticket per layer), and on the snapshot's date its numbers must match the snapshot's.
 4. Host tests for each cross-check (agreeing, each kind of disagreement, legacy baseline).
 
 ## Acceptance

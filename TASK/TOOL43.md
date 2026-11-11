@@ -27,6 +27,11 @@ committed before the owner's OK on the report of step 1.**
 2. **After the owner's OK only:** the workflow file(s) under `.github/workflows/`, pinned action versions, and a test
    push that shows a deliberately broken doc cite turning the run red.
 
+- Found 2026-11-11 (TOOL57 tester, `measurements/measurement-2026-11-11-tool57-test/RUNINFO.TXT`): the host test
+  `tool40_pre_commit` (`tools/xtask/src/tickets/tests.rs`) reads `git show ced5e68f6:...` from the real repository, so
+  it fails in a shallow clone; the runner needs full history (`fetch-depth: 0`) or the test a fixture (TOOL57 did the
+  same for the A01 test).
+
 ## Owner decision (2026-11-11) on the step 1 report
 
 Step 1 report: `docs/analysis/ci-backstop-2026-11-11.md`. Variant **A**: a GitHub Actions workflow on every push to
