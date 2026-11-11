@@ -793,6 +793,12 @@ pub enum Code {
     BadCommit,
     /// `Target`/`Ref` naming no ticket / no ADR.
     BadTarget,
+    /// A `Migrated (owner batch N, ...)` line no row of the committed,
+    /// owner-approved batch file matches (TOOL58; never baselined).
+    MigratedUnverified,
+    /// A file of `TASK/migration/` changed after the migration was closed
+    /// (TOOL58 rework; never baselined).
+    MigrationFrozen,
     /// A receipt with no ticket.
     OrphanReceipt,
     /// A `TASK/` entry that is no ticket, receipt or listed non-ticket.
@@ -815,7 +821,7 @@ pub enum Code {
     ReadmeStale,
 }
 
-pub const CODES: [Code; 16] = [
+pub const CODES: [Code; 18] = [
     Code::Form,
     Code::ImplementedFields,
     Code::ParkedNoReason,
@@ -823,6 +829,8 @@ pub const CODES: [Code; 16] = [
     Code::DoneNoReceipt,
     Code::BadCommit,
     Code::BadTarget,
+    Code::MigratedUnverified,
+    Code::MigrationFrozen,
     Code::OrphanReceipt,
     Code::UnknownFile,
     Code::FixFeatState,
@@ -844,6 +852,8 @@ impl Code {
             Code::DoneNoReceipt => "done-no-receipt",
             Code::BadCommit => "bad-commit",
             Code::BadTarget => "bad-target",
+            Code::MigratedUnverified => "migrated-unverified",
+            Code::MigrationFrozen => "migration-frozen",
             Code::OrphanReceipt => "orphan-receipt",
             Code::UnknownFile => "unknown-file",
             Code::FixFeatState => "fix-feat-state",
@@ -866,7 +876,7 @@ impl Code {
 
     /// May stand in the baseline (legacy violations of a ticket's files).
     pub fn baselinable(self) -> bool {
-        self.rejecting() && !matches!(self, Code::FixFeatState | Code::Baseline)
+        self.rejecting() && !matches!(self, Code::FixFeatState | Code::Baseline | Code::MigratedUnverified | Code::MigrationFrozen)
     }
 
     /// The gap group of `report` (see the module doc: not the inventory's
@@ -958,6 +968,7 @@ pub fn ticket_violations(a: &Analysis, id: &str, adrs: &BTreeSet<u16>, repo: &mu
             out.push(v(id, Code::Form, format!("{file}:2: expected an empty line")));
         }
     }
+    out.extend(migrated_violations(a, t));
     let done_receipt = a.done_receipt(id);
     for r in stray_done_receipts(a, t, repo) {
         let st = t.effective.map_or("unmapped".to_string(), |s| s.name().to_string());
@@ -972,7 +983,7 @@ pub fn ticket_violations(a: &Analysis, id: &str, adrs: &BTreeSet<u16>, repo: &mu
             (None, _) => out.push(v(id, Code::DoneNoReceipt, format!("{file}:3: DONE without {}", line3_done_receipt(a, id)))),
             (Some(r), Ok(l)) => {
                 let c = l.get("Commit").unwrap_or("");
-                if !evidence_names_commit(&a.aids.map, &r.text, &t.migrated, c) {
+                if !evidence_names_commit(&a.aids.map, &r.text, &verified_migrated(&a.aids, t), c) {
                     out.push(v(id, Code::DoneNoReceipt, format!("{TASK_DIR}/{}: does not name the commit {c} of line 3", r.file)));
                 }
             }
@@ -1350,6 +1361,9 @@ pub struct CheckResult {
     pub legacy: usize,
     /// The keys checked.
     pub checked: usize,
+    /// The `Migrated` lines of the view that match their batch row, and
+    /// all of them (TOOL58, [`migrated_counts`]).
+    pub migrated: (usize, usize),
 }
 
 /// Options of [`check`].
@@ -1383,7 +1397,12 @@ pub fn check(root: &Path, o: &CheckOpts) -> Result<CheckResult, String> {
     } else {
         (all_keys(&a), true)
     };
+    // TOOL58 rework: the migration's evidence, `TASK/migration/`.
+    let mut keys = keys;
     let mut found = Vec::new();
+    if o.message.is_none() {
+        found.extend(migration_evidence(root, &a, o, &mut keys)?);
+    }
     for k in &keys {
         found.extend(key_violations(&a, k, &adrs, &mut repo));
     }
@@ -1392,6 +1411,7 @@ pub fn check(root: &Path, o: &CheckOpts) -> Result<CheckResult, String> {
     }
     let (fresh, stale) = against_baseline(&found, &baseline, &keys);
     r.checked = keys.len();
+    r.migrated = migrated_counts(&a);
     r.legacy = found.iter().filter(|v| v.code.rejecting()).count() - fresh.len();
     r.rejected = fresh;
     for (k, c) in stale {
@@ -1470,6 +1490,7 @@ fn print_result(mode: &str, r: &CheckResult) {
         r.reported.len(),
         r.legacy
     );
+    println!("{mode}: {} of {} Migrated lines match their owner-approved batch row (TOOL58)", r.migrated.0, r.migrated.1);
 }
 
 /// `cargo xtask status-check [--staged] [--new-only] [--message-file <f>]
@@ -1828,9 +1849,10 @@ pub fn accept(root: &Path, args: &[String], date: &str) -> Result<(), String> {
     let mut view = View::disk(root);
     let a = Analysis::load(&mut view)?;
     let devs = a.developers(id);
-    if devs.is_empty() && t.migrated.is_empty() {
+    if devs.is_empty() && verified_migrated(&a.aids, &t).is_empty() {
         return Err(format!(
-            "accept: no developer recorded for {id}: a receipt {TASK_DIR}/{id}-STATUS-*.MD needs `Role: developer` and `Agent: <name>` in its header (before the first `## `)"
+            "accept: no developer recorded for {id}: a receipt {TASK_DIR}/{id}-STATUS-*.MD needs `Role: developer` and `Agent: <name>` in its header (before the first `## `){}",
+            unverified_note(&a.aids, &t)
         ));
     }
     if devs.iter().any(|d| agent_key(d) == agent_key(&agent)) {
@@ -2165,6 +2187,8 @@ pub struct Aids {
     pub map: CommitMap,
     /// [`HISTORICAL_FILE`]: an orphan receipt listed here is no violation.
     pub historical: BTreeMap<String, String>,
+    /// The committed batch files by number (TOOL58, [`committed_batches`]).
+    pub batches: BTreeMap<String, Result<migrate::Batch, Vec<String>>>,
 }
 
 impl Aids {
@@ -2174,7 +2198,7 @@ impl Aids {
             Some(t) => parse_historical(&t)?,
             None => BTreeMap::new(),
         };
-        Ok(Aids { map, historical })
+        Ok(Aids { map, historical, batches: committed_batches(view)? })
     }
 }
 
@@ -2262,13 +2286,14 @@ pub fn migrated_not_done(t: &Ticket) -> Vec<&str> {
 /// (point 13): while line 3 is not `DONE`, every DONE receipt of the ticket,
 /// plain or numbered, except the legacy `<ID>-STATUS-DONE.MD` of a ticket
 /// migrated to a state other than `DONE` ([`migrated_not_done`]) when that
-/// receipt is older than the migration ([`receipt_predates_migration`]).
+/// receipt is older than the migration ([`receipt_predates_migration`])
+/// and the `Migrated` line matches its batch row ([`verify_migrated`], TOOL58).
 /// No other ticket and no other receipt gets the exception (TOOL55).
 pub fn stray_done_receipts<'a>(a: &'a Analysis, t: &Ticket, repo: &mut dyn Repo) -> Vec<&'a Receipt> {
     if t.effective == Some(State::Done) {
         return Vec::new();
     }
-    let lines = migrated_not_done(t);
+    let lines: Vec<&str> = migrated_not_done(t).into_iter().filter(|m| verify_migrated(&a.aids, &t.id, m).is_ok()).collect();
     let mut out = Vec::new();
     for r in a.receipts.values() {
         match done_receipt_number(&t.id, &r.file) {
@@ -2386,5 +2411,269 @@ pub fn legacy_developer_receipt(r: &Receipt) -> bool {
     r.header("Developer").iter().any(|d| d == LEGACY_DEVELOPER)
 }
 
+// ---------------------------------------------------------------------------
+// TOOL58 (owner 2026-11-11, ADR-037 point 18): every `Migrated` line is
+// checked against the committed, owner-approved batch file it names
+// ---------------------------------------------------------------------------
+
+/// The parts of a `Migrated` line as `migrate` writes it
+/// ([`migrate::migrated_line`]): `Migrated (owner batch <N>, <date>[, to
+/// <STATE>]), evidence: <evidence>`. Batches 1-13 ran before TOOL55 and
+/// wrote no `to <STATE>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MigratedMark<'a> {
+    pub batch: &'a str,
+    pub date: &'a str,
+    pub to: Option<State>,
+    pub evidence: &'a str,
+}
+
+/// Parses a `Migrated` line ([`MigratedMark`]); `None` when it is not of
+/// that form. The parenthesis ends at the first `), evidence: `, as
+/// [`migrated_target`] reads it.
+pub fn parse_migrated(line: &str) -> Option<MigratedMark<'_>> {
+    let rest = line.strip_prefix("Migrated (owner batch ")?;
+    let (head, evidence) = rest.split_once("), evidence: ")?;
+    let parts: Vec<&str> = head.split(", ").collect();
+    let (batch, date, to) = match parts[..] {
+        [n, d] => (n, d, None),
+        [n, d, to] => (n, d, Some(State::parse(to.strip_prefix("to ")?)?)),
+        _ => return None,
+    };
+    if batch.is_empty() || !batch.bytes().all(|c| c.is_ascii_digit()) || !is_date(date) {
+        return None;
+    }
+    Some(MigratedMark { batch, date, to, evidence })
+}
+
+/// The batch files `batch-<N>.tsv` of [`migrate::MIGRATION_DIR`] as
+/// committed — in `HEAD` for the working-tree view, in the index for the
+/// `--staged` view (what the commit would record) — each parsed by
+/// [`migrate::parse_batch`], the parser `migrate` used (approval line,
+/// rows, fields). A file that does not parse is kept as its errors. Without
+/// a `HEAD` (no repository, no commit) there are none.
+pub fn committed_batches(view: &mut View) -> Result<BTreeMap<String, Result<migrate::Batch, Vec<String>>>, String> {
+    let dir = format!("{}/", migrate::MIGRATION_DIR);
+    let mut texts: Vec<(String, String)> = Vec::new();
+    match &mut view.source {
+        Source::Disk => {
+            let Ok(list) = git_out(&view.root, &["ls-tree", "--name-only", "HEAD", "--", &dir]) else {
+                return Ok(BTreeMap::new());
+            };
+            for rel in list.lines().filter(|l| batch_number(l).is_some()) {
+                let text = git_out(&view.root, &["show", &format!("HEAD:{rel}")])?;
+                texts.push((rel.to_string(), text));
+            }
+        }
+        Source::Index(r) => {
+            let rels: Vec<String> =
+                r.tracked()?.iter().filter_map(|p| p.to_str()).filter(|p| batch_number(p).is_some()).map(String::from).collect();
+            for rel in rels {
+                let b = r.tree_file(Path::new(&rel))?.map(|b| String::from_utf8_lossy(&b).into_owned()).unwrap_or_default();
+                texts.push((rel, b));
+            }
+        }
+    }
+    let mut out = BTreeMap::new();
+    for (rel, text) in texts {
+        let n = batch_number(&rel).unwrap_or_default().to_string();
+        // The state date of a row's line 3 plays no part in the check; the
+        // batch's approval date stands in for the run date.
+        let date = text
+            .lines()
+            .next()
+            .and_then(|l| l.strip_prefix(migrate::APPROVAL_PREFIX))
+            .and_then(|r| r.get(..10))
+            .filter(|d| is_date(d))
+            .unwrap_or("2026-11-11");
+        out.insert(n, migrate::parse_batch(&rel, &text, date));
+    }
+    Ok(out)
+}
+
+/// `<N>` of the workspace-relative `TASK/migration/batch-<N>.tsv`.
+fn batch_number(rel: &str) -> Option<&str> {
+    let n = rel.strip_prefix(migrate::MIGRATION_DIR)?.strip_prefix("/batch-")?.strip_suffix(".tsv")?;
+    (!n.is_empty() && n.bytes().all(|c| c.is_ascii_digit())).then_some(n)
+}
+
+/// The one check of a `Migrated` line `line` of ticket `id` (TOOL58 Work
+/// 1-2): the batch file it names is committed ([`committed_batches`]),
+/// carries the owner's approval line and parses; it has a row for `id`;
+/// the line's `to <STATE>`, where present, is the row's state; and the
+/// line's evidence is the row's evidence column byte for byte, as `migrate`
+/// copied it ([`migrate::migrated_line`]). A line without `to <STATE>`
+/// (batches 1-13) is checked against the row alone: it records no state to
+/// compare, no consumer reads a state from it (the receipt exception needs
+/// `to <STATE>`, ADR-037 point 18), and line 3 of its migration commit was
+/// rendered from that same row. The date is not checked: the batch file
+/// records none. `Err` says why, naming the batch file.
+pub fn verify_migrated(aids: &Aids, id: &str, line: &str) -> Result<(), String> {
+    let Some(m) = parse_migrated(line) else {
+        return Err("not of the form `Migrated (owner batch <N>, <YYYY-MM-DD>[, to <STATE>]), evidence: <evidence>`".into());
+    };
+    let file = migrate::batch_file(m.batch);
+    let batch = match aids.batches.get(m.batch) {
+        None => return Err(format!("batch {}: {file} is not committed", m.batch)),
+        Some(Err(e)) => return Err(format!("batch {}: {file} is no approved batch file: {}", m.batch, e.join("; "))),
+        Some(Ok(b)) => b,
+    };
+    let Some(row) = batch.rows.iter().find(|r| r.id == id) else {
+        return Err(format!("batch {}: {file} has no row for {id}", m.batch));
+    };
+    if let Some(to) = m.to.filter(|s| *s != row.line3.state) {
+        return Err(format!("batch {}: the line says `to {}`, row {file}:{} says {}", m.batch, to.name(), row.line, row.line3.state.name()));
+    }
+    if m.evidence != row.evidence {
+        return Err(format!("batch {}: the evidence differs from row {file}:{}: {:?}", m.batch, row.line, row.evidence));
+    }
+    Ok(())
+}
+
+/// The `Migrated` lines of `t` that pass [`verify_migrated`]: the only ones
+/// the `done-no-receipt` evidence rule, the receipt exception and `accept`'s
+/// legacy-developer path trust.
+pub fn verified_migrated(aids: &Aids, t: &Ticket) -> Vec<String> {
+    t.migrated.iter().filter(|m| verify_migrated(aids, &t.id, m).is_ok()).cloned().collect()
+}
+
+/// A `migrated-unverified` violation for every `Migrated` line of `t` that
+/// fails [`verify_migrated`], naming ticket, line and batch.
+pub fn migrated_violations(a: &Analysis, t: &Ticket) -> Vec<Violation> {
+    let file = format!("{TASK_DIR}/{}.md", t.id);
+    t.migrated
+        .iter()
+        .filter_map(|m| {
+            let e = verify_migrated(&a.aids, &t.id, m).err()?;
+            Some(v(&t.id, Code::MigratedUnverified, format!("{file}: {m:?}: {e} (ADR-037 point 18, TOOL58)")))
+        })
+        .collect()
+}
+
+/// `accept`'s hint when `t` has `Migrated` lines but none verifies.
+fn unverified_note(aids: &Aids, t: &Ticket) -> String {
+    let e: Vec<String> = t.migrated.iter().filter_map(|m| verify_migrated(aids, &t.id, m).err()).collect();
+    if e.is_empty() {
+        String::new()
+    } else {
+        format!("; its Migrated lines do not match their batch file, so the legacy-developer path does not apply: {}", e.join("; "))
+    }
+}
+
+/// The `Migrated` lines of `a` that verify, and all of them (printed by
+/// `status-check`).
+pub fn migrated_counts(a: &Analysis) -> (usize, usize) {
+    let all = a.tickets.values().map(|t| t.migrated.len()).sum();
+    let ok = a.tickets.values().map(|t| verified_migrated(&a.aids, t).len()).sum();
+    (ok, all)
+}
+
+// ---------------------------------------------------------------------------
+// TOOL58 rework (tester PARTIAL on ca1552318): the batch files themselves.
+// A staged batch file re-checks every ticket naming it; once the migration
+// is closed, `TASK/migration/` is frozen
+// ---------------------------------------------------------------------------
+
+/// The commit that closed the migration: the oldest commit of `HEAD`'s
+/// history that added [`migrate::CLOSED_FILE`]. Read from the history, not
+/// from `HEAD`'s tree, so a later deletion of the file does not lift the
+/// freeze. `None` before the migration was closed (or without a history).
+pub fn migration_closing_commit(root: &Path) -> Option<String> {
+    let log = git_out(root, &["log", "--diff-filter=A", "--format=%H", "--", migrate::CLOSED_FILE]).ok()?;
+    log.lines().rfind(|l| !l.trim().is_empty()).map(|l| l.trim().to_string())
+}
+
+/// The staged changes under [`migrate::MIGRATION_DIR`] against `HEAD`:
+/// `(status, path)`, status `A` added, `M` changed, `D` deleted, `T` type
+/// changed; a rename is its deletion and its addition.
+pub fn staged_migration_changes(root: &Path) -> Result<Vec<(String, String)>, String> {
+    let dir = format!("{}/", migrate::MIGRATION_DIR);
+    let out = git_out(root, &["diff", "--cached", "--name-status", "--no-renames", "-z", "HEAD", "--", &dir])?;
+    let parts: Vec<&str> = out.split('\0').filter(|s| !s.is_empty()).collect();
+    Ok(parts.chunks(2).filter(|c| c.len() == 2).map(|c| (c[0].to_string(), c[1].to_string())).collect())
+}
+
+/// The tickets of `a` with a `Migrated` line naming one of the batches `ns`.
+pub fn tickets_naming_batches(a: &Analysis, ns: &BTreeSet<&str>) -> BTreeSet<String> {
+    a.tickets
+        .values()
+        .filter(|t| t.migrated.iter().any(|m| parse_migrated(m).is_some_and(|m| ns.contains(m.batch))))
+        .map(|t| t.id.clone())
+        .collect()
+}
+
+/// The blob of every file under [`migrate::MIGRATION_DIR`] at `rev`.
+fn migration_blobs(root: &Path, rev: &str) -> Result<BTreeMap<String, String>, String> {
+    let dir = format!("{}/", migrate::MIGRATION_DIR);
+    let out = git_out(root, &["ls-tree", "-r", "-z", rev, "--", &dir])?;
+    Ok(out
+        .split('\0')
+        .filter_map(|e| {
+            let (meta, path) = e.split_once('\t')?;
+            Some((path.to_string(), meta.split(' ').nth(2)?.to_string()))
+        })
+        .collect())
+}
+
+/// The checks of `TASK/migration/` (TOOL58 rework) for [`check`]:
+///
+/// - **staged** (`--staged`, the pre-commit hook): every ticket whose
+///   `Migrated` line names a staged batch file is checked too (`keys`), so
+///   a commit that edits a row or drops the approval line rejects in the
+///   commit itself; and once the migration is closed
+///   ([`migration_closing_commit`]) every staged addition, change or
+///   deletion under `TASK/migration/` rejects, naming the file;
+/// - **full** (no `--staged`, no `--new-only`): once closed, every file
+///   under `TASK/migration/` in `HEAD` must equal its blob in the closing
+///   commit (none added, none removed), so a change committed past the hook
+///   rejects as well.
+pub fn migration_evidence(root: &Path, a: &Analysis, o: &CheckOpts, keys: &mut BTreeSet<String>) -> Result<Vec<Violation>, String> {
+    let closing = migration_closing_commit(root);
+    let short = |c: &str| c.get(..9).unwrap_or(c).to_string();
+    let mut out = Vec::new();
+    if o.staged {
+        let changes = staged_migration_changes(root)?;
+        let ns: BTreeSet<&str> = changes.iter().filter_map(|(_, p)| batch_number(p)).collect();
+        keys.extend(tickets_naming_batches(a, &ns));
+        if let Some(c) = &closing {
+            for (st, p) in &changes {
+                let what = match st.as_str() {
+                    "A" => "addition",
+                    "D" => "deletion",
+                    _ => "change",
+                };
+                out.push(v(
+                    p,
+                    Code::MigrationFrozen,
+                    format!(
+                        "{p}: staged {what} after the migration was closed ({} added in {}); the migration's evidence is frozen (ADR-037 point 18, TOOL58)",
+                        migrate::CLOSED_FILE,
+                        short(c)
+                    ),
+                ));
+            }
+        }
+    } else if !o.new_only {
+        if let Some(c) = &closing {
+            let then = migration_blobs(root, c)?;
+            let now = migration_blobs(root, "HEAD")?;
+            let tail = format!("the migration was closed in {} and its evidence is frozen (ADR-037 point 18, TOOL58)", short(c));
+            for (p, b) in &then {
+                match now.get(p) {
+                    None => out.push(v(p, Code::MigrationFrozen, format!("{p}: missing in HEAD; {tail}"))),
+                    Some(n) if n != b => out.push(v(p, Code::MigrationFrozen, format!("{p}: differs in HEAD from its blob in {}; {tail}", short(c)))),
+                    Some(_) => {}
+                }
+            }
+            for p in now.keys().filter(|p| !then.contains_key(*p)) {
+                out.push(v(p, Code::MigrationFrozen, format!("{p}: added in HEAD after the closing commit; {tail}")));
+            }
+        }
+    }
+    Ok(out)
+}
+
 #[cfg(test)]
 mod tool55_tests;
+#[cfg(test)]
+mod tool58_tests;

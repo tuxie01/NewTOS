@@ -85,33 +85,33 @@ The tester's verdict on `f359f92b7` was PARTIAL (all checks green, two findings)
 ## Implementation of the rework (developer, 2026-11-11)
 
 - **A.** `CommitMap` reads `docs/commit-map.txt` (`old new`, `#` comments) and translates an old prefix of 7+ digits
-  as `tools/oldhash.sh` does (`tools/xtask/src/tickets.rs:2085@CommitMap`); `names_commit_mapped`
-  (`tools/xtask/src/tickets.rs:2111@names_commit_mapped`) is `names_commit` plus the translated tokens. The one shared
-  rule is `evidence_names_commit` (`tools/xtask/src/tickets.rs:2121@evidence_names_commit`): the receipt or one of the
-  ticket's `Migrated` lines (`Ticket::migrated`, `tools/xtask/src/tickets.rs:2127@migrated_lines`) names the commit.
-  `status-check` uses it for the `done-no-receipt` gap (`tools/xtask/src/tickets.rs:975@evidence_names_commit`),
+  as `tools/oldhash.sh` does (`tools/xtask/src/tickets.rs:2108@CommitMap`); `names_commit_mapped`
+  (`tools/xtask/src/tickets.rs:2134@names_commit_mapped`) is `names_commit` plus the translated tokens. The one shared
+  rule is `evidence_names_commit` (`tools/xtask/src/tickets.rs:2144@evidence_names_commit`): the receipt or one of the
+  ticket's `Migrated` lines (`Ticket::migrated`, `tools/xtask/src/tickets.rs:2150@migrated_lines`) names the commit.
+  `status-check` uses it for the `done-no-receipt` gap (`tools/xtask/src/tickets.rs:981@evidence_names_commit`),
   `migrate` for the DONE row's evidence, as the `Migrated` line it writes
   (`tools/xtask/src/tickets/migrate.rs:311@Aids`). A row giving an old hash as `Commit` is refused with its
-  translation. The map and the list of C are read once per view (`tools/xtask/src/tickets.rs:2163@Aids`, the
+  translation. The map and the list of C are read once per view (`tools/xtask/src/tickets.rs:2186@Aids`, the
   `aids` field of `Analysis`).
 - **B.** The run snapshots the files it writes (all clean, checked before), then writes, stages and commits; on any
   failure, a hook rejection included, `revert` (`tools/xtask/src/tickets/migrate.rs:467@revert`) unstages exactly
   those paths and puts their bytes back. The refusal says so.
-- **C.** `parse_historical` (`tools/xtask/src/tickets.rs:2132@parse_historical`): line 1 the approval line
+- **C.** `parse_historical` (`tools/xtask/src/tickets.rs:2155@parse_historical`): line 1 the approval line
   (`is_approval`), `#` comments, a header row `receipt<TAB>reason` skipped, rows `<receipt file><TAB><reason>` with a
   receipt name `<ID>-STATUS-<DONE|UNFINISHED|FAILURE|BLOCKED>.MD` and a non-empty reason, no file twice; a malformed
   list makes `status-check` fail. A listed orphan receipt yields no `orphan-receipt` violation
-  (`tools/xtask/src/tickets.rs:1030@historical`); its baseline entry is then stale and goes with
+  (`tools/xtask/src/tickets.rs:1036@historical`); its baseline entry is then stale and goes with
   `status-check --prune-baseline`, in the commit that adds the list. The real list is not created here.
 - **Tests:** `tools/xtask/src/tickets/migrate/tests.rs:333@the_real_commit_map_translates_the_a01_receipt_hash`
   (the real map; A01's receipt as a fixture since TOOL57),
   `tools/xtask/src/tickets/migrate/tests.rs:361@the_a01_case_migrates_to_done_through_the_commit_map` (A01's
   ticket and receipt as before the migration, fixtures since TOOL57, in a scratch repository, a fixture map line to its fix commit; refused without the line; the
   receipt bytes unchanged; the `Migrated` line alone satisfies `status-check`),
-  `tools/xtask/src/tickets/migrate/tests.rs:424@a_rejecting_hook_reverts_every_write_and_a_rerun_works` (a
+  `tools/xtask/src/tickets/migrate/tests.rs:431@a_rejecting_hook_reverts_every_write_and_a_rerun_works` (a
   `pre-commit` and a `commit-msg` hook that exit 1: work tree bytes, `git status`, staged blobs and `HEAD` identical
   to before; the rerun commits),
-  `tools/xtask/src/tickets/migrate/tests.rs:449@historical_receipts_are_no_orphans_once_listed`.
+  `tools/xtask/src/tickets/migrate/tests.rs:456@historical_receipts_are_no_orphans_once_listed`.
 - Two lines added to `Ticket` and to `Analysis` shifted the anchored cites into `tickets.rs` in TOOL41, TOOL46 and
   TOOL51; they are updated to the new lines.
 

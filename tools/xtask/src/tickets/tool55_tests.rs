@@ -165,6 +165,25 @@ fn the_exception_applies_to_every_non_done_target_with_an_older_receipt_only() {
         r.write(&format!("TASK/{id}.md"), &ticket(id, l3, below.as_deref()));
     }
     r.write("TASK/C3-STATUS-DONE.MD", receipt);
+    let d2_evidence = format!("D2-STATUS-DONE.MD, fix {}", &h0[..9]);
+    let mut rows4: Vec<(&str, &str, &str)> = [
+        ("S1", "IMPLEMENTED"),
+        ("S2", "PARKED"),
+        ("S3", "OBSOLETE"),
+        ("S4", "OPEN"),
+        ("S5", "ACCEPTED"),
+        ("C1", "IMPLEMENTED"),
+        ("C2", "IMPLEMENTED"),
+        ("C3", "IMPLEMENTED"),
+        ("C4", "IMPLEMENTED"),
+        ("D1", "DONE"),
+        ("M5", "IMPLEMENTED"),
+    ]
+    .map(|(id, st)| (id, st, EVIDENCE))
+    .to_vec();
+    rows4.push(("D2", "DONE", &d2_evidence));
+    write_batch(&r, "4", &rows4);
+    write_batch(&r, "3", &[("N1", "IMPLEMENTED", "legacy"), ("E1", "IMPLEMENTED", "x, to IMPLEMENTED), evidence: y")]);
     commit(&r, "docs(task): migrate legacy tickets, owner batch 4");
     // Commit 3, after the migration: C1's receipt changed, C2's added.
     r.write("TASK/C1-STATUS-DONE.MD", "# R — legacy receipt\n\nChanged after the migration.\n");
@@ -205,6 +224,7 @@ fn accept_writes_numbered_receipts_and_never_overwrites_one() {
     fs::write(r.0.join("TASK/X1-STATUS-DONE.MD"), legacy).unwrap();
     commit(&r, "base");
     r.write("TASK/X1.md", &ticket("X1", &implemented(), Some(MIGRATED)));
+    write_batch(&r, "4", &[("X1", "IMPLEMENTED", EVIDENCE)]);
     commit(&r, "docs(task): migrate legacy tickets, owner batch 4");
     r.write("TASK/X1-STATUS-UNFINISHED.MD", "# X1 — receipt\n\nRole: developer\nAgent: dev-a\n\n## Done\n\nWork.\n");
     let h = commit(&r, "feat(x): the change (X1)");
@@ -256,6 +276,7 @@ fn accept_of_a_migrated_ticket_without_a_developer_records_the_legacy_developer(
     r.write("TASK/Y1.md", &ticket("Y1", "Status: OPEN (2026-11-10) | Priority: P1", None));
     commit(&r, "base");
     r.write("TASK/X1.md", &ticket("X1", &implemented(), Some(MIGRATED)));
+    write_batch(&r, "4", &[("X1", "IMPLEMENTED", EVIDENCE)]);
     let hx = commit(&r, "docs(task): migrate legacy tickets, owner batch 4 (X1)");
     r.write("TASK/Y1.md", &ticket("Y1", &implemented(), None));
     let hy = commit(&r, "feat(y): the change (Y1)");
@@ -287,3 +308,32 @@ fn accept_of_a_migrated_ticket_without_a_developer_records_the_legacy_developer(
     let a = Analysis::load(&mut view).unwrap();
     assert!(ticket_violations(&a, "X1", &BTreeSet::new(), &mut gr).iter().any(|v| v.code == Code::SelfAccept));
 }
+
+// ---------------------------------------------------------------------------
+// TOOL58: the committed batch rows the Migrated lines above need
+// ---------------------------------------------------------------------------
+
+/// The fields column of a batch row of target state `st` for ticket `id`.
+pub(super) fn row_fields(id: &str, st: &str) -> String {
+    match st {
+        "IMPLEMENTED" => "Priority: P1 | Commit: 0123abcd5 | Missing: m".into(),
+        "PARKED" => "Priority: P3 | Reason: r | Reopen: o".into(),
+        "OBSOLETE" => "Priority: P3 | Reason: withdrawn".into(),
+        "ACCEPTED" => "Priority: P2 | Ref: ADR-001".into(),
+        "DONE" => format!("Priority: P2 | Commit: 0123abcd5 | Receipt: {id}-STATUS-DONE.MD"),
+        _ => "Priority: P2".into(),
+    }
+}
+
+/// Writes the owner-approved batch file `n` with rows `(id, state,
+/// evidence)` (TOOL58: every `Migrated` line needs its committed row).
+pub(super) fn write_batch(r: &TempRepo, n: &str, rows: &[(&str, &str, &str)]) {
+    let mut t = String::from("# approved: owner 2026-11-11 test batch\nid\tstate\tfields\tevidence\n");
+    for (id, st, ev) in rows {
+        t.push_str(&format!("{id}\t{st}\t{}\t{ev}\n", row_fields(id, st)));
+    }
+    r.write(&migrate::batch_file(n), &t);
+}
+
+/// The evidence of [`MIGRATED`].
+const EVIDENCE: &str = "legacy ERLEDIGT with an open clause";

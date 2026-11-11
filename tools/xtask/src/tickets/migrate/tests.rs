@@ -388,7 +388,9 @@ fn the_a01_case_migrates_to_done_through_the_commit_map() {
     assert!(c.rejected.is_empty(), "{:?}", c.rejected);
     // status-check: the Migrated line alone names a commit too. A DONE whose
     // receipt names no hash passes with a Migrated line naming the commit,
-    // and fails without it.
+    // and fails without it. The line matches a row of the committed batch
+    // 9 (TOOL58: an unmatched line is no evidence).
+    batch(&r, "9", &format!("{APPROVAL}\nD2\tDONE\tPriority: P2 | Commit: {h9} | Receipt: D2-STATUS-DONE.MD\tfix {h9}\n"));
     r.write(
         "TASK/D2.md",
         &format!("# D2 — t\n\nStatus: DONE ({D}) | Priority: P2 | Commit: {h9} | Receipt: D2-STATUS-DONE.MD\n\nMigrated (owner batch 9, {D}), evidence: fix {h9}\n"),

@@ -96,7 +96,7 @@ the owner decision in the next commit.
   `Agent:` header values of every receipt of the ticket (`recorded_agents`) and skips the running acceptor.
   `cargo xtask scratch-clean <id>... | --ticket <ID> [--except <agent>]` (`tools/xtask/src/scratch.rs:111@cmd_scratch_clean`).
   `accept` calls `clean_ticket` after its commit with `--agent` as the exception
-  (`tools/xtask/src/tickets.rs:1907@clean_ticket`).
+  (`tools/xtask/src/tickets.rs:1930@clean_ticket`).
 - **Squash-merge trigger: `cargo xtask land <branch> -F <file>`** (`tools/xtask/src/scratch.rs:158@land`):
   `git merge --squash`, `git commit -F` with the normal hooks, then `clean_ticket` for every ticket the subject
   names. Refuses with changes staged, with `<branch>` checked out, for an unknown branch; a rejected commit leaves
