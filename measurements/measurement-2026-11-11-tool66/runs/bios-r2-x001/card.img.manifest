@@ -1,0 +1,15 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh, MKCARD_TESTDISK d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37 /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ae04ff118fe96d5ef/scratch/tosdump-79358/test.img
+image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ae04ff118fe96d5ef/scratch/tosdump-79358/card.img
+image_sha256 edcacf4f06bf366f505f62273752a11fbd809f4f081f1b68d4416c1c1d56b5b8
+size_mib 128
+created 2026-11-11T22:53:55Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file c779a308dbfae3b61747e3ebcf5d45f7d616bc53e63b83ec4afa3557f02ecf5b 31 C:\NEWDESK.INF
+file 39352bce63b7ab334f236641d265dce69fd39856b0b47dda8ef4b3502b54fdf0 2706 D:\BIOS.TSV
+file 2218c54ac6a0d40e422f1e643c5df24bcbbe62f33ffe335ca2501dc36629c402 4 D:\DISKUNIT.TXT
+file 4edacab46c0678dcb7a185161c9c3ac547c4e5f5239a7a7dd81d0627e8fa3883 251744 D:\DUMPBIOS.NAP
+file 206821246b10fc2e6ac73712e5d889601b45387b11665577171ccf1ddbbc0392 5 D:\PROGEXT.TXT

@@ -1,0 +1,5 @@
+profile check, EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN: hatari-oracle disk (tosdump/profiles.tsv), u:0 = unit 18, as its LOG EMUTOS-1a7484ab-BIOS-r2-phys-disk.LOG records
+profile check, NEWTOS.BIN: xtask-tosdump disk (tosdump/profiles.tsv), u:0 = unit 26, as its LOG NEWTOS.LOG records
+EMUTOS-1a7484ab-BIOS-r2-phys-disk.BIN vs NEWTOS.BIN -- area BIOS, 12 cases from bios-r2-phys.tsv
+
+0 of 12 cases differ

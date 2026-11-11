@@ -1,6 +1,6 @@
 # TOOL66 — mktestdisk writes a fixed OEM name, independent of the mtools version
 
-Status: OPEN (2026-11-11) | Priority: P2
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance through cargo xtask accept
 
 Type: tool. Owner decision 2026-11-11 (option b of the BIOS full run). Split off from [TOOL15](TOOL15.md) (PARKED:
 pin mtools, `--fast-forward` as a profile parameter), which stays parked.
@@ -29,3 +29,19 @@ pin mtools, `--fast-forward` as a profile parameter), which stays parked.
 - The 7 cases equal; the test image sha256 equals the one recorded with mtools 4.0.49 (or the remaining difference
   is named and explained).
 - `cargo xtask test` green, doc-check of the edited files 0 failures.
+
+## Implementation (developer, 2026-11-11)
+
+Receipt: [TOOL66-STATUS-UNFINISHED.MD](TOOL66-STATUS-UNFINISHED.MD). Run:
+`measurements/measurement-2026-11-11-tool66/RUNINFO.TXT`.
+
+- **Fixed OEM name.** Right after `mformat` (`tools/mktestdisk.sh:112@mformat`) the script writes `MTOO4049`, 8 bytes,
+  at byte `63 * 512 + 3` of the image, boot sector offset 3 of the partition, with `printf | dd conv=notrunc`
+  (`tools/mktestdisk.sh:121@OEM`); the comment above it names the source (mtools 4.0.49, the version every committed
+  disk reference was recorded with) and finding F1. The header's list of fixed values names the OEM name too.
+- **No other mtools-version byte.** With mtools 4.0.50 on the host the image `tosdump --disk` builds (`C:\NEWDESK.INF`
+  only, the same `file` lines as the recording) has sha256 `d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37`,
+  the value recorded with mtools 4.0.49 (`measurements/measurement-2026-10-28-tool07b/runs/mktestdisk.stdout`,
+  `measurements/measurement-2026-10-29-tool19/test.img.manifest`); before the change it was `923d06a5...`.
+- **The three tables.** `bios-r2` 0 of 51, `bios-r2-phys` 0 of 12, `bios-r2-x001` 0 of 8 cases differ against their
+  committed references (`tosdiff --validate` exit 0 each): the 7 F1 cases are equal, the other 64 stay equal.

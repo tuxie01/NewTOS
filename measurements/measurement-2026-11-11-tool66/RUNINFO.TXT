@@ -1,0 +1,57 @@
+measurement-2026-11-11-tool66 -- fixed OEM name in the test disk: image sha256 and the three F1 disk tables
+==========================================================================================================
+Developer (agent-ae04ff118fe96d5ef), 2026-11-11, TASK/TOOL66. Worktree branch worktree-agent-ae04ff118fe96d5ef, base
+f38100fc2 plus the uncommitted TOOL66 change of tools/mktestdisk.sh (OEM name MTOO4049 written after mformat); the run
+was made before the commit that records it, nothing else in the tree changed.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every image manifest). mtools 4.0.50 on the host
+(mformat --version: "mformat (GNU mtools) 4.0.50"). QEMU raspi4b via `cargo xtask tosdump` (TOOL09), kernel rpi4 --release
+built by the runner in this worktree. Oracle side NOT re-run: the references are the committed
+tosdump/reference/EMUTOS-1a7484ab-BIOS-r2{,-phys,-x001}-disk.BIN (pin 1a7484ab).
+
+WHY
+  Finding F1 of measurements/measurement-2026-11-11-bios-full/RUNINFO.TXT: 7 Rwabs cases (bios-r2 58/73/74/75,
+  bios-r2-phys 34/36, bios-r2-x001 42) differed only in bytes 9,10 of the test disk's boot sector, the OEM name mformat
+  writes ("MTOO4049" at recording, "MTOO4050" with today's mtools). tools/mktestdisk.sh now overwrites bytes 3-10 with
+  MTOO4049 after mformat.
+
+METHOD (method/)
+  run-disk.sh <scratch> <runs>   the three tables, the call of measurements/measurement-2026-11-11-bios-full/method/run-all.sh:
+    cargo xtask tosdump bios tosdump/cases/bios-<t>.tsv --disk --out runs/bios-<t> --scratch <scratch> --reference <BIN>
+  Run as: method/run-disk.sh /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ae04ff118fe96d5ef/scratch runs
+  The test image is built by the runner (tools/mktestdisk.sh, C:\NEWDESK.INF only), the card by tools/mkcard.sh with
+  MKCARD_TESTDISK; no diskutil/hdiutil call by hand. mkcard did not fail with the scratch under /Volumes/Daten.
+
+RESULT 1 -- test image sha256 (runs/<t>/mktestdisk.log, runs/<t>/test.img.manifest)
+  all three runs: d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+  = the image recorded with mtools 4.0.49 (measurements/measurement-2026-10-28-tool07b/runs/mktestdisk.stdout,
+    measurements/measurement-2026-10-29-tool19/test.img.manifest); before the change, with mtools 4.0.50:
+    923d06a5884fbb828f2f3641d9a53d7eb025c9cd6d8e1ab8debdac8b512d3581 (bios-full run). The manifests' `file` lines equal the
+    tool19 manifest's; the only manifest differences are image path, image_sha256 (now equal), created, host_clang/host_cflow.
+  So no other byte of the image depends on the mtools version (4.0.49 vs 4.0.50).
+
+RESULT 2 -- tosdiff (runs/<t>/tosdiff-*.txt, runs/<t>.stdout)
+ table          reference                  cases  differ now  differ in bios-full (F1)  tosdiff --validate
+ bios-r2        BIOS-r2-disk  (072d8cd1)     51       0          4 (58, 73, 74, 75)        exit 0, CRC 09C71B80
+ bios-r2-phys   BIOS-r2-phys-disk (05ad06cf) 12       0          2 (34, 36)                exit 0, CRC 514944FD
+ bios-r2-x001   BIOS-r2-x001-disk (425b4e6d)  8       0          1 (42)                    exit 0, CRC 268E6D29
+  The 7 F1 cases are equal; the 64 other cases were equal in the bios-full run and are equal now: no other case changed.
+  bios-r2 testpart after the run identical to before, fsck_msdos -n exit 0 (runs/bios-r2/testpart-compare.txt).
+
+INPUTS / OUTPUTS (sha256; images, kernels and BINs gitignored)
+  kernel8.img (rpi4 release, this worktree)  d9c6bef305de61b026e4871468c4fe64354182694114024a59eedb3e62bd11a2
+  DUMPBIOS.NAP                               4edacab46c0678dcb7a185161c9c3ac547c4e5f5239a7a7dd81d0627e8fa3883
+  tosdiff                                    c05b07f6f1019071a67ba8dab47ee092e251f5a5e8330bdd57eac879be18fa7d
+  test image (all three runs)                d95a60c3f5d76fee767b9dc5cd16dab3b2bc1215e116fe738cbdbaa318a92d37
+  cards (runs/<t>/card.img.manifest, image_sha256):
+    bios-r2 847a213132a900b364dcf7fe7c7ea3edc591fc63f35909ff7a716a5b8fa1da31
+    bios-r2-phys f9310dd1499c9a1ea47fe6a00303bd60568f030903d08c9ecbf12fa806dc4cd2
+    bios-r2-x001 edcacf4f06bf366f505f62273752a11fbd809f4f081f1b68d4416c1c1d56b5b8
+  NewTOS BIOS.BIN: bios-r2 a7c896fb2ade77e833963a3a0b20bf64c19f1691d3ad779af438b864bb7147bd,
+    bios-r2-phys 1490b8944f626ce7aadb41a919eeabac7470f6e8dcee2158c438579abcb1b233,
+    bios-r2-x001 5fd1eea8015ddbab3c8c4544ec53aec0ff6f6a512bd353989dc55ef3e66fef22
+  bios-r2-x001 testpart-after.img (moved to the scratch) 84bcadfb750eef7880acf837c31a84b678f25fa4f10aeb0a710b639c9e56f09b
+  manifests copied: runs/<t>/card.img.manifest (3) and runs/<t>/test.img.manifest (3); every one says, verbatim:
+    optional_missing none      (6 of 6)
+  Clone: none (worktree used). Scratch: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ae04ff118fe96d5ef = 64M
+  (scratch/bios-r2-x001-testpart-after.img only). This run dir: 1.2M.
+  Not covered: real Pi4 hardware; QEMU-TCG only.

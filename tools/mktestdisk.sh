@@ -25,7 +25,7 @@
 #               4 sectors per cluster, 1 reserved sector, 2 FATs of 128
 #               sectors, 512 root entries (32 sectors), 32672 clusters,
 #               media 0xF8, hidden sectors 63, volume serial 4E54-5444,
-#               label NTTESTDISK
+#               label NTTESTDISK, OEM name MTOO4049 (fixed, see below)
 #   time stamp  every FAT time stamp (label, folders, files) is
 #               2026-10-17 12:00 (UTC), the stamp of tools/mkcard.sh,
 #               unless a file names its own
@@ -111,6 +111,15 @@ printf '\125\252' | dd of="$IMG" bs=1 seek=510 conv=notrunc status=none
 PART="${IMG}@@$((PSTART * 512))"
 mformat -i "$PART" -T "$PSIZE" -h 16 -s 63 -H "$PSTART" -c 4 -r 32 -L 128 \
   -N "$SERIAL" -v "$LABEL" ::
+
+# OEM name, boot sector bytes 3-10: mformat writes "MTOO" + its own version
+# there, so the image would change with every mtools release. Fixed to
+# MTOO4049, the name of mtools 4.0.49 that every committed disk reference
+# (tosdump/reference/*-disk.BIN) was recorded with; a Rwabs case reading
+# sector 0 captures these bytes (TASK/TOOL66, finding F1 of
+# measurements/measurement-2026-11-11-bios-full/RUNINFO.TXT).
+OEM=MTOO4049
+printf '%s' "$OEM" | dd of="$IMG" bs=1 seek=$((PSTART * 512 + 3)) conv=notrunc status=none
 
 mkdir -p "$STAGE"
 for spec in "$@"; do
