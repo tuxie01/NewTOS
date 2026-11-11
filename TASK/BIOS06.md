@@ -1,6 +1,6 @@
 # BIOS06 — `Getmpb`: kernel and SDK header disagree on the `MD` layout
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept (O3 decided 2026-11-11)
+Status: DONE (2026-11-11) | Priority: P1 | Commit: d715e93b7 | Receipt: BIOS06-STATUS-DONE-2.MD
 
 Migrated (owner batch 14, 2026-11-11, to IMPLEMENTED), evidence: receipt TASK/BIOS06-STATUS-DONE.MD exists (legacy DONE receipt, IMPLEMENTED accepted by TOOL55), commit f77ba8bac (fix(bios): Getmpb publishes the LP64 header layout (BIOS06)), VERIFIED: diff of f77ba8bac (fix(bios): Getmpb publishes the LP64 header layout (BIOS06)) touches tos-api/src/bios/getmpb.rs, kernel/src/selftest_bios.rs, sdk/apps/apitest/apitest.c (+6), names the id by subject, 212 files, legacy line: ERLEDIGT 2026-10-29 ([Quittung](BIOS06-STATUS-DONE.MD)), O3 gemessen (EmuTOS: Bu
 
