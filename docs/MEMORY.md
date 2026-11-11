@@ -3536,6 +3536,28 @@ Note (owner 2026-11-11): a commit whose only change to a ticket file is made by 
 the new line 3 and the `Migrated` line are English, the old line 3 stays verbatim as a quote, and no translation is
 required; the ticket is translated when someone works on its content.
 
+### Addendum 2026-11-11 (c) — legacy receipts, numbered receipts, reopening
+
+Owner decisions 2026-11-11 (LEGACY01 collisions, TOOL55). Points 1–17 and decisions (e)–(h) stand; this addendum
+qualifies points 11, 12 and 13 for migrated tickets and for repeated acceptances.
+
+18. **Legacy DONE receipts of migrated tickets.** A ticket migrated by `cargo xtask migrate` to a state other than
+    `DONE` (the `Migrated (owner batch N, <date>, to <STATE>)` line names it) keeps its legacy `<ID>-STATUS-DONE.MD`
+    without the gap `done-receipt-not-done` of point 13, provided the receipt is older than the migration commit (its
+    last change in git precedes the commit that wrote the Migrated line). A receipt added or changed after the
+    migration gets no exception. Receipts are never rewritten. Batches 1–13 ran before TOOL55; their Migrated lines
+    carry no `to <STATE>` and get no exception. This is harmless: those batches contained no row with a legacy DONE
+    receipt. The Migrated line must match a row of the owner-approved batch file it names (TOOL58).
+19. **Numbered receipts.** `cargo xtask accept` never overwrites a receipt. When `<ID>-STATUS-DONE.MD` exists, a PASS
+    writes the next free `<ID>-STATUS-DONE-<n>.MD` (n ≥ 2), and line 3 `Receipt:` names that file; points 1, 11 and
+    13 read "the DONE receipt" as the file line 3 names.
+20. **Legacy developer unknown.** For a migrated ticket with no receipt recording `Role: developer`, `accept` records
+    `Developer: legacy, developer unknown` in its receipt; the self-acceptance check of point 12 does not apply to it
+    and the receipt says so. A non-migrated ticket without a recorded developer is still refused. No developer is
+    filled in by hand afterwards.
+21. **Reopening.** Further work on a `DONE` ticket goes into a follow-up ticket (point 13); a `DONE` ticket is not
+    moved back to `OPEN` or `IMPLEMENTED`.
+
 ---
 
 ## Template for new ADRs
