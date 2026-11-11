@@ -27,6 +27,16 @@ committed before the owner's OK on the report of step 1.**
 2. **After the owner's OK only:** the workflow file(s) under `.github/workflows/`, pinned action versions, and a test
    push that shows a deliberately broken doc cite turning the run red.
 
+## Owner decision (2026-11-11) on the step 1 report
+
+Step 1 report: `docs/analysis/ci-backstop-2026-11-11.md`. Variant **A**: a GitHub Actions workflow on every push to
+`main`, Linux runner, alarm only, no branch protection. `tuxie01` is a user account and the repository is public, so
+standard runners are free. Checks: doc-check (new errors only, over the pushed range), `deps --check-mapping`,
+`status-check`, `cargo xtask test`. The range comes from [TOOL48](TOOL48.md) (`--range`, no `git reset --soft`
+workaround); the tests that need gitignored inputs skip only under `NEWTOS_CI=1` ([TOOL47](TOOL47.md)). Notification:
+GitHub's default e-mail on a failed run to the pusher, no extra setup. The workflow file is shown to the owner before
+it is committed. Step 2 starts after TOOL47 and TOOL48.
+
 ## Acceptance
 
 - Step 1: the report, every claim with a source (command output, file, GitHub documentation with date); a
