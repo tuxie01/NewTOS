@@ -1,0 +1,18 @@
+A39 / H05 — owner confirmation: launch QED from TeraDesk and return, windows intact
+
+Date: 2026-11-11. Recorded by the lead from the owner's chat message; no lead measurement, no image built for it.
+Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1).
+Card (as checked by the lead the same day): /Volumes/BOOT, kernel8.img sha256
+e788dc5811fb7ffb4088d92c0eb7395941de9f9f24a8e5d99fd0a4e924ed015c (b744febc release kernel,
+measurements/measurement-2026-11-11-a41-screenshot/RUNINFO.TXT). Test sheet: measurements/measurement-2026-11-11-a41-retest/TESTBLATT.md,
+steps 7 and 8.
+
+Owner statement, verbatim (German):
+  "ich kann das bestätigen, nach dem öffnen von QED in Teradesk, und dem rückkehr stehen die fenster wieder so da wie vor dem start"
+(translated from German: "I can confirm it: after opening QED in TeraDesk and returning, the windows stand there again as
+before the start")
+
+Covers: A39 / H05 launch and return from TeraDesk with the windows restored (test sheet step 8, the window part).
+Not covered by the statement: no screenshot or photo of it; the QED menu bar width (A40 in QED, step 7); info lines,
+colour icons and menu texts after the return are not mentioned separately; TeraDesk Quit back to the NewTOS desktop
+(step 9).
