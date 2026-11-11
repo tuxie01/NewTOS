@@ -1,6 +1,6 @@
 # BIOS11 — `Bconin(2)` mit `conterm` Bit 3 liefert den Shift-Zustand beim Lesen, EmuTOS den beim Tastendruck
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: a32921d5b | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P2 | Commit: a32921d5b | Receipt: BIOS11-STATUS-DONE.MD
 
 Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit a32921d5b (feat(xbios): Iorec wired, the IKBD IOREC is the key queue (XBIOS01, BI), VERIFIED: diff of a32921d5b (feat(xbios): Iorec wired, the IKBD IOREC is the key queue (X) touches tos-api/src/bios/chardev.rs, names the id by subject, 264 files, legacy line: ERLEDIGT 2026-10-29 mit [XBIOS01](XBIOS01.md) (`a32921d5`), vom Anwender abgenom
 
