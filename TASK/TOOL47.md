@@ -1,6 +1,6 @@
 # TOOL47 — tests that need gitignored inputs skip only under an explicit CI switch
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P2 | Commit: 6d7cb3456 | Receipt: TOOL47-STATUS-DONE.MD
 
 Type: tool (tests). Owner decision 2026-11-11, from the [TOOL43](TOOL43.md) report
 (`docs/analysis/ci-backstop-2026-11-11.md`). Needed before the TOOL43 workflow can run `cargo xtask test` green.
