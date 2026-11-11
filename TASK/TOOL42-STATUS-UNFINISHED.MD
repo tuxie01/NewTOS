@@ -1,6 +1,9 @@
 # TOOL42 — receipt (unfinished: tester acceptance, CLAUDE.md line, squash merge pending)
 
-Role: developer. Agent: developer subagent `agent-a15921e5b605761cb` (Claude Opus 5.5), 2026-11-11.
+Role: developer
+Agent: agent-a15921e5b605761cb
+(Role and Agent split into two header lines by lead, 2026-11-11; the developer wrote: "Role: developer. Agent:
+developer subagent `agent-a15921e5b605761cb` (Claude Opus 5.5), 2026-11-11.")
 Worktree `.claude/worktrees/agent-a15921e5b605761cb`, branch `worktree-agent-a15921e5b605761cb`, base `d033a78a2`
 (rebased from `ced5e68f6` on the lead's note). The commit is on the worktree branch; the main tree is untouched,
 so the live guard of every session is still the old one until the squash merge.

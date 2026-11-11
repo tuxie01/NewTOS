@@ -3496,6 +3496,8 @@ points 1–4 and 6–10 stand.
     - line 3 `PARKED` without `Reason` and `Reopen`.
     Reports without rejecting: a `PARKED` ticket whose `Reason: blocked by <ID>` names a ticket that is `DONE`; a
     flagged self-acceptance (point 12).
+    Clarification (owner 2026-11-11): the `fix`/`feat` rule reads ticket ids from the subject line only; an id
+    named only in the message body does not count.
 14. **Where it runs.** The checks that need the commit message (the `fix`/`feat` subject and the ids it names) run in
     a `commit-msg` hook: `pre-commit` runs before the message exists. The other checks run in `pre-commit`. Both are
     installed by `cargo xtask install-hooks` and are switched on only after the owner's OK; until then the commands
@@ -3507,6 +3509,7 @@ Owner decisions 2026-11-11 on the open points of the draft:
 - (f) `PARKED` → `OPEN`: the lead, via `cargo xtask set-status <ID> OPEN --reason ...`, after an owner decision. New
   tickets are created directly as `OPEN` by whoever opens them; `status-check` validates line 3.
 - (g) A commit that names several ticket ids: every named id must satisfy the rules.
+- (h) The commit `accept` makes carries the same `Co-Authored-By:` trailer as every other commit (owner 2026-11-11).
 
 ---
 

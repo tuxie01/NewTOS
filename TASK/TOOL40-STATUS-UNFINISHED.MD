@@ -1,5 +1,9 @@
 # TOOL40 — receipt (unfinished: tester, CLAUDE.md and commit pending)
 
+Role: developer
+Agent: agent-a26d8df52f9c23927
+(Role and Agent added by lead from session log, 2026-11-11.)
+
 Developer, 2026-11-11. The change is in the working tree, not committed. Base: `8f6f66afe`.
 
 ## Done
