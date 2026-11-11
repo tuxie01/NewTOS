@@ -94,10 +94,13 @@ fn kernel_palette() -> Vec<[i64; 3]> {
     p
 }
 
+/// EmuTOS' VDI colour source, workspace-relative (a gitignored input).
+const EMUTOS_VDI_COL: &str = "references/emutos/vdi/vdi_col.c";
+
 /// EmuTOS' `videl_palette1` + `videl_palette2`
 /// (`references/emutos/vdi/vdi_col.c:130-199`).
 fn emutos_palette() -> Vec<[i64; 3]> {
-    let src = String::from_utf8(read(&workspace_root().join("references/emutos/vdi/vdi_col.c"))).unwrap();
+    let src = String::from_utf8(read(&workspace_root().join(EMUTOS_VDI_COL))).unwrap();
     let table = |name: &str, n: usize| {
         let s = &src[src.find(&format!("static const WORD {name}[")).unwrap()..];
         let s = &s[s.find('=').unwrap() + 1..];
@@ -205,8 +208,15 @@ fn dist2(a: [i64; 3], b: [i64; 3]) -> i64 {
 /// EmuTOS' `videl_palette1/2`.
 #[test]
 fn recolour_palettes_equal_their_sources() {
+    const FREEMINT_PAL: &str = "references/freemint/xaaes/src.km/pal/nvdi.pal";
+    if !crate::test_inputs::require_paths(
+        "rsc_recolour_tests::recolour_palettes_equal_their_sources",
+        &[FREEMINT_PAL, EMUTOS_VDI_COL],
+    ) {
+        return;
+    }
     let nvdi = read(&rsc_dir().join("nvdi.pal"));
-    let freemint = read(&workspace_root().join("references/freemint/xaaes/src.km/pal/nvdi.pal"));
+    let freemint = read(&workspace_root().join(FREEMINT_PAL));
     assert_eq!(nvdi, freemint, "nvdi.pal is a verbatim copy");
     let tos = pal(&read(&rsc_dir().join("tos-default.pal")));
     assert_eq!(tos, kernel_palette(), "tos-default.pal = kernel/src/vdi_backend.rs");
@@ -219,7 +229,14 @@ fn recolour_palettes_equal_their_sources() {
 /// byte outside the 8-plane data rasters is unchanged.
 #[test]
 fn hypview_rsc_8plane_icons_take_the_nearest_tos_colour() {
-    let src = workspace_root().join("sdk/apps/hypview/hyp_view.rsc");
+    const HYP_VIEW_RSC: &str = "sdk/apps/hypview/hyp_view.rsc";
+    if !crate::test_inputs::require_paths(
+        "rsc_recolour_tests::hypview_rsc_8plane_icons_take_the_nearest_tos_colour",
+        &[HYP_VIEW_RSC],
+    ) {
+        return;
+    }
+    let src = workspace_root().join(HYP_VIEW_RSC);
     let dir = workspace_root().join("target").join("xtask-rsc-recolour");
     std::fs::create_dir_all(&dir).unwrap();
     let out = dir.join("hyp_view-recoloured.rsc");

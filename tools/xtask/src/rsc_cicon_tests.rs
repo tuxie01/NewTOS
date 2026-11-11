@@ -443,8 +443,12 @@ fn mkrsc_convert_ilp32_carries_the_colour_icons_as_c_structs() {
 /// An old-format file gets the same header with empty CICON arrays.
 #[test]
 fn an_old_format_file_declares_no_colour_icons() {
+    const GEM_RSC: &str = "references/emutos/aes/gem.rsc";
+    if !crate::test_inputs::require_paths("rsc_cicon_tests::an_old_format_file_declares_no_colour_icons", &[GEM_RSC]) {
+        return;
+    }
     let dir = scratch_dir("old");
-    let src = workspace_root().join("references").join("emutos").join("aes").join("gem.rsc");
+    let src = workspace_root().join(GEM_RSC);
     let out = dir.join("gem.nrsc");
     let o = run_mkrsc(&dir, None, &src, &out);
     assert!(o.status.success());
@@ -464,8 +468,12 @@ fn an_old_format_file_declares_no_colour_icons() {
 /// `load_icons` → `xrsrc_gaddr` will parse at its head.
 #[test]
 fn teradesk_cicons_rsc_converts_and_fits_rsc_cap() {
+    const CICONS: &str = "sdk/apps/teradesk/cicons.rsc";
+    if !crate::test_inputs::require_paths("rsc_cicon_tests::teradesk_cicons_rsc_converts_and_fits_rsc_cap", &[CICONS]) {
+        return;
+    }
     let dir = scratch_dir("teradesk");
-    let src = workspace_root().join("sdk").join("apps").join("teradesk").join("cicons.rsc");
+    let src = workspace_root().join(CICONS);
     let out = dir.join("cicons.rsc");
     let o = run_mkrsc(&dir, None, &src, &out);
     assert!(

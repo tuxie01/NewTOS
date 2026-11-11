@@ -2080,13 +2080,29 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
         // Beyond the end.
         let long = one("`tools/xtask/src/doc_check.rs:999999`");
         assert!(matches!(r.resolve(doc, &long).unwrap(), Outcome::Fail(m) if m.starts_with("line 999999")));
-        // A top-level path that is gone fails even without references/.
+        // A span that misses tries the SEARCH_ROOTS too, `references/emutos/`
+        // and `references/freemint/` among them: with such a tree absent it
+        // may live there and is skipped, not failed (TOOL47). A link has the
+        // one candidate beside its file, so it fails with or without them.
+        let refs_absent = r.any_reference_missing();
+        let gone = r.resolve(doc, &one("`kernel/src/no_such_module_x.rs`")).unwrap();
+        let wrong_case = r.resolve(doc, &one("`tools/XTASK/Cargo.toml`")).unwrap();
+        if refs_absent {
+            assert_eq!(gone, Outcome::Skipped);
+            assert_eq!(wrong_case, Outcome::Skipped);
+        } else {
+            assert!(matches!(gone, Outcome::Fail(m) if m == "missing"));
+            // Case must match exactly.
+            assert!(matches!(wrong_case, Outcome::Fail(_)));
+        }
         assert!(matches!(
-            r.resolve(doc, &one("`kernel/src/no_such_module_x.rs`")).unwrap(),
+            r.resolve(doc, &one("[k](../kernel/src/no_such_module_x.rs)")).unwrap(),
             Outcome::Fail(m) if m == "missing"
         ));
-        // Case must match exactly.
-        assert!(matches!(r.resolve(doc, &one("`tools/XTASK/Cargo.toml`")).unwrap(), Outcome::Fail(_)));
+        assert!(matches!(
+            r.resolve(doc, &one("[c](../tools/XTASK/Cargo.toml)")).unwrap(),
+            Outcome::Fail(_)
+        ));
         // Bare name: unique and ambiguous (over the tracked files).
         assert_eq!(r.resolve(doc, &one("`emutos_consts.rs:1`")).unwrap(), Outcome::Ok);
         assert!(matches!(r.resolve(doc, &one("`Cargo.toml:1`")).unwrap(), Outcome::Fail(m) if m.starts_with("ambiguous")));
@@ -2506,7 +2522,8 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
     }
 
     /// Needs `references/emutos` with the pin and the 1.4 calibration commit
-    /// (`tools/oracle/oracle.env`); skipped otherwise.
+    /// (`tools/oracle/oracle.env`); fails without them unless `NEWTOS_CI=1`
+    /// (TOOL47, [`crate::test_inputs`]).
     #[test]
     fn emutos_resolves_at_the_pin() {
         let env = fs::read_to_string(root().join(ORACLE_ENV)).unwrap();
@@ -2515,9 +2532,12 @@ x `a/b.rs:3` y ``c/d.rs`` z `unclosed/e.rs
         assert_eq!(env_value("# X=1\nX=abc\n", "X"), Some("abc".into()));
         assert_eq!(env_value("XY=1\n", "X"), None);
         let repo = root().join(EMUTOS_ROOT);
-        if PinTree::load(&repo, &pin).is_none() || PinTree::load(&repo, &cal).is_none() {
-            eprintln!("emutos_resolves_at_the_pin: references/emutos or a commit absent, skipped");
-            return;
+        for commit in [&pin, &cal] {
+            let input = format!("{EMUTOS_ROOT} at {commit}");
+            let present = PinTree::load(&repo, commit).is_some();
+            if !crate::test_inputs::require("doc_check::tests::emutos_resolves_at_the_pin", &input, present) {
+                return;
+            }
         }
         let doc = Path::new("docs/STATUS.md");
         let one = |text: &str| scan(text).into_iter().next().unwrap();

@@ -123,6 +123,9 @@ mod programs_tests;
 /// TOOL04 — the fast and the full tier of `xtask test`.
 mod test_tiers;
 
+/// TOOL47 — tests with gitignored inputs skip only under `NEWTOS_CI=1`.
+mod test_inputs;
+
 /// TOOL09 — one tosdump case table on NewTOS in one command.
 mod tosdump;
 
@@ -1062,8 +1065,13 @@ fn cmd_test(args: &[String]) -> Result<(), String> {
     for p in HOST_TEST_PACKAGES {
         c.args(["--package", p]);
     }
+    // TOOL47: a test skipped under NEWTOS_CI=1 appends its line here.
+    let skip_log = root.join("target").join("xtask-test-skips.log");
+    let _ = std::fs::remove_file(&skip_log);
+    c.env(test_inputs::SKIP_LOG_VAR, &skip_log);
     if !fast {
         let r = run(c);
+        report_skips(&skip_log);
         warn_if_deps_bloated(&root);
         return r;
     }
@@ -1101,8 +1109,18 @@ fn cmd_test(args: &[String]) -> Result<(), String> {
             .map_or("", |(_, w)| *w);
         println!("  - tests/{name}: {why}");
     }
+    report_skips(&skip_log);
     warn_if_deps_bloated(&root);
     r
+}
+
+/// TOOL47: names the tests that skipped for an absent input under
+/// `NEWTOS_CI=1` (`test_inputs`); prints nothing when none did.
+fn report_skips(log: &Path) {
+    let text = std::fs::read_to_string(log).unwrap_or_default();
+    if let Some(s) = test_inputs::summary(&text) {
+        println!("{s}");
+    }
 }
 
 /// TOOL04: warn (never fail) when the host `debug/deps` directory has grown

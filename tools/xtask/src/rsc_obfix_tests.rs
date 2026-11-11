@@ -48,12 +48,11 @@ fn le32(d: &[u8], o: usize) -> u32 {
     u32::from_le_bytes([d[o], d[o + 1], d[o + 2], d[o + 3]])
 }
 
+/// EmuTOS's classic resource, workspace-relative (a gitignored input).
+const GEM_RSC: &str = "references/emutos/aes/gem.rsc";
+
 fn gem_rsc_path() -> PathBuf {
-    workspace_root()
-        .join("references")
-        .join("emutos")
-        .join("aes")
-        .join("gem.rsc")
+    workspace_root().join(GEM_RSC)
 }
 
 fn gem_fsel_path() -> PathBuf {
@@ -174,7 +173,10 @@ fn run_mkrsc(dir: &Path, mode: Option<&str>, src: &Path, out: &Path) {
 }
 
 /// Convert EmuTOS's `gem.rsc` in one NRSC mode and check the words.
-fn check_mode(tag: &str, mode: Option<&str>) {
+fn check_mode(test: &str, tag: &str, mode: Option<&str>) {
+    if !crate::test_inputs::require_paths(test, &[GEM_RSC]) {
+        return;
+    }
     let src = gem_rsc_path();
     let classic = std::fs::read(&src).expect("references/emutos/aes/gem.rsc must exist");
     let dir = scratch_dir(tag);
@@ -186,12 +188,12 @@ fn check_mode(tag: &str, mode: Option<&str>) {
 
 #[test]
 fn mkrsc_convert_lp64_keeps_the_char_grid_coordinates() {
-    check_mode("lp64", None);
+    check_mode("rsc_obfix_tests::mkrsc_convert_lp64_keeps_the_char_grid_coordinates", "lp64", None);
 }
 
 #[test]
 fn mkrsc_convert_ilp32_keeps_the_char_grid_coordinates() {
-    check_mode("ilp32", Some("--ilp32"));
+    check_mode("rsc_obfix_tests::mkrsc_convert_ilp32_keeps_the_char_grid_coordinates", "ilp32", Some("--ilp32"));
 }
 
 /// The committed blob the kernel embeds (`tos-api/src/aes/fsel.rs`
@@ -200,6 +202,12 @@ fn mkrsc_convert_ilp32_keeps_the_char_grid_coordinates() {
 /// `aes/gem_rsc.c:636-641`, `geminit.c:711`).
 #[test]
 fn the_committed_gem_fsel_blob_carries_char_grid_coordinates() {
+    if !crate::test_inputs::require_paths(
+        "rsc_obfix_tests::the_committed_gem_fsel_blob_carries_char_grid_coordinates",
+        &[GEM_RSC],
+    ) {
+        return;
+    }
     let classic = std::fs::read(gem_rsc_path()).expect("references/emutos/aes/gem.rsc must exist");
     let p = gem_fsel_path();
     let d = std::fs::read(&p).expect("gem_fsel.nrsc must be committed");
