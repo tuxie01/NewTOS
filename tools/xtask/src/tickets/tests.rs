@@ -168,7 +168,7 @@ fn report_groups_do_not_reuse_the_inventory_class_names() {
         v("B1", Code::DoneReceiptNotDone, "x"),
         v("C1x", Code::StatusMd, "x"),
     ];
-    let a = Analysis { tickets: BTreeMap::new(), receipts: BTreeMap::new(), unknown: BTreeSet::new() };
+    let a = Analysis { tickets: BTreeMap::new(), receipts: BTreeMap::new(), unknown: BTreeSet::new(), aids: Aids::default() };
     let text = render_report(&counts(&a, &found));
     for c in ["C1", "C2", "C3", "C4", "C5", "C6"] {
         assert!(!text.contains(&format!("    {c} ")), "{text}");

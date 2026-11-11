@@ -70,6 +70,7 @@ pub const COMMANDS: &[(&str, Access)] = &[
     ("accept", Access::Writes),
     ("set-status", Access::Writes),
     ("report", Access::Writes),
+    ("migrate", Access::Writes),
 ];
 
 /// The marking of `cmd`; an unmarked name counts as writing.
@@ -241,7 +242,7 @@ mod tests {
 
     #[test]
     fn the_writing_commands_are_guarded() {
-        for c in ["accept", "land", "set-status", "scratch-clean", "worktree-setup", "install-hooks", "report", "status-check"] {
+        for c in ["accept", "land", "set-status", "scratch-clean", "worktree-setup", "install-hooks", "report", "status-check", "migrate"] {
             assert_eq!(access(c), Access::Writes, "{c}");
         }
         assert_eq!(access("some-future-command"), Access::Writes);

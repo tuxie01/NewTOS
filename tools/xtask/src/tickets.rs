@@ -100,6 +100,7 @@ pub const NON_TICKETS: &[&str] = &[
     "KEYS01-SEQUENCE-CHECK.MD",
     "PORT06-KEYS-DIAGNOSIS.MD",
     "evidence",
+    "migration",
     "tasks.json",
 ];
 
@@ -149,6 +150,7 @@ pub fn cmd(name: &str, root: &Path, args: &[String]) -> Result<(), String> {
         "accept" => cmd_accept(root, args),
         "set-status" => cmd_set_status(root, args),
         "report" => cmd_report(root, args),
+        "migrate" => migrate::cmd_migrate(root, args),
         other => Err(format!("unknown subcommand: {other}")),
     }
 }
@@ -632,6 +634,8 @@ pub struct Ticket {
     pub effective: Option<State>,
     /// Line 3's state word is not one of the six.
     pub legacy: bool,
+    /// The `Migrated (owner batch N, ...), evidence: ...` lines (TOOL54).
+    pub migrated: Vec<String>,
 }
 
 impl Ticket {
@@ -647,7 +651,7 @@ impl Ticket {
             Err(e) if !legacy => e.state,
             Err(_) => legacy_state(&line3),
         };
-        Ticket { id: id.to_string(), line1, line2, line3, parsed, effective, legacy }
+        Ticket { id: id.to_string(), line1, line2, line3, parsed, effective, legacy, migrated: migrated_lines(text) }
     }
 
     /// The README status cell: the state, or the raw legacy text.
@@ -667,6 +671,8 @@ pub struct Analysis {
     pub receipts: BTreeMap<String, Receipt>,
     /// Entries that are neither ticket, receipt nor in [`NON_TICKETS`].
     pub unknown: BTreeSet<String>,
+    /// The commit map and the owner's historical receipts (TOOL54 rework).
+    pub aids: Aids,
 }
 
 /// `<prefix>-STATUS-<STATE>.MD` → (prefix, state).
@@ -714,7 +720,7 @@ impl Analysis {
                 Receipt { file: name.clone(), prefix: prefix.to_string(), ticket, text },
             );
         }
-        Ok(Analysis { tickets, receipts, unknown })
+        Ok(Analysis { tickets, receipts, unknown, aids: Aids::load(view)? })
     }
 
     pub fn receipts_of<'a>(&'a self, id: &'a str) -> impl Iterator<Item = &'a Receipt> + 'a {
@@ -966,7 +972,7 @@ pub fn ticket_violations(a: &Analysis, id: &str, adrs: &BTreeSet<u16>, repo: &mu
             (None, _) => out.push(v(id, Code::DoneNoReceipt, format!("{file}:3: DONE without {id}-STATUS-DONE.MD"))),
             (Some(r), Ok(l)) => {
                 let c = l.get("Commit").unwrap_or("");
-                if !names_commit(&r.text, c) {
+                if !evidence_names_commit(&a.aids.map, &r.text, &t.migrated, c) {
                     out.push(v(id, Code::DoneNoReceipt, format!("{TASK_DIR}/{}: does not name the commit {c} of line 3", r.file)));
                 }
             }
@@ -1021,7 +1027,7 @@ pub fn key_violations(a: &Analysis, key: &str, adrs: &BTreeSet<u16>, repo: &mut 
         return ticket_violations(a, key, adrs, repo);
     }
     let mut out = Vec::new();
-    if let Some(r) = a.receipts.get(key).filter(|r| r.ticket.is_none()) {
+    if let Some(r) = a.receipts.get(key).filter(|r| r.ticket.is_none() && !a.aids.historical.contains_key(key)) {
         out.push(v(key, Code::OrphanReceipt, format!("{TASK_DIR}/{}: receipt without a ticket {}.md", r.file, r.prefix)));
     }
     if a.unknown.contains(key) {
@@ -2056,3 +2062,117 @@ pub fn agent_key(name: &str) -> String {
 
 #[cfg(test)]
 mod tests;
+
+/// TOOL54 — `migrate --batch <N>`, the one-time migration of legacy tickets
+/// (ADR-037 addendum (b), points 15–17).
+pub mod migrate;
+
+// ---------------------------------------------------------------------------
+// TOOL54 rework (owner 2026-11-11): old hashes, migrated evidence, historical
+// receipts
+// ---------------------------------------------------------------------------
+
+/// The map of the 2026-10-19 history rewrite (`tools/oldhash.sh`).
+pub const COMMIT_MAP_FILE: &str = "docs/commit-map.txt";
+/// The owner-approved list of receipts kept although they have no ticket
+/// (LEGACY01 Q7): line 1 the approval line of the batch files, then rows
+/// `<receipt file><TAB><reason>`; `#` lines are comments, a header row
+/// `receipt<TAB>reason` is skipped. The files stay where they are.
+pub const HISTORICAL_FILE: &str = "TASK/migration/historical-receipts.tsv";
+
+/// `docs/commit-map.txt`: `old new` full hashes per line, `#` comments.
+#[derive(Debug, Default, Clone)]
+pub struct CommitMap {
+    pub pairs: Vec<(String, String)>,
+}
+
+impl CommitMap {
+    pub fn parse(text: &str) -> CommitMap {
+        let pairs = text
+            .lines()
+            .filter(|l| !l.starts_with('#'))
+            .filter_map(|l| {
+                let mut w = l.split_whitespace();
+                Some((w.next()?.to_string(), w.next()?.to_string()))
+            })
+            .collect();
+        CommitMap { pairs }
+    }
+
+    /// The new hashes of the old hash (prefix, 7+ digits) `old`, as
+    /// `tools/oldhash.sh` prints them.
+    pub fn translate<'a>(&'a self, old: &'a str) -> impl Iterator<Item = &'a str> + 'a {
+        self.pairs.iter().filter(move |(o, _)| old.len() >= 7 && o.starts_with(old)).map(|(_, n)| n.as_str())
+    }
+}
+
+/// `text` names commit `hash`: directly ([`names_commit`]), or by an old
+/// hash that `map` translates to it.
+pub fn names_commit_mapped(text: &str, hash: &str, map: &CommitMap) -> bool {
+    names_commit(text, hash)
+        || hex_tokens(text).iter().any(|t| map.translate(t).any(|n| n.starts_with(hash) || hash.starts_with(n)))
+}
+
+/// The one rule for "the evidence of a DONE names its commit", used by
+/// `status-check` (the `done-no-receipt` gap) and `migrate`: the receipt
+/// text, or one of the ticket's `Migrated ...` lines, names `hash`, old
+/// hashes translated by `map`. Receipts are never rewritten (owner
+/// 2026-11-11).
+pub fn evidence_names_commit(map: &CommitMap, receipt: &str, migrated: &[String], hash: &str) -> bool {
+    !hash.is_empty()
+        && (names_commit_mapped(receipt, hash, map) || migrated.iter().any(|m| names_commit_mapped(m, hash, map)))
+}
+
+/// The `Migrated (owner batch N, ...), evidence: ...` lines of a ticket text.
+pub fn migrated_lines(text: &str) -> Vec<String> {
+    text.lines().filter(|l| l.starts_with("Migrated (owner batch ")).map(String::from).collect()
+}
+
+/// Parses [`HISTORICAL_FILE`]: receipt file name to reason.
+pub fn parse_historical(text: &str) -> Result<BTreeMap<String, String>, String> {
+    let mut lines = text.lines();
+    let first = lines.next().unwrap_or("");
+    if !migrate::is_approval(first) {
+        return Err(format!(
+            "{HISTORICAL_FILE}:1: line 1 must be the owner's approval line `{}YYYY-MM-DD [note]`, found {first:?}",
+            migrate::APPROVAL_PREFIX
+        ));
+    }
+    let mut out = BTreeMap::new();
+    for (i, l) in lines.enumerate() {
+        let n = i + 2;
+        if l.trim().is_empty() || l.starts_with('#') || l == "receipt\treason" {
+            continue;
+        }
+        let (file, reason) = l
+            .split_once('\t')
+            .filter(|(_, r)| !r.trim().is_empty() && !r.contains('\t'))
+            .ok_or(format!("{HISTORICAL_FILE}:{n}: expected `<receipt file><TAB><reason>`"))?;
+        if !receipt_name(file).is_some_and(|(p, st)| !p.is_empty() && RECEIPT_STATES.contains(&st)) {
+            return Err(format!("{HISTORICAL_FILE}:{n}: {file:?} is no receipt name `<ID>-STATUS-<{}>.MD`", RECEIPT_STATES.join("|")));
+        }
+        if out.insert(file.to_string(), reason.to_string()).is_some() {
+            return Err(format!("{HISTORICAL_FILE}:{n}: {file} stands twice"));
+        }
+    }
+    Ok(out)
+}
+
+/// What [`Analysis`] reads beside `TASK/`'s tickets and receipts.
+#[derive(Debug, Default, Clone)]
+pub struct Aids {
+    pub map: CommitMap,
+    /// [`HISTORICAL_FILE`]: an orphan receipt listed here is no violation.
+    pub historical: BTreeMap<String, String>,
+}
+
+impl Aids {
+    pub fn load(view: &mut View) -> Result<Aids, String> {
+        let map = view.read(COMMIT_MAP_FILE)?.map(|t| CommitMap::parse(&t)).unwrap_or_default();
+        let historical = match view.read(HISTORICAL_FILE)? {
+            Some(t) => parse_historical(&t)?,
+            None => BTreeMap::new(),
+        };
+        Ok(Aids { map, historical })
+    }
+}

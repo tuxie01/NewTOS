@@ -305,7 +305,7 @@ Commands:
                                    bios-arg-trace adds the input check
                                    (tools/biostrace-check.py, TOOL08)
   help
-{}{}{}", tickets::USAGE, worktree_setup::USAGE, scratch::USAGE);
+{}{}{}{}", tickets::USAGE, tickets::migrate::USAGE, worktree_setup::USAGE, scratch::USAGE);
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

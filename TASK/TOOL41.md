@@ -89,12 +89,12 @@ Worktree branch `worktree-agent-a823a57e109be35e1`, based on `d033a78a2`. Receip
   (close to the inventory's C1), the `docs/STATUS.md` lists against line 3 (point 8; keyword candidates like the inventory's C3, so reporting
   only), a stale `TASK/README.md` column. `--new-only`: only the tickets the change touches (a ticket file or any of
   its receipts); `--staged` reads the index; `--message-file`: the ids the subject names plus the `fix`/`feat` rule
-  (`tools/xtask/src/tickets.rs:1047@message_violations`). `Commit: self` resolves with `git log -L3,3`
-  (`tools/xtask/src/tickets.rs:1312@resolve_self`), which follows a rename of the ticket file.
+  (`tools/xtask/src/tickets.rs:1053@message_violations`). `Commit: self` resolves with `git log -L3,3`
+  (`tools/xtask/src/tickets.rs:1318@resolve_self`), which follows a rename of the ticket file.
 - **Baseline** `tools/xtask/ticket-baseline.tsv` (899 entries: 656 `form`, 147 `parked-no-reason`, 53
   `done-no-receipt`, 22 `done-receipt-not-done`, 21 `orphan-receipt`): `<key>\t<code>`. A listed violation passes, any
   other rejects; an entry whose violation is gone rejects until `--prune-baseline` removes it; the checked baseline
-  may hold no entry `HEAD`'s lacks (`tools/xtask/src/tickets.rs:1113@against_baseline`). So a ticket that leaves the
+  may hold no entry `HEAD`'s lacks (`tools/xtask/src/tickets.rs:1119@against_baseline`). So a ticket that leaves the
   baseline cannot come back. `set-status` and `accept` prune the entries of the ticket they write.
 - **`cargo xtask accept`** (Work 3, `tools/xtask/src/tickets.rs:1753@accept`): refuses unless nothing is staged, the
   files it writes are clean, line 3 is `IMPLEMENTED`, `--commit` is an ancestor of `HEAD` whose message names the id,
@@ -103,7 +103,7 @@ Worktree branch `worktree-agent-a823a57e109be35e1`, based on `d033a78a2`. Receip
   `FAIL`: a `## Acceptance <date> — FAIL` section appended to `<ID>-STATUS-UNFINISHED.MD` (the developer's header
   stays), line 3 unchanged. One commit with a generated `docs(task): accept <ID>, PASS|FAIL on <hash> (<ID>)`
   message, through the hooks. The message ends, for `PASS` and `FAIL`, with the trailer every commit of this repository
-  carries, as its own last paragraph (ADR-037 decision h; `tools/xtask/src/tickets.rs:1745@ACCEPT_TRAILER`).
+  carries, as its own last paragraph (ADR-037 decision h; `tools/xtask/src/tickets.rs:1751@ACCEPT_TRAILER`).
 - **Roles** (point 12): a receipt's header (the lines before its first `## `) carries `Role: developer|tester` and
   `Agent: <name>` (`tools/xtask/src/tickets.rs:615@header_fields`); the developer of a ticket is every `Agent` of a
   header with `Role: developer`, compared trimmed and case-insensitively.
@@ -112,10 +112,10 @@ Worktree branch `worktree-agent-a823a57e109be35e1`, based on `d033a78a2`. Receip
   `IMPLEMENTED`/`DONE`, never on a `DONE` ticket; keeps the priority (legacy `Prioritaet`/`Priorität` too) or takes
   `--priority`. Writes line 3 and a `## Status history` entry (the old line 3; for `OPEN` the reason), prunes the
   baseline, regenerates the README cell; does not commit.
-- **`cargo xtask report`** (Work 5, `tools/xtask/src/tickets.rs:1981@cmd_report`): states (ADR-037 and mapped legacy),
+- **`cargo xtask report`** (Work 5, `tools/xtask/src/tickets.rs:1990@cmd_report`): states (ADR-037 and mapped legacy),
   gap groups, codes, the ADR-037 tickets with `self` resolved; `--summary` one line (for a SessionStart hook,
   not installed); `--readme [--check]` regenerates the Status column of every `TASK/README.md` table whose rows start
-  with a ticket link (`tools/xtask/src/tickets.rs:1231@readme_with_status`): the state, or the raw legacy text.
+  with a ticket link (`tools/xtask/src/tickets.rs:1237@readme_with_status`): the state, or the raw legacy text.
 - **Hooks** (Work 6): new `tools/git-hooks/commit-msg`, and step 3 in `tools/git-hooks/pre-commit`
   (`status-check --staged --new-only`, only for a staged `TASK/` path or baseline). Both run only with
   `git config newtos.ticketChecks true`; off (unset, `false`), `commit-msg` exits 0 at once and `pre-commit` behaves
@@ -130,7 +130,7 @@ Worktree branch `worktree-agent-a823a57e109be35e1`, based on `d033a78a2`. Receip
   and kills all ten mutants of the tester's `mutants.py`. (D2) `report` no longer labels its groups C1–C6: its rules
   are machine rules, not the inventory's keyword classes (C5 656 vs 11, C4 147 vs 81); the groups are named
   `done-not-closed`, `closed-without-evidence`, `status-md-mismatch`, `parked-without-fields`, `not-adr037-form`,
-  `dangling-reference` (`tools/xtask/src/tickets.rs:1936@GROUPS`).
+  `dangling-reference` (`tools/xtask/src/tickets.rs:1945@GROUPS`).
 
 ## Acceptance (tester, 2026-11-11)
 
