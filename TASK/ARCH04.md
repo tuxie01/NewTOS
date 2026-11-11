@@ -1,5 +1,10 @@
 # ARCH04 — CPU-Eigenschaften zur Laufzeit aus `ID_AA64*_EL1` lesen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/ARCH04.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Robustheit — uebertragen aus dem alten GitHub-Issue #10 (2026-07-29, Repository NewTOS-OLD)
 
 Statt Annahmen ueber den Cortex-A72 als Konstanten im Bootpfad zu halten,

@@ -1,5 +1,10 @@
 # DESK40 — Zwei fehlende `valid_drive`-Pruefungen
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/DESK40.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P4** · Typ: Konformitaet — Nebenbefunde DESK31/DESK38
 
 Abhaengigkeiten: [DESK38](DESK38.md) (erledigt — `valid_drive` gibt es seitdem)

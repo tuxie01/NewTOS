@@ -1,5 +1,10 @@
 # COOK01 — `_MCH` = 0x00050000 ist die ARAnyM-Kennung
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner 2026-10-20: presumably without effect today (variants 0xFFFFFFFF / family+id / 0xFFFF+id, recommendation 0xFFFFFFFF) | Reopen: a program or port is shown to depend on the cookie value
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/COOK01.md status line: ZURUECKGESTELLT (Anwender 2026-10-20: aktuell vermutlich ohne Wirkung, Varianten 0xFFFFFFFF / Familie+Kennung
+
+Line 3 before the migration:
 Status: **ZURUECKGESTELLT** (Anwender 2026-10-20: aktuell vermutlich ohne Wirkung; Varianten 0xFFFFFFFF / Familie+Kennung / 0xFFFF+Kennung, Empfehlung 0xFFFFFFFF) · Prioritaet: **P3** · Typ: Konformitaet — Hinweis von aussen (2026-10-19)
 
 ## Befund

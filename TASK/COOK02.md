@@ -1,5 +1,10 @@
 # COOK02 — `_AKP` folgt dem aktiven Tastaturlayout
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner 2026-10-30: parked | Reopen: a port needs it
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/COOK02.md status line: GEPARKT 2026-10-30 (Anwender, wieder aufnehmen, wenn ein Port es braucht)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-30 (Anwender; wieder aufnehmen, wenn ein Port es braucht) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, ersetzt 2026-10-30
 
 ## Sachverhalt

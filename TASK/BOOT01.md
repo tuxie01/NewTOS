@@ -1,5 +1,10 @@
 # BOOT01 — Bootschirm: Layout auf hohen Aufloesungen, Ausrichtung, Tippfehler
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/BOOT01.md status line: OFFEN (Punkt 1 zentrierte Box erledigt `2ace2639`, `measurements/measurement-2026-10-09-initinfo/`, , no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** (Punkt 1 zentrierte Box erledigt `2ace2639`, `measurements/measurement-2026-10-09-initinfo/`; Punkte 2–5 offen: `USB_INSET`, `Port`-Anzeige, „isnt“, Hold-Zeilen in `kernel/src/initinfo.rs`) · Prioritaet: **P3** · Typ: Optik / Feinschliff — Anwenderbefund am Geraet (2026-09-23)
 
 Abhaengigkeiten: —

@@ -1,5 +1,10 @@
 # BIOS14 — `cargo xtask deps`: fehlende Kanten BIOS-Eintritt → Geraetehandler, `rsconf`, `bconmap`, `kbdvbase`
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: tool gap, blocks no open fix | Reopen: an open fix is blocked by the tool gap
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/BIOS14.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Werkzeugluecke, blockiert keinen offenen Fix)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: Werkzeugluecke; blockiert keinen offenen Fix) · Prioritaet: **P3** · Typ: Researcher (Track B / Werkzeugbefund) — Anwenderentscheidung 2026-10-28, aus den Audits `docs/audits/2026-10-28-bios-core.md` und `docs/audits/2026-10-28-xbios-chardev.md`
 
 ## Sachverhalt

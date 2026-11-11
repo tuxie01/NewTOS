@@ -1,5 +1,10 @@
 # ACC08 — Accessory mit eigenem Fenster
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/ACC08.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Pruefung / Funktionsluecke — Nebenbefund ACC04
 
 Abhaengigkeiten: [ACC04](ACC04.md) (erledigt)

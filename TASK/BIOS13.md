@@ -1,5 +1,10 @@
 # BIOS13 — Querdokumente der drei Audits: COMPATIBILITY, MEM12, Ledger, Vergleichsregel, ERRATA, Waechter
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: pure doc/ledger maintenance, no program, no open fix | Reopen: an open fix or a program needs the maintained entries
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/BIOS13.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Doku-/Ledger-Pflege, kein Programm, kein offener Fix)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Doku-/Ledger-Pflege; kein Programm, kein offener Fix) · Prioritaet: **P3** · Typ: Researcher — Anwenderentscheidung 2026-10-28, aus den Audits `docs/audits/2026-10-28-bios-core.md`, `docs/audits/2026-10-28-xbios-chardev.md`, `docs/audits/2026-10-28-xbios-system.md`
 
 ## Sachverhalt

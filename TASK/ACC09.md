@@ -1,5 +1,10 @@
 # ACC09 — `CONFIG.NAC`: die `config.txt` aus dem laufenden System einstellen
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 9, 2026-11-11), evidence: TASK/ACC09.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Werkzeug (Accessory) — Anwenderwunsch 2026-09-25
 
 Abhaengigkeiten: [ACC02](ACC02.md)/[ACC03](ACC03.md)/[ACC04](ACC04.md)
