@@ -1,0 +1,28 @@
+TOOL46 live evidence, addendum: the stop marker across resume and final stop
+
+Date: 2026-11-11. Lead. Addendum to measurements/measurement-2026-11-11-tool46-live/RUNINFO.TXT, which is committed
+(f0eb31889) and therefore not edited (CLAUDE.md: runs are immutable; a correction is a new run). Owner request
+2026-11-11: confirm that the stop marker was removed at the 09:33:25Z SubagentStart and rewritten at the 09:33:36Z
+final stop, with marker content and mtime before and after.
+Host clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image, no kernel.
+
+Source of the observations: three reads of
+/Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac6ca6fbf34152f9d/ made during that run (no new run of the
+hooks). The directory was removed afterwards by `cargo xtask scratch-clean agent-ac6ca6fbf34152f9d` (20 KiB), so the
+marker cannot be re-read now. `.stopped` holds the UTC time the SubagentStop hook wrote; `ls -la` shows mtime in
+local time (CET = UTC+1) at minute resolution only, so the content is the precise time.
+
+  Read 1, lead, 09:31:36Z (during the wait):
+    ls -la: .stopped  21 bytes, mtime "11 Nov. 10:31" (= 09:31Z)
+    content: 2026-11-11T09:31:27Z
+  Read 2, the measuring agent, after its fg-done (09:33:30Z), its final report:
+    ls -la: .stop-log, bg-done, fg-done, fg-start — no .stopped
+    `cat .stopped`: "No such file or directory"
+  Read 3, lead, after the agent ended:
+    .stopped content: 2026-11-11T09:33:36Z
+    .stop-log: 09:31:27Z stop / 09:33:25Z start / 09:33:36Z stop
+    (mtime not listed in this read)
+
+Result: CONFIRMED. The marker written at the 09:31:27Z stop (content 09:31:27Z) was removed by the SubagentStart at
+09:33:25Z (absent at 09:33:30Z) and written again by the final SubagentStop (content 09:33:36Z). Limit: mtime is
+shown only for read 1; for read 3 the content stands for the write time.
