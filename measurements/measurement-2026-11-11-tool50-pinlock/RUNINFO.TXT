@@ -1,0 +1,35 @@
+TOOL50 pin lock — verification on the real trees after the owner applied it
+
+Date: 2026-11-11, check ended 12:11:29Z. Lead, once, as the owner asked. Main at 49458dc7f.
+Host clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image, no kernel.
+
+What the owner applied (docs/analysis/ORACLE.md §7, Pin lock): remotes of references/emutos,
+references/emutos-oracle/1a7484ab and references/emutos-oracle/v1.4 set to pinned:/no-fetch (fetch) and
+pinned:/no-push (push); `chmod -R a-w` and `chflags -R uchg` on references/emutos and references/emutos-oracle.
+The dry run on copies is measurements/measurement-2026-11-11-tool50-pinlock-dryrun/RUNINFO.TXT.
+
+1. Lock in place (read-only checks):
+   - `ls -ldO`: references/emutos, emutos-oracle, emutos-oracle/{1a7484ab,v1.4,release-1.4} all `dr-xr-xr-x uchg`;
+     every top-level entry `uchg` (38, 38, 38, 1).
+   - `find <tree> ! -flags +uchg` and `find <tree> -perm -u+w`: no output for any of the four trees.
+   - `GIT_OPTIONAL_LOCKS=0 git remote -v` in the three git trees: origin pinned:/no-fetch (fetch), pinned:/no-push (push).
+2. Write attempts (all refused, nothing created):
+   touch references/emutos/.lock-probe                      rc 1  Operation not permitted
+   touch references/emutos-oracle/1a7484ab/.lock-probe      rc 1  Operation not permitted
+   sh -c 'echo x >> references/emutos/README'               rc 1  Operation not permitted
+   afterwards neither probe file exists.
+3. Fetch (all refused):
+   git -C references/emutos fetch                           rc 255  cannot open '.git/FETCH_HEAD': Operation not permitted
+   git -C references/emutos-oracle/1a7484ab fetch           rc 255  same
+   git -C references/emutos-oracle/v1.4 fetch               rc 255  same
+   (the remote itself points nowhere as a second layer, shown on copies in the dry run: push "Could not resolve
+   hostname pinned").
+4. Reads (all rc 0):
+   GIT_OPTIONAL_LOCKS=0 git -C references/emutos status --short   "?? .DS_Store"
+   git -C references/emutos status --short (without the variable)  "?? .DS_Store"
+   git -C references/emutos log -1                                  1a7484ab Update GitHub Actions to use Node 24
+   git -C references/emutos-oracle/1a7484ab log -1                  1a7484ab
+   git -C references/emutos rev-parse HEAD                          1a7484aba1bfba23e2c0899e243b6d8177fe41df
+   python3 -I tools/deps/gen-deps.py --check                        "edges.tsv, layers.md byte-identical"
+
+Verdict: PASS. The trees stay on the pin 1a7484ab; writes and fetch fail, reads and gen-deps work.
