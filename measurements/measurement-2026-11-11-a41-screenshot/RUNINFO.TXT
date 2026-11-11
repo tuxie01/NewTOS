@@ -1,0 +1,38 @@
+A41 — owner screenshot: colour icons in TeraDesk on the owner's card
+
+Date: 2026-11-11. Lead, from the owner's card; read only (nothing on the card was written). Adds the picture to the
+owner confirmation measurements/measurement-2026-11-11-a41-owner/RUNINFO.TXT (committed, so not edited).
+Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1).
+
+Owner messages (verbatim, German):
+  "png und auch image liegt auf /Volumes/BOOT, du kannst dir den Screenshot holen und den Kernel8.img validieren"
+  (translated from German: "the png and also the image are on /Volumes/BOOT; you can fetch the screenshot and
+  validate kernel8.img")
+  "das datum ist das kernel build datum"
+  (translated from German: "the date is the kernel build date")
+
+Files:
+  TERADESK.PNG   copied from /Volumes/BOOT/TERADESK.PNG (cp -p), PNG 1044 x 799, 8-bit RGB, 2503525 B,
+                 sha256 58643e5fbb9888fdfd4f69beea8dcd7762292627b2c314797d43f375544f3911 (same on the card and here).
+                 File date on the card 2026-11-08 00:02; per the owner this is the kernel build date (the Pi has no
+                 real-time clock, so files written on it carry the kernel's build time), not the time of the shot.
+  kernel8.img on the card (not copied): 1538288 B, sha256
+                 e788dc5811fb7ffb4088d92c0eb7395941de9f9f24a8e5d99fd0a4e924ed015c = the b744febc release kernel the owner
+                 ran on the real Pi 4 on 2026-11-08 (measurements/measurement-2026-11-08-rel072-final/RUNINFO.TXT,
+                 section KERNEL AGAINST THE PI TEST; code-identical to the 0.7.2 tag d35670d6 except the version).
+
+What the picture shows (lead, by looking at it):
+  - TeraDesk (menu bar Desk File View Window Options) on a green desktop.
+  - Four "HARD DISC" icons in colour: grey drawer with a red/yellow/blue folder stack; "TRASH" in colour (green bin,
+    red accents).
+  - Window C:\*.* with info line "14170K bytes used in 26 items."; folders ACC APPS AUTO BILDER CLIPBRD DATA GEMSYS
+    HW08 drawn as yellow folder icons; files as document icons. The listed names match the card's root directory
+    (/Volumes/BOOT: ACC, Apps, AUTO, Bilder, CLIPBRD, DATA, GEMSYS, HW08, BCM2711-RPI-4-B.DTB, CMDLINE.TXT, CONFIG.TXT,
+    FIXUP4.DAT, FSWBENCH.LOG, KERNEL8.IMG, KERNELA.IMG, KERNELB.IMG, KERNSDF.IMG, KEYBOARD.KBD, NEWDESK.INF,
+    START4.ELF, TERADESK.INF, V49*.IMG, WFPROBE.LOG).
+  This is the A41 expectation (TESTBLATT steps 3 and 6 of measurements/measurement-2026-11-11-a41-retest/): colour
+  drive and trash icons, yellow folders, info line present.
+
+Not shown by the picture: how it was taken (the lead did not see it being made), the full screen (the image is
+1044 x 799, a 1920x1080 mode would be larger), menu separators (A46), launch and return (A39/H05), full-width menu bar
+beyond the crop (A40). Those stay unconfirmed.
