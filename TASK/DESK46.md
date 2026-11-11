@@ -1,5 +1,10 @@
 # DESK46 — Konsolenprogramme nach U3: Bildschirm blitzt weiss, und aus EmuCON heraus friert es ein
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 1de06fb94 | Receipt: DESK46-STATUS-DONE.MD
+
+Migrated (owner batch 6, 2026-11-11), evidence: receipt TASK/DESK46-STATUS-DONE.MD exists, commit 1de06fb94, TASK/DESK46-STATUS-DONE.MD, commit 1de06fb94 (docs(task): DESK46 - console programs freeze from EmuCON, and flash wh), fix/feat commits naming the id: - (n=0), receipt names the old pre-rewrite hash 4d00e83 (docs/commit-map.txt maps it to 1de06fb94)
+
+Line 3 before the migration:
 Status: **BEHOBEN — auf echter Pi 4 abgenommen** (2026-09-28) · Prioritaet: **P1** · Typ: Belegter Defekt — Pi-Runde 2026-09-26
 
 Abhaengigkeiten: [DESK43](DESK43.md) U3/U4 (`e0069e5`, `5a485be`) — der Konsolenarm wurde dort umgebaut

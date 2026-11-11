@@ -1,5 +1,10 @@
 # PORT10 — libc: `system()`/`spawn*` linken nicht, `printf("%f")` stuerzt ab
 
+Status: DONE (2026-11-11) | Priority: P1 | Commit: bd179de2f | Receipt: PORT10-STATUS-DONE.MD
+
+Migrated (owner batch 6, 2026-11-11), evidence: receipt TASK/PORT10-STATUS-DONE.MD exists, commit bd179de2f, TASK/PORT10-STATUS-DONE.MD, commit bd179de2f (docs(task): PORT10, the libc gaps that block a linkable Doom), fix/feat commits naming the id: - (n=0), measurements/measurement-2026-10-02-port06/, receipt names the old pre-rewrite hash 160d24b (docs/commit-map.txt maps it to bd179de2f)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-10-02, [Statusdatei](PORT10-STATUS-DONE.MD); `system()` lief ueber ein SDK-Overlay bis [PROC01](PROC01.md) — seit 2026-10-05 wieder mintlibs eigenes `system()`) · Prioritaet: **P1** (blockiert den auslieferbaren Doom-Bau) · Typ: SDK / libc — aus [PORT06](PORT06.md)
 
 Abhaengigkeiten: —

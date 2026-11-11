@@ -1,5 +1,10 @@
 # MEM02 — `Mxalloc` mit `MX_PREFTTRAM` liefert ST-RAM
 
+Status: DONE (2026-11-11) | Priority: P2 | Commit: c94fc9b4a | Receipt: MEM02-STATUS-DONE.MD
+
+Migrated (owner batch 6, 2026-11-11), evidence: receipt TASK/MEM02-STATUS-DONE.MD exists, commit c94fc9b4a, TASK/MEM02-STATUS-DONE.MD, commit c94fc9b4a (test(mem02): host tests of all four Mxalloc modes and the MXPROBE prob), fix/feat commits naming the id: - (n=0), measurements/measurement-2026-09-28-port07/, receipt names the old pre-rewrite hash 3a417b40 (docs/commit-map.txt maps it to c94fc9b4a)
+
+Line 3 before the migration:
 Status: **ERLEDIGT 2026-10-17** ([Statusdatei](MEM02-STATUS-DONE.MD); behoben durch ARCH03 Stufe 1 `a9279fe9`) · Prioritaet: **P2** · Typ: Belegter Defekt — Pi-Lauf 2026-09-28
 
 Abhaengigkeiten: — · **Vorbedingung fuer [PORT06](PORT06.md) §3** (Dooms Speicherentwurf)

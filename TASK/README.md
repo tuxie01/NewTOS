@@ -110,7 +110,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [Q04](Q04.md) | evnt_multi: ein Tastaturereignis vermessen | Interaktive Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | — |
 | [Q05](Q05.md) | graf_mouse: Hide/Show um Textausgabe | Interaktive Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
 | [Q06](Q06.md) | QED restore_edit: abgebrochene Verzweigung bestimmen | Anwendungsdiagnose → belegter Defekt | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
-| [A25](A25.md) | appl_init: Nachrichten/Flags bei Wiederaufruf | Bestätigter Zustandsfehler | P1 | ERLEDIGT (2026-10-17, QEMU-Lauf) | — |
+| [A25](A25.md) | appl_init: Nachrichten/Flags bei Wiederaufruf | Bestätigter Zustandsfehler | P1 | DONE | — |
 
 ## Späterer Backlog: genau eine Funktion pro Messdesign-Task
 
