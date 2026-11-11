@@ -32,7 +32,15 @@ check.
    `tools/xtask/src/scratch.rs` run git without clearing `GIT_DIR`, `GIT_WORK_TREE` and related variables, so a
    caller's `GIT_DIR` redirects their git calls (the TOOL52 check itself clears them). Clear them in one helper for
    every git call of xtask; a test with `GIT_DIR` set to another repository.
-5. Agent briefs and the TOOL46 lines in CLAUDE.md: proposed in the receipt, the lead applies them.
+5. **Card images on the data volume** (owner 2026-11-11, moved forward): `tools/mkcard.sh` and `tools/make-sd-image.sh`
+   fail when the image lies on `/Volumes/Daten` (`diskutil` refuses the mount point there; A41 retest developer,
+   2026-11-11), so workers fell back to calling `diskutil` by hand and the owner had to confirm every call. Find the
+   cause (mount point location, volume flags, `hdiutil attach -mountpoint` vs `-mountroot`) and make both scripts work
+   with an image anywhere in the worker's scratch on the data volume, without a manual `diskutil` step. The owner
+   allowed only `diskutil info`/`mount`/`list`/`eject`/`unmount` in the local settings; `partitionDisk` stays inside
+   the scripts. Test: build a card and a test disk with the image under `target-agents/` and under a worktree's
+   `target/`.
+6. Agent briefs and the TOOL46 lines in CLAUDE.md: proposed in the receipt, the lead applies them.
 
 ## Acceptance
 
