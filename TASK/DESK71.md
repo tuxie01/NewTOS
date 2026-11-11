@@ -1,5 +1,10 @@
 # DESK71 — NewDesk-Dialoge aus Zeichenkoordinaten wie `desk_rsc.c` (unter 400 Zeilen)
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/DESK71.md status line: OFFEN (2026-11-06), no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** (2026-11-06) · Prioritaet: **P3** · Typ: Abweichung, aus [V32](V32.md)
 
 Seit V32 nimmt NewTOS unter 400 Zeilen den 8x8-Font wie EmuTOS. Mehrere NewDesk-Dialoge haben feste

@@ -1,5 +1,10 @@
 # KEYS05 — Alt+Help zaehlt `dumpflg` nicht hoch
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue, unmeasured candidate from reading, not yet shown to affect a program | Reopen: a measurement or a program shows the divergence
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/KEYS05.md status line: OFFEN (2026-11-07), no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** (2026-11-07) · Prioritaet: **P4** · Typ: Abweichung, gelesen, nicht gemessen — Nebenbefund aus [V34](V34.md)
 
 ## Sachverhalt

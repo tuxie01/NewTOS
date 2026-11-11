@@ -1,5 +1,10 @@
 # GUI05 — `CONF_WITH_ALT_DESKTOP_GRAPHICS`: linksbuendige Dialogtitel mit Linie
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/GUI05.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P4** · Typ: Konformitaet AES/Desktop — aus der Schaltertabelle (REF01)
 
 Abhaengigkeiten: —

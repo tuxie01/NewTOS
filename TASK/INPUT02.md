@@ -1,5 +1,10 @@
 # INPUT02 — Ctrl+Alt+Del erreicht ein Programm in einer Endlosschleife nicht
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/INPUT02.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Abweichung von EmuTOS — Nebenfund RST01 (2026-10-17)
 
 EmuTOS prueft die Neustart-Kombination in `kbd_int`, also in der

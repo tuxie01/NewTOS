@@ -1,5 +1,10 @@
 # DESK67 — Reste aus DESK48: Teilneuzeichnen und `fun_rebld` vollstaendig wie EmuTOS
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/DESK67.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Konformitaet / Laufzeit — Rest aus [DESK48](DESK48-STATUS-DONE.MD) (2026-10-17)
 
 Bei DESK48 bekannt und bewusst nicht angefasst:

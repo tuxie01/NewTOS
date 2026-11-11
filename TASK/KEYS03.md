@@ -1,5 +1,10 @@
 # KEYS03 — `#K` in NEWDESK.INF gehoert EmuDESK: die Tastaturbelegung braucht eine eigene Zeile
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue | Reopen: a card program or port is affected, or the owner schedules it
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/KEYS03.md status line: OFFEN, no DONE receipt, no fix/feat commit names the id
+
+Line 3 before the migration:
 Status: **OFFEN** · Prioritaet: **P3** · Typ: Kernel / Desktop-INF — offener Konflikt aus `docs/COMPATIBILITY.md` (Eintrag „The boot keyboard layout comes from …“, gemeldet 2026-10-26)
 
 Abhaengigkeiten: — (Spec-Entscheidung zum neuen Schluessel, siehe *Offene Frage*)

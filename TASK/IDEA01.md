@@ -1,5 +1,10 @@
 # IDEA01 — Energieverwaltung als Accessory (Zukunft, kein Auftrag)
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: idea (owner 2026-09-25): expressly not now | Reopen: the owner takes up the idea
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/IDEA01.md status line: IDEE (Anwender 2026-09-25, ausdruecklich „nicht jetzt")
+
+Line 3 before the migration:
 Status: **IDEE** (Anwender 2026-09-25, ausdruecklich „nicht jetzt") · Prioritaet: **—** · Typ: Richtungsnotiz
 
 Abhaengigkeiten: [ACC06](ACC06.md) (`Ssystem`-Grenze, erledigt),

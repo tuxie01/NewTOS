@@ -1,5 +1,10 @@
 # INPUT03 — Tastatur-Mausemulation (Alt+Pfeile, Alt+Clr/Home, Alt+Insert) fehlt
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner pre-start check 2026-10-31: no program needs the mouse-keyboard emulation | Reopen: a program needs the mouse-keyboard emulation
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/INPUT03.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm braucht die Maus-Tastatur-Emulation)
+
+Line 3 before the migration:
 Status: **GEPARKT** 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Programm braucht die Maus-Tastatur-Emulation) · Prioritaet: **P3** · Typ: Developer — Fund O1 aus [BIOS10](BIOS10.md) (2026-10-29)
 
 ## Sachverhalt

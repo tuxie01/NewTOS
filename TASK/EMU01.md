@@ -1,5 +1,10 @@
 # EMU01 — m68k-Emulator (FR-4): Sammelnotiz fuer den spaeteren Entwurf
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: idea (owner 2026-11-07): Line-A thoughts recorded, no assignment, after 1.0 | Reopen: after 1.0, the owner takes up the m68k emulator direction
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/EMU01.md status line: IDEE (2026-11-07, Anwender: Line-A-Ueberlegungen festhalten)
+
+Line 3 before the migration:
 Status: **IDEE** (2026-11-07, Anwender: Line-A-Ueberlegungen festhalten) · Prioritaet: **P4** · Typ: Richtungsnotiz — kein Auftrag, nach 1.0
 
 ## Zweck

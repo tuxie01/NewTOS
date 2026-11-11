@@ -1,5 +1,10 @@
 # DOOM01 — DOOM friert auf der Pi im Hauptmenue ein (Pfeiltasten)
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: owner 2026-11-02: PROC08 first, the next step in the ticket stays the re-entry | Reopen: PROC08 is resolved
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/DOOM01.md status line: ZURUECKGESTELLT 2026-11-02 (Anwender: erst [PROC08](PROC08.md), der naechste Schritt unten bleibt der Wiederei
+
+Line 3 before the migration:
 Status: **ZURUECKGESTELLT** 2026-11-02 (Anwender: erst [PROC08](PROC08.md); der naechste Schritt unten bleibt der Wiedereinstieg; vorher in Diagnose mit Pi-Laeufen 2026-10-31, zurueckgestellt 2026-10-29) · Prioritaet: **P2** · Typ: Diagnose zuerst (Pi), danach Developer — Anwenderbefund Pi-Runde 2026-10-29
 
 Abhaengigkeiten: —

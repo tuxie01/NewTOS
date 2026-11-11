@@ -1,5 +1,10 @@
 # GUI02 — `CONF_WITH_VIEWER_SUPPORT`: Standardbetrachter fuer nicht zugeordnete Dateien
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: deferred by the lead 2026-09-24 (viewer support, depends on GUI01) | Reopen: the owner decides to build default-viewer handover
+
+Migrated (owner batch 10, 2026-11-11), evidence: TASK/GUI02.md status line: ZURUECKGESTELLT (Lead 2026-09-24)
+
+Line 3 before the migration:
 Status: **ZURUECKGESTELLT** (Lead 2026-09-24) · Prioritaet: **P4** · Typ: Funktionsluecke AES/Desktop — aus der Schaltertabelle (REF01)
 
 Abhaengigkeiten: [GUI01](GUI01.md)
