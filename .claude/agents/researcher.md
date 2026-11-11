@@ -92,6 +92,10 @@ is worthless if it reads confident but isn't grounded.
 
 ## Git hygiene in the shared working tree
 
+- **Never modify `references/emutos` or `references/emutos-oracle/*`** (owner 2026-11-11): no re-clone, fetch, pull,
+  checkout, reset, clean, stash, `make` or edit there, nor through a worktree's symlink; read only. Builds run on a copy
+  under the `target-agents` directory. A failing `emutos_resolves_at_the_pin` is reported, never fixed by touching the checkout.
+
 You share ONE working tree with other tasks whose work is **uncommitted**. Never
 run `git checkout`/`restore`/`clean`/`stash`/`reset` on any shared or uncommitted
 path — it silently destroys other tasks' work. You only write under `docs/`;

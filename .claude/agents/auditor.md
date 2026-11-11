@@ -206,6 +206,10 @@ screen — stop it with SIGKILL.
 
 ## Rules
 
+- **Never modify `references/emutos` or `references/emutos-oracle/*`** (owner 2026-11-11): no re-clone, fetch, pull,
+  checkout, reset, clean, stash, `make` or edit there, nor through a worktree's symlink; read only. Builds run on a copy
+  under the `target-agents` directory. A failing `emutos_resolves_at_the_pin` is reported, never fixed by touching the checkout.
+
 - **You do NOT write or edit product code.** You may write: your report, new
   tosdump cases with their reference records, measurement folders under
   `measurements/`, and temporary probes you revert by editing.

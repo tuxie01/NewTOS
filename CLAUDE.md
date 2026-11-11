@@ -37,6 +37,14 @@ a `COUNTRY=us` build. Values of the oracle ROM (`COUNTRY=de`) are in the
 oracle's own build tree `references/emutos-oracle/1a7484ab` (user 2026-10-30,
 `docs/analysis/cook02-country-facts-2026-10-30.md`).
 
+**EmuTOS checkouts are the owner's (owner 2026-11-11):** `references/emutos`
+and `references/emutos-oracle/*` hold the owner's local state. Agents never
+re-clone, fetch, pull, checkout, reset, clean, stash, `make` or otherwise
+modify them (nor through a worktree's symlink to them); they only read. A
+build runs on a copy (`git worktree` or `git archive` export into the
+`target-agents` directory). A failing `emutos_resolves_at_the_pin` is reported to the
+owner, never fixed by touching the checkout.
+
 **FreeMiNT** (`references/freemint/`) is the sanctioned source for
 FreeMiNT-compatible extensions and for kernel memory management (ADR-027).
 
