@@ -1,5 +1,10 @@
 # DESK57 — Dropping a text file onto a desktop QED icon starts nothing
 
+Status: OBSOLETE (2026-11-11) | Priority: P2 | Reason: superseded by DESK62 (ticket status line) | Target: DESK62
+
+Migrated (owner batch 7, 2026-11-11, to OBSOLETE), evidence: TASK/DESK57.md status line (ERLEDIGT 2026-10-17 — superseded by [DESK62](DESK62.md) ([Qu), TASK/DESK57-STATUS-DONE.MD exists
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-17 — superseded by [DESK62](DESK62.md) ([Quittung](DESK57-STATUS-DONE.MD)) · Priority: P2 · Type: defect, reported by the user on the real Pi (2026-10-09)
 
 ## Observation (user)

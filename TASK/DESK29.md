@@ -1,5 +1,10 @@
 # DESK29 — Eine Auswahl ueberlebt keinen Fensterwechsel
 
+Status: OBSOLETE (2026-11-11) | Priority: P3 | Reason: withdrawn 2026-09-24: EmuTOS-conformant, EmuTOS deletes unconditionally at two places
+
+Migrated (owner batch 7, 2026-11-11, to OBSOLETE), evidence: TASK/DESK29.md status line (ZURUECKGEZOGEN (2026-09-24, EmuTOS-konform)), TASK/DESK29-STATUS-DONE.MD exists
+
+Line 3 before the migration:
 Status: **ZURUECKGEZOGEN** (2026-09-24, EmuTOS-konform) · Prioritaet: **P3** · Typ: Verhaltensabweichung — Nebenbefund DESK18
 
 Abhaengigkeiten: —

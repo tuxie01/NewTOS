@@ -1,5 +1,10 @@
 # DESK23 — Zwei Fensterrahmen-Eckpunkte bleiben bei `wind_open` ungeschrieben
 
+Status: OBSOLETE (2026-11-11) | Priority: P4 | Reason: withdrawn 2026-09-24: EmuTOS-conformant, both drawings are right
+
+Migrated (owner batch 7, 2026-11-11, to OBSOLETE), evidence: TASK/DESK23.md status line (ZURUECKGEZOGEN (2026-09-24, EmuTOS-konform)), TASK/DESK23-STATUS-DONE.MD exists
+
+Line 3 before the migration:
 Status: **ZURUECKGEZOGEN** (2026-09-24, EmuTOS-konform) · Prioritaet: **P4** · Typ: Defekt — Nebenbefund DESK06
 
 Abhaengigkeiten: —

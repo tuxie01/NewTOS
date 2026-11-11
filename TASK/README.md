@@ -81,7 +81,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | ERLEDIGT (2026-09-14) | A25, A29 |
 | [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
 | [A30](A30.md) | Messdesign: appl_init-Wiederaufruf ohne Hängerrisiko | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-19) — Entwurf; Ausfuehrung als Folgeauftr… | A25, A28 |
-| [A31](A31.md) | Testlücke: Rechteckliste über save/restore_windows | Testlücke | P2 | GEGENSTANDSLOS (2026-09-19) | A14 |
+| [A31](A31.md) | Testlücke: Rechteckliste über save/restore_windows | Testlücke | P2 | OBSOLETE | A14 |
 | [A32](A32.md) | Abnahme der Rechtecklisten-Reparatur auf echter Hardware | Hardwareabnahme | P1 | ERLEDIGT (2026-09-19) | A13, A14, A15 |
 | [A33](A33.md) | wind_delete setzt die Fensterrechtecke nicht zurück | Belegter Defekt | P2 | ERLEDIGT (2026-09-12) | A16 |
 | [V01](V01.md) | vq_extnd(0): Bildschirmgrenzen | Geräteunterschied / Test | P2 | OBSOLETE | — |
@@ -104,11 +104,11 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [R03](R03.md) | vro_cpyfm: Memory → Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
 | [R04](R04.md) | vro_cpyfm: überlappende Screen-Kopie messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
 | [R05](R05.md) | vrt_cpyfm: monochrome Expansion auf Screen messen | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-21) — Pi-Abnahme offen | — |
-| [Q01](Q01.md) | v_gtext: sichtbares einzelnes a messen | Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | — |
-| [Q02](Q02.md) | vs_clip: Text am Clip-Rand messen | Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
-| [Q03](Q03.md) | vr_recfl: XOR-Cursor zweimal zeichnen | Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
-| [Q04](Q04.md) | evnt_multi: ein Tastaturereignis vermessen | Interaktive Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | — |
-| [Q05](Q05.md) | graf_mouse: Hide/Show um Textausgabe | Interaktive Pixel-Messlücke | P1 | GEGENSTANDSLOS (2026-09-21) | Q01 |
+| [Q01](Q01.md) | v_gtext: sichtbares einzelnes a messen | Pixel-Messlücke | P1 | OBSOLETE | — |
+| [Q02](Q02.md) | vs_clip: Text am Clip-Rand messen | Pixel-Messlücke | P1 | OBSOLETE | Q01 |
+| [Q03](Q03.md) | vr_recfl: XOR-Cursor zweimal zeichnen | Pixel-Messlücke | P1 | OBSOLETE | Q01 |
+| [Q04](Q04.md) | evnt_multi: ein Tastaturereignis vermessen | Interaktive Messlücke | P1 | OBSOLETE | — |
+| [Q05](Q05.md) | graf_mouse: Hide/Show um Textausgabe | Interaktive Pixel-Messlücke | P1 | OBSOLETE | Q01 |
 | [Q06](Q06.md) | QED restore_edit: abgebrochene Verzweigung bestimmen | Anwendungsdiagnose → belegter Defekt | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |
 | [A25](A25.md) | appl_init: Nachrichten/Flags bei Wiederaufruf | Bestätigter Zustandsfehler | P1 | DONE | — |
 
