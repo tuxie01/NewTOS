@@ -1,0 +1,45 @@
+TOOL50 pin lock — dry run on copies: do the reading tools work on read-only trees, are writes refused?
+
+Date: 2026-11-11. Lead. Owner decision 2026-11-11: protect the pin at OS/git level (read-only trees, remotes that
+point nowhere) instead of a pattern guard; the lead prepares the owner's commands and first verifies, read-only, that
+the reading tools still work. The real trees were not changed: the lock was applied to COPIES only.
+Host clang: Apple clang version 21.0.0 (clang-2100.4.1.1). No image, no kernel.
+
+How:
+  1. `git worktree add --detach target/lead-rotest/wt HEAD` (main at cb78c9d48); `cp -a` of references/emutos and
+     references/emutos-oracle/{1a7484ab,v1.4,release-1.4} into wt/references/ (the originals are only read).
+  2. On the copies, exactly the owner commands prepared in docs/analysis/ORACLE.md §7 (Pin lock):
+     `git remote set-url origin pinned:/no-fetch` and `--push origin pinned:/no-push` in the three git trees;
+     `chmod -R a-w references/emutos references/emutos-oracle`; `chflags -R uchg references/emutos references/emutos-oracle`
+     (rc 0). Result: directories dr-xr-xr-x uchg, files -r--r--r-- uchg.
+  3. Reads and write attempts on the locked copies; the repo tools run in the worktree against the locked copies.
+  4. Undo on the copies: `chflags -R nouchg ...`, `chmod -R u+w ...`, remotes set back; a write then works.
+  5. Worktree removed (`git worktree remove --force`); originals checked unchanged afterwards (HEAD 1a7484ab,
+     `GIT_OPTIONAL_LOCKS=0 git status --short` = `?? .DS_Store`, no flags, remote https://github.com/emutos/emutos).
+
+Reads on locked trees (all rc 0):
+  git status --short, with and without GIT_OPTIONAL_LOCKS=0 (both "?? .DS_Store"); git log -1 (1a7484ab); git show --stat;
+  git ls-tree HEAD aes/gem.rsc; git cat-file -t 1a7484ab (commit); git ls-files; rev-parse HEAD and status --porcelain
+  in emutos-oracle/1a7484ab; cat of a file; git clone of the locked tree to elsewhere.
+Tools on locked trees:
+  python3 -I tools/deps/gen-deps.py --check   "edges.tsv, layers.md byte-identical"
+  bash tools/emutos-config.sh                  rc 0 ("106 CONF_* macros, 7 TARGET_* blocks, pinned commit 1a7484ab";
+                                               it writes docs/api/_emutos-config.md in the worktree, not into the tree)
+  cargo xtask worktree-setup                   links the sdk/apps checkouts; reports the real (copied) references/emutos
+                                               dirs as kept (expected in this setup; in a normal worktree they are links)
+  cargo xtask test (full, CARGO_TARGET_DIR in the worktree)   rc 0, 2415 passed / 0 failed / 7 ignored, no SKIPPED
+Write attempts on locked trees (all refused):
+  git fetch (emutos and oracle)   "cannot open '.git/FETCH_HEAD': Operation not permitted"
+  git pull                        same
+  git push origin ...             "Could not resolve hostname pinned" (remote points nowhere)
+  touch, `echo > file`, rm -f, rm -rf of a dir    "Operation not permitted"; files still there
+  git checkout HEAD~1, git stash   "Unable to create .git/index.lock: Operation not permitted"
+  git remote set-url back         "could not lock config file .git/config: Operation not permitted"
+  git gc                          "Unable to create .git/gc.pid.lock"
+  make -C <oracle copy> clean     rc 2; the file list of the copy afterwards equals the original's (nothing removed)
+Undo: rc 0; a write into the copy works again; remote restored.
+
+Verdict: nothing a reading tool or a test does needs write access to the trees. What needs it: a pin change (owner,
+ORACLE.md §7 — undo first) and building in a tree (build-emutos.sh refuses a tree dir under references/ after TOOL50;
+builds go to a copy). Note: with the lock in place even the owner's own `git remote set-url` and edits fail until undo.
+Logs of step 3 tools are not kept (gitignored scratch under target/, removed).

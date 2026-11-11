@@ -403,6 +403,19 @@ by design. History: the first disk canary ran `bios-r1.tsv` without its
   files stay in git history. `tosdiff` refuses to compare a format 3 dump
   with a format 2 one, so a NewTOS dump compared against a format 3
   reference has to be format 3 as well. `EMUTOS14-*` stay format 2.
+- **Pin lock** (owner decision 2026-11-11; applied by the owner, not by an agent). Upstream EmuTOS has moved past the
+  pin; the trees are made read-only and their remotes point nowhere, so no fetch, pull, checkout or build can move
+  them. Remote URLs before the lock: `references/emutos` origin (fetch and push) `https://github.com/emutos/emutos`;
+  `references/emutos-oracle/1a7484ab` and `references/emutos-oracle/v1.4` origin (fetch and push)
+  `/Volumes/Daten/Development/PiRusTOS/references/emutos`; `references/emutos-oracle/release-1.4` is not a git tree.
+  Lock, from the repository root:
+  `for t in references/emutos references/emutos-oracle/1a7484ab references/emutos-oracle/v1.4; do git -C "$t" remote set-url origin pinned:/no-fetch; git -C "$t" remote set-url --push origin pinned:/no-push; done`,
+  then `chmod -R a-w references/emutos references/emutos-oracle` and
+  `chflags -R uchg references/emutos references/emutos-oracle`.
+  Undo for a pin change (then the rules above: rebuild, calibration, control runs):
+  `chflags -R nouchg references/emutos references/emutos-oracle`, `chmod -R u+w references/emutos references/emutos-oracle`,
+  and `git remote set-url` / `set-url --push` back to the URLs above. A dry run of lock, reads, refused writes and undo
+  on copies: `measurements/measurement-2026-11-11-tool50-pinlock-dryrun/RUNINFO.TXT`.
 
 ## 8. Open for Phase 1
 
