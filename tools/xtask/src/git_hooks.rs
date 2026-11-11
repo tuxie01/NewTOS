@@ -226,4 +226,12 @@ mod tests {
     fn agent_scratch_pipe_tests_pass() {
         hook_pipe_test("agent-scratch-test.sh");
     }
+
+    /// TOOL50: the pin guard (PreToolUse) blocks every modifying form on the
+    /// EmuTOS checkouts of a fixture repo, also through a worktree's
+    /// symlink, and allows reads and the same commands on a scratch copy.
+    #[test]
+    fn pin_guard_pipe_tests_pass() {
+        hook_pipe_test("pin-guard-test.sh");
+    }
 }

@@ -87,9 +87,9 @@ new commit on the same branch (no amend), by the same developer agent.
     the project: a worktree prints an absolute common dir.
 
   Fix:
-  - `expand` now walks the word with prefix/suffix removal only (`tools/hooks/no-verify-guard.sh:174@expand`).
-  - `common_dir` compares canonical paths on both sides (`tools/hooks/no-verify-guard.sh:146@common_dir`): `cd -P`,
-    `pwd -P`, then `canon` (`tools/hooks/no-verify-guard.sh:137@canon`), which squeezes repeated slashes and drops a
+  - `expand` now walks the word with prefix/suffix removal only (`tools/hooks/lib/shell-parse.sh:74@expand`).
+  - `common_dir` compares canonical paths on both sides (`tools/hooks/lib/shell-parse.sh:53@common_dir`): `cd -P`,
+    `pwd -P`, then `canon` (`tools/hooks/lib/shell-parse.sh:44@canon`), which squeezes repeated slashes and drops a
     trailing slash.
 
   The new cases run twice, once with the worktree and once with the scratch clone as the project. The forms are:
@@ -105,7 +105,7 @@ new commit on the same branch (no amend), by the same developer agent.
   decision, with the server-side backstop of ticket TOOL43 as the answer.
 - **False positive `git merge origin/main`.** A merge whose names are all remote-tracking refs is now allowed while
   main is checked out. That means `refs/remotes/*`, or `<remote>/<branch>` for a remote that `git remote` of the
-  target lists (`tools/hooks/no-verify-guard.sh:408@remote_refs_only`). This applies with or without `--ff-only`,
+  target lists (`tools/hooks/no-verify-guard.sh:266@remote_refs_only`). This applies with or without `--ff-only`,
   like `git pull`. Five new cases: allowed for `origin/main`, `--ff-only origin/main` and `refs/remotes/origin/main`;
   blocked for `origin/main feature` and `nosuchremote/x`. Limit: a local branch literally named `origin/x` counts
   as remote-tracking. `--squash --ff-only` stays blocked, as the lead accepted.

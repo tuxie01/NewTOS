@@ -5,7 +5,8 @@
 #
 # <tree-dir> is a clone of references/emutos checked out at <commit>; it is
 # created when missing. references/emutos itself is only read (cloned from),
-# never built in or checked out.
+# never built in or checked out. A <tree-dir> under references/ is refused
+# (TOOL50): the checkouts there stay on the pin.
 #
 # Two things the EmuTOS Makefile takes from the host are pinned here, because
 # each would otherwise make two builds of the same commit differ:
@@ -39,6 +40,34 @@ case $DATE in
     [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
     *) echo "date must be yyyy-mm-dd: $DATE" >&2; exit 2 ;;
 esac
+
+# TOOL50 (owner 2026-11-11): the EmuTOS checkouts stay on the pin, so the
+# tree dir must lie outside references/ -- of this tree and of the main repo,
+# also through a symlink (a worktree's references/* link into the main repo,
+# TOOL44) and in any letter case (APFS is case-insensitive). The comparison
+# is the agent guards' (tools/hooks/lib/paths.sh). The oracle tree
+# references/emutos-oracle/<pin> exists; rebuilding it in place is an owner
+# act, done by hand. Build into a copy elsewhere
+# (e.g. <main repo>/target-agents/agent-<id>/emutos-<pin>).
+refuse() {
+    echo "build-emutos.sh: refusing tree dir $TREE: it lies in $1 (references/emutos* stay on the pin; TASK/TOOL50)" >&2
+    echo "build-emutos.sh: build into a copy outside references/, e.g. <main repo>/target-agents/agent-<id>/emutos-<commit>" >&2
+    exit 2
+}
+. "$REPO/tools/hooks/lib/paths.sh" || { echo "build-emutos.sh: $REPO/tools/hooks/lib/paths.sh missing" >&2; exit 2; }
+case $TREE in /*) TREE_ABS=$TREE ;; *) TREE_ABS=$(pwd)/$TREE ;; esac
+path_in "$TREE_ABS" "$REPO/references" && refuse "$REPO/references"
+path_physical "$TREE_ABS"; TREE_PHYS=$PH
+MAIN=$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || echo "$REPO/.git")
+for r in "$REPO/references" "$(dirname "$MAIN")/references"; do
+    [ -d "$r" ] || continue
+    for e in "$r" "$r"/*; do
+        [ -d "$e" ] || continue
+        path_physical "$e"
+        path_in "$TREE_PHYS" "$PH" && refuse "$e"
+    done
+done
+
 [ -x "${ORACLE_CROSS_MINT}gcc" ] || { echo "no cross gcc: ${ORACLE_CROSS_MINT}gcc" >&2; exit 1; }
 
 if [ ! -d "$TREE/.git" ]; then

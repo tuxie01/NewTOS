@@ -22,13 +22,18 @@
 #   git symbolic-ref that sets or deletes a ref (reading stays allowed),
 #   git hash-object -w -t commit (without -t the object is a blob, also from
 #     --stdin, so blob hash-object -w + update-index --cacheinfo stays allowed);
-# and, while main is checked out in the target (TOOL42 point 4: worktree
-# branches land by `git merge --squash` only):
-#   git merge --ff-only, git merge <branch> without --squash (--squash,
-#     --abort, --continue, --quit, a bare `git merge` of the upstream and a
-#     merge of remote-tracking refs only -- refs/remotes/*, <remote>/<branch>
-#     for a remote the target has, as `git pull` does -- stay allowed), and
+# and, while main is checked out in the target (TOOL42 point 4; TOOL50
+# point 4, owner 2026-11-11: `cargo xtask land <branch> -F <msg>` is the only
+# merge path into main for agents):
+#   git merge --ff-only, git merge <branch> with or without --squash (--abort,
+#     --continue, --quit, a bare `git merge` of the upstream and a merge of
+#     remote-tracking refs only -- refs/remotes/*, <remote>/<branch> for a
+#     remote the target has, as `git pull` does -- stay allowed), and
 #     git pull from `.` or a local path (from a remote: allowed).
+#   `cargo xtask land` runs its `git merge --squash` as a subprocess, not
+#   through this hook. A squash merge in a worktree of the main repo that has
+#   another branch checked out (a worker's own branch) is not a merge into
+#   main and stays allowed, like every merge on a branch other than main.
 # Paths are compared canonical: repeated slashes squeezed, trailing slash
 # dropped, symlinks resolved (`cd -P`, `pwd -P`).
 # "Main repo" is the git common dir of $CLAUDE_PROJECT_DIR, so its worktrees
@@ -41,6 +46,11 @@
 # `cd -`, a path that does not exist yet) is blocked; for the merge/pull rule
 # it is allowed, so the optional rule never over-blocks.
 #
+# The command-text parser (canon, common_dir, expand, resolve, process_seg,
+# parse_command) is shared with tools/hooks/pin-guard.sh in
+# tools/hooks/lib/shell-parse.sh; repo paths compare case folded by
+# path_same of tools/hooks/lib/paths.sh (APFS is case-insensitive; TOOL50).
+#
 # Text match on the command, like scratch-guard.sh: a command assembled at run
 # time is not seen -- `eval`, `bash -c '...'`, a script file, a git alias,
 # `xargs` with the git verb in its input, a verb quoted or escaped inside the
@@ -49,10 +59,11 @@
 # (owner 2026-11-11); its scope stays as above. Not blocked either, by owner
 # decision 2026-11-11: commands that move a branch to a commit that already
 # exists or replay commits without the pre-commit hook (git reset, branch -f,
-# checkout -B, cherry-pick, rebase, revert, am, fetch/push into the repo,
-# fetch + reset, merge on a branch other than main), so a commit made by
-# plumbing in a scratch clone can still be fetched in; the backstop for those
-# is server-side (ticket TOOL43), not this guard.
+# checkout -B, cherry-pick, rebase, revert, am, apply, read-tree, fetch/push
+# into the repo incl. `git fetch . x:main`, fetch + reset, merge on a branch
+# other than main), so a commit made by plumbing in a scratch clone can still
+# be fetched in; the backstops for those are server-side (ticket TOOL43) and,
+# for references/emutos*, the OS-level read-only lock (TOOL50), not this guard.
 # Message texts are not parsed: pass a commit message with
 # `git commit -F <file>` if it must contain these words.
 
@@ -116,48 +127,17 @@ if printf '%s' "$cmd" | grep -qE '(^|[^A-Za-z0-9_-])git([[:space:]]+-[^[:space:]
 fi
 
 # ── TOOL42: plumbing and fast-forwards in the main repo ─────────────────
-# The command is split into simple commands, quote-aware (', ", \), at
-# ; & | && || newline, ( ) and $( ) / backticks (inner commands are checked
-# too), skipping comments and here-document bodies. Each simple command
-# whose command word is git (also after env/command/exec/nohup/nice/sudo/
-# time/xargs) is classified; cd/pushd/popd and GIT_DIR exports update the
-# directory the following commands run in.
+# The command is split into simple commands by the shared parser
+# (tools/hooks/lib/shell-parse.sh: quote-aware, $( ) and sub-shells,
+# comments and here-documents skipped; cd/pushd/popd and GIT_DIR tracked).
+# Each simple command whose command word is git (also after env/command/
+# exec/nohup/nice/sudo/time/xargs) is classified by on_command.
 printf '%s' "$cmd" | grep -qE 'commit-tree|update-ref|hash-object|fast-import|replace|symbolic-ref|filter-branch|filter-repo|merge|pull' || exit 0
 
 unset GIT_DIR GIT_COMMON_DIR GIT_WORK_TREE
-US=$'\x1f'   # word separator inside a simple command
-DYN=$'\x02'  # marks a word part the shell expands at run time
 PLUMB_WHY="commits in the main repo go through git commit and its pre-commit hook (TASK/TOOL42); use a scratch clone for plumbing"
-MERGE_WHY="a worktree branch lands in main by git merge --squash and one git commit -F (TASK/TOOL42, CLAUDE.md Commit Discipline)"
-
-# canon <path> -> stdout: repeated slashes squeezed, a trailing slash dropped.
-# Both sides of the main-repo comparison go through it: bash keeps a leading
-# `//` in `pwd -P` (POSIX leaves `//` implementation-defined), so
-# `//Volumes/x/.git` and `/Volumes/x/.git` would differ as strings.
-canon() {
-    local p
-    p=$(printf '%s' "$1" | tr -s /)
-    [ "$p" = / ] || p=${p%/}
-    printf '%s' "$p"
-}
-
-# common_dir <dir> <git dir or empty>: the canonical absolute git common dir,
-# or empty.
-common_dir() {
-    local a b c
-    a=$(canon "$1"); b=$(canon "$2")
-    c=$(
-        cd -P "$a" 2>/dev/null || exit 1
-        if [ -n "$b" ]; then
-            cd -P "$b" 2>/dev/null || exit 1
-            c=$(git --git-dir=. rev-parse --git-common-dir 2>/dev/null)
-        else
-            c=$(git rev-parse --git-common-dir 2>/dev/null)
-        fi
-        [ -n "$c" ] && cd -P "$c" 2>/dev/null && pwd -P
-    )
-    [ -n "$c" ] && canon "$c"
-}
+MERGE_WHY="a worktree branch lands in main only by cargo xtask land <branch> -F <msg> (TASK/TOOL46, TASK/TOOL50; CLAUDE.md Commit Discipline)"
+for l in paths shell-parse; do . "$(dirname "${BASH_SOURCE[0]}")/lib/$l.sh" || block "tools/hooks/lib/$l.sh is missing" "the agent guards need their shared helpers"; done
 
 main_common=""
 main_repo() {
@@ -165,53 +145,6 @@ main_repo() {
     main_common=$(common_dir "${CLAUDE_PROJECT_DIR:-$call_cwd}" "")
     [ -n "$main_common" ] || main_common="?"   # unknown: every target counts as main
 }
-
-# expand <word> -> E: $HOME, $TMPDIR, $CLAUDE_PROJECT_DIR replaced; any other
-# run-time part stays marked with DYN.
-# Walks the word with prefix/suffix removal only: bash 3.2 ends the pattern
-# of ${w//pat/rep} at the first `/` even inside quotes, so a pattern holding
-# a slash (`$NAME/`) replaced the wrong text (TOOL42 tester F1).
-expand() {
-    local w=$1 out="" rest name tail v
-    while :; do
-        case "$w" in *"$DYN"*) ;; *) break ;; esac
-        out=$out${w%%"$DYN"*}
-        rest=${w#*"$DYN"}
-        name=""; tail=$rest
-        case "$rest" in
-            '${'*'}'*) name=${rest#??}; name=${name%%\}*}; tail=${rest#*\}} ;;
-            '$'*) tail=${rest#?}; name=${tail%%[!A-Za-z0-9_]*}; tail=${tail#"$name"} ;;
-        esac
-        case "$name" in
-            HOME|TMPDIR|CLAUDE_PROJECT_DIR) v=${!name:-} ;;
-            *) v="" ;;
-        esac
-        if [ -n "$v" ]; then
-            out=$out$v
-            w=$tail
-        else
-            # not expandable: keep it marked as run-time
-            out=$out$DYN
-            w=$rest
-            [ "${w:0:1}" = '$' ] && { out=$out'$'; w=${w#?}; }
-        fi
-    done
-    E=$out$w
-}
-
-# resolve <base dir> <path> -> R; "?" = cannot be decided from the text.
-resolve() {
-    local p=$2
-    case "$p" in *"$DYN"*) R="?"; return ;; esac
-    case "$p" in "~") p=${HOME:-?} ;; "~/"*) p=${HOME:-?}/${p#"~/"} ;; esac
-    case "$p" in
-        /*) R=$p ;;
-        *) if [ "$1" = "?" ]; then R="?"; else R=$1/$p; fi ;;
-    esac
-}
-
-dir=$call_cwd   # where the next simple command runs
-sgd=""          # GIT_DIR exported earlier in the command
 
 # classify <subcommand> <args...> -> why (block reason) and kind (plumb|merge).
 classify() {
@@ -284,7 +217,8 @@ classify() {
                 esac
             done
             if [ $n3 = 1 ]; then why="git merge --ff-only"
-            elif [ $n1 = 0 ] && [ $n2 = 1 ]; then why="git merge without --squash"; fi ;;
+            elif [ $n1 = 0 ] && [ $n2 = 1 ]; then why="git merge without --squash"
+            elif [ $n2 = 1 ]; then why="git merge --squash"; fi ;;
         pull)
             kind=merge
             for a in "$@"; do
@@ -296,84 +230,10 @@ classify() {
     esac
 }
 
-# process_seg <words joined by US>: one simple command.
-process_seg() {
-    local s=$1 w k=0 nw cw a sub tdir gd lgd="" lgd_set=0 wrap=0 tc head
-    local -a SW=()
-    while [ -n "$s" ]; do
-        SW+=("${s%%"$US"*}")
-        s=${s#*"$US"}
-    done
-    nw=${#SW[@]}
-    while [ $k -lt $nw ]; do
-        w=${SW[k]}
-        if [ $wrap = 1 ]; then
-            case "$w" in git|*/git|git-*|*/git-*) break ;; esac
-            case "$w" in GIT_DIR=*) expand "${w#GIT_DIR=}"; resolve "$dir" "$E"; lgd=$R; lgd_set=1 ;; esac
-            k=$((k + 1)); continue
-        fi
-        case "$w" in
-            GIT_DIR=*) expand "${w#GIT_DIR=}"; resolve "$dir" "$E"; lgd=$R; lgd_set=1 ;;
-            [A-Za-z_]*=*) case "${w%%=*}" in *[!A-Za-z0-9_]*) break ;; esac ;;
-            then|do|else|elif|if|while|until|'!'|'{'|'}') ;;
-            time|env|command|exec|nohup|nice|sudo|xargs|builtin) wrap=1 ;;
-            *) break ;;
-        esac
-        k=$((k + 1))
-    done
-    [ $k -lt $nw ] || return 0
-    cw=${SW[k]}
-    k=$((k + 1))
-    case "$cw" in
-        cd|pushd)
-            a=""
-            while [ $k -lt $nw ]; do
-                w=${SW[k]}; k=$((k + 1))
-                case "$w" in -L|-P|-e|-@) ;; *) a=$w; break ;; esac
-            done
-            if [ -z "$a" ]; then dir=${HOME:-?}
-            elif [ "$a" = "-" ]; then dir="?"
-            else
-                expand "$a"; resolve "$dir" "$E"; dir=$R
-                [ "$dir" = "?" ] || [ -d "$dir" ] || dir="?"
-            fi
-            return 0 ;;
-        popd) dir="?"; return 0 ;;
-        export)
-            while [ $k -lt $nw ]; do
-                w=${SW[k]}; k=$((k + 1))
-                case "$w" in GIT_DIR=*) expand "${w#GIT_DIR=}"; resolve "$dir" "$E"; sgd=$R ;; esac
-            done
-            return 0 ;;
-        unset)
-            while [ $k -lt $nw ]; do
-                [ "${SW[k]}" = GIT_DIR ] && sgd=""
-                k=$((k + 1))
-            done
-            return 0 ;;
-    esac
-    tdir=$dir
-    gd=$sgd
-    [ $lgd_set = 1 ] && gd=$lgd
-    sub=""
-    case "$cw" in
-        git|*/git)
-            while [ $k -lt $nw ]; do
-                w=${SW[k]}; k=$((k + 1))
-                case "$w" in
-                    -C)
-                        a=${SW[k]:-}; k=$((k + 1))
-                        if [ -n "$a" ]; then expand "$a"; resolve "$tdir" "$E"; tdir=$R; fi ;;
-                    --git-dir=*) expand "${w#--git-dir=}"; resolve "$tdir" "$E"; gd=$R ;;
-                    --git-dir) expand "${SW[k]:-}"; resolve "$tdir" "$E"; gd=$R; k=$((k + 1)) ;;
-                    -c|--work-tree|--namespace|--super-prefix|--config-env) k=$((k + 1)) ;;
-                    -*) ;;
-                    *) sub=$w; break ;;
-                esac
-            done ;;
-        git-*|*/git-*) sub=${cw##*/}; sub=${sub#git-} ;;
-        *) return 0 ;;
-    esac
+# on_command (called by process_seg for every simple command): the TOOL42
+# rules for a git subcommand.
+on_command() {
+    local tc head
     [ -n "$sub" ] || return 0
     classify "$sub" "${SW[@]:k}"
     [ -n "$why" ] || return 0
@@ -386,13 +246,13 @@ process_seg() {
     main_repo
     if [ "$kind" = plumb ]; then
         [ "$tc" = "?" ] && block "$why: the target repo cannot be decided from the command text (named at run time, or not an existing git repo yet); name an existing repo literally (git -C <path>)" "$PLUMB_WHY"
-        if [ "$main_common" = "?" ] || [ "$tc" = "$main_common" ]; then
+        if [ "$main_common" = "?" ] || path_same "$tc" "$main_common"; then
             block "$why in the main repo is not allowed for agents" "$PLUMB_WHY"
         fi
         return 0
     fi
     # merge/pull: only a decided target that is the main repo with main checked out.
-    [ "$tc" != "?" ] && [ "$tc" = "$main_common" ] || return 0
+    [ "$tc" != "?" ] && path_same "$tc" "$main_common" || return 0
     if [ -n "$gd" ]; then head=$(git --git-dir="$gd" symbolic-ref -q HEAD 2>/dev/null)
     else head=$(git -C "$tdir" symbolic-ref -q HEAD 2>/dev/null)
     fi
@@ -424,162 +284,5 @@ remote_refs_only() {
     return 0
 }
 
-# Tokenizer state: cur/have = the word being read, seg = the simple command
-# being read, st = N (unquoted), S ('...'), D ("..."); d = nesting depth of
-# ( ), $( ) and backticks, with the outer state saved in K_<d>, ...
-cur=""; have=0; seg=""; st=N; d=0
-HD=()   # pending here-document delimiters, "<strip-tabs 0|1>:<word>"
-
-emit_word() {
-    if [ $have = 1 ]; then seg=$seg$cur$US; fi
-    cur=""; have=0
-}
-flush() {
-    emit_word
-    if [ -n "$seg" ]; then process_seg "$seg"; fi
-    seg=""
-}
-# open <kind p|s|b>: a sub-shell, $( ) or backtick starts.
-open() {
-    d=$((d + 1))
-    printf -v "K_$d" '%s' "$1"
-    printf -v "SEG_$d" '%s' "$seg"
-    printf -v "CUR_$d" '%s' "$cur"
-    printf -v "HAVE_$d" '%s' "$have"
-    printf -v "ST_$d" '%s' "$st"
-    printf -v "DIR_$d" '%s' "$dir"
-    printf -v "SGD_$d" '%s' "$sgd"
-    seg=""; cur=""; have=0; st=N
-}
-close() {
-    local k v
-    if [ $d = 0 ]; then flush; return; fi
-    flush
-    k="K_$d"; k=${!k}
-    v="SEG_$d"; seg=${!v}
-    v="CUR_$d"; cur=${!v}
-    v="HAVE_$d"; have=${!v}
-    v="ST_$d"; st=${!v}
-    v="DIR_$d"; dir=${!v}
-    v="SGD_$d"; sgd=${!v}
-    d=$((d - 1))
-    if [ "$k" != p ]; then cur=$cur$DYN"(sub)"; have=1; fi
-}
-backtick() {
-    local k="K_$d"
-    if [ $d -gt 0 ] && [ "${!k}" = b ]; then close; else open b; fi
-}
-# At a newline (cmd[i]): skip the bodies of pending here-documents.
-skip_heredocs() {
-    local e strip word rest line start
-    [ ${#HD[@]} -gt 0 ] || return 0
-    for e in "${HD[@]}"; do
-        strip=${e%%:*}; word=${e#*:}
-        while [ $i -lt $n ]; do
-            start=$((i + 1))
-            [ $start -lt $n ] || { i=$n; break; }
-            rest=${cmd:start}
-            line=${rest%%$'\n'*}
-            i=$((start + ${#line}))
-            if [ "$strip" = 1 ]; then line=${line#"${line%%[!$'\t']*}"}; fi
-            [ "$line" = "$word" ] && break
-        done
-    done
-    HD=()
-}
-# At "<<" (cmd[i]): read the delimiter word, leave i on its last character.
-heredoc_op() {
-    local strip=0 word="" ch
-    emit_word
-    i=$((i + 2))
-    if [ "${cmd:i:1}" = "-" ]; then strip=1; i=$((i + 1)); fi
-    while [ $i -lt $n ]; do
-        ch=${cmd:i:1}
-        case "$ch" in ' '|$'\t') i=$((i + 1)) ;; *) break ;; esac
-    done
-    while [ $i -lt $n ]; do
-        ch=${cmd:i:1}
-        case "$ch" in
-            ' '|$'\t'|$'\n'|';'|'&'|'|'|'<'|'>'|'('|')') break ;;
-            "'"|'"'|'\') ;;
-            *) word=$word$ch ;;
-        esac
-        i=$((i + 1))
-    done
-    HD+=("$strip:$word")
-    i=$((i - 1))
-}
-
-n=${#cmd}
-i=0
-while [ $i -lt $n ]; do
-    c=${cmd:i:1}
-    case $st in
-        S)
-            if [ "$c" = "'" ]; then st=N; else cur=$cur$c; fi ;;
-        D)
-            case "$c" in
-                '"') st=N ;;
-                '\')
-                    nx=${cmd:i+1:1}
-                    case "$nx" in
-                        '$'|'`'|'"'|'\') cur=$cur$nx; i=$((i + 1)) ;;
-                        $'\n') i=$((i + 1)) ;;
-                        *) cur=$cur$c ;;
-                    esac ;;
-                '$')
-                    if [ "${cmd:i+1:1}" = "(" ]; then i=$((i + 1)); open s; else cur=$cur$DYN\$; fi ;;
-                '`') backtick ;;
-                *) cur=$cur$c ;;
-            esac ;;
-        N)
-            case "$c" in
-                ' '|$'\t') emit_word ;;
-                $'\n') flush; skip_heredocs ;;
-                ';'|'|') flush ;;
-                '&')
-                    case "$cur" in
-                        *'>'|*'<') cur=$cur$c ;;
-                        *) if [ "${cmd:i+1:1}" = ">" ]; then cur=$cur$c; have=1; else flush; fi ;;
-                    esac ;;
-                "'") st=S; have=1 ;;
-                '"') st=D; have=1 ;;
-                '\')
-                    nx=${cmd:i+1:1}
-                    if [ "$nx" != $'\n' ]; then cur=$cur$nx; have=1; fi
-                    i=$((i + 1)) ;;
-                '$')
-                    if [ "${cmd:i+1:1}" = "(" ]; then i=$((i + 1)); open s; else cur=$cur$DYN\$; have=1; fi ;;
-                '`') backtick ;;
-                '(')
-                    case "$cur" in
-                        *'<'|*'>') cur=${cur%?}; open s ;;
-                        *) flush; open p ;;
-                    esac ;;
-                ')') close ;;
-                '#')
-                    if [ $have = 0 ]; then
-                        rest=${cmd:i}
-                        line=${rest%%$'\n'*}
-                        i=$((i + ${#line} - 1))
-                    else
-                        cur=$cur$c
-                    fi ;;
-                '<')
-                    case "$cur" in
-                        *'<') cur=$cur$c ;;
-                        *)
-                            if [ "${cmd:i+1:1}" = "<" ] && [ "${cmd:i+2:1}" != "<" ]; then
-                                heredoc_op
-                            else
-                                cur=$cur$c; have=1
-                            fi ;;
-                    esac ;;
-                *) cur=$cur$c; have=1 ;;
-            esac ;;
-    esac
-    i=$((i + 1))
-done
-while [ $d -gt 0 ]; do close; done
-flush
+parse_command
 exit 0

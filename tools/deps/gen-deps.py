@@ -148,7 +148,7 @@ def verify_tree(env):
     head = run(["git", "-C", str(tree), "rev-parse", "HEAD"]).stdout.strip()
     if head != commit:
         die(f"{tree} is at {head}, the pin is {commit}")
-    if run(["git", "-C", str(tree), "status", "--porcelain"]).stdout.strip():
+    if run(["git", "-C", str(tree), "status", "--porcelain"], env=dict(os.environ, GIT_OPTIONAL_LOCKS="0")).stdout.strip():
         die(f"{tree} has local changes")
     rom = tree / "etos512de.img"
     if not rom.exists():

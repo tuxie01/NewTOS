@@ -171,7 +171,15 @@ tc "$C" "$C" "git merge --ff-only feature" 2 "main checked out: merge --ff-only"
 tc "$C" "$C" "git merge feature" 2 "main checked out: merge without --squash"
 tc "$C" "$C" "git merge --no-ff -m x feature" 2 "main checked out: merge --no-ff"
 tc "$C" "$ROOT" "git -C $C merge feature" 2 "main checked out, -C: merge"
-tc "$C" "$C" "git merge --squash feature" 0 "main checked out: merge --squash"
+# TOOL50 point 4: land is the only merge path into main.
+tc "$C" "$C" "git merge --squash feature" 2 "TOOL50: main checked out: merge --squash (use cargo xtask land)"
+tc "$C" "$ROOT" "git -C $C merge --squash feature" 2 "TOOL50: main checked out, -C: merge --squash"
+tc "$C" "$ROOT" "cd $C && git merge --squash -X theirs feature && git commit -F m.txt" 2 "TOOL50: main checked out, cd &&: merge --squash -X"
+tc "$C" "$C" "git merge --squash origin/main" 0 "TOOL50: main checked out: merge --squash of a remote-tracking ref"
+tc "$C" "$C" "git merge --squash" 0 "TOOL50: main checked out: bare merge --squash (upstream)"
+tc "$C" "$C" "cargo xtask land feature -F m.txt" 0 "TOOL50: cargo xtask land"
+tc "$C" "$C" "cargo xtask land merge-fix -F merge.txt" 0 "TOOL50: cargo xtask land, branch named merge-*"
+tc "$ROOT" "$ROOT" "git -C $C merge --squash feature" 0 "TOOL50: merge --squash in a scratch clone (not the main repo)"
 tc "$C" "$C" "git merge --abort" 0 "main checked out: merge --abort"
 tc "$C" "$C" "git merge --continue" 0 "main checked out: merge --continue"
 tc "$C" "$C" "git pull" 0 "main checked out: git pull"
@@ -185,7 +193,19 @@ tc "$C" "$C" "git merge refs/remotes/origin/main" 0 "main checked out: merge ref
 tc "$C" "$C" "git merge origin/main feature" 2 "main checked out: remote-tracking ref plus a local branch"
 tc "$C" "$C" "git merge nosuchremote/x" 2 "main checked out: <name>/<branch> without such a remote"
 tc "$C" "$ROOT" "git -C \$CLAUDE_PROJECT_DIR merge feature" 2 "F1: -C \$CLAUDE_PROJECT_DIR merge"
+# TOOL50: repo paths compare case folded (APFS is case-insensitive).
+UPC=$(printf '%s' "$C" | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+UPR=$(printf '%s' "$ROOT" | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+if [ -d "$UPC" ]; then
+    tc "$C" "$ROOT" "git -C $UPC merge --squash feature" 2 "TOOL50: main checked out, path in other letter case: merge --squash"
+    tc "$C" "$ROOT" "cd $UPC && git merge --ff-only feature" 2 "TOOL50: main checked out, cd in other letter case: merge --ff-only"
+    tc "$ROOT" "$C" "git -C $UPR commit-tree $T -m x" 2 "TOOL50: main repo in other letter case: commit-tree"
+    tc "$ROOT" "$ROOT" "git -C $UPC commit-tree $T -m x" 0 "TOOL50: clone in other letter case: commit-tree allowed"
+else
+    echo "ok (skipped: case-sensitive volume): TOOL50 letter-case cases"
+fi
 git -C "$C" symbolic-ref HEAD refs/heads/feature
 tc "$C" "$C" "git merge --ff-only main" 0 "other branch checked out: merge --ff-only"
 tc "$C" "$C" "git merge main" 0 "other branch checked out: merge"
+tc "$C" "$C" "git merge --squash main" 0 "TOOL50: other branch checked out (a worker's branch): merge --squash"
 exit $fail

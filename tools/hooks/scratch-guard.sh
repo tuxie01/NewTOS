@@ -20,7 +20,8 @@
 #                worktree's own target/.
 # Everything else passes (exit 0); target-agents/ lies on the data volume and
 # is never matched. The Bash check is a text match: a path assembled at run
-# time is not seen.
+# time is not seen. Paths are matched ASCII case folded (path_lower of
+# tools/hooks/lib/paths.sh, TOOL50): /TMP is /tmp on APFS.
 #
 # TOOL46 check, known false positives (blocked though nothing is cloned): the
 # words `git clone` as text -- in an echo, a `git commit -m "..."` message, a
@@ -33,6 +34,7 @@
 
 set -u
 
+. "$(dirname "${BASH_SOURCE[0]}")/lib/paths.sh" || { echo "scratch-guard: tools/hooks/lib/paths.sh is missing" >&2; exit 2; }
 input=$(cat)
 tool=$(printf '%s' "$input" | jq -r '.tool_name // empty')
 uid=$(id -u)
@@ -65,7 +67,7 @@ bulky_in_scratch() {
             echo "git clone into $under"
             return
         fi
-        if printf '%s' "$seg" | grep -qE "$target_re"; then
+        if printf '%s' "$seg" | grep -qiE "$target_re"; then
             echo "cargo target dir $under"
             return
         fi
@@ -81,11 +83,12 @@ case "$tool" in
         if [ -z "${CLAUDE_JOB_DIR:-}" ] && printf '%s' "$cmd" | grep -qE '\$\{?CLAUDE_JOB_DIR'; then
             block "the command uses \$CLAUDE_JOB_DIR, which is empty here (it would expand to /tmp)"
         fi
-        bad=$(foreign_tmp_paths "$cmd")
+        lc=$(path_lower "$cmd")
+        bad=$(foreign_tmp_paths "$lc")
         if [ -n "$bad" ]; then
             block "path(s) in the shared /tmp: $(printf '%s' "$bad" | tr '\n' ' ')"
         fi
-        big=$(bulky_in_scratch "$cmd")
+        big=$(bulky_in_scratch "$lc")
         if [ -n "$big" ]; then
             echo "scratch-guard: $big: the session scratch root lies on the system disk" >&2
             echo "scratch: clones and cargo target dirs go under <repo>/target-agents/agent-<id>/ (TOOL46) or the worktree's target/" >&2
@@ -93,7 +96,7 @@ case "$tool" in
         fi
         ;;
     Write|Edit)
-        path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
+        path=$(path_lower "$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')")
         if printf '%s' "$path" | grep -qE '^(/private)?/tmp(/|$)' \
             && ! printf '%s' "$path" | grep -qE "$allowed_re"; then
             block "file_path in the shared /tmp: $path"

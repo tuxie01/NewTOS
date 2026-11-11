@@ -128,7 +128,7 @@ EMUTOS_COMMIT_SHORT="${EMUTOS_COMMIT:0:8}"
 # Non-fatal: tell the reader if the pinned tree has local changes beyond
 # the harmless .DS_Store, since that would mean the table reflects
 # something other than the recorded commit.
-DIRTY="$(git -C "$EMUTOS_DIR" status --porcelain 2>/dev/null | grep -v '\.DS_Store$' || true)"
+DIRTY="$(GIT_OPTIONAL_LOCKS=0 git -C "$EMUTOS_DIR" status --porcelain 2>/dev/null | grep -v '\.DS_Store$' || true)"
 if [ -n "$DIRTY" ]; then
     warn "pinned tree has uncommitted changes beyond .DS_Store — the table below reflects the WORKING TREE, not commit $EMUTOS_COMMIT_SHORT cleanly:"
     warn "$DIRTY"

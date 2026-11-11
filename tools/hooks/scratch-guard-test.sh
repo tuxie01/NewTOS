@@ -68,4 +68,12 @@ b "echo git clone > $S/note.txt" 2 "known false positive: 'git clone' as echo te
 b "git commit -q -m 'git clone docs' && ls $S" 0 "commit message text, scratch path in another segment: passes"
 b "git worktree add $S/wt" 0 "known gap: git worktree add into the scratch root"
 b "CARGO_TARGET_DIR=\$X cargo build" 0 "known gap: target dir through a variable"
+# TOOL50: paths are matched case folded (/TMP is /tmp on APFS).
+b 'ls /TMP/foo' 2 "TOOL50: shared /tmp in upper case"
+b 'cp x /Private/Tmp/foo' 2 "TOOL50: shared /private/tmp in mixed case"
+b "ls /TMP/claude-$uid/x" 0 "TOOL50: the scratch root in upper case"
+b "git clone -q $PWD /Private/TMP/claude-$uid/x/clone" 2 "TOOL50: clone into the scratch root, mixed case"
+b "CARGO_TARGET_DIR=/TMP/claude-$uid/t cargo build" 2 "TOOL50: CARGO_TARGET_DIR in the scratch root, upper case"
+w Write /TMP/x.txt 2 "TOOL50: Write into the shared /tmp, upper case"
+w Write "/TMP/claude-$uid/notes.txt" 0 "TOOL50: Write into the scratch root, upper case"
 exit $fail

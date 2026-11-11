@@ -1,6 +1,6 @@
 # TOOL50 — the agent guard keeps the EmuTOS checkouts on the pin; `land` is the only merge path
 
-Status: OPEN (2026-11-11) | Priority: P1
+Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
 
 Type: tool (enforcement). Owner decision 2026-11-11. Changes `tools/hooks/**`, the live hooks of every agent session:
 developed in its own git worktree and landed by squash merge after the tester's acceptance (CLAUDE.md *Commit
@@ -70,3 +70,89 @@ locally (see *Facts*).
 - A tester confirms `references/emutos` and the oracle trees unchanged before/after its run (refs, index mtime,
   `git status --short` with `GIT_OPTIONAL_LOCKS=0`).
 - `cargo xtask test` green, warnings delta 0, doc-check of edited docs 0 failures.
+
+## Owner decision (2026-11-11, rework)
+
+The tester's run on the first version (`8a170770c`, rebased `e0c1fc7fc`; run directory
+measurement-2026-11-11-tool50-test, untracked in the main tree; PARTIAL leaning FAIL) found about 30 false
+negatives: paths in another letter case (APFS is case-insensitive), wrappers the parser does not know (`timeout`, `gtimeout`,
+`caffeinate`, `xcrun`, `/usr/bin/env`, `env -C`, `command cd`, `cd --`), `sed -Ei` bundles, `find` from an
+ancestor, `>|` `>!` `&>|`, `git push` into a protected tree, `$'...'` quoting, other writers (`curl`/`wget -o`,
+`sort -o`, `awk -i`, `vim`, `scp`), a symlink made on the same command line. Owner decisions:
+
+1. Stop the pattern race. The pin is protected at OS and git level: the owner makes the trees read-only
+   (`chmod -R a-w`, `chflags -R uchg`) and gives them an invalid remote URL; the lead prepares those commands.
+2. `pin-guard.sh` only keeps an agent from undoing that lock: `chmod`, `chflags`, `chown` and `git remote`
+   (`set-url`/`add`/`remove`/`rename`, also `git config remote.*`) on a `references/emutos*` path or repo (also via
+   the worktree symlink, `-C`, `--git-dir`, `cd`). The large write/git allow-list logic goes.
+3. Keep the `build-emutos.sh` refusal and `GIT_OPTIONAL_LOCKS=0` in `gen-deps.py` and `emutos-config.sh`.
+4. Case-insensitive physical path comparison in one shared helper under `tools/hooks/lib/`, used by all guards and
+   by the `build-emutos.sh` refusal.
+5. The other gaps, and cherry-pick/rebase/read-tree/apply/`git fetch . x:main` in no-verify-guard, are documented
+   as known limits in the guards' comment blocks; the backstops are TOOL43's server check and the OS-level lock.
+6. The squash rule (`git merge --squash` into main blocked, use `cargo xtask land`) stays as it is.
+
+## Implementation (developer, 2026-11-11; rework after the owner decision)
+
+Receipt: [TOOL50-STATUS-UNFINISHED.MD](TOOL50-STATUS-UNFINISHED.MD).
+
+- **Shared parser.** The TOOL42 tokenizer and simple-command walker live in `tools/hooks/lib/shell-parse.sh`,
+  sourced by `no-verify-guard.sh` and `pin-guard.sh`: `process_seg` (`tools/hooks/lib/shell-parse.sh:125@process_seg`)
+  calls the guard's `on_seg` and `on_command`, also tracks `--work-tree`/`GIT_WORK_TREE`; `is_cmd_word` decides where
+  a wrapper ends; `parse_command` (`tools/hooks/lib/shell-parse.sh:326@parse_command`) marks every unquoted `>`.
+  `no-verify-guard.sh` keeps `classify` (`tools/hooks/no-verify-guard.sh:150@classify`) and its rules in
+  `on_command` (`tools/hooks/no-verify-guard.sh:235@on_command`). The TOOL42 cites moved with the code.
+- **Shared path comparison** `tools/hooks/lib/paths.sh` (POSIX sh, so `build-emutos.sh` sources it too):
+  `path_physical` (`tools/hooks/lib/paths.sh:51@path_physical`: nearest existing directory by `cd -P`, the rest
+  lexically normalized) and the ASCII case-folding `path_same`/`path_in`/`path_contains`
+  (`tools/hooks/lib/paths.sh:63@path_same`, `:67@path_in`, `:74@path_contains`). Used by `pin-guard.sh`, by
+  `no-verify-guard.sh` for the main-repo comparison of its target (two `path_same` calls in `on_command`), by
+  `scratch-guard.sh` (the command and the Write/Edit path are folded with `path_lower` before the `/tmp` matches;
+  `CARGO_TARGET_DIR` matched with `grep -i`) and by the `build-emutos.sh` refusal.
+- **Pin guard** `tools/hooks/pin-guard.sh` (PreToolUse, `Bash|Write|Edit|NotebookEdit`): protected are
+  `references/emutos` and `references/emutos-oracle` of the main repo and of `$CLAUDE_PROJECT_DIR`.
+  `on_command` (`tools/hooks/pin-guard.sh:222@on_command`): `chmod`, `chflags`, `chown` on a path in a protected
+  tree or on a directory containing one (`hit_root`, `tools/hooks/pin-guard.sh:112@hit_root`; glob and brace words by
+  their literal prefix; an undecidable path by its text), also as `find <start> -exec ...` (`pin_find`).
+  `pin_git` (`tools/hooks/pin-guard.sh:289@pin_git`): `git remote add|set-url|remove|rm|rename` and a remote.*
+  write of `git config` (`config_remote_write`, `tools/hooks/pin-guard.sh:263@config_remote_write`: set, `--add`,
+  `--replace-all`, `--unset*`, `set`/`unset`, `--rename-section`/`--remove-section`, `-e`) in a protected repo (`-C`,
+  `--git-dir`, `--work-tree`, `GIT_DIR=`/`GIT_WORK_TREE=`, `cd`, cwd) or with `--file` in one; reads (`remote -v`,
+  `get-url`, `config --get`, a key alone) pass. Write/Edit/NotebookEdit by file path: kept, because the path comes as
+  one exact string and the check is cheap. Everything else the first version blocked is left to the OS lock; the
+  comment block lists the known limits.
+- **Point 2.** `build-emutos.sh` refuses a tree dir under `references/` of the tree or the main repo, physically and
+  case folded (`refuse`, `tools/oracle/build-emutos.sh:52@refuse`), before the cross-compiler check and any git or
+  make. docs/analysis/ORACLE.md §3 names a copy as the tree dir. `gen-deps.py` runs its `git status` with
+  `GIT_OPTIONAL_LOCKS=0` (`tools/deps/gen-deps.py:143@verify_tree`), `emutos-config.sh` likewise
+  (`tools/emutos-config.sh:131@DIRTY`).
+- **Point 4.** `classify` names `git merge --squash <branch>`; in the main repo with `main` checked out it is blocked
+  like the other merges, message `cargo xtask land <branch> -F <msg>`. A squash in a worktree on another branch (a
+  worker's own) is not a merge into main and stays allowed; so do a squash of remote-tracking refs only and a bare
+  `git merge --squash`. `cargo xtask land` runs git as a subprocess, unseen.
+- **Known limits** (comment blocks): `pin-guard.sh` names the tester's gaps and that every other write is left to the
+  OS lock; `no-verify-guard.sh` adds apply, read-tree and `git fetch . x:main` to the commands it does not block,
+  backstops TOOL43 and the OS lock.
+- **Tests.** `tools/hooks/pin-guard-test.sh` (fixture repo with a throw-away `references/emutos`, an oracle clone,
+  a worktree with TOOL44 symlinks, a scratch clone and a `git archive` export in a fixture target-agents dir;
+  nothing is run, the guard only reads its input): 298 guard cases (lock commands and git remote/config in every
+  path form and letter case, reads, five "known limit" cases that pin what is left to the lock) plus 10 for
+  `build-emutos.sh` (a fixture copy with `paths.sh` and a cross compiler that does not exist, so a refusal that
+  failed stops before git or make). Wired into `cargo xtask test` as `git_hooks::tests::pin_guard_pipe_tests_pass`
+  (`tools/xtask/src/git_hooks.rs:234@pin_guard_pipe_tests_pass`), about 35 s. `no-verify-guard-test.sh`: 8 squash
+  cases (one old case reversed) and 4 letter-case cases; `scratch-guard-test.sh`: 7 letter-case cases. Against the
+  guards and `build-emutos.sh` of main `cb78c9d48` all 228 block cases of the pin test fail; against the first
+  version all 42 letter-case and ancestor block cases fail; the new letter-case block cases of the other two tests
+  fail against their earlier versions (2 of 4 and 5 of 7; the other cases are allow cases or were blocked before).
+- **Retest fixes (2026-11-11; tester retest of `53e53f7f1`, run directory measurement-2026-11-11-tool50-retest,
+  untracked in the main tree: PARTIAL leaning PASS).** `git config -f<path>` (attached) and a `GIT_CONFIG` file
+  (prefix, `env`, export; also `GIT_CONFIG_GLOBAL`/`GIT_CONFIG_SYSTEM`) in a protected tree now count as the config
+  file of the write: the shared parser tracks `GIT_CONFIG*` like `GIT_DIR` (`gc`/`gct`,
+  `tools/hooks/lib/shell-parse.sh:128@process_seg`). `config_remote_write` also takes `url.*` (insteadOf,
+  pushInsteadOf) and `branch.<b>.remote`/`pushRemote` as fetch-redirecting keys (cheap, so blocked rather than
+  documented). The comment block now names as known limits chgrp, setfacl, xattr, a wrapper inside `find -exec`,
+  mode-changing scripts (`python3 -c os.chmod`, perl), `env -C` precisely (the wrapper is known, its directory change
+  is not tracked), `$'...'` precisely (only the literal text of the word is matched), other config keys, and
+  (owner 2026-11-11) url.*.insteadOf in the global or system git config, not guarded, backstop the OS lock.
+  Tests: 64 new pin-test cases (now 362 guard cases plus 10 build cases, 372 ok); against the previous `pin-guard.sh`
+  all 48 new block cases fail, the 16 new allow and known-limit cases pass.

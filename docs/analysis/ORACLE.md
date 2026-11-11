@@ -185,13 +185,18 @@ without them were byte-identical.
 ## 3. Rebuilding the ROM
 
 ```
-tools/oracle/build-emutos.sh 1a7484aba1bfba23e2c0899e243b6d8177fe41df 2026-04-14 references/emutos-oracle/1a7484ab
+tools/oracle/build-emutos.sh 1a7484aba1bfba23e2c0899e243b6d8177fe41df 2026-04-14 target-agents/agent-<id>/emutos-1a7484ab
 ```
 
 The script clones `references/emutos` (read-only; never built in) into the
 tree directory, checks out the commit, refuses a dirty tree, and runs
-`make 512 COUNTRY=de` with an absolute `TOOLCHAIN_PREFIX`. Two host inputs
-are pinned, each because it otherwise makes two builds of one commit differ:
+`make 512 COUNTRY=de` with an absolute `TOOLCHAIN_PREFIX`. Since TASK/TOOL50
+it refuses a tree directory under `references/` (also through a worktree's
+symlink): the checkouts there stay on the pin, and the oracle build tree
+`references/emutos-oracle/1a7484ab` (built 2026-10-26) is rebuilt in place
+only by the owner, by hand; a rebuild check goes into a copy, as above. Two
+host inputs are pinned, each because it otherwise makes two builds of one
+commit differ:
 
 1. **Build date.** `tools/mkheader.awk` asks `date +%Y,%m,%d` (OS header
    `os_date`/`os_dosdate`, copyright year); a snapshot tree's `version.mk:40`
