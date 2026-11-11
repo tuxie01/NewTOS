@@ -1,6 +1,6 @@
 # TOOL41 — ticket tools: status-check, accept, set-status, report, commit-msg hook
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: DONE through cargo xtask accept; tester PASS in measurements/measurement-2026-11-11-tool41-retest/RUNINFO.TXT
+Status: DONE (2026-11-11) | Priority: P1 | Commit: bfc3c6ba2 | Receipt: TOOL41-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decisions 2026-11-10/11: ADR-037 with its addendum of 2026-11-11 (points 11–14,
 decisions e–g) in `docs/MEMORY.md`. Order: starts only after [TOOL40](TOOL40.md) is done — both change
