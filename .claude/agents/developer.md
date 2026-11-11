@@ -89,9 +89,10 @@ idiomatic `#![no_std]` Rust for AArch64 — do **not** port the C line-by-line.
 
 ## Git hygiene in the shared working tree (CRITICAL)
 
-- **Never modify `references/emutos` or `references/emutos-oracle/*`** (owner 2026-11-11): no re-clone, fetch, pull,
-  checkout, reset, clean, stash, `make` or edit there, nor through a worktree's symlink; read only. Builds run on a copy
-  under the `target-agents` directory. A failing `emutos_resolves_at_the_pin` is reported, never fixed by touching the checkout.
+- **`references/emutos` and `references/emutos-oracle/*` stay on the pin `1a7484ab`** (owner 2026-11-11; upstream has
+  moved on): no fetch, pull, re-clone from upstream, checkout, reset, clean, stash, `make` or edit there, nor through a
+  worktree's symlink; read only. A pin change is an owner decision. A failing `emutos_resolves_at_the_pin` is reported.
+- **`docs/STATUS.md` (and its archive) is edited by the lead only** (owner 2026-11-11); propose a STATUS line in the receipt.
 
 You share ONE working tree with other tasks whose work is **uncommitted**.
 - **NEVER run** `git checkout`/`git restore`/`git clean`/`git stash`/`git reset`
