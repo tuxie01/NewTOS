@@ -1,6 +1,6 @@
 # TOOL54 — `cargo xtask migrate --batch <N>`: one-time migration of legacy tickets
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-11) | Priority: P1 | Commit: af80ca3da | Receipt: TOOL54-STATUS-DONE.MD
 
 Type: tool. Owner decision 2026-11-11 (legacy ticket clean-up before the inventory creates new tickets). Implements the
 ADR-037 addendum on the one-time migration (once accepted by the owner; text shown to the owner before commit). Runs on
