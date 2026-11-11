@@ -156,7 +156,8 @@ gives its before/after number in its line under *Recent Decisions*.
   open only the acceptance of K under Linux/Homebrew),
   [SND01](../TASK/SND01.md), [SND02](../TASK/SND02.md),
   [NET01](../TASK/NET01.md) (preliminary research, target 1.2), [HW04](../TASK/HW04.md)
-  (partial), [W01](../TASK/W01.md), [TOOL03](../TASK/TOOL03.md) (reproducible measurement images and dumper builds, before the DUMPGDOS image comparison), [TOOL05](../TASK/TOOL05.md) (doc-check also for docs that cite a changed file); parked: [TOOL01](../TASK/TOOL01.md) (`cargo xtask doctor`), [H04](../TASK/H04.md),
+  (partial), [W01](../TASK/W01.md), [TOOL03](../TASK/TOOL03.md) (reproducible measurement images and dumper builds, before the DUMPGDOS image comparison), [TOOL05](../TASK/TOOL05.md) (doc-check also for docs that cite a changed file);
+  parked: [TOOL01](../TASK/TOOL01.md) (parked, `cargo xtask doctor`), [H04](../TASK/H04.md),
   [H01](../TASK/H01.md) (waits for hardware); [HW05](../TASK/HW05.md) (finding done, acceptance open: the same `QED.NAP` copy with a stopwatch as before, into the test scenario; [HW08](../TASK/HW08.md) done 2026-11-07); deferred:
   [T13](../TASK/T13.md).
 - **„ERLEDIGT“ without a DONE receipt — count as open until measured
