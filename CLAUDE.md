@@ -188,6 +188,9 @@ Linux source code is a cross-reference, not an authority.
   translate when touched. Keep line anchors valid (the pre-commit doc-check
   catches shifted cites). Exception: immutable evidence — nothing under
   `measurements/**` (RUNINFO, logs, dumps) is ever edited.
+  A commit whose only change to a file is anchor line numbers rewritten by
+  `cargo xtask doc-check --fix-anchors` does not count as touching it: no
+  translation required (owner 2026-11-11; the tool is TASK/TOOL49.md).
 - File names and paths: **English**, lowercase, hyphenated. Exceptions: the
   upper-case top-level docs (`docs/STATUS.md`, `docs/analysis/ORACLE.md`, …),
   ticket files and receipts (`TASK/<ID>.md`, `<ID>-STATUS-DONE.MD`),
