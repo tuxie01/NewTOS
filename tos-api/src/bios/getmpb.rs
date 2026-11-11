@@ -30,6 +30,7 @@ use tos_types::{Long, ProtMode};
 use crate::bdos::mem::init::stram_range;
 use crate::bdos::process::{self, usermem};
 use crate::trap::TrapArgs;
+use crate::uaccess::UserFault;
 
 /// The memory descriptor as a program sees it through `Getmpb`: the SDK
 /// header's `_MD` under LP64 (`sdk/libc/overlay/include/mint/ostruct.h:293@_md`),
@@ -147,11 +148,20 @@ fn describe(start: Long, end: Long) -> PublicMd {
 /// space at its own address (VA = PA, ARCH03 stage 1) and `mp_mfl` carries
 /// that **user address** (ADR-023). If the publication cannot be made,
 /// `mp_mfl` is left NULL — an empty free list, which the contract already
-/// defines — rather than a pointer the caller would fault on.
+/// defines — rather than a pointer the caller would fault on. A NULL `mpb`
+/// is never written (EmuTOS `bios/biosmem.c:149`: bus error, panic; spec V3,
+/// O3 decided 2026-11-11): a program's ends it as an unwritable MPB does.
 pub fn getmpb(args: &TrapArgs) -> Long {
     let mpb = args.arg_u64(0);
     if mpb == 0 {
-        return 0;
+        // A program's NULL is refused as a store it cannot make, in super
+        // state too (its page 0 would take the store there): the syscall
+        // tail ends it with "Bus Error". An in-kernel caller's pointers are
+        // kernel addresses; its NULL is a kernel bug and is only refused.
+        if args.space.is_user() {
+            let _ = crate::uaccess::refuse_user_write(mpb);
+        }
+        return crate::uaccess::FAULTED;
     }
     let (start, end) = stram_range();
     let page = THEMD.0.get();
@@ -179,15 +189,23 @@ pub fn getmpb(args: &TrapArgs) -> Long {
         }
     };
 
-    // `mpb` is the caller's writable MPB, written in the caller's space
-    // (ARCH03 3a, `crate::uaccess`): a program's MPB with its rights — one it
-    // cannot write ends the call and the program (EmuTOS: bus error in
-    // `getmpb`) — an in-kernel caller's as the kernel address it is. Write
-    // only mp_free / mp_used; mp_rover is preserved, exactly as EmuTOS leaves
-    // the caller's value (spec §Outputs, V2.6).
+    // `mpb` is the caller's MPB, written in the caller's space (ARCH03 3a,
+    // `crate::uaccess`): a program's MPB with its rights — one it cannot
+    // write ends the call and the program (EmuTOS: bus error in `getmpb`) —
+    // an in-kernel caller's as the kernel address it is.
+    fill_mpb(mpb, head, |va, v| args.space.put_u64(va, v))
+}
+
+/// Store the free-list head `head` and an empty allocated list into the MPB
+/// at `mpb` through `put` (a store in the caller's space). Writes only
+/// mp_free, then mp_used; mp_rover is preserved, exactly as EmuTOS leaves the
+/// caller's value (`bios/biosmem.c:149-150`; spec §Outputs, V2.6). The first
+/// store that faults ends the call with [`crate::uaccess::FAULTED`]; nothing
+/// after it is written.
+fn fill_mpb(mpb: u64, head: u64, mut put: impl FnMut(u64, u64) -> Result<(), UserFault>) -> Long {
     let free = mpb + offset_of!(PublicMpb, mp_free) as u64;
     let used = mpb + offset_of!(PublicMpb, mp_used) as u64;
-    if args.space.put_u64(free, head).is_err() || args.space.put_u64(used, 0).is_err() {
+    if put(free, head).is_err() || put(used, 0).is_err() {
         return crate::uaccess::FAULTED;
     }
     0
@@ -219,5 +237,71 @@ mod tests {
         assert_eq!(u64::from_ne_bytes(bytes[8..16].try_into().unwrap()), 0x0040_0000);
         assert_eq!(u64::from_ne_bytes(bytes[16..24].try_into().unwrap()), 0x00A0_0000);
         assert_eq!(&bytes[24..32], &[0; 8]);
+    }
+
+    /// A store in the caller's space as the MMU presents it to an EL0
+    /// program in user state: page 0 `[0, 0x1000)` is read-only (MEM12,
+    /// `UserRoNx`), so a store there faults; every other address of the fake
+    /// is writable. Records each store that succeeds.
+    fn user_state_put(
+        log: &mut Vec<(u64, u64)>,
+    ) -> impl FnMut(u64, u64) -> Result<(), UserFault> + '_ {
+        move |va, v| {
+            if va < 0x1000 {
+                return Err(UserFault);
+            }
+            log.push((va, v));
+            Ok(())
+        }
+    }
+
+    #[test]
+    fn unwritable_mpb_faults_and_writes_nothing() {
+        // An MPB in page 0 of a program in user state: the first store
+        // (mp_free) faults and the call returns the fault result, after which
+        // the syscall tail ends the program.
+        let mut log = Vec::new();
+        assert_eq!(fill_mpb(0x100, 0x0007_D000, user_state_put(&mut log)), crate::uaccess::FAULTED);
+        assert!(log.is_empty());
+    }
+
+    #[test]
+    fn null_mpb_from_a_program_is_refused_before_any_store_in_any_state() {
+        // O3 (owner 2026-11-11): a program's NULL is refused up front, in
+        // super state too, where its page 0 would take the store. The check
+        // does not consult the super state; on the host a store to address 0
+        // would crash the test, so returning shows nothing was written. The
+        // recorded fault is the one a faulting `sttr` to address 0 leaves.
+        let _serial =
+            crate::uaccess::FAULT_RECORD_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let _ = crate::uaccess::take_pending_fault();
+        let args = TrapArgs { space: crate::uaccess::Space::User, ..TrapArgs::kernel([0; 8], 0x00, 13) };
+        assert_eq!(getmpb(&args), crate::uaccess::FAULTED);
+        let rec = crate::uaccess::take_pending_fault().expect("a recorded fault ends the program");
+        assert_eq!(rec, crate::uaccess::refused_write_record(0));
+        assert_eq!(rec.far, 0);
+        assert_eq!(crate::bios::crash::classify(rec.esr), crate::bios::crash::CrashKind::BusError);
+        assert_eq!(rec.esr & 0x7F, 0x4F, "WnR + permission fault, level 3");
+    }
+
+    #[test]
+    fn writable_mpb_gets_free_then_used_only() {
+        let mut log = Vec::new();
+        assert_eq!(fill_mpb(0x0040_0100, 0x0007_D000, user_state_put(&mut log)), 0);
+        // mp_free at +0, then mp_used at +8; mp_rover (+16) untouched.
+        assert_eq!(log, [(0x0040_0100, 0x0007_D000), (0x0040_0108, 0)]);
+    }
+
+    #[test]
+    fn null_mpb_from_the_kernel_is_refused_before_any_store() {
+        // An in-kernel caller's NULL is a kernel bug: refused, never stored
+        // through as a kernel address, and no fault is recorded (there is no
+        // program to end).
+        let _serial =
+            crate::uaccess::FAULT_RECORD_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let _ = crate::uaccess::take_pending_fault();
+        let args = TrapArgs::kernel([0; 8], 0x00, 13);
+        assert_eq!(getmpb(&args), crate::uaccess::FAULTED);
+        assert_eq!(crate::uaccess::take_pending_fault(), None);
     }
 }

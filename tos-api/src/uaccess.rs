@@ -860,6 +860,43 @@ fn fixup_table() -> &'static [FixupEntry] {
     &[]
 }
 
+/// `ESR_EL1` of an `sttr` to a page the caller may only read: a same-EL Data
+/// Abort (EC `0x25`, IL = 1) with ISS `0x4F` = `WnR` + permission fault at
+/// level 3 — the syndrome measured in the 0b spike
+/// (`docs/analysis/arch03-stage0b-spike.md` §5, row "`sttr` EL0-RO").
+const ESR_USER_WRITE_REFUSED: u64 = (0x25 << 26) | (1 << 25) | 0x4F;
+
+/// The record [`refuse_user_write`] stores: the fault an `sttr` to `va` on a
+/// read-only page reports, with `FAR` = `va`. No exception was taken, so `pc`
+/// is the refusing routine and the saved state and registers are zero.
+pub fn refused_write_record(va: u64) -> FaultRecord {
+    FaultRecord {
+        far: va,
+        esr: ESR_USER_WRITE_REFUSED,
+        pc: refuse_user_write as fn(u64) -> UserFault as usize as u64,
+        pstate: 0,
+        regs: [0; 31],
+    }
+}
+
+/// Refuse a store to user address `va` **before** making it, as if the
+/// caller could not write there, for a call whose contract says the caller
+/// never can — even where its current rights would let the store through
+/// (`Getmpb(NULL)` in super state, where page 0 is EL0 read-write; TASK/BIOS06
+/// O3). Records the fault exactly as a faulting `sttr` would
+/// ([`refused_write_record`], [`note_fault`]), so the syscall tail ends the
+/// caller through the same crash report ("Bus Error") and `Pterm(-1)`. The
+/// caller returns [`FAULTED`].
+pub fn refuse_user_write(va: u64) -> UserFault {
+    note_fault(&refused_write_record(va));
+    UserFault
+}
+
+/// Serialises the host tests that arm and drain the shared fault record
+/// (tests run in parallel threads and the record is one global).
+#[cfg(test)]
+pub(crate) static FAULT_RECORD_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -900,6 +937,7 @@ mod tests {
         regs[30] = 0x3030;
         let first = FaultRecord { far: 0xDEAD_0000, esr: 0x9600_0047, pc: 0x10, pstate: 0x3C5, regs };
         let second = FaultRecord { far: 0xBEEF, ..first };
+        let _serial = FAULT_RECORD_TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         // Drain anything a previous test left (tests share the statics).
         let _ = take_pending_fault();
         note_fault(&first);

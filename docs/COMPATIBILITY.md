@@ -1849,6 +1849,24 @@ only the physical slot (read; whether a left-open workstation survives is VDI-WK
 PLAUSIBLE, measuring case in `TASK/SPEC04.md`). That difference is an open defect
 candidate, not part of this entry.
 
+**`Getmpb(NULL)` ends the program, the system keeps running** — owner
+decision 2026-11-11 (TASK/BIOS06, O3; spec `docs/api/bios/00-getmpb.md` V3).
+EmuTOS does not check `mpb`: its first store `mpb->mp_mfl = &themd`
+(`references/emutos/bios/biosmem.c:149`) takes a bus error in supervisor
+state and EmuTOS panics ("Panic: Bus Error ... addr=00000000") and waits for
+a key — the system halts (measured on the oracle, profiles tt and falcontc,
+`measurements/measurement-2026-10-29-bios06/RUNINFO.TXT`, "O3"). NewTOS
+treats a program's NULL MPB as a store it cannot make, in user and in super
+state alike (`tos-api/src/bios/getmpb.rs:162@refuse_user_write`): nothing
+is written, page 0 included, the fault is recorded as a refused write to
+address 0 (`tos-api/src/uaccess.rs:890@refuse_user_write`), and the program
+is ended with the crash report "Bus Error" and `Pterm(-1)`, like any other
+unwritable pointer (`tos-api/src/uaccess.rs` module comment).
+**Observable difference:** the halt — on NewTOS only the calling program
+ends and the system keeps running (memory protection). Test
+`null_mpb_from_a_program_is_refused_before_any_store_in_any_state`
+(`tos-api/src/bios/getmpb.rs`).
+
 ## EmuTOS is the reference, not the template
 
 CLAUDE.md Rule 1 says EmuTOS source *is* the spec. Through this charter that
