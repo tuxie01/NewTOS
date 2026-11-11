@@ -1,5 +1,10 @@
 # DESK47 — `opn_appl`: der Parameterdialog fehlt, und ohne ihn ist `.NTP` sinnlos
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: 4b3d73828 | Missing: tester acceptance through cargo xtask accept
+
+Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit 4b3d73828 (feat(desk): opn_appl asks a .NTP for its parameters, and the line reac), VERIFIED: 4b3d73828 (feat(desk): opn_appl asks a .NTP for its parameters, and the) names the id by body, its message names the ticket-title identifier opn_appl, touches code (47 files), legacy line: ERLEDIGT (2026-09-30, auf der Pi abgenommen)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-30, auf der Pi abgenommen) · Prioritaet: **P2** · Typ: Fehlende EmuTOS-Funktion — Anwenderbefund Pi-Runde 2026-09-28
 
 Abhaengigkeiten: [DESK44](DESK44.md) (dort als „nicht einloesbare Haelfte" vermerkt)

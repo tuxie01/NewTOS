@@ -1,5 +1,10 @@
 # CON02 — `Cconout`/`Cconws` folgen nicht der Umlenkung von Handle 1
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: a37f0c7d4 | Missing: tester acceptance through cargo xtask accept
+
+Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit a37f0c7d4 (feat(gemdos): character functions follow p_uft redirection (PROC04 pt ), VERIFIED: a37f0c7d4 (feat(gemdos): character functions follow p_uft redirection () first added the cited measurements/measurement-2026-10-18-proc04-redir, legacy line: ERLEDIGT 2026-10-18 (mit PROC04 Punkt 1, `1a306120`)
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-18 (mit PROC04 Punkt 1, `1a306120`) · Prioritaet: **P3** · Typ: Konformitaet — Nebenfund LIBC-FSTAT (2026-10-17)
 
 NewTOS-`Cconws` schreibt immer auf CON, auch wenn Handle 1 per `Fforce`

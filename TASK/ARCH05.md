@@ -1,5 +1,10 @@
 # ARCH05 — ADR: welche Maschine meldet NewTOS (`_MCH`) und was folgt daraus
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: a9f4d564c | Missing: tester acceptance through cargo xtask accept
+
+Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit a9f4d564c (docs: _MCH = 0xFFFFFFFF (ADR-012 amendment, ARCH05), new tickets), VERIFIED: diff of a9f4d564c (docs: _MCH = 0xFFFFFFFF (ADR-012 amendment, ARCH05), new tic) touches docs/api/bios/_cookie-jar.md, names the id by subject, 10 files, legacy line: ERLEDIGT 2026-10-28 — Nachtrag ADR-012 in `docs/MEMORY.md`, Umsetzung [ARCH06](A
+
+Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-28 — Nachtrag ADR-012 in `docs/MEMORY.md`; Umsetzung [ARCH06](ARCH06.md), [SDK03](SDK03.md), [TOOL18](TOOL18.md) · Prioritaet: **P2** · Typ: Researcher (ADR-Vorschlag), Entscheidung Anwender — Anwenderentscheidung 2026-10-28, aus [XBIOS10](XBIOS10.md)
 
 ## Sachverhalt

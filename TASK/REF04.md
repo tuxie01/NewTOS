@@ -1,5 +1,10 @@
 # REF04 — Die woertliche Tabelle 4-42 in `emmc-sd.md` gegen die Lizenzbedingungen
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 17, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 41c9bc1c9 (docs(hw): pin the SD specifications, and HW03's ci), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT** (2026-09-29) · Prioritaet: **P2** · Typ: Lizenz / Veroeffentlichung — aus REF02
 
 Abhaengigkeiten: [REF02](REF02.md) (dort im Wortlaut gelesen)

@@ -1,5 +1,10 @@
 # DESK39 — `inf_file_folder` benennt nicht selbst um und zaehlt Ordner nicht
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: f7c61f863 | Missing: tester acceptance through cargo xtask accept
+
+Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit f7c61f863 (feat(desk): rebuild the Show-info dialogs as EmuTOS's resource trees), VERIFIED: f7c61f863 (feat(desk): rebuild the Show-info dialogs as EmuTOS's resour) names the id by status-line-named, its message names the ticket-title identifier inf_file_folder, touches code (98 files), legacy line: ERLEDIGT 2026-09-25 (`f7c61f86`, ADFFINFO-Neubau: `STRENAME`-Retry-Schleife und
+
+Line 3 before the migration:
 Status: **ERLEDIGT 2026-09-25** (`f7c61f86`, ADFFINFO-Neubau: `STRENAME`-Retry-Schleife und `dos_chmod`-Rueckschreiben in `inf_file_folder`, `count_ffs` fuer Ordner — `programs/desktop/src/inf.rs`; nachgetragen 2026-10-22) · Prioritaet: **P3** · Typ: Funktionsluecken — Nebenbefunde DESK38
 
 Abhaengigkeiten: [DESK38](DESK38.md) (erledigt)

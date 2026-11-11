@@ -1,5 +1,10 @@
 # GUI01 — `CONF_WITH_SHOW_FILE`: Datei per Doppelklick anzeigen
 
+Status: PARKED (2026-11-11) | Priority: P4 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 17, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 37b42d622 (docs(compat): name the missing built-in file viewe), named by subject
+
+Line 3 before the migration:
 Status: **GESCHLOSSEN 2026-10-22** (Anwenderentscheid 2026-10-18: Betrachter als Anwendung + Zuordnung, kein eingebautes `show_file`; Abweichung benannt in `docs/COMPATIBILITY.md`) · Prioritaet: **P4** · Typ: Funktionsluecke AES/Desktop — aus der Schaltertabelle (REF01)
 
 Abhaengigkeiten: —

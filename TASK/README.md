@@ -57,10 +57,10 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A03](A03.md) | wind_get(0, WF_PXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
 | [A04](A04.md) | wind_get(0, WF_FXYWH): geräteabhängige Geometrie absichern | Geräteunterschied / Test | P2 | ERLEDIGT (2026-09-19) | — |
 | [A05](A05.md) | wind_get WF_OWNER: Versionsabweichung belegen | Versionsprüfung | P2 | ERLEDIGT (2026-09-19) — Versionsunterschied | — |
-| [A06](A06.md) | appl_init: ap_id | Global-Feldprüfung | P2 | ERLEDIGT | — |
+| [A06](A06.md) | appl_init: ap_id | Global-Feldprüfung | P2 | PARKED | — |
 | [A07](A07.md) | appl_init: ap_private | Global-Feldprüfung | P2 | ERLEDIGT (2026-09-19) — Konfigurationsunterschied belegt | — |
-| [A08](A08.md) | appl_init: ap_planes | Global-Feldprüfung | P2 | ERLEDIGT | — |
-| [A09](A09.md) | appl_init: ap_3resv | Global-Feldprüfung | P2 | ERLEDIGT | — |
+| [A08](A08.md) | appl_init: ap_planes | Global-Feldprüfung | P2 | PARKED | — |
+| [A09](A09.md) | appl_init: ap_3resv | Global-Feldprüfung | P2 | PARKED | — |
 | [A10](A10.md) | wind_create: Kapazitätsgrenze | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
 | [A11](A11.md) | wind_get WF_CXYWH: erzeugtes ungeöffnetes Fenster | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
 | [A12](A12.md) | wind_get WF_PXYWH: Zustand nach wind_open | Nachmessung auswerten | P1 | ERLEDIGT | M01 |
@@ -76,7 +76,7 @@ Die neu abgelegten Statusdateien haben Vorrang vor der alten Startempfehlung: M0
 | [A22](A22.md) | Messlücke: drei und mehr überlappende Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A13, A14 |
 | [A23](A23.md) | Kompensationsanalyse vor dem Fix-Durchgang | Gate / Analyse vor Reparatur | P1 | ERLEDIGT (2026-09-10, siehe A23-STATUS-DONE.MD) | A13, A14, A15 |
 | [A24](A24.md) | Messlücke: verschachtelte FIRST/NEXT über zwei Fenster | Messlücke / Messdesign | P1 | ERLEDIGT (2026-09-12) | A14 |
-| [A26](A26.md) | Erratum: Kopfkommentar der Rechtecklisten-Tabelle | Erratum / Dokumentation | P2 | ERLEDIGT (2026-09-19) | A15 |
+| [A26](A26.md) | Erratum: Kopfkommentar der Rechtecklisten-Tabelle | Erratum / Dokumentation | P2 | PARKED | A15 |
 | [A27](A27.md) | Unterschreibender Handler: bewusste Abweichung belegen, Spec richtigstellen | Bewertung / Spec | P2 | ERLEDIGT (2026-09-19) | — |
 | [A28](A28.md) | Fehlende Zustandsrücksetzung Desktop → Kindprogramm | Belegter Defekt / Startpfad | P1 | ERLEDIGT (2026-09-14) | A25, A29 |
 | [A29](A29.md) | Programmende löscht den Deskriptor des Desktops | Belegter Defekt / Startpfad | P1 | ERLEDIGT 2026-10-17 (Quittung) | — |

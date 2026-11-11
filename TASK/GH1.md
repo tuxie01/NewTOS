@@ -1,5 +1,10 @@
 # GH1 — Popup im System-Info-Accessory: Fenster dahinter zeichnet sich ueber den Dialog
 
+Status: PARKED (2026-11-11) | Priority: P2 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 17, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 7b295ab3c (fix(aes): make wind_update a real mutex, route cli), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT (QEMU) 2026-10-21** (`7b295ab3`; Pi abgenommen 2026-10-22, `docs/HW-TEST-LOG.md`) · Prioritaet: **P2** · Typ: Fehler — GitHub-Issue #1 (ragnar76, 2026-10-19), echte Pi 4, NewTOS 0.6 (`f7cb0fd9`)
 
 ## Meldung

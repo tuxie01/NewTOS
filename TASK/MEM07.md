@@ -1,5 +1,10 @@
 # MEM07 — feste Grenze `MAX_SHARED_BLOCKS = 64`
 
+Status: PARKED (2026-11-11) | Priority: P3 | Reason: legacy, evidence unverified; no receipt | Reopen: a per-ticket reading identifies the commit that carries the work and the owner confirms it
+
+Migrated (owner batch 17, 2026-11-11, to PARKED), evidence: was IMPLEMENTED with a placeholder commit, NOT VERIFIED: no cited file of the ticket/receipt is touched by 880ecf85a (docs(analysis): open P3 ticket review with runs (2), named by body
+
+Line 3 before the migration:
 Status: **ERLEDIGT (geschlossen nach Review 2026-10-19)** · Prioritaet: **P3** · Typ: Grenzwert — Nebenfund MEM05-Entwurf (2026-10-13)
 
 `tos-api/src/bdos/mem/region.rs:45` begrenzt gemeinsam genutzte Bloecke fest

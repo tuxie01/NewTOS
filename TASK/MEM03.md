@@ -1,5 +1,10 @@
 # MEM03 — Der Umgebungsblock eines Kindes ist in EL0 nicht abgebildet; `p_env` traegt eine physische Adresse
 
+Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: 7d19c0559 | Missing: tester acceptance through cargo xtask accept
+
+Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit 7d19c0559 (fix(libc): printf %f, 64-bit intptr_t and the spawn family under LP64), VERIFIED: 7d19c0559 (fix(libc): printf %f, 64-bit intptr_t and the spawn family u) names the id by body, its message names the ticket-title identifier p_env, touches code (40 files), legacy line: ERLEDIGT 2026-10-05 (mit ARCH03 Stufe 1 `c6280342`, Sonde ENVKID/MEM03 PASS in Q
+
+Line 3 before the migration:
 Status: **ERLEDIGT 2026-10-05** (mit ARCH03 Stufe 1 `c6280342`; Sonde ENVKID/MEM03 PASS in QEMU, siehe [ARCH03-1-Quittung](ARCH03-1-STATUS-DONE.MD) und ARCH03-2; Folge PORT09 `861ad038`; eigene Pi-Probe nicht belegt) · Prioritaet: **P2** · Typ: Kernfehler (Lader / Speicherabbildung) — gefunden in [PORT09](PORT09.md)
 
 Abhaengigkeiten: — · **blockiert** [PORT09](PORT09.md) Schritt 2
