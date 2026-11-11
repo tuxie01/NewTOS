@@ -3511,6 +3511,26 @@ Owner decisions 2026-11-11 on the open points of the draft:
 - (g) A commit that names several ticket ids: every named id must satisfy the rules.
 - (h) The commit `accept` makes carries the same `Co-Authored-By:` trailer as every other commit (owner 2026-11-11).
 
+### Addendum 2026-11-11 (b) — one-time migration of legacy tickets
+
+Owner decision 2026-11-11. Concretises point 7 (legacy tickets keep their status line until touched) for a deliberate,
+batch-wise clean-up; points 1–14 and decisions (e)–(h) stand.
+
+15. **`cargo xtask migrate --batch <N>`** rewrites line 3 of legacy tickets only, once, from an owner-approved batch
+    file `TASK/migration/batch-<N>.tsv` (columns: `id`, target state, the fields point 1 requires for that state,
+    evidence). For each row it writes line 3 in ADR-037 form and, below it, the line
+    `Migrated (owner batch <N>, <date>), evidence: <evidence>`; one commit per batch, its subject naming the batch.
+16. **Refusals.** `migrate` refuses a ticket that is not in `tools/xtask/ticket-baseline.tsv`, a row whose target state
+    lacks a required field (point 1), a batch file not committed before the run, and a batch file without the owner's
+    approval line. It removes the migrated tickets' entries from the baseline in the same commit (the baseline only
+    shrinks). It refuses to run at all once the baseline holds no ticket entry, or after an owner decision that ends
+    the migration.
+17. **Who.** A researcher classifies the legacy tickets read-only and drafts the batch files; for each batch the
+    researcher checks a random sample of 5 against code, receipts and measurements and reports it; the owner decides
+    the batch (the approval line in the batch file); then the lead runs `migrate`. `migrate` sets `DONE` only from
+    evidence named in the row (a receipt and a fix commit); it does not write `-STATUS-DONE.MD` receipts and is not an
+    acceptance (point 11 applies to new work only).
+
 ---
 
 ## Template for new ADRs
