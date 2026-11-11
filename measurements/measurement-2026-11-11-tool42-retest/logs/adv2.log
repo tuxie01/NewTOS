@@ -1,0 +1,161 @@
+ok got=2 want=2 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C ${CLAUDE_PROJECT_DIR} commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C "$CLAUDE_PROJECT_DIR" commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C "$CLAUDE_PROJECT_DIR/" commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR// commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR/./ commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR/tools/.. commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR/tools/../ commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR/tools/../../PiRusTOS commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C /Volumes/Daten/Development/PiRusTOS//tools/.. commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C ///Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C /Volumes/Daten/Development/PiRusTOS/./tools commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/tools commit-tree abc
+ok got=2 want=2 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk && git commit-tree abc
+ok got=2 want=2 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/tools; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt/tools update-ref refs/heads/main abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a823a57e109be35e1 commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a823a57e109be35e1 && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd / ; cd $CLAUDE_PROJECT_DIR && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /; cd ${CLAUDE_PROJECT_DIR} && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd "$CLAUDE_PROJECT_DIR" && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /var && cd /Volumes/Daten/Development/PiRusTOS && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: pushd /Volumes/Daten/Development/PiRusTOS >/dev/null; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: pushd $CLAUDE_PROJECT_DIR; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: pushd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk; git commit-tree abc
+ok got=2 want=2 cwd= home=- :: pushd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2; popd; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: pushd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2; pushd /Volumes/Daten/Development/PiRusTOS; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=$CLAUDE_PROJECT_DIR/.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=${CLAUDE_PROJECT_DIR}/.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir "$CLAUDE_PROJECT_DIR/.git" commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/Volumes/Daten/Development/PiRusTOS/.git/ commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/Volumes/Daten/Development/PiRusTOS/.git/. commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/Volumes/Daten/Development/PiRusTOS//.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: GIT_DIR=$CLAUDE_PROJECT_DIR/.git git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/.git git update-ref HEAD abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: export GIT_DIR=$CLAUDE_PROJECT_DIR/.git; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: export GIT_DIR=/Volumes/Daten/Development/PiRusTOS/.git && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/.git GIT_WORK_TREE=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/.git GIT_WORK_TREE=/Volumes/Daten/Development/PiRusTOS git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/Volumes/Daten/Development/PiRusTOS/.git --work-tree=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 commit-tree abc
+MISMATCH got=0 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: GIT_WORK_TREE=/Volumes/Daten/Development/PiRusTOS git commit-tree abc
+MISMATCH got=0 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --work-tree=/Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 --git-dir=/Volumes/Daten/Development/PiRusTOS/.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/Volumes/Daten/Development/PiRusTOS/.git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 -C /Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 -C /Volumes/Daten/Development/PiRusTOS/tools commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C ~/x commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C ~/repo commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C $HOME/repo commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C ${HOME}/repo commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C "$HOME/repo" commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C ~/repo/ commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C ~/repo/tools/.. commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: cd ~/repo && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: cd $HOME/repo && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: cd ~ && cd repo && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: cd ~; git -C repo commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git --git-dir=~/repo/.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git --git-dir=$HOME/repo/.git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C ~/../../Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C $HOME/../../Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 cwd= home=- :: cd tools && git commit-tree abc
+ok got=2 want=2 cwd= home=- :: cd tools; cd ..; git commit-tree abc
+ok got=2 want=2 cwd= home=- :: cd .claude/worktrees/agent-a15921e5b605761cb && git commit-tree abc
+ok got=2 want=2 cwd=/.claude/worktrees/agent-a15921e5b605761cb home=- :: git commit-tree abc
+ok got=2 want=2 cwd=/.claude/worktrees/agent-a823a57e109be35e1 home=- :: git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt home=- :: git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk home=- :: git commit-tree abc
+ok got=2 want=2 cwd=/tools home=- :: git update-ref refs/heads/main abc
+ok got=2 want=2 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2; cd - ; git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /Volumes/Daten/Development/PiRusTOS ; ( cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 ); git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /Volumes/Daten/Development/PiRusTOS ; x=$(cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2); git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C $CLAUDE_PROJECT_DIRX commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C $FOO commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /Volumes/Daten/Development/PiRusTOS/nonexistent commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /nonexistent && git commit-tree abc
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2/..//Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2/ commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2//. commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C ~/clone commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=@H :: git -C $HOME/clone update-ref refs/heads/x abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 && git commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2/.git commit-tree abc
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2/.git git commit-tree abc
+ok got=0 want=0 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 commit-tree abc
+ok got=0 want=0 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 && git commit-tree abc
+ok got=0 want=0 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2; git commit-tree abc
+ok got=0 want=0 cwd= home=- :: ( cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 && git commit-tree abc )
+ok got=0 want=0 cwd= home=- :: pushd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2; git commit-tree abc
+ok got=0 want=0 cwd= home=- :: pushd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 >/dev/null && git update-ref refs/heads/main abc
+MISMATCH got=2 want=0 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2; cd /Volumes/Daten/Development/PiRusTOS; popd; git commit-tree abc
+ok got=0 want=0 cwd= home=@H :: cd ~/clone && git commit-tree abc
+MISMATCH got=2 want=0 cwd= home=- :: git commit-tree abc -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2
+ok got=0 want=0 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 --work-tree=/Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=0 want=0 cwd= home=- :: git -C /Volumes/Daten/Development/PiRusTOS/ rev-parse HEAD
+ok got=0 want=0 cwd= home=- :: git -C $CLAUDE_PROJECT_DIR status
+ok got=0 want=0 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk log -1
+ok got=0 want=0 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk && git status
+ok got=2 want=2 cwd= home=- :: "git" commit-tree abc
+ok got=2 want=2 cwd= home=- :: 'git' commit-tree abc
+ok got=2 want=2 cwd= home=- :: "git" -C /Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 cwd= home=- :: "git"  update-ref refs/heads/x abc
+ok got=2 want=2 cwd= home=- :: FOO=1 "git" commit-tree abc
+ok got=2 want=2 cwd= home=- :: env "git" commit-tree abc
+ok got=2 want=2 cwd= home=- :: "/usr/bin/git" commit-tree abc
+ok got=2 want=2 cwd= home=- :: '/usr/bin/git' commit-tree abc
+ok got=2 want=2 cwd= home=- :: git "commit-tree" abc
+ok got=2 want=2 cwd= home=- :: git 'commit-tree' abc
+ok got=2 want=2 cwd= home=- :: "git" "commit-tree" abc
+ok got=2 want=2 cwd= home=- :: git -C "/Volumes/Daten/Development/PiRusTOS" "update-ref" refs/heads/main abc
+ok got=2 want=2 cwd= home=- :: (  "git" commit-tree abc )
+ok got=2 want=2 cwd= home=- :: echo x && "git" commit-tree abc
+MISMATCH got=0 want=2 cwd= home=- :: git" "commit-tree abc
+ok got=2 want=2 cwd= home=- :: git -C "/Volumes/Daten/Development/PiRusTOS"/tools commit-tree abc
+ok got=0 want=0 cwd= home=- :: echo "git" commit-tree abc
+ok got=0 want=0 cwd= home=- :: echo git commit-tree abc
+ok got=0 want=0 cwd= home=- :: "git" status
+ok got=2 want=2 cwd= home=- :: git merge --ff-only origin/main feature
+ok got=0 want=0 cwd= home=- :: git merge origin/main
+ok got=0 want=0 cwd= home=- :: git merge --ff-only origin/main
+ok got=0 want=0 cwd= home=- :: git merge refs/remotes/origin/main
+ok got=0 want=0 cwd= home=- :: git merge origin/main origin/dev
+ok got=2 want=2 cwd= home=- :: git merge origin/main feature
+ok got=2 want=2 cwd= home=- :: git merge feature origin/main
+ok got=2 want=2 cwd= home=- :: git merge nosuchremote/x
+ok got=2 want=2 cwd= home=- :: git merge origin/main nosuchremote/x
+ok got=2 want=2 cwd= home=- :: git merge feature
+ok got=2 want=2 cwd= home=- :: git merge --no-ff origin/main feature
+ok got=2 want=2 cwd= home=- :: git merge --ff-only feature
+ok got=2 want=2 cwd= home=- :: git merge -m msg feature
+ok got=2 want=2 cwd= home=- :: git merge -m origin/main feature
+ok got=0 want=0 cwd= home=- :: git merge -m msg origin/main
+ok got=2 want=2 cwd= home=- :: git merge refs/heads/origin/main
+ok got=2 want=2 cwd= home=- :: git merge HEAD~1
+ok got=2 want=2 cwd= home=- :: git merge origin/main HEAD
+ok got=2 want=2 cwd= home=- :: git merge FETCH_HEAD
+ok got=2 want=2 cwd= home=- :: git merge origin
+ok got=2 want=2 cwd= home=- :: git merge upstream/main
+ok got=0 want=0 cwd= home=- :: git merge --squash feature
+ok got=0 want=0 cwd= home=- :: git merge --abort
+ok got=0 want=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git merge feature
+ok got=0 want=0 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 merge feature
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: git -C /Volumes/Daten/Development/PiRusTOS merge origin/main feature
+ok got=2 want=2 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 home=- :: cd /Volumes/Daten/Development/PiRusTOS && git merge feature
+ok got=0 want=0 cwd= home=- :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 && git merge --ff-only x
+ok got=2 want=2 cwd= home=- :: git merge --ff-only $CLAUDE_PROJECT_DIR/x
+MISMATCH got=0 want=2 cwd=/.claude/worktrees/agent-a15921e5b605761cb home=- :: git merge feature
+ok got=0 want=0 cwd=/.claude/worktrees/agent-a15921e5b605761cb home=- :: git merge --squash feature
+ok got=2 want=2 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk merge feature
+MISMATCH got=0 want=2 cwd= home=- :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 pull /Volumes/Daten/Development/PiRusTOS
+ok got=2 want=2 cwd= home=- :: git pull .
+ok got=0 want=0 cwd= home=- :: git pull origin main
+mismatches: 7

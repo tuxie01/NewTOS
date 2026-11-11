@@ -1,0 +1,36 @@
+rc=2 cwd=PiRusTOS :: git merge --ff-only x
+rc=2 cwd=PiRusTOS :: git merge x
+rc=2 cwd=PiRusTOS :: git merge --no-ff x
+rc=0 cwd=PiRusTOS :: git merge --squash x
+rc=0 cwd=PiRusTOS :: git merge --abort
+rc=0 cwd=PiRusTOS :: git merge --continue
+rc=0 cwd=PiRusTOS :: git pull
+rc=0 cwd=PiRusTOS :: git pull origin main
+rc=0 cwd=PiRusTOS :: git pull --ff-only
+rc=2 cwd=PiRusTOS :: git pull . x
+rc=2 cwd=PiRusTOS :: git pull ../x
+rc=2 cwd=PiRusTOS :: git merge --no-ff --no-commit x
+rc=2 cwd=PiRusTOS :: git merge -m msg x
+rc=2 cwd=PiRusTOS :: git -C /Volumes/Daten/Development/PiRusTOS merge x
+rc=2 cwd=PiRusTOS :: cd /Volumes/Daten/Development/PiRusTOS && git merge --ff-only x
+rc=2 cwd=PiRusTOS :: git merge --squash --ff-only x
+rc=2 cwd=PiRusTOS :: git merge origin/main
+rc=0 cwd=PiRusTOS :: git merge --quit
+rc=0 cwd=clone :: git merge --ff-only x
+rc=0 cwd=clone :: git merge x
+rc=0 cwd=clone :: git merge --no-ff x
+rc=0 cwd=clone :: git merge --squash x
+rc=0 cwd=clone :: git merge --abort
+rc=0 cwd=clone :: git merge --continue
+rc=0 cwd=clone :: git pull
+rc=0 cwd=clone :: git pull origin main
+rc=0 cwd=clone :: git pull --ff-only
+rc=0 cwd=clone :: git pull . x
+rc=0 cwd=clone :: git pull ../x
+rc=0 cwd=clone :: git merge --no-ff --no-commit x
+rc=0 cwd=clone :: git merge -m msg x
+rc=0 cwd=clone :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone merge x
+rc=0 cwd=clone :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git merge --ff-only x
+rc=0 cwd=clone :: git merge --squash --ff-only x
+rc=0 cwd=clone :: git merge origin/main
+rc=0 cwd=clone :: git merge --quit

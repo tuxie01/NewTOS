@@ -1,0 +1,60 @@
+rc=0 cwd=clone :: git write-tree
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone write-tree
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git write-tree
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git write-tree
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git write-tree
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git write-tree
+rc=0 cwd=clone :: git commit-tree 4b825dc -m x
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone commit-tree 4b825dc -m x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git commit-tree 4b825dc -m x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git commit-tree 4b825dc -m x
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git commit-tree 4b825dc -m x
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git commit-tree 4b825dc -m x
+rc=0 cwd=clone :: git update-ref refs/heads/foo abc
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone update-ref refs/heads/foo abc
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git update-ref refs/heads/foo abc
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git update-ref refs/heads/foo abc
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git update-ref refs/heads/foo abc
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git update-ref refs/heads/foo abc
+rc=0 cwd=clone :: git update-ref -d refs/heads/foo
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone update-ref -d refs/heads/foo
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git update-ref -d refs/heads/foo
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git update-ref -d refs/heads/foo
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git update-ref -d refs/heads/foo
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git update-ref -d refs/heads/foo
+rc=0 cwd=clone :: git symbolic-ref HEAD refs/heads/x
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone symbolic-ref HEAD refs/heads/x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git symbolic-ref HEAD refs/heads/x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git symbolic-ref HEAD refs/heads/x
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git symbolic-ref HEAD refs/heads/x
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git symbolic-ref HEAD refs/heads/x
+rc=0 cwd=clone :: git merge --ff-only x
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone merge --ff-only x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git merge --ff-only x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git merge --ff-only x
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git merge --ff-only x
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git merge --ff-only x
+rc=0 cwd=clone :: git merge x
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone merge x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git merge x
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git merge x
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git merge x
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git merge x
+rc=0 cwd=clone :: git replace a b
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone replace a b
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git replace a b
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git replace a b
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git replace a b
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git replace a b
+rc=0 cwd=clone :: git fast-import < f
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone fast-import < f
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git fast-import < f
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git fast-import < f
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git fast-import < f
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git fast-import < f
+rc=0 cwd=clone :: git filter-branch --all
+rc=0 cwd=PiRusTOS :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone filter-branch --all
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone && git filter-branch --all
+rc=0 cwd=PiRusTOS :: cd /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone; git filter-branch --all
+rc=0 cwd=PiRusTOS :: git --git-dir=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git filter-branch --all
+rc=0 cwd=PiRusTOS :: GIT_DIR=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/clone/.git git filter-branch --all

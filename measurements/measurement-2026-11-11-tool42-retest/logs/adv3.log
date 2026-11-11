@@ -1,0 +1,105 @@
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=clone2 :: git -C /Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=clone2 :: git -C /Volumes/Daten/Development/PiRusTOS/ commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=clone2 :: git -C //Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=//Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=clone2 :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=clone2 :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnk/ hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=clone2 :: git -C /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=clone2 :: git -C /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt commit-tree abc
+ok got=2 want=2 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/lnkwt hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-a15921e5b605761cb :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=lnk :: git update-ref refs/heads/main abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=clone2 :: git -C /Volumes/Daten/Development/PiRusTOS/tools/.. commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=clone2 :: git -C $CLAUDE_PROJECT_DIR commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=clone2 :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=clone2 cwd=NONE :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2/ :: git commit-tree abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS/tools/.. hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2// :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=NONE :: git update-ref HEAD abc
+ok got=0 want=0 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=NONE :: git update-ref refs/heads/x abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/nonexistent/dir :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd= :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=relative/dir :: git commit-tree abc
+ok got=2 want=2 proj=/Volumes/Daten/Development/PiRusTOS hookpwd=clone2 cwd=/Volumes/Daten/Development/PiRusTOS/nonexistent :: git commit-tree abc
+ok got=2 want=2 proj=/nonexistent hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj= hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=/Volumes/Daten/Development/PiRusTOS :: git commit-tree abc
+ok got=2 want=2 proj= hookpwd=/Volumes/Daten/Development/PiRusTOS cwd=clone2 :: git commit-tree abc

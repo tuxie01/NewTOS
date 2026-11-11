@@ -1,0 +1,108 @@
+   Compiling xtask v0.1.0 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-test/wtcopy/tools/xtask)
+warning: constant `PROPTAG_GET_MAX_CLOCK_RATE` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:25:11
+   |
+25 | pub const PROPTAG_GET_MAX_CLOCK_RATE: u32 = 0x0003_0004;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `PROPTAG_GET_CLOCK_RATE_MEASURED` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:29:11
+   |
+29 | pub const PROPTAG_GET_CLOCK_RATE_MEASURED: u32 = 0x0003_0047;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `xtask` (bin "xtask" test) generated 2 warnings
+    Finished `test` profile [optimized + debuginfo] target(s) in 9.62s
+     Running unittests src/main.rs (target/debug/deps/xtask-2896962bfa6f77a9)
+
+running 1 test
+test git_hooks::tests::no_verify_guard_pipe_tests_pass ... FAILED
+
+failures:
+
+---- git_hooks::tests::no_verify_guard_pipe_tests_pass stdout ----
+
+thread 'git_hooks::tests::no_verify_guard_pipe_tests_pass' (10587666) panicked at tools/xtask/src/git_hooks.rs:164:9:
+no-verify-guard-test.sh: ExitStatus(unix_wait_status(256))
+FAIL exit 0 (want 2): main repo, cwd: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+FAIL exit 0 (want 2): main repo, -C: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+FAIL exit 0 (want 2): main repo, cd &&: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+FAIL exit 0 (want 2): main repo, cwd: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, -C: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cd &&: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cwd: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, -C: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cd &&: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cwd: git update-ref main 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, -C: git update-ref main 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cd &&: git update-ref main 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cwd: git update-ref -d refs/heads/old
+FAIL exit 0 (want 2): main repo, -C: git update-ref -d refs/heads/old
+FAIL exit 0 (want 2): main repo, cd &&: git update-ref -d refs/heads/old
+FAIL exit 0 (want 2): main repo, cwd: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, -C: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cd &&: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+FAIL exit 0 (want 2): main repo, cwd: git hash-object -w -t commit c.txt
+FAIL exit 0 (want 2): main repo, -C: git hash-object -w -t commit c.txt
+FAIL exit 0 (want 2): main repo, cd &&: git hash-object -w -t commit c.txt
+FAIL exit 0 (want 2): main repo, cwd: git hash-object -t commit -w --stdin
+FAIL exit 0 (want 2): main repo, -C: git hash-object -t commit -w --stdin
+FAIL exit 0 (want 2): main repo, cd &&: git hash-object -t commit -w --stdin
+FAIL exit 0 (want 2): main repo, cwd: git fast-import
+FAIL exit 0 (want 2): main repo, -C: git fast-import
+FAIL exit 0 (want 2): main repo, cd &&: git fast-import
+FAIL exit 0 (want 2): main repo, cwd: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+FAIL exit 0 (want 2): main repo, -C: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+FAIL exit 0 (want 2): main repo, cd &&: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+FAIL exit 0 (want 2): main repo, cwd: git symbolic-ref HEAD refs/heads/other
+FAIL exit 0 (want 2): main repo, -C: git symbolic-ref HEAD refs/heads/other
+FAIL exit 0 (want 2): main repo, cd &&: git symbolic-ref HEAD refs/heads/other
+FAIL exit 0 (want 2): main repo, cwd: git symbolic-ref --delete HEAD
+FAIL exit 0 (want 2): main repo, -C: git symbolic-ref --delete HEAD
+FAIL exit 0 (want 2): main repo, cd &&: git symbolic-ref --delete HEAD
+FAIL exit 0 (want 2): main repo, cwd: git filter-branch --tree-filter true HEAD
+FAIL exit 0 (want 2): main repo, -C: git filter-branch --tree-filter true HEAD
+FAIL exit 0 (want 2): main repo, cd &&: git filter-branch --tree-filter true HEAD
+FAIL exit 0 (want 2): main repo, cwd: git filter-repo --path x
+FAIL exit 0 (want 2): main repo, -C: git filter-repo --path x
+FAIL exit 0 (want 2): main repo, cd &&: git filter-repo --path x
+FAIL exit 0 (want 2): main repo, cwd: git-filter-repo --path x
+FAIL exit 0 (want 2): main repo, -C: git-filter-repo --path x
+FAIL exit 0 (want 2): main repo, cd &&: git-filter-repo --path x
+FAIL exit 0 (want 2): main repo, --git-dir=
+FAIL exit 0 (want 2): main repo, GIT_DIR=
+FAIL exit 0 (want 2): main tree from a clone cwd
+FAIL exit 0 (want 2): main repo subdirectory
+FAIL exit 0 (want 2): cd ; (not &&)
+FAIL exit 0 (want 2): relative cd to a missing dir (undecidable) is blocked
+FAIL exit 0 (want 2): relative cd inside the main repo
+FAIL exit 0 (want 2): mktree | commit-tree chain (via xargs)
+FAIL exit 0 (want 2): mktree + commit-tree in $()
+FAIL exit 0 (want 2): commit-tree inside a quoted $()
+FAIL exit 0 (want 2): update-ref --stdin
+FAIL exit 0 (want 2): main repo: the same chain
+FAIL exit 0 (want 2): subshell cd does not leak
+FAIL exit 0 (want 2): undecidable target (variable) is blocked
+FAIL exit 0 (want 2): target made in the same command (undecidable) is blocked
+FAIL exit 0 (want 2): main repo: command after a comment line
+FAIL exit 0 (want 2): main repo: with 2>&1 | head
+FAIL exit 0 (want 2): main repo: env GIT_DIR=
+FAIL exit 0 (want 2): main repo: export GIT_DIR
+FAIL exit 0 (want 2): main checked out: merge --ff-only
+FAIL exit 0 (want 2): main checked out: merge without --squash
+FAIL exit 0 (want 2): main checked out: merge --no-ff
+FAIL exit 0 (want 2): main checked out, -C: merge
+FAIL exit 0 (want 2): main checked out: git pull from the repo itself
+FAIL exit 0 (want 2): main checked out: git pull from a local path
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    git_hooks::tests::no_verify_guard_pipe_tests_pass
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 251 filtered out; finished in 8.18s
+
+error: test failed, to rerun pass `-p xtask --bin xtask`

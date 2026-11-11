@@ -1,0 +1,192 @@
+ok exit 0 (want 0): allowed relative
+ok exit 0 (want 0): allowed absolute
+ok exit 0 (want 0): allowed quoted, trailing slash
+ok exit 0 (want 0): read
+ok exit 0 (want 0): get
+ok exit 2 (want 2): /dev/null
+ok exit 2 (want 2): empty
+ok exit 2 (want 2): other dir
+ok exit 2 (want 2): unset
+ok exit 2 (want 2): unset-all
+ok exit 2 (want 2): global, other dir, mixed case
+ok exit 2 (want 2): chained: second bad
+ok exit 0 (want 0): unrelated git
+ok exit 2 (want 2): no-verify
+ok exit 2 (want 2): commit -n
+ok exit 0 (want 0): chain with log -n
+ok exit 2 (want 2): inline override
+ok exit 2 (want 2): main repo, cwd: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+ok exit 2 (want 2): main repo, -C: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+ok exit 2 (want 2): main repo, cd &&: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+ok exit 0 (want 0): clone, cwd: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+ok exit 0 (want 0): clone, -C: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+ok exit 0 (want 0): clone, cd &&: git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 -m x
+ok exit 2 (want 2): main repo, cwd: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, -C: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cd &&: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cwd: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, -C: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cd &&: git update-ref refs/heads/main 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cwd: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, -C: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cd &&: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cwd: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, -C: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cd &&: git update-ref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cwd: git update-ref main 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, -C: git update-ref main 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cd &&: git update-ref main 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cwd: git update-ref main 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, -C: git update-ref main 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cd &&: git update-ref main 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cwd: git update-ref -d refs/heads/old
+ok exit 2 (want 2): main repo, -C: git update-ref -d refs/heads/old
+ok exit 2 (want 2): main repo, cd &&: git update-ref -d refs/heads/old
+ok exit 0 (want 0): clone, cwd: git update-ref -d refs/heads/old
+ok exit 0 (want 0): clone, -C: git update-ref -d refs/heads/old
+ok exit 0 (want 0): clone, cd &&: git update-ref -d refs/heads/old
+ok exit 2 (want 2): main repo, cwd: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, -C: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cd &&: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cwd: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, -C: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 0 (want 0): clone, cd &&: git update-ref -m msg --no-deref HEAD 0123456789abcdef0123456789abcdef01234567
+ok exit 2 (want 2): main repo, cwd: git hash-object -w -t commit c.txt
+ok exit 2 (want 2): main repo, -C: git hash-object -w -t commit c.txt
+ok exit 2 (want 2): main repo, cd &&: git hash-object -w -t commit c.txt
+ok exit 0 (want 0): clone, cwd: git hash-object -w -t commit c.txt
+ok exit 0 (want 0): clone, -C: git hash-object -w -t commit c.txt
+ok exit 0 (want 0): clone, cd &&: git hash-object -w -t commit c.txt
+ok exit 2 (want 2): main repo, cwd: git hash-object -t commit -w --stdin
+ok exit 2 (want 2): main repo, -C: git hash-object -t commit -w --stdin
+ok exit 2 (want 2): main repo, cd &&: git hash-object -t commit -w --stdin
+ok exit 0 (want 0): clone, cwd: git hash-object -t commit -w --stdin
+ok exit 0 (want 0): clone, -C: git hash-object -t commit -w --stdin
+ok exit 0 (want 0): clone, cd &&: git hash-object -t commit -w --stdin
+ok exit 2 (want 2): main repo, cwd: git fast-import
+ok exit 2 (want 2): main repo, -C: git fast-import
+ok exit 2 (want 2): main repo, cd &&: git fast-import
+ok exit 0 (want 0): clone, cwd: git fast-import
+ok exit 0 (want 0): clone, -C: git fast-import
+ok exit 0 (want 0): clone, cd &&: git fast-import
+ok exit 2 (want 2): main repo, cwd: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+ok exit 2 (want 2): main repo, -C: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+ok exit 2 (want 2): main repo, cd &&: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+ok exit 0 (want 0): clone, cwd: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+ok exit 0 (want 0): clone, -C: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+ok exit 0 (want 0): clone, cd &&: git replace 0123456789abcdef0123456789abcdef01234567 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+ok exit 2 (want 2): main repo, cwd: git symbolic-ref HEAD refs/heads/other
+ok exit 2 (want 2): main repo, -C: git symbolic-ref HEAD refs/heads/other
+ok exit 2 (want 2): main repo, cd &&: git symbolic-ref HEAD refs/heads/other
+ok exit 0 (want 0): clone, cwd: git symbolic-ref HEAD refs/heads/other
+ok exit 0 (want 0): clone, -C: git symbolic-ref HEAD refs/heads/other
+ok exit 0 (want 0): clone, cd &&: git symbolic-ref HEAD refs/heads/other
+ok exit 2 (want 2): main repo, cwd: git symbolic-ref --delete HEAD
+ok exit 2 (want 2): main repo, -C: git symbolic-ref --delete HEAD
+ok exit 2 (want 2): main repo, cd &&: git symbolic-ref --delete HEAD
+ok exit 0 (want 0): clone, cwd: git symbolic-ref --delete HEAD
+ok exit 0 (want 0): clone, -C: git symbolic-ref --delete HEAD
+ok exit 0 (want 0): clone, cd &&: git symbolic-ref --delete HEAD
+ok exit 2 (want 2): main repo, cwd: git filter-branch --tree-filter true HEAD
+ok exit 2 (want 2): main repo, -C: git filter-branch --tree-filter true HEAD
+ok exit 2 (want 2): main repo, cd &&: git filter-branch --tree-filter true HEAD
+ok exit 0 (want 0): clone, cwd: git filter-branch --tree-filter true HEAD
+ok exit 0 (want 0): clone, -C: git filter-branch --tree-filter true HEAD
+ok exit 0 (want 0): clone, cd &&: git filter-branch --tree-filter true HEAD
+ok exit 2 (want 2): main repo, cwd: git filter-repo --path x
+ok exit 2 (want 2): main repo, -C: git filter-repo --path x
+ok exit 2 (want 2): main repo, cd &&: git filter-repo --path x
+ok exit 0 (want 0): clone, cwd: git filter-repo --path x
+ok exit 0 (want 0): clone, -C: git filter-repo --path x
+ok exit 0 (want 0): clone, cd &&: git filter-repo --path x
+ok exit 2 (want 2): main repo, cwd: git-filter-repo --path x
+ok exit 2 (want 2): main repo, -C: git-filter-repo --path x
+ok exit 2 (want 2): main repo, cd &&: git-filter-repo --path x
+ok exit 0 (want 0): clone, cwd: git-filter-repo --path x
+ok exit 0 (want 0): clone, -C: git-filter-repo --path x
+ok exit 0 (want 0): clone, cd &&: git-filter-repo --path x
+ok exit 2 (want 2): main repo, --git-dir=
+ok exit 2 (want 2): main repo, GIT_DIR=
+ok exit 2 (want 2): main tree from a clone cwd
+ok exit 2 (want 2): main repo subdirectory
+ok exit 2 (want 2): cd ; (not &&)
+ok exit 0 (want 0): relative cd inside the clone
+ok exit 2 (want 2): relative cd to a missing dir (undecidable) is blocked
+ok exit 2 (want 2): relative cd inside the main repo
+ok exit 0 (want 0): clone, --git-dir=
+ok exit 0 (want 0): clone, GIT_DIR=
+ok exit 2 (want 2): mktree | commit-tree chain (via xargs)
+ok exit 2 (want 2): mktree + commit-tree in $()
+ok exit 2 (want 2): commit-tree inside a quoted $()
+ok exit 2 (want 2): update-ref --stdin
+ok exit 0 (want 0): clone in a subshell
+ok exit 0 (want 0): clone: write-tree + commit-tree + update-ref (TOOL40 setup)
+ok exit 2 (want 2): main repo: the same chain
+ok exit 2 (want 2): subshell cd does not leak
+ok exit 2 (want 2): undecidable target (variable) is blocked
+ok exit 2 (want 2): target made in the same command (undecidable) is blocked
+ok exit 0 (want 0): quoted clone path
+ok exit 0 (want 0): clone named through $TMPDIR
+FAIL exit 0 (want 2): F1 (worktree): -C $CLAUDE_PROJECT_DIR
+FAIL exit 0 (want 2): F1 (worktree): -C "$CLAUDE_PROJECT_DIR"
+ok exit 2 (want 2): F1 (worktree): -C ${CLAUDE_PROJECT_DIR} update-ref
+FAIL exit 0 (want 2): F1 (worktree): -C "$CLAUDE_PROJECT_DIR" update-ref
+FAIL exit 0 (want 2): F1 (worktree): -C $CLAUDE_PROJECT_DIR/tools
+ok exit 2 (want 2): F1 (worktree): -C ${CLAUDE_PROJECT_DIR}/tools
+FAIL exit 0 (want 2): F1 (worktree): cd $CLAUDE_PROJECT_DIR &&
+FAIL exit 0 (want 2): F1 (worktree): project dir with // and trailing /
+FAIL exit 0 (want 2): F1 (worktree): target with // and trailing //
+ok exit 2 (want 2): F1 (worktree): $CLAUDE_PROJECT_DIRX is another variable (undecidable)
+FAIL exit 0 (want 2): F1 (clone as project): -C $CLAUDE_PROJECT_DIR
+FAIL exit 0 (want 2): F1 (clone as project): -C "$CLAUDE_PROJECT_DIR"
+ok exit 2 (want 2): F1 (clone as project): -C ${CLAUDE_PROJECT_DIR} update-ref
+FAIL exit 0 (want 2): F1 (clone as project): -C "$CLAUDE_PROJECT_DIR" update-ref
+FAIL exit 0 (want 2): F1 (clone as project): -C $CLAUDE_PROJECT_DIR/.git
+ok exit 2 (want 2): F1 (clone as project): -C ${CLAUDE_PROJECT_DIR}/.git
+FAIL exit 0 (want 2): F1 (clone as project): cd $CLAUDE_PROJECT_DIR &&
+FAIL exit 0 (want 2): F1 (clone as project): project dir with // and trailing /
+FAIL exit 0 (want 2): F1 (clone as project): target with // and trailing //
+ok exit 2 (want 2): F1 (clone as project): $CLAUDE_PROJECT_DIRX is another variable (undecidable)
+FAIL exit 0 (want 2): F2: "git" commit-tree
+FAIL exit 0 (want 2): F2: 'git' commit-tree
+ok exit 0 (want 0): F2: "git" -C clone commit-tree
+ok exit 0 (want 0): main repo: blob hash-object -w
+ok exit 0 (want 0): main repo: blob hash-object -w --stdin
+ok exit 0 (want 0): main repo: hash-object + update-index --cacheinfo
+ok exit 0 (want 0): main repo: update-index --cacheinfo (3 args)
+ok exit 0 (want 0): main repo: hash-object without -w
+ok exit 0 (want 0): main repo: update-ref on a tag
+ok exit 0 (want 0): main repo: symbolic-ref read
+ok exit 0 (want 0): main repo: symbolic-ref -q read
+ok exit 0 (want 0): main repo: replace -l
+ok exit 0 (want 0): main repo: read-only plumbing
+ok exit 0 (want 0): main repo: word in a grep argument
+ok exit 0 (want 0): main repo: word as a git log argument
+ok exit 0 (want 0): main repo: word in a quoted string
+ok exit 0 (want 0): main repo: plain git commit
+ok exit 0 (want 0): main repo: word in a here-document body
+ok exit 0 (want 0): main repo: word in a comment
+ok exit 2 (want 2): main repo: command after a comment line
+ok exit 2 (want 2): main repo: with 2>&1 | head
+ok exit 2 (want 2): main repo: env GIT_DIR=
+ok exit 2 (want 2): main repo: export GIT_DIR
+ok exit 2 (want 2): main checked out: merge --ff-only
+ok exit 2 (want 2): main checked out: merge without --squash
+ok exit 2 (want 2): main checked out: merge --no-ff
+ok exit 2 (want 2): main checked out, -C: merge
+ok exit 0 (want 0): main checked out: merge --squash
+ok exit 0 (want 0): main checked out: merge --abort
+ok exit 0 (want 0): main checked out: merge --continue
+ok exit 0 (want 0): main checked out: git pull
+ok exit 0 (want 0): main checked out: git pull origin
+ok exit 2 (want 2): main checked out: git pull from the repo itself
+ok exit 2 (want 2): main checked out: git pull from a local path
+ok exit 0 (want 0): merge in a foreign repo (not the main repo)
+FAIL exit 2 (want 0): main checked out: merge of a remote-tracking ref (= pull)
+FAIL exit 2 (want 0): main checked out: merge --ff-only of a remote-tracking ref
+FAIL exit 2 (want 0): main checked out: merge refs/remotes/*
+ok exit 2 (want 2): main checked out: remote-tracking ref plus a local branch
+ok exit 2 (want 2): main checked out: <name>/<branch> without such a remote
+FAIL exit 0 (want 2): F1: -C $CLAUDE_PROJECT_DIR merge
+ok exit 0 (want 0): other branch checked out: merge --ff-only
+ok exit 0 (want 0): other branch checked out: merge

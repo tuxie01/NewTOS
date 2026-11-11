@@ -1,0 +1,10 @@
+test doc_check::tests::resolves_against_the_workspace ... FAILED
+test rsc_obfix_tests::mkrsc_convert_ilp32_keeps_the_char_grid_coordinates ... FAILED
+test rsc_obfix_tests::mkrsc_convert_lp64_keeps_the_char_grid_coordinates ... FAILED
+test rsc_obfix_tests::the_committed_gem_fsel_blob_carries_char_grid_coordinates ... FAILED
+test rsc_cicon_tests::an_old_format_file_declares_no_colour_icons ... FAILED
+test rsc_recolour_tests::recolour_palettes_equal_their_sources ... FAILED
+test rsc_recolour_tests::hypview_rsc_8plane_icons_take_the_nearest_tos_colour ... FAILED
+test rsc_cicon_tests::teradesk_cicons_rsc_converts_and_fits_rsc_cap ... FAILED
+assertion failed: matches!(r.resolve(doc, &one("`kernel/src/no_such_module_x.rs`")).unwrap(),
+assertion failed: o.status.success()

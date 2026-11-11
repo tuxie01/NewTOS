@@ -1,0 +1,3 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/xtask doc-check TASK/TOOL42.md TASK/TOOL42-STATUS-UNFINISHED.MD`
+doc-check: 2 files, 22 path cites and 0 ADR cites checked, 0 failures, 0 skipped (reference tree missing); 4 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)

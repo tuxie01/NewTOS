@@ -1,0 +1,24 @@
+RUNINFO measurement-2026-11-11-tool42-test
+what:   independent tester acceptance of TASK/TOOL42.md (commit fa053cef5, worktree branch worktree-agent-a15921e5b605761cb, base d033a78a2)
+why:    the guard is a live hook; main tree copy stays old until squash merge
+how:    see method/README.txt, method/adv.sh; logs/ holds the raw outputs. No image booted (no manifest, optional_missing: not applicable).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+bash used by the guard (#!/usr/bin/env bash): GNU bash, version 3.2.57(1)-release (arm64-apple-darwin26)
+
+result:
+1 pipe tests: new guard 163 ok / 0 FAIL; base guard with same test file 93 ok / 70 FAIL (all FAIL = new block cases) -> PASS
+2 adversarial (main repo target): 83 of 91 cases as expected; findings below -> PARTIAL (3 real false negatives)
+3 scratch clone via cwd / -C / cd && / cd ; / --git-dir / GIT_DIR=, 10 commands: 60/60 allowed; main targeted from clone cwd blocked -> PASS
+4 merge rule: main checked out: --ff-only, plain, --no-ff blocked; --squash, --abort, --continue, --quit, pull, pull origin main allowed; clone: all allowed -> PASS
+5 cargo xtask test in worktree: stops after xtask bin (2 failed: teradesk/hypview rsc tests, sdk/apps/teradesk+hypview missing in worktree, untracked fixture, not TOOL42); cargo test --no-fail-fast: 2374 passed / 2 failed / 6 ignored (=2376/0/6 with fixtures, matches developer); no_verify_guard_pipe_tests_pass ok; in scratch clone with old guard FAILED, with new ok -> PASS (env caveat)
+6 clippy -p xtask --tests: base 9 warnings, change 9 -> delta 0 -> PASS
+7 doc-check 2 files: 0 failures -> PASS
+8 cwd: not observed live; guard falls back to hook PWD (details in report)
+
+findings (false negatives, main repo target, worktree guard):
+ F1 (real, bash 3.2 /bin/bash): $CLAUDE_PROJECT_DIR in a path word expands to "//Volumes/.../" (double leading slash, trailing slash), common_dir gives //Volumes/.../.git which string-differs from the main common dir, so the target is judged foreign and ALLOWED:
+    git -C $CLAUDE_PROJECT_DIR commit-tree abc ; git -C "$CLAUDE_PROJECT_DIR" update-ref refs/heads/main abc ; cd $CLAUDE_PROJECT_DIR && git commit-tree abc ; git -C $CLAUDE_PROJECT_DIR merge x  -> exit 0 (want 2). ${CLAUDE_PROJECT_DIR} form is blocked (fail-closed), $HOME/$TMPDIR blocked. The tests do not cover this form.
+ F2: quoted git word: "git" commit-tree abc and 'git' commit-tree abc -> exit 0
+ F3: quote-split verb: git commit-"tree" abc, git commit-tr\ee abc -> exit 0 (g=git; $g ... also, documented run-time limit)
+ not defects: git mktree alone (makes no commit), update-ref refs/remotes/* (rule is refs/heads), update-ref refs/tags allowed as specified.
+ over-blocks (minor): git merge --squash --ff-only x and git merge origin/main in main repo with main checked out -> exit 2.

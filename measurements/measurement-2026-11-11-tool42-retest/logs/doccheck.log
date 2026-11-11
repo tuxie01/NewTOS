@@ -1,0 +1,4 @@
+   Compiling xtask v0.1.0 (/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone3/tools/xtask)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 3.63s
+     Running `/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/target4/debug/xtask doc-check TASK/TOOL42.md TASK/TOOL42-STATUS-UNFINISHED.MD`
+doc-check: 2 files, 29 path cites and 0 ADR cites checked, 0 failures, 0 skipped (reference tree missing); 11 anchored line cites, 0 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)

@@ -1,0 +1,100 @@
+ok got=2 want=2 :: git  commit-tree 4b825dc -m x
+ok got=2 want=2 :: "git" commit-tree 4b825dc
+ok got=2 want=2 :: 'git' commit-tree 4b825dc
+ok got=2 want=2 :: git --no-pager commit-tree 4b825dc
+ok got=2 want=2 :: git -c x=y update-ref refs/heads/main abc
+ok got=2 want=2 :: git -c user.name=x commit-tree abc
+ok got=2 want=2 :: /usr/bin/git commit-tree abc
+ok got=2 want=2 :: env git commit-tree abc
+ok got=2 want=2 :: env FOO=1 git commit-tree abc
+ok got=2 want=2 :: command git commit-tree abc
+ok got=2 want=2 :: sudo git commit-tree abc
+ok got=2 want=2 :: echo hi; git commit-tree abc
+ok got=2 want=2 :: true && git commit-tree abc
+ok got=2 want=2 :: false || git commit-tree abc
+ok got=2 want=2 :: echo a
+git commit-tree abc
+ok got=2 want=2 :: echo a | git commit-tree abc
+ok got=2 want=2 :: (git commit-tree abc)
+ok got=2 want=2 :: ( cd /var && git commit-tree abc )
+ok got=2 want=2 :: { git commit-tree abc; }
+ok got=2 want=2 :: x=$(git commit-tree abc)
+ok got=2 want=2 :: echo `git commit-tree abc`
+ok got=2 want=2 :: git update-ref HEAD abc
+ok got=2 want=2 :: git update-ref main abc
+ok got=2 want=2 :: git update-ref -d refs/heads/x
+ok got=2 want=2 :: git update-ref --stdin < f
+ok got=2 want=2 :: git update-ref -m msg refs/heads/main abc
+ok got=2 want=2 :: git update-ref --no-deref HEAD abc
+ok got=2 want=2 :: git hash-object -w -t commit f
+ok got=2 want=2 :: git hash-object -t commit -w f
+ok got=2 want=2 :: git hash-object -w --type=commit f
+ok got=2 want=2 :: git hash-object -wt commit f
+MISMATCH got=0 want=2 :: git mktree < f
+ok got=2 want=2 :: git fast-import < f
+ok got=2 want=2 :: git replace a b
+ok got=2 want=2 :: git symbolic-ref HEAD refs/heads/x
+ok got=2 want=2 :: git filter-branch --all
+ok got=2 want=2 :: git filter-repo --force
+ok got=2 want=2 :: git-filter-repo --force
+ok got=2 want=2 :: git -C /Volumes/Daten/Development/PiRusTOS commit-tree abc
+ok got=2 want=2 :: git --git-dir=/Volumes/Daten/Development/PiRusTOS/.git commit-tree abc
+ok got=2 want=2 :: GIT_DIR=/Volumes/Daten/Development/PiRusTOS/.git git commit-tree abc
+ok got=2 want=2 :: export GIT_DIR=/Volumes/Daten/Development/PiRusTOS/.git; git commit-tree abc
+ok got=2 want=2 :: cd /Volumes/Daten/Development/PiRusTOS && git commit-tree abc
+ok got=2 want=2 :: cd /Volumes/Daten/Development/PiRusTOS; git commit-tree abc
+ok got=2 want=2 :: git commit-tree $(git write-tree) -m x
+ok got=2 want=2 :: git commit-tree abc <<'EOF2'
+msg
+EOF2
+ok got=2 want=2 :: git	commit-tree abc
+ok got=2 want=2 :: git -C . commit-tree abc
+ok got=2 want=2 :: git -C "$CLAUDE_PROJECT_DIR" commit-tree abc
+ok got=2 want=2 :: git -C $HOME/nonexist commit-tree abc
+ok got=2 want=2 :: git commit-tree\
+ abc
+ok got=2 want=2 :: xargs git commit-tree
+ok got=2 want=2 :: nohup git commit-tree abc
+ok got=2 want=2 :: time git commit-tree abc
+MISMATCH got=0 want=2 :: git commit-tr\ee abc
+ok got=2 want=2 :: git "commit-tree" abc
+MISMATCH got=0 want=2 :: git commit-"tree" abc
+MISMATCH got=0 want=2 :: g=git; $g commit-tree abc
+ok got=2 want=2 :: git update-ref  "refs/heads/main" abc
+MISMATCH got=0 want=2 :: git update-ref refs/remotes/origin/main abc
+ok got=0 want=0 :: git update-ref refs/tags/x abc
+ok got=0 want=0 :: git update-ref -d refs/tags/x
+ok got=0 want=0 :: git hash-object -w file
+ok got=0 want=0 :: git hash-object -w --stdin
+ok got=0 want=0 :: git hash-object file
+ok got=0 want=0 :: git update-index --cacheinfo 100644,abc,f
+ok got=0 want=0 :: git branch -D x
+ok got=0 want=0 :: git commit -m "mention commit-tree and update-ref refs/heads/main"
+ok got=0 want=0 :: git commit -F - <<'EOF2'
+Use git commit-tree and git update-ref refs/heads/main here
+EOF2
+ok got=0 want=0 :: git commit -m "$(cat <<'EOF2'
+foo git commit-tree x
+EOF2
+)"
+ok got=0 want=0 :: echo "git commit-tree abc"
+ok got=0 want=0 :: echo git commit-tree abc
+ok got=0 want=0 :: grep -r commit-tree docs
+ok got=0 want=0 :: # git commit-tree abc
+ok got=0 want=0 :: git log --grep commit-tree
+ok got=0 want=0 :: git status
+ok got=0 want=0 :: git rev-parse HEAD
+ok got=0 want=0 :: git write-tree
+ok got=0 want=0 :: git symbolic-ref HEAD
+ok got=0 want=0 :: git symbolic-ref --short HEAD
+ok got=0 want=0 :: git replace -l
+ok got=0 want=0 :: git show-ref
+ok got=0 want=0 :: git for-each-ref refs/heads
+ok got=0 want=0 :: git notes add -m x
+ok got=0 want=0 :: git tag x
+ok got=0 want=0 :: git stash list
+ok got=0 want=0 :: cat commit-tree.txt
+ok got=0 want=0 :: git cherry-pick abc
+ok got=0 want=0 :: git rebase main
+ok got=0 want=0 :: git branch -f x abc
+ok got=0 want=0 :: cargo xtask test

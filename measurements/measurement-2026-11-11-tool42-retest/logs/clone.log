@@ -1,0 +1,99 @@
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git write-tree
+ok rc=0 cwd= :: git -C clone2 write-tree
+ok rc=0 cwd= :: cd clone2 && git write-tree
+ok rc=0 cwd= :: cd clone2; git write-tree
+ok rc=0 cwd= :: pushd clone2; git write-tree
+ok rc=0 cwd= :: git --git-dir=clone2/.git write-tree
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git write-tree
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git commit-tree 4b825dc -m x
+ok rc=0 cwd= :: git -C clone2 commit-tree 4b825dc -m x
+ok rc=0 cwd= :: cd clone2 && git commit-tree 4b825dc -m x
+ok rc=0 cwd= :: cd clone2; git commit-tree 4b825dc -m x
+ok rc=0 cwd= :: pushd clone2; git commit-tree 4b825dc -m x
+ok rc=0 cwd= :: git --git-dir=clone2/.git commit-tree 4b825dc -m x
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git commit-tree 4b825dc -m x
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git mktree < f
+ok rc=0 cwd= :: git -C clone2 mktree < f
+ok rc=0 cwd= :: cd clone2 && git mktree < f
+ok rc=0 cwd= :: cd clone2; git mktree < f
+ok rc=0 cwd= :: pushd clone2; git mktree < f
+ok rc=0 cwd= :: git --git-dir=clone2/.git mktree < f
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git mktree < f
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git update-ref refs/heads/main abc
+ok rc=0 cwd= :: git -C clone2 update-ref refs/heads/main abc
+ok rc=0 cwd= :: cd clone2 && git update-ref refs/heads/main abc
+ok rc=0 cwd= :: cd clone2; git update-ref refs/heads/main abc
+ok rc=0 cwd= :: pushd clone2; git update-ref refs/heads/main abc
+ok rc=0 cwd= :: git --git-dir=clone2/.git update-ref refs/heads/main abc
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git update-ref refs/heads/main abc
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git update-ref HEAD abc
+ok rc=0 cwd= :: git -C clone2 update-ref HEAD abc
+ok rc=0 cwd= :: cd clone2 && git update-ref HEAD abc
+ok rc=0 cwd= :: cd clone2; git update-ref HEAD abc
+ok rc=0 cwd= :: pushd clone2; git update-ref HEAD abc
+ok rc=0 cwd= :: git --git-dir=clone2/.git update-ref HEAD abc
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git update-ref HEAD abc
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git hash-object -w -t commit f
+ok rc=0 cwd= :: git -C clone2 hash-object -w -t commit f
+ok rc=0 cwd= :: cd clone2 && git hash-object -w -t commit f
+ok rc=0 cwd= :: cd clone2; git hash-object -w -t commit f
+ok rc=0 cwd= :: pushd clone2; git hash-object -w -t commit f
+ok rc=0 cwd= :: git --git-dir=clone2/.git hash-object -w -t commit f
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git hash-object -w -t commit f
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git fast-import < f
+ok rc=0 cwd= :: git -C clone2 fast-import < f
+ok rc=0 cwd= :: cd clone2 && git fast-import < f
+ok rc=0 cwd= :: cd clone2; git fast-import < f
+ok rc=0 cwd= :: pushd clone2; git fast-import < f
+ok rc=0 cwd= :: git --git-dir=clone2/.git fast-import < f
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git fast-import < f
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git filter-branch --all
+ok rc=0 cwd= :: git -C clone2 filter-branch --all
+ok rc=0 cwd= :: cd clone2 && git filter-branch --all
+ok rc=0 cwd= :: cd clone2; git filter-branch --all
+ok rc=0 cwd= :: pushd clone2; git filter-branch --all
+ok rc=0 cwd= :: git --git-dir=clone2/.git filter-branch --all
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git filter-branch --all
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd= :: git -C clone2 symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd= :: cd clone2 && git symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd= :: cd clone2; git symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd= :: pushd clone2; git symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd= :: git --git-dir=clone2/.git symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git symbolic-ref HEAD refs/heads/x
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git replace a b
+ok rc=0 cwd= :: git -C clone2 replace a b
+ok rc=0 cwd= :: cd clone2 && git replace a b
+ok rc=0 cwd= :: cd clone2; git replace a b
+ok rc=0 cwd= :: pushd clone2; git replace a b
+ok rc=0 cwd= :: git --git-dir=clone2/.git replace a b
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git replace a b
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git merge --ff-only x
+ok rc=0 cwd= :: git -C clone2 merge --ff-only x
+ok rc=0 cwd= :: cd clone2 && git merge --ff-only x
+ok rc=0 cwd= :: cd clone2; git merge --ff-only x
+ok rc=0 cwd= :: pushd clone2; git merge --ff-only x
+ok rc=0 cwd= :: git --git-dir=clone2/.git merge --ff-only x
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git merge --ff-only x
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git merge feature
+ok rc=0 cwd= :: git -C clone2 merge feature
+ok rc=0 cwd= :: cd clone2 && git merge feature
+ok rc=0 cwd= :: cd clone2; git merge feature
+ok rc=0 cwd= :: pushd clone2; git merge feature
+ok rc=0 cwd= :: git --git-dir=clone2/.git merge feature
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git merge feature
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd= :: git -C clone2 pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd= :: cd clone2 && git pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd= :: cd clone2; git pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd= :: pushd clone2; git pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd= :: git --git-dir=clone2/.git pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git pull /Volumes/Daten/Development/PiRusTOS
+ok rc=0 cwd=/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/tool42-retest/clone2 :: git config core.hooksPath tools/git-hooks
+ok rc=0 cwd= :: git -C clone2 config core.hooksPath tools/git-hooks
+ok rc=0 cwd= :: cd clone2 && git config core.hooksPath tools/git-hooks
+ok rc=0 cwd= :: cd clone2; git config core.hooksPath tools/git-hooks
+ok rc=0 cwd= :: pushd clone2; git config core.hooksPath tools/git-hooks
+ok rc=0 cwd= :: git --git-dir=clone2/.git config core.hooksPath tools/git-hooks
+ok rc=0 cwd= :: GIT_DIR=clone2/.git git config core.hooksPath tools/git-hooks
+blocked: 0

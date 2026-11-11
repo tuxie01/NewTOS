@@ -1,0 +1,35 @@
+RUNINFO measurement-2026-11-11-tool42-retest
+what:   independent RE-acceptance of TASK/TOOL42.md after the developer's fixes (worktree branch worktree-agent-a15921e5b605761cb, commits fa053cef5 + ff4c28f7f, base d033a78a2); first round: measurements/measurement-2026-11-11-tool42-test/RUNINFO.TXT (PARTIAL: F1 F2 F3 + merge false positive)
+why:    the guard is a live PreToolUse hook; the main tree keeps the old copy until the squash merge. Round 1 F1 only showed with the real main repo as CLAUDE_PROJECT_DIR (non-worktree: relative git common dir); the developer's tests used the worktree.
+how:    the worktree's tools/hooks/no-verify-guard.sh was piped PreToolUse JSON with CLAUDE_PROJECT_DIR=/Volumes/Daten/Development/PiRusTOS (real main repo, main checked out), bash = /bin/bash 3.2.57. Scratch clones (git clone --shared) of the main repo and of the branch; symlinks to main/worktree; fake HOME with symlinks. Worktree and main tree guard untouched (git status of the worktree compared before/after cargo test: unchanged). No image booted (no manifest, optional_missing: not applicable).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+guard shell: GNU bash, version 3.2.57(1)-release (arm64-apple-darwin26)
+method/: adv-round1.sh (round-1 91 cases, copy), adv2.sh (160 new target-resolution cases), adv3.sh (105 project-dir/cwd variants), clone.sh (98 TOOL40 chain cases). logs/: raw outputs.
+
+result:
+1 pipe tests (worktree, tools/hooks/no-verify-guard-test.sh): new guard 192 ok / 0 FAIL (logs/new.log). Same file against the fa053cef5 guard (in a scratch clone of the branch, so the clone is a NON-worktree repo): 172 ok / 20 FAIL (logs/old.log); developer reported 179/13. The difference is environmental: in a worktree the "worktree as project" F1 cases pass even with the old guard (absolute common dir); in a clone they fail, which is exactly round 1's F1. The 20 = F1 (14), F2 (2), merge remote-tracking (3), -C $CLAUDE_PROJECT_DIR merge (1). -> PASS
+2a round-1 adv.sh (91 cases) vs new guard, project = real main repo: 86 ok, 5 mismatch = exactly the 3 F3 forms (git commit-tr\ee, git commit-"tree", g=git; $g commit-tree) + the 2 non-defects (git mktree alone, update-ref refs/remotes/*). F1 and F2 closed, merge false positive closed. -> PASS
+2b 160 NEW cases (method/adv2.sh) on target-repo resolution: 153 ok, 7 mismatch, ALL 7 are wrong expectations of mine, zero guard defects (see below). -> PASS
+2c 105 further cases (method/adv3.sh): 8 project-dir spellings ($M, $M/, //$M, symlink, symlink/, worktree, symlink-to-worktree, $M/tools/..) x 12 cwd/hook-PWD/json-cwd combinations, plus cwd absent (hook PWD fallback), cwd nonexistent/empty/relative, CLAUDE_PROJECT_DIR nonexistent/empty: 105 ok / 0 mismatch. -> PASS
+3 scratch clone, TOOL40 chain: 14 plumbing/merge/pull/config verbs x 7 spellings (cwd, -C, cd &&, cd ;, pushd ;, --git-dir=, GIT_DIR=), project = main: 98/98 allowed (logs/clone.log); main targeted from clone cwd blocked (adv2.sh). -> PASS
+4 cargo test -p xtask no_verify_guard: in the worktree itself (CARGO_TARGET_DIR in scratch, worktree git status unchanged): 1 passed (logs/rust-worktree.log); in a scratch clone of the branch: 1 passed (logs/rust-new.log). Full `cargo test -p xtask` in a clone without sdk/apps fixtures: fails the known rsc_*/doc_check tests (missing untracked sdk/apps, TOOL44, not TOOL42); not rerun with links because the disk filled up (see caveats). -> PASS (targeted test), env caveat for the rest
+5 cargo clippy -p xtask --tests: base d033a78a2 9 warnings, ff4c28f7f 9 warnings, same warning set -> delta 0 (logs/clippy-*.log). doc-check TASK/TOOL42.md + TASK/TOOL42-STATUS-UNFINISHED.MD at ff4c28f7f: 2 files, 29 path cites, 0 failures, 11 anchored line cites, 0 unanchored (logs/doccheck.log). -> PASS
+6 cwd: Claude Code hooks docs (code.claude.com/docs/en/hooks, fetched 2026-11-11): "cwd" is a documented common input field of every hook event ("Current working directory when the hook is invoked"); it follows Claude into a worktree. Without it (absent/empty/relative/nonexistent) the guard uses the hook's own working directory (tested: cwd NONE with hook PWD main -> blocked, with clone -> allowed; cwd "", relative, nonexistent -> fail closed, blocked). -> PASS
+
+adv2 mismatches (all expectation errors, guard behaviour correct):
+ - GIT_WORK_TREE=<main> git commit-tree / git --work-tree=<main> commit-tree with cwd in a clone: allowed. Correct: git finds its git dir from cwd (clone); a work tree alone does not move the object store. (--git-dir=<main> + work-tree is blocked, tested ok.)
+ - cd clone; cd main; popd; git commit-tree: blocked. Correct: popd on an empty stack fails, cwd stays main.
+ - git commit-tree abc -C <clone> (cwd main): blocked. Correct: -C after the verb is a commit-tree argument, not a global option.
+ - git" "commit-tree abc: allowed; that is one word "git commit-tree" (command not found), not git.
+ - git merge feature with cwd = worktree: allowed; the worktree has its own branch checked out, main is not checked out in the target.
+ - git -C <clone> merge/pull <main path>: allowed; target is the foreign clone (rule does not over-block).
+ - git mktree / update-ref refs/remotes/*: round-1 non-defects, unchanged.
+
+false negatives (real, open): only the 3 owner-documented F3 forms: git commit-"tree" abc, git commit-tr\ee abc, g=git; $g commit-tree abc (documented in the guard header as "not seen"; owner: do not chase). No other false negative found in 356 cases.
+false positives: none found. Round-1 FP git merge origin/main is allowed now; git merge --ff-only origin/main allowed; refs/remotes/origin/main allowed; origin/main feature, nosuchremote/x, origin/main nosuchremote/x, refs/heads/origin/main blocked (as specified). Documented residual over-blocks (accepted by lead): git merge --squash --ff-only x; known limit: a local branch literally named origin/x counts as remote-tracking (not tested, documented).
+
+could not verify / caveats:
+ - bash 3.2.57 only; no other bash version on the host to compare.
+ - the live hook wiring (settings.json -> guard) not exercised; guard driven by piped JSON only, as instructed.
+ - the host disk reached 100 percent during the run (146 MiB free at worst); I removed my own scratch targets/clones; the full cargo xtask test with sdk/apps links was therefore not rerun (round 1 had it: 2374/2/6 -> 2376/0/6 with fixtures).
+ - git status of the main tree after the run: only measurements/measurement-2026-11-11-tool42-test/ (round 1) and this directory are untracked; no commit made.

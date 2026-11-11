@@ -391,8 +391,14 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   backlog (TASK/SPEC03.md) never blocks. A commit that edits a `mapping.tsv`
   row owns it: any error on that row blocks, even one present at `HEAD` and
   even for a note-only edit (owner 2026-11-11). Agents must
-  not bypass it: `tools/hooks/no-verify-guard.sh` blocks the bypass flags and
-  any `core.hooksPath` other than `tools/git-hooks`.
+  not bypass it: `tools/hooks/no-verify-guard.sh` blocks the bypass flags,
+  any `core.hooksPath` other than `tools/git-hooks`, and in the main repo the
+  plumbing that makes or moves a branch commit without `git commit`
+  (`commit-tree`, `update-ref` on branches, `hash-object -t commit`,
+  `fast-import`, `replace`, `symbolic-ref`, `filter-branch`/`filter-repo`) and
+  any non-squash `git merge` into `main` (TASK/TOOL42.md); in a scratch clone
+  plumbing stays allowed. A pattern guard is never complete (`fetch` + `reset`,
+  `rebase`, scripts are not seen; owner 2026-11-11): the backstop is TASK/TOOL43.md.
 - A ticket that changes `tools/git-hooks/**` is developed in its own git
   worktree; the main tree's hooks change only when it is merged after the
   tester's acceptance (owner 2026-11-11).

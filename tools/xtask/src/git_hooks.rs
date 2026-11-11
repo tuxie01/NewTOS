@@ -137,4 +137,36 @@ mod tests {
             assert_ne!(mode & 0o111, 0, "{}", p.display());
         }
     }
+
+    /// TOOL42: the pipe tests of the agent guard `tools/hooks/no-verify-guard.sh`
+    /// (a PreToolUse hook, not a git hook) run with every `cargo xtask test`.
+    /// The script makes its scratch clone under `NVG_TEST_TMP` (here a
+    /// directory under `target/`, like doc-check's `TempRepo`) and removes it.
+    #[test]
+    fn no_verify_guard_pipe_tests_pass() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+        let tmp = root.join("target").join(format!("xtask-test-nvg-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&tmp);
+        fs::create_dir_all(&tmp).unwrap();
+        let mut c = Command::new("bash");
+        for v in ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"] {
+            c.env_remove(v);
+        }
+        let out = c
+            .arg("tools/hooks/no-verify-guard-test.sh")
+            .env("NVG_TEST_TMP", &tmp)
+            .current_dir(root)
+            .output()
+            .unwrap();
+        let _ = fs::remove_dir_all(&tmp);
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        let fails: Vec<&str> = stdout.lines().filter(|l| l.starts_with("FAIL")).collect();
+        assert!(
+            out.status.success() && fails.is_empty(),
+            "no-verify-guard-test.sh: {:?}\n{}\n{}",
+            out.status,
+            fails.join("\n"),
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
 }

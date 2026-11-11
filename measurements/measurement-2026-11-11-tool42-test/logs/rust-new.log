@@ -1,0 +1,23 @@
+warning: constant `PROPTAG_GET_MAX_CLOCK_RATE` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:25:11
+   |
+25 | pub const PROPTAG_GET_MAX_CLOCK_RATE: u32 = 0x0003_0004;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `PROPTAG_GET_CLOCK_RATE_MEASURED` is never used
+  --> tools/xtask/src/../../../kernel/src/drivers/bcm2711/clock_tags.rs:29:11
+   |
+29 | pub const PROPTAG_GET_CLOCK_RATE_MEASURED: u32 = 0x0003_0047;
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `xtask` (bin "xtask" test) generated 2 warnings
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.01s
+     Running unittests src/main.rs (target/debug/deps/xtask-2896962bfa6f77a9)
+
+running 1 test
+test git_hooks::tests::no_verify_guard_pipe_tests_pass ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 10.36s
+
