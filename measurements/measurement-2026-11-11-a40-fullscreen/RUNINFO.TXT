@@ -1,0 +1,25 @@
+A40 (and A41) — owner full-screen screenshot from the real Pi: TeraDesk at 1920x1080
+
+Date: 2026-11-11. Lead, from the owner's card (read only). Owner message (verbatim, German):
+  "auf der SD liegt nochmal ein neuer Screenhot als vollbild"
+  (translated from German: "there is another new screenshot on the SD card, full screen")
+Host clang (lead host): Apple clang version 21.0.0 (clang-2100.4.1.1). No image built for it.
+Card: /Volumes/BOOT, kernel8.img sha256 e788dc5811fb7ffb4088d92c0eb7395941de9f9f24a8e5d99fd0a4e924ed015c (b744febc
+release kernel; measurements/measurement-2026-11-11-a41-screenshot/RUNINFO.TXT).
+
+File:
+  TERADESK-fullscreen.png   copied from /Volumes/BOOT/TERADESK.PNG (cp -p; the card's file replaced the earlier
+                            1044x799 one), PNG 1920 x 1080, 6222418 B,
+                            sha256 47f07067b686b765db6e317822bb268b8a72fa16b595f58553a2f01037785f0e (same on the card).
+                            File date 2026-11-08 00:01 = kernel build date (no RTC on the Pi), per the owner.
+
+What the screenshot shows (lead, by looking at it):
+  - TeraDesk, full 1920x1080 screen. The white menu bar "Desk File View Window Options" runs across the whole width to
+    the right screen edge. -> A40 (full-width menu bar) met in TeraDesk.
+  - Four colour "HARD DISC" icons, colour "TRASH". Window C:\*.* with info line "16615K bytes used in 27 items.",
+    yellow folder icons. -> A41.
+  - The window now lists TERADESK.PNG among the 27 items (the earlier screenshot run showed 26 items without it): the
+    shot was taken on the device after the first screenshot was on the card.
+
+Not shown: A40 in QED, A39/H05 launch and return, A46 in the NewTOS desktop (A46 in TeraDesk:
+measurements/measurement-2026-11-11-a46-photo/RUNINFO.TXT).
