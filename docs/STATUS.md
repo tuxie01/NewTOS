@@ -138,28 +138,28 @@ gives its before/after number in its line under *Recent Decisions*.
   rsprobe to tosdiff, parked); [TOOL28](../TASK/TOOL28.md) (P3, host_clang into RUNINFO); [TOOL30](../TASK/TOOL30.md) (P3, akprobe to tosdiff). Deferred (user 2026-10-29):
   [DOOM01](../TASK/DOOM01.md) (DOOM freeze in the menu, only on the Pi) — deferred again 2026-11-02 (user: PROC08 first); diagnosis state 2026-10-31: freeze only with the accessory X-Shot (waits without a timer for `MU_KEYBD`) and only without `serial=on`; cause in the kernel, open; next step in DOOM01 "Stand 2026-11-02".
   Alongside one Researcher at a time, without product change: — (free).
-- **P1:** [MEM12](../TASK/MEM12.md) — done 2026-10-30 (user: Pi run 2026-10-29, kernel `58e35ac8`); `P0PAR` is the first step in [DOOM01](../TASK/DOOM01.md) and in the later test scenario.
+- **P1:** [MEM12](../TASK/MEM12.md) — done 2026-10-30 (user: Pi run 2026-10-29, kernel `58e35ac8`); `P0PAR` is the first step in [DOOM01](../TASK/DOOM01.md) (parked) and in the later test scenario.
   [USB01](../TASK/USB01.md) — done 2026-11-04 (receipt; F1/F2/F3/F8 and
-  USBSNAP confirmed on real hardware). Remainder: [USB03](../TASK/USB03.md)
+  USBSNAP confirmed on real hardware). Remainder: [USB03](../TASK/USB03.md) (parked)
   (report-only mice, wheel of the B100, key 3; P1 since 2026-11-04),
   [A127](../TASK/A127.md) (new: menu entries only take effect after several
   clicks, highlight stays black; Ragnar in #3; cause first), more than
-  15 commands on the VL805 into the test scenario, [USB04](../TASK/USB04.md) (P3).
-  [ARCH03](../TASK/ARCH03.md) remainder (see above). [A45](../TASK/A45.md) is
+  15 commands on the VL805 into the test scenario, [USB04](../TASK/USB04.md) (parked) (P3).
+  [ARCH03](../TASK/ARCH03.md) remainder (see above). [A45](../TASK/A45.md) (parked) is
   blocked (see *Blocked*).
 - **P1, implemented, only Pi or application acceptance open** (according to the status line):
   A16, A37 (application side), DESK34, DESK35, HW03 (three Pi counter-checks),
   R02–R05, SER01, V11, V12, DESK43 (Pi counter-check of the EmuCON fallback on
   defective NEWDESK).
-- **P2:** [MEM11](../TASK/MEM11.md) (user addresses only by chance < 2 GiB;
+- **P2:** [MEM11](../TASK/MEM11.md) (parked) (user addresses only by chance < 2 GiB;
   debug check on the return path active, enforcement parked; since 2026-10-31 the layout below 2 GiB is held by build assertions of both boards and `tos-api/tests/mem11_layout_below_2gib.rs`; tosdiff check waits for tosdump format v3), [SDK01](../TASK/SDK01.md) (A–L done or implemented, G dropped;
   open only the acceptance of K under Linux/Homebrew),
   [SND01](../TASK/SND01.md), [SND02](../TASK/SND02.md),
   [NET01](../TASK/NET01.md) (preliminary research, target 1.2), [HW04](../TASK/HW04.md)
-  (partial), [W01](../TASK/W01.md), [TOOL03](../TASK/TOOL03.md) (reproducible measurement images and dumper builds, before the DUMPGDOS image comparison), [TOOL05](../TASK/TOOL05.md) (doc-check also for docs that cite a changed file);
-  parked: [TOOL01](../TASK/TOOL01.md) (parked, `cargo xtask doctor`), [H04](../TASK/H04.md),
-  [H01](../TASK/H01.md) (waits for hardware); [HW05](../TASK/HW05.md) (finding done, acceptance open: the same `QED.NAP` copy with a stopwatch as before, into the test scenario; [HW08](../TASK/HW08.md) done 2026-11-07); deferred:
-  [T13](../TASK/T13.md).
+  (partial), [W01](../TASK/W01.md), [TOOL03](../TASK/TOOL03.md) (parked) (reproducible measurement images and dumper builds, before the DUMPGDOS image comparison), [TOOL05](../TASK/TOOL05.md) (doc-check also for docs that cite a changed file);
+  parked: [TOOL01](../TASK/TOOL01.md) (parked, `cargo xtask doctor`), [H04](../TASK/H04.md) (parked),
+  [H01](../TASK/H01.md) (parked) (waits for hardware); [HW05](../TASK/HW05.md) (finding done, acceptance open: the same `QED.NAP` copy with a stopwatch as before, into the test scenario; [HW08](../TASK/HW08.md) done 2026-11-07); deferred:
+  [T13](../TASK/T13.md) (parked).
 - **„ERLEDIGT“ without a DONE receipt — count as open until measured
   (phase 5 triage; user 2026-10-26):** A06, A08, A09, A26, A116, ACC07,
   CON01, CON02, DESK39, DESK45, DESK47, FS02, FS07, FS14, FS18, GH1,
@@ -176,8 +176,8 @@ gives its before/after number in its line under *Recent Decisions*.
   RTC01, REF03, REF05 (GIC sources), REF06 (missing Track B sources), T15,
   DESK49, DESK51–DESK55, DESK61, DESK63, DESK65, DESK66, DESK67, DESK69, FS12
   (26 drives), FS15, FS16, FS17, LIBC-IOCTL, A119–A125, RST02, INPUT02,
-  CON03, ARCH04, USB02, [USB04](../TASK/USB04.md), MEM08, MEM10, [KEYS03](../TASK/KEYS03.md),
-  [T18](../TASK/T18.md), [FS19](../TASK/FS19.md) (`Fsfirst` order, measure first); deferred COOK01; ideas MEM06,
+  CON03, ARCH04, USB02, [USB04](../TASK/USB04.md) (parked), MEM08, MEM10, [KEYS03](../TASK/KEYS03.md) (parked),
+  [T18](../TASK/T18.md) (parked), [FS19](../TASK/FS19.md) (parked) (`Fsfirst` order, measure first); deferred COOK01; ideas MEM06,
   IO01.
 - **Gap without a ticket — `shel_find` stage 4 (`PATH=`):** of EmuTOS'
   four-stage `findfile` order (`gemshlib.c:406-472`) stage 1
