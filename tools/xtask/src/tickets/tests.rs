@@ -433,6 +433,27 @@ fn accept_repo(name: &str) -> (TempRepo, String) {
     (r, h)
 }
 
+/// The message of `accept`'s commit ends with the trailer of every commit
+/// (ADR-037 decision h), and git itself parses it as a trailer.
+fn assert_accept_trailer(r: &TempRepo) {
+    let msg = out(r, &["log", "-1", "--format=%B"]);
+    assert_eq!(msg.lines().last(), Some(ACCEPT_TRAILER), "{msg}");
+    let mut child = Command::new("git")
+        .args(["interpret-trailers", "--parse"])
+        .current_dir(&r.0)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    {
+        use std::io::Write;
+        child.stdin.take().unwrap().write_all(format!("{msg}\n").as_bytes()).unwrap();
+    }
+    let o = child.wait_with_output().unwrap();
+    assert!(o.status.success());
+    assert_eq!(String::from_utf8_lossy(&o.stdout).trim(), ACCEPT_TRAILER, "{msg}");
+}
+
 #[test]
 fn accept_pass_commits_receipt_and_line_3() {
     let (r, h) = accept_repo("tickets-accept-pass");
@@ -443,6 +464,7 @@ fn accept_pass_commits_receipt_and_line_3() {
     let files = out(&r, &["show", "--name-only", "--format=", "HEAD"]);
     assert_eq!(files, "TASK/X1-STATUS-DONE.MD\nTASK/X1.md");
     assert!(out(&r, &["log", "-n1", "--format=%s"]).contains("accept X1, PASS"));
+    assert_accept_trailer(&r);
     let t = fs::read_to_string(r.0.join("TASK/X1.md")).unwrap();
     assert_eq!(t.lines().nth(2).unwrap(), format!("Status: DONE ({D}) | Priority: P1 | Commit: {} | Receipt: X1-STATUS-DONE.MD", &h[..9]));
     let rc = fs::read_to_string(r.0.join("TASK/X1-STATUS-DONE.MD")).unwrap();
@@ -459,6 +481,7 @@ fn accept_fail_keeps_line_3_and_appends_the_note() {
     let (r, h) = accept_repo("tickets-accept-fail");
     accept(&r.0, &args(&["X1", "--commit", &h, "--result", "FAIL", "--note", "case 3 red", "--agent", "tester-b"]), D).unwrap();
     assert_eq!(out(&r, &["show", "--name-only", "--format=", "HEAD"]), "TASK/X1-STATUS-UNFINISHED.MD");
+    assert_accept_trailer(&r);
     let t = fs::read_to_string(r.0.join("TASK/X1.md")).unwrap();
     assert!(t.lines().nth(2).unwrap().starts_with("Status: IMPLEMENTED"));
     let rc = fs::read_to_string(r.0.join("TASK/X1-STATUS-UNFINISHED.MD")).unwrap();

@@ -2,6 +2,8 @@
 
 Role: developer
 Agent: agent-a823a57e109be35e1
+Agent: agent-a75f0a84ef36e5e8e
+(Second Agent added by lead, 2026-11-11: developer of the accept trailer, ADR-037 decision h.)
 
 Developer, 2026-11-11. Worktree branch `worktree-agent-a823a57e109be35e1`, rebased on `dc4c12093`; not merged.
 The ticket's *Implementation* section lists what was built and where ([TOOL41](TOOL41.md)).
