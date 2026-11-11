@@ -1,6 +1,6 @@
 # TOOL40 — pre-commit hook runs the mapping check
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P1 | Commit: self | Missing: DONE through cargo xtask accept (TOOL41); tester PASS in measurements/measurement-2026-11-11-tool40-test/RUNINFO.TXT
+Status: DONE (2026-11-11) | Priority: P1 | Commit: 8a08a9b7a | Receipt: TOOL40-STATUS-DONE.MD
 
 Type: tool (enforcement). Owner decision 2026-11-10. Order: after the [TOOL39](TOOL39.md) acceptance, before the
 ADR-037 ticket tools.
