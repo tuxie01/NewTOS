@@ -1,0 +1,7 @@
+EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN vs NEWTOS.BIN -- area BIOS, 1 cases from xbios-bconmap-r1.tsv
+
+case 18  trap 14 function 0x2C  Bconmap(-2) BCONMAP {maptab, maptabsize, mapped_device} and MAP
+    bconmap:maptabsize       EXACT   EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN = 0x0000000000000003   NEWTOS.BIN                                 = 0x0000000000000001
+    bconmap:mapped_device    EXACT   EMUTOS-1a7484ab-XBIOS-bconmap-falcontc.BIN = 0x0000000000000007   NEWTOS.BIN                                 = 0x0000000000000006
+
+1 of 1 cases differ

@@ -1,0 +1,100 @@
+table	reference	cases	EQUAL	(relaxed)	DIFF	trap14 cases	trap14 DIFF
+bios-r1	BIOS	147	115	22	32	110	31
+bios-r1	BIOS-falcontc	147	110	24	37	110	36
+super-r1	SUPER	9	9	2	0	3	0
+super-r1	SUPER-falcontc	9	9	2	0	3	0
+xbios-bconmap-r1	XBIOS-bconmap	1	0	0	1	1	1
+xbios-bconmap-r1	XBIOS-bconmap-falcontc	1	0	0	1	1	1
+xbios-chardev-r1	XBIOS-chardev	23	22	6	1	23	1
+xbios-chardev-r1	XBIOS-chardev-falcontc	23	21	6	2	23	2
+xbios-flush-r1	XBIOS-flush	207	204	202	3	202	2
+xbios-flush-r1	XBIOS-flush-falcontc	207	204	202	3	202	2
+xbios-ptr-r1	XBIOS-ptr	9	9	8	0	5	0
+xbios-ptr-r1	XBIOS-ptr-falcontc	9	9	8	0	5	0
+xbios-system-r1	XBIOS-system	43	34	31	9	43	9
+xbios-system-r1	XBIOS-system-falcontc	43	34	31	9	43	9
+
+XBIOS roll-up (trap 14): fn, case rows (tt+falcontc, all tables), DIFF rows, DIFF locations
+0x02	2	0	
+0x03	2	0	
+0x04	2	1	bios-r1/BIOS-falcontc#87
+0x05	2	0	
+0x07	6	4	bios-r1/BIOS#93 bios-r1/BIOS#94 bios-r1/BIOS-falcontc#93 bios-r1/BIOS-falcontc#94
+0x0E	38	4	xbios-flush-r1/XBIOS-flush#229 xbios-flush-r1/XBIOS-flush#232 xbios-flush-r1/XBIOS-flush-falcontc#229 xbios-flush-r1/XBIOS-flush-falcontc#232
+0x0F	8	4	bios-r1/BIOS#105 bios-r1/BIOS-falcontc#105 xbios-chardev-r1/XBIOS-chardev#31 xbios-chardev-r1/XBIOS-chardev-falcontc#31
+0x10	4	0	
+0x11	2	0	
+0x12	72	0	
+0x15	8	0	
+0x17	2	0	
+0x1C	4	4	bios-r1/BIOS#128 bios-r1/BIOS#129 bios-r1/BIOS-falcontc#128 bios-r1/BIOS-falcontc#129
+0x20	2	0	
+0x21	2	0	
+0x22	4	0	
+0x23	4	0	
+0x25	402	0	
+0x26	6	0	
+0x28	2	0	
+0x29	6	4	bios-r1/BIOS#178 bios-r1/BIOS#179 bios-r1/BIOS-falcontc#178 bios-r1/BIOS-falcontc#179
+0x2C	32	4	bios-r1/BIOS-falcontc#183 xbios-bconmap-r1/XBIOS-bconmap#18 xbios-bconmap-r1/XBIOS-bconmap-falcontc#18 xbios-chardev-r1/XBIOS-chardev-falcontc#43
+0x2D	2	0	
+0x2E	30	30	bios-r1/BIOS#189 bios-r1/BIOS#190 bios-r1/BIOS#191 bios-r1/BIOS#192 bios-r1/BIOS#193 bios-r1/BIOS#194 bios-r1/BIOS-falcontc#189 bios-r1/BIOS-falcontc#190 bios-r1/BIOS-falcontc#191 bios-r1/BIOS-falcontc#192 bios-r1/BIOS-falcontc#193 bios-r1/BIOS-falcontc#194 xbios-system-r1/XBIOS-system#68 xbios-system-r1/XBIOS-system#69 xbios-system-r1/XBIOS-system#70 xbios-system-r1/XBIOS-system#71 xbios-system-r1/XBIOS-system#72 xbios-system-r1/XBIOS-system#73 xbios-system-r1/XBIOS-system#74 xbios-system-r1/XBIOS-system#75 xbios-system-r1/XBIOS-system#76 xbios-system-r1/XBIOS-system-falcontc#68 xbios-system-r1/XBIOS-system-falcontc#69 xbios-system-r1/XBIOS-system-falcontc#70 xbios-system-r1/XBIOS-system-falcontc#71 xbios-system-r1/XBIOS-system-falcontc#72 xbios-system-r1/XBIOS-system-falcontc#73 xbios-system-r1/XBIOS-system-falcontc#74 xbios-system-r1/XBIOS-system-falcontc#75 xbios-system-r1/XBIOS-system-falcontc#76
+0x2F	2	0	
+0x30	2	0	
+0x31	2	0	
+0x32	2	0	
+0x33	2	0	
+0x34	2	0	
+0x35	2	0	
+0x36	2	0	
+0x37	2	0	
+0x38	2	0	
+0x39	2	0	
+0x3A	2	0	
+0x3B	2	0	
+0x3C	2	0	
+0x3D	2	0	
+0x3E	2	0	
+0x3F	2	0	
+0x40	2	0	
+0x41	2	0	
+0x42	2	0	
+0x43	2	0	
+0x44	2	0	
+0x45	2	0	
+0x46	2	0	
+0x47	2	0	
+0x48	2	0	
+0x49	2	0	
+0x4A	2	0	
+0x4B	2	0	
+0x4C	2	0	
+0x4D	2	0	
+0x4E	2	0	
+0x4F	2	0	
+0x51	2	1	bios-r1/BIOS#200
+0x52	2	1	bios-r1/BIOS#201
+0x53	6	3	bios-r1/BIOS#202 bios-r1/BIOS#203 bios-r1/BIOS#204
+0x55	4	2	bios-r1/BIOS#205 bios-r1/BIOS#206
+0x56	2	1	bios-r1/BIOS#207
+0x57	2	1	bios-r1/BIOS#208
+0x58	2	1	bios-r1/BIOS-falcontc#211
+0x59	2	1	bios-r1/BIOS-falcontc#212
+0x5B	2	1	bios-r1/BIOS-falcontc#213
+0x5C	2	0	
+0x5E	2	1	bios-r1/BIOS-falcontc#214
+0x5F	2	2	bios-r1/BIOS#215 bios-r1/BIOS-falcontc#215
+0x67	2	1	bios-r1/BIOS-falcontc#218
+0x6A	4	4	bios-r1/BIOS#219 bios-r1/BIOS#220 bios-r1/BIOS-falcontc#219 bios-r1/BIOS-falcontc#220
+0x72	2	1	bios-r1/BIOS-falcontc#221
+0x75	2	1	bios-r1/BIOS-falcontc#222
+0x77	2	1	bios-r1/BIOS-falcontc#223
+0x78	2	1	bios-r1/BIOS-falcontc#224
+0x79	2	1	bios-r1/BIOS-falcontc#225
+0x7A	2	1	bios-r1/BIOS-falcontc#226
+0x7D	2	1	bios-r1/BIOS-falcontc#227
+0x82	6	6	bios-r1/BIOS#230 bios-r1/BIOS#231 bios-r1/BIOS#232 bios-r1/BIOS-falcontc#230 bios-r1/BIOS-falcontc#231 bios-r1/BIOS-falcontc#232
+0x88	2	2	bios-r1/BIOS#233 bios-r1/BIOS-falcontc#233
+0x8C	2	2	bios-r1/BIOS#234 bios-r1/BIOS-falcontc#234
+0x8D	2	2	bios-r1/BIOS#235 bios-r1/BIOS-falcontc#235
+0x8E	2	0	

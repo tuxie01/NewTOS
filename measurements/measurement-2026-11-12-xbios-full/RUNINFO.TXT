@@ -1,0 +1,62 @@
+measurement-2026-11-12-xbios-full -- every XBIOS (trap 14) case table vs the pinned EmuTOS oracle, on today's tree
+=====================================================================================================
+Tester (Sonnet), owner request 2026-11-12. Measurement only: no code change, no ticket edit, no commit, no accept.
+Counterpart of measurements/measurement-2026-11-11-bios-full/RUNINFO.TXT; same method.
+HEAD 09dda6e75ef6b33f0da9e368272ad4acfc495446 (docs(compat): no NVRAM, TT shifter or DSP ...). git status: TASK/HW05.md modified
+(foreign, not mine), this run dir untracked. kernel rpi4 --release built by cargo xtask tosdump in the main tree (build id 09dd).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of 7 of 7 manifests; clang --version line 1 identical).
+Oracle side NOT re-run: every reference is the committed tosdump/reference/EMUTOS-1a7484ab-*.BIN, none re-recorded. SD card and Pi untouched.
+
+METHOD (method/)
+  run-all.sh <scratch> <runs>   cargo xtask tosdump bios tosdump/cases/<t>.tsv --out runs/<t> --scratch <scratchpad> --reference <tt BIN> --reference <falcontc BIN>
+                                for the 7 tables below (--scratch in the session scratchpad because of TOOL53).
+  summarize.py <repo> <runs>    per-case.tsv, summary.txt (case no printed by tosdiff = line in the .tsv; DIFF = printed, else EQUAL;
+                                "relaxed" = EQUAL cases whose retclass is not EXACT, counted inside EQUAL).
+  Tables: every tosdump/cases/*.tsv with a `^14:` row: bios-r1 (110 XBIOS rows), super-r1 (3: Supexec), xbios-bconmap-r1 (1), xbios-chardev-r1 (23),
+  xbios-flush-r1 (202), xbios-ptr-r1 (5), xbios-system-r1 (43). All non-disk. References per table: BIOS / SUPER / XBIOS-{bconmap,chardev,flush,ptr,system}
+  and the -falcontc profile of each (tt = default profile). tosdiff --validate exit 0 for all 7 NewTOS dumps (runs/<t>/tosdiff-validate.txt).
+  Not run: bios-core-r1 etc. hold no trap-14 rows (grep ^14:).
+
+INPUTS (gitignored; sha256)
+  kernel8.img  903af9bac36d8fc243f62b339c52d3a2eb8619c1f08ba03dbddaa5229cf3975d (identical in the first table's run log, bios-r1)
+  kernel ELF   adfb0445b424a263e4ab12724431f8545073d6e3c103524e17b9de17fcfd482c
+  DUMPBIOS.NAP 069f0f478a09d38c5319a3ab25955d5268d3225eadd36592a012a00aaad3d4e2 (all 7 runs)
+  tosdiff      b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+  NEWTOS BIN (runs/<t>/BIOS.BIN): bios-r1 c6666d069063aa32afc11726c88b268aa1f02b4fef06f73fef462b32d9b6fa55
+    super-r1 631487f6a27e70f9bc28da903dd41682158ca6f03f0508d9f4559882dd76691f   xbios-bconmap-r1 5a9275612a1c748eeb973a8b329106c5159534c90c04317c45ce4c469ea219ec
+    xbios-chardev-r1 a2cfa0b7d82c87483b7de76bbaadb5df27efdd7375cb1d6de2ffb6f0961947e1   xbios-flush-r1 4e8af78b49233d05afcd656b51975c1f28ab6ca472b4f6711f28d1730c31a319
+    xbios-ptr-r1 a2e42a83dfc0a0618c9c515ae6e0db903ce16a61a7b278f94aec426c96bffd06   xbios-system-r1 eb15fd8dc3e34b80dad0cd8ed8d78196ec85dbbe1a50ba00e2c1330cb652f2ef
+  Card images (image_sha256 from runs/<t>/card.img.manifest; images were in the scratchpad, scratch deleted by the runner):
+    bios-r1 eb7c1b0faf7fb169a859cd3e4616d9114389efc61f4954ab1cb41999e5904dee; the other six: see the manifests (image_sha256 lines, 7 distinct values).
+  Manifests copied: runs/<t>/card.img.manifest (7); every one says, verbatim:  optional_missing none   (7 of 7)
+  Clone: none (main tree). target-agents/agent-a9bfe531de73e6759: empty (0 B). This run dir: 3.2M.
+
+RESULT (summary.txt, per-case.tsv)
+ table             reference         cases EQUAL(relaxed) DIFF  trap14 cases/DIFF
+ bios-r1           BIOS (tt)           147  115 (22)       32    110 / 31
+ bios-r1           BIOS-falcontc       147  110 (24)       37    110 / 36
+ super-r1          tt / falcontc         9    9 (2)         0      3 / 0   (each)
+ xbios-bconmap-r1  tt / falcontc         1    0             1      1 / 1   (each)
+ xbios-chardev-r1  tt                   23   22 (6)         1     23 / 1
+ xbios-chardev-r1  falcontc             23   21 (6)         2     23 / 2
+ xbios-flush-r1    tt / falcontc       207  204 (202)       3    202 / 2   (each)
+ xbios-ptr-r1      tt / falcontc         9    9 (8)         0      5 / 0   (each)
+ xbios-system-r1   tt / falcontc        43   34 (31)        9     43 / 9   (each)
+ Case-runs 14 table/profile pairs; raw DIFF 32,37,0,0,1,1,1,1,2,3,3,0,0,9,9 (bios-r1's numbers equal the 2026-11-11 run: same 32/37 cases).
+
+CLASSIFICATION of every DIFF (per XBIOS function; "ACC" = ACCEPTED row in docs/COMPATIBILITY.md; both profiles unless stated)
+ Getrez 0x04      ft only, bios-r1 87: oracle 2, NewTOS 4            UNEXPLAINED (no COMPATIBILITY entry; related TASK/X02 PARKED "Getrez only reports", ARCH06)
+ Setcolor 0x07    bios-r1 93 Setcolor(0,-1) oracle 0x0FFF vs NewTOS 0; 94 Setcolor(1,-1) 0x0F00 vs 0   tt+ft  UNEXPLAINED (no entry, no ticket)
+ Iorec 0x0E       xbios-flush-r1 229, 232 (both profiles) + precondition 228 Bconstat(2) (trap 13)  -> NOT MEASURED, see FLUSH below
+ Rsconf 0x0F      bios-r1 105 and xbios-chardev-r1 31, Rsconf(-1 x6): tt 0x88018100 vs 0x88010100; ft 0x88000000 vs 0x88010100   PARKED (TASK/XBIOS06)
+ Giaccess 0x1C    bios-r1 128 (0,7): oracle 0xC0 vs 0; 129 (0,14): tt 0xA7 / ft 0x27 vs 0   tt+ft   TASK/SND01 (OPEN), TASK/H04 (PARKED: PSG no-op); no COMPATIBILITY entry
+ Floprate 0x29    bios-r1 178 (0,-1): oracle 3 vs -15; 179 (0,-4): -1 vs -15   ACC (XBIOS floppy group, EUNDEV, owner 2026-11-12)
+ Bconmap 0x2C     bios-r1 183 ft: 7 vs 6; xbios-chardev-r1 43 ft: 7 vs 6; xbios-bconmap-r1 18 maptabsize tt 4 / ft 3 vs 1 and ft mapped_device 7 vs 6   ACC ("Bconmap: one entry")
+ NVMaccess 0x2E   bios-r1 189-194 and xbios-system-r1 68-76 (ret 0 / -5 vs 0x2E; capture bytes vs 0xDE 0xAD untouched)   ACC (absent hardware; TASK/XBIOS10 ACCEPTED)
+ TT shifter 0x51-0x57   tt only, bios-r1 200-208 (EgetShift, EsetBank, EsetColor, EgetPalette, EsetGray, EsetSmear)   ACC (absent hardware)
+ Videl 0x58,0x59,0x5B,0x5E,0x5F   ft (0x5F also tt), bios-r1 211-215: VsetMode 0x1C vs 0x58, VgetMonitor 2 vs 0x59, VgetSize 614400 vs 0x5B, VgetRGB 0 vs 0x5E,
+                  Vfixmode tt -32 / ft 0x1C vs 0x5F   UNEXPLAINED (the 2026-11-12 entry covers NVRAM, TT shifter, DSP only; related TASK/X02 PARKED, ARCH06)
+ DSP 0x67-0x7D    ft (0x6A also tt), bios-r1 218-227   ACC (absent hardware)
+ DMA sound 0x82,0x88,0x8C,0x8D   bios-r1 230-235 (Soundcmd x3, Buffoper, Sndstatus, Buffptr): oracle 0 (Soundcmd(6) ft 3) vs function number   TASK/SND01 (OPEN), TASK/H04 (PARKED); no COMPATIBILITY entry
+ EQUAL (0 DIFF rows): 0x02 0x03 0x05 0x10 0x11 0x12 0x15 0x17 0x20 0x21 0x22 0x23 0x25 0x26 (Supexec, super-r1 too) 0x28 0x2D 0x2F 0x30-0x4F (empty slots) 0x5C 0x8E
+   Exact list with row counts: summary.txt roll-up (0x5C: 2 rows EQUAL).

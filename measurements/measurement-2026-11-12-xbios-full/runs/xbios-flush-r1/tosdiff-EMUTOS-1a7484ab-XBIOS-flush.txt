@@ -1,0 +1,13 @@
+EMUTOS-1a7484ab-XBIOS-flush.BIN vs NEWTOS.BIN -- area BIOS, 207 cases from xbios-flush-r1.tsv
+
+case 228  trap 13 function 0x01  Bconstat(2) = -1: keys in the ring before the flush -- bios/ikb
+    ret                      EXACT   EMUTOS-1a7484ab-XBIOS-flush.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                      = 0x0000000000000000 (0)
+
+case 229  trap 14 function 0x0E  Iorec(1) before the flush: head 0, tail 12 (three 4-byte entrie
+    iorec:ibuftl             EXACT   EMUTOS-1a7484ab-XBIOS-flush.BIN = 0x000000000000000C   NEWTOS.BIN                      = 0x0000000000000000
+
+case 232  trap 14 function 0x0E  Iorec(1) after the flush: head == tail == 12
+    iorec:ibufhd             EXACT   EMUTOS-1a7484ab-XBIOS-flush.BIN = 0x000000000000000C   NEWTOS.BIN                      = 0x0000000000000000
+    iorec:ibuftl             EXACT   EMUTOS-1a7484ab-XBIOS-flush.BIN = 0x000000000000000C   NEWTOS.BIN                      = 0x0000000000000000
+
+3 of 207 cases differ

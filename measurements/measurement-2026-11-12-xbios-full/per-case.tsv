@@ -1,0 +1,879 @@
+table	reference	line	trap:fn	retclass	result	label
+bios-r1	BIOS	30	13:1	EXACT	EQUAL	Bconstat(0) PRT -- bios/bios.c:914
+bios-r1	BIOS	31	13:1	EXACT	EQUAL	Bconstat(1) AUX -- bios/bios.c:914
+bios-r1	BIOS	32	13:1	EXACT	EQUAL	Bconstat(2) CON -- bios/bios.c:914
+bios-r1	BIOS	33	13:1	EXACT	EQUAL	Bconstat(3) MIDI -- bios/bios.c:914
+bios-r1	BIOS	34	13:1	EXACT	EQUAL	Bconstat(4) IKBD -- bios/bios.c:914
+bios-r1	BIOS	35	13:1	EXACT	EQUAL	Bconstat(5) RAWCON -- bios/bios.c:914
+bios-r1	BIOS	36	13:1	EXACT	EQUAL	Bconstat(6) Bconmap 6 -- bios/bios.c:914
+bios-r1	BIOS	37	13:1	EXACT	EQUAL	Bconstat(10) past the map -- bios/bios.c:914
+bios-r1	BIOS	38	13:1	EXACT	EQUAL	Bconstat(-1) negative -- bios/bios.c:914
+bios-r1	BIOS	41	13:2	EXACT	EQUAL	Bconin(4) IKBD char_dummy -- bios/bios.c:958
+bios-r1	BIOS	42	13:2	EXACT	EQUAL	Bconin(5) RAWCON char_dummy -- bios/bios.c:958
+bios-r1	BIOS	43	13:2	EXACT	EQUAL	Bconin(10) past the map -- bios/bios.c:958
+bios-r1	BIOS	44	13:2	EXACT	EQUAL	Bconin(-1) negative -- bios/bios.c:958
+bios-r1	BIOS	47	13:3	EXACT	EQUAL	Bconout(2,'*') CON -- bios/bios.c:991, chardev.c:91
+bios-r1	BIOS	48	13:3	EXACT	EQUAL	Bconout(5,'*') raw CON -- bios/bios.c:991, chardev.c:98
+bios-r1	BIOS	49	13:3	EXACT	EQUAL	Bconout(10,'A') past the map -- bios/bios.c:1001-1003
+bios-r1	BIOS	50	13:3	EXACT	EQUAL	Bconout(-1,'A') negative -- bios/bios.c:1008-1010
+bios-r1	BIOS	53	13:5	NONZERO	EQUAL	Setexc(0x2,-1) bus error -- bios/bios.c:1070
+bios-r1	BIOS	54	13:5	NONZERO	EQUAL	Setexc(0x21,-1) trap #1 -- bios/bios.c:1070
+bios-r1	BIOS	55	13:5	NONZERO	EQUAL	Setexc(0x100,-1) etv_timer -- bios/bios.c:1070
+bios-r1	BIOS	56	13:5	NONZERO	EQUAL	Setexc(0x101,-1) etv_critic -- bios/bios.c:1070
+bios-r1	BIOS	57	13:5	NONZERO	EQUAL	Setexc(0x102,-1) etv_term -- bios/bios.c:1070
+bios-r1	BIOS	60	13:6	EXACT	EQUAL	Tickcal() -- bios/bios.c:1096 returns 20
+bios-r1	BIOS	63	13:8	EXACT	EQUAL	Bcostat(0) PRT -- bios/bios.c:1143
+bios-r1	BIOS	64	13:8	EXACT	EQUAL	Bcostat(1) AUX -- bios/bios.c:1143
+bios-r1	BIOS	65	13:8	EXACT	EQUAL	Bcostat(2) CON -- bios/bios.c:1143
+bios-r1	BIOS	66	13:8	EXACT	EQUAL	Bcostat(3) IKBD slot -- bios/bios.c:1143
+bios-r1	BIOS	67	13:8	EXACT	EQUAL	Bcostat(4) MIDI slot -- bios/bios.c:1143
+bios-r1	BIOS	68	13:8	EXACT	EQUAL	Bcostat(5) RAWCON -- bios/bios.c:1143
+bios-r1	BIOS	69	13:8	EXACT	EQUAL	Bcostat(6) Bconmap 6 -- bios/bios.c:1143
+bios-r1	BIOS	70	13:8	EXACT	DIFF	Bcostat(7) Bconmap 7 -- bios/bios.c:1143
+bios-r1	BIOS	71	13:8	EXACT	EQUAL	Bcostat(-1) negative -- bios/bios.c:1143
+bios-r1	BIOS	74	13:10	NONZERO	EQUAL	Drvmap() -- bios/bios.c:1206, blkdev.c:833
+bios-r1	BIOS	77	13:11	EXACT	EQUAL	Kbshift(-1) -- bios/ikbd.c:145
+bios-r1	BIOS	80	13:12	EXACT	EQUAL	BIOS 12 past bios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS	81	13:127	EXACT	EQUAL	BIOS 127 past bios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS	82	13:255	EXACT	EQUAL	BIOS 255 past bios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS	85	14:0x02	PTR_RAM	EQUAL	Physbase() -- bios/screen.c:1042
+bios-r1	BIOS	86	14:0x03	PTR_RAM	EQUAL	Logbase() -- bios/screen.c:1071
+bios-r1	BIOS	87	14:0x04	EXACT.W	EQUAL	Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile)
+bios-r1	BIOS	90	14:0x05	EXACT.W	EQUAL	Setscreen(-1,-1,-1) -- WORD setscreen, bios/screen.c:1102
+bios-r1	BIOS	93	14:0x07	EXACT.W	DIFF	Setcolor(0,-1) -- bios/screen.c:1192 (palette: profile)
+bios-r1	BIOS	94	14:0x07	EXACT.W	DIFF	Setcolor(1,-1) -- bios/screen.c:1192 (palette: profile)
+bios-r1	BIOS	95	14:0x07	EXACT.W	EQUAL	Setcolor(15,-1) -- bios/screen.c:1192 (palette: profile)
+bios-r1	BIOS	98	14:0x0E	PTR_RAM	EQUAL	Iorec(0) RS-232 -- bios/xbios.c:336
+bios-r1	BIOS	99	14:0x0E	PTR_RAM	EQUAL	Iorec(1) IKBD -- bios/xbios.c:336
+bios-r1	BIOS	100	14:0x0E	PTR_RAM	EQUAL	Iorec(2) MIDI -- bios/xbios.c:336
+bios-r1	BIOS	101	14:0x0E	EXACT	EQUAL	Iorec(3) invalid -- bios/xbios.c:336
+bios-r1	BIOS	102	14:0x0E	EXACT	EQUAL	Iorec(-1) invalid -- bios/xbios.c:336
+bios-r1	BIOS	105	14:0x0F	EXACT	DIFF	Rsconf(-1 x6) old ucr/rsr/tsr -- bios/serport.c:226
+bios-r1	BIOS	106	14:0x0F	EXACT	EQUAL	Rsconf(-2,..) baud -- bios/serport.c:220-221
+bios-r1	BIOS	109	14:0x10	PTR_RAM	EQUAL	Keytbl(-1,-1,-1) -- bios/ikbd.c:122
+bios-r1	BIOS	112	14:0x11	IGNORE	EQUAL	Random() -- bios/xbios.c:421
+bios-r1	BIOS	115	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,-1) checksum -- bios/floppy.c:725-735
+bios-r1	BIOS	116	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,1) exec checksum -- bios/floppy.c:725-735
+bios-r1	BIOS	117	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,1,0) serial+BPB -- bios/floppy.c:703-717
+bios-r1	BIOS	118	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,1,0) checksum -- bios/floppy.c:731-735
+bios-r1	BIOS	119	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,7,-1) type out of range -- bios/floppy.c:711
+bios-r1	BIOS	122	14:0x15	EXACT.W	EQUAL	Cursconf(5,0) -- WORD cursconf, bios/vt52.c:893,918
+bios-r1	BIOS	125	14:0x17	NONZERO	EQUAL	Gettime() -- bios/clock.c:1266
+bios-r1	BIOS	128	14:0x1C	EXACT	DIFF	Giaccess(0,7) mixer -- bios/sound.c:94
+bios-r1	BIOS	129	14:0x1C	EXACT	DIFF	Giaccess(0,14) port A -- bios/sound.c:94
+bios-r1	BIOS	132	14:0x20	EXACT	EQUAL	Dosound(-1) idle table -- bios/sound.c:145-157
+bios-r1	BIOS	135	14:0x21	EXACT.W	EQUAL	Setprt(-1) -- WORD setprt, bios/parport.c:49
+bios-r1	BIOS	136	14:0x22	PTR_RAM	EQUAL	Kbdvbase() -- bios/xbios.c:716
+bios-r1	BIOS	137	14:0x23	EXACT.W	EQUAL	Kbrate(-1,-1) -- WORD kbrate, bios/ikbd.c:439
+bios-r1	BIOS	138	14:0x25	IGNORE	EQUAL	Vsync() -- void, bios/screen.c:1205
+bios-r1	BIOS	141	14:0x28	EXACT	EQUAL	XBIOS 0x28 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	142	14:0x2D	EXACT	EQUAL	XBIOS 0x2D empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	143	14:0x2F	EXACT	EQUAL	XBIOS 0x2F empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	144	14:0x30	EXACT	EQUAL	XBIOS 0x30 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	145	14:0x31	EXACT	EQUAL	XBIOS 0x31 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	146	14:0x32	EXACT	EQUAL	XBIOS 0x32 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	147	14:0x33	EXACT	EQUAL	XBIOS 0x33 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	148	14:0x34	EXACT	EQUAL	XBIOS 0x34 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	149	14:0x35	EXACT	EQUAL	XBIOS 0x35 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	150	14:0x36	EXACT	EQUAL	XBIOS 0x36 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	151	14:0x37	EXACT	EQUAL	XBIOS 0x37 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	152	14:0x38	EXACT	EQUAL	XBIOS 0x38 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	153	14:0x39	EXACT	EQUAL	XBIOS 0x39 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	154	14:0x3A	EXACT	EQUAL	XBIOS 0x3A empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	155	14:0x3B	EXACT	EQUAL	XBIOS 0x3B empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	156	14:0x3C	EXACT	EQUAL	XBIOS 0x3C empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	157	14:0x3D	EXACT	EQUAL	XBIOS 0x3D empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	158	14:0x3E	EXACT	EQUAL	XBIOS 0x3E empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	159	14:0x3F	EXACT	EQUAL	XBIOS 0x3F empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	160	14:0x41	EXACT	EQUAL	XBIOS 0x41 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	161	14:0x42	EXACT	EQUAL	XBIOS 0x42 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	162	14:0x43	EXACT	EQUAL	XBIOS 0x43 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	163	14:0x44	EXACT	EQUAL	XBIOS 0x44 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	164	14:0x45	EXACT	EQUAL	XBIOS 0x45 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	165	14:0x46	EXACT	EQUAL	XBIOS 0x46 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	166	14:0x47	EXACT	EQUAL	XBIOS 0x47 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	167	14:0x48	EXACT	EQUAL	XBIOS 0x48 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	168	14:0x49	EXACT	EQUAL	XBIOS 0x49 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	169	14:0x4A	EXACT	EQUAL	XBIOS 0x4A empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	170	14:0x4B	EXACT	EQUAL	XBIOS 0x4B empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	171	14:0x4C	EXACT	EQUAL	XBIOS 0x4C empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	172	14:0x4D	EXACT	EQUAL	XBIOS 0x4D empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	173	14:0x4E	EXACT	EQUAL	XBIOS 0x4E empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	174	14:0x4F	EXACT	EQUAL	XBIOS 0x4F empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	175	14:0x5C	EXACT	EQUAL	XBIOS 0x5C empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS	178	14:0x29	EXACT	DIFF	Floprate(0,-1) rate -- bios/floppy.c:1058-1061
+bios-r1	BIOS	179	14:0x29	EXACT	DIFF	Floprate(0,-4) HD? -- bios/floppy.c:1050-1051
+bios-r1	BIOS	180	14:0x29	EXACT	EQUAL	Floprate(2,-1) no floppy 2 -- bios/floppy.c:1044-1045
+bios-r1	BIOS	183	14:0x2C	EXACT	EQUAL	Bconmap(-1) mapped device -- bios/serport.c:1089-1090
+bios-r1	BIOS	184	14:0x2C	PTR_RAM	EQUAL	Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+bios-r1	BIOS	185	14:0x2C	EXACT	EQUAL	Bconmap(0) maps nothing -- bios/serport.c:1095-1097
+bios-r1	BIOS	186	14:0x2C	EXACT	EQUAL	Bconmap(10) past the table -- bios/serport.c:1095-1097
+bios-r1	BIOS	189	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,48,b0) read all 48 -- bios/nvram.c:30,183-197
+bios-r1	BIOS	190	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,0,b0) count 0 -- bios/nvram.c:180-181
+bios-r1	BIOS	191	14:0x2E	EXACT.W	DIFF	NVMaccess(0,-1,1,b0) start<0 -- bios/nvram.c:180-181
+bios-r1	BIOS	192	14:0x2E	EXACT.W	DIFF	NVMaccess(0,47,2,b0) past 48 -- bios/nvram.c:180-181
+bios-r1	BIOS	193	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,1,NULL) -- bios/nvram.c:180-181
+bios-r1	BIOS	194	14:0x2E	EXACT.W	DIFF	NVMaccess(3,..) bad op -- bios/nvram.c:206-208
+bios-r1	BIOS	197	14:0x40	EXACT.W	EQUAL	Blitmode(-1) -- bios/xbios.c:886
+bios-r1	BIOS	200	14:0x51	EXACT.W	DIFF	EgetShift() -- bios/screen.c:210
+bios-r1	BIOS	201	14:0x52	EXACT.W	DIFF	EsetBank(-1) -- bios/screen.c:222
+bios-r1	BIOS	202	14:0x53	EXACT.W	DIFF	EsetColor(0,-1) -- bios/screen.c:241
+bios-r1	BIOS	203	14:0x53	EXACT.W	DIFF	EsetColor(15,-1) -- bios/screen.c:241
+bios-r1	BIOS	204	14:0x53	EXACT.W	DIFF	EsetColor(255,-1) -- bios/screen.c:241
+bios-r1	BIOS	205	14:0x55	IGNORE	DIFF	EgetPalette(0,16,b0) -- bios/screen.c:290
+bios-r1	BIOS	206	14:0x55	IGNORE	DIFF	EgetPalette(240,16,b0) -- bios/screen.c:290
+bios-r1	BIOS	207	14:0x56	EXACT.W	DIFF	EsetGray(-1) -- bios/screen.c:313
+bios-r1	BIOS	208	14:0x57	EXACT.W	DIFF	EsetSmear(-1) -- bios/screen.c:334
+bios-r1	BIOS	211	14:0x58	EXACT.W	EQUAL	VsetMode(-1) -- bios/videl.c:619
+bios-r1	BIOS	212	14:0x59	EXACT.W	EQUAL	VgetMonitor() -- bios/videl.c:664
+bios-r1	BIOS	213	14:0x5B	EXACT	EQUAL	VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724
+bios-r1	BIOS	214	14:0x5E	EXACT.W	EQUAL	VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862
+bios-r1	BIOS	215	14:0x5F	EXACT.W	DIFF	Vfixmode(0x1C) -- bios/videl.c:917
+bios-r1	BIOS	218	14:0x67	EXACT.W	EQUAL	Dsp_GetWordSize() -- bios/dsp.c:508
+bios-r1	BIOS	219	14:0x6A	IGNORE	DIFF	Dsp_Available(b0,b1) x -- bios/dsp.c:619 (no has_dsp test)
+bios-r1	BIOS	220	14:0x6A	IGNORE	DIFF	Dsp_Available(b0,b1) y -- bios/dsp.c:619
+bios-r1	BIOS	221	14:0x72	EXACT.W	EQUAL	Dsp_GetProgAbility() -- bios/dsp.c:976
+bios-r1	BIOS	222	14:0x75	EXACT.W	EQUAL	Dsp_InqSubrAbility(0) -- bios/dsp.c:1146
+bios-r1	BIOS	223	14:0x77	EXACT.W	EQUAL	Dsp_Hf0(-1) -- bios/dsp.c:1200
+bios-r1	BIOS	224	14:0x78	EXACT.W	EQUAL	Dsp_Hf1(-1) -- bios/dsp.c:1222
+bios-r1	BIOS	225	14:0x79	EXACT.W	EQUAL	Dsp_Hf2() -- bios/dsp.c:1247
+bios-r1	BIOS	226	14:0x7A	EXACT.W	EQUAL	Dsp_Hf3() -- bios/dsp.c:1257
+bios-r1	BIOS	227	14:0x7D	EXACT.B	EQUAL	Dsp_Hstat() -- UBYTE dsp_hstat, bios/dsp.c:1273
+bios-r1	BIOS	230	14:0x82	EXACT	DIFF	Soundcmd(0,-1) -- bios/dmasound.c:342
+bios-r1	BIOS	231	14:0x82	EXACT	DIFF	Soundcmd(1,-1) -- bios/dmasound.c:342
+bios-r1	BIOS	232	14:0x82	EXACT	DIFF	Soundcmd(6,-1) -- bios/dmasound.c:342
+bios-r1	BIOS	233	14:0x88	EXACT	DIFF	Buffoper(-1) -- bios/dmasound.c:499
+bios-r1	BIOS	234	14:0x8C	EXACT	DIFF	Sndstatus(0) -- bios/dmasound.c:751
+bios-r1	BIOS	235	14:0x8D	EXACT	DIFF	Buffptr(b0) -- bios/dmasound.c:772
+bios-r1	BIOS	238	14:0x8E	EXACT	EQUAL	XBIOS 0x8E past xbios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS-falcontc	30	13:1	EXACT	EQUAL	Bconstat(0) PRT -- bios/bios.c:914
+bios-r1	BIOS-falcontc	31	13:1	EXACT	EQUAL	Bconstat(1) AUX -- bios/bios.c:914
+bios-r1	BIOS-falcontc	32	13:1	EXACT	EQUAL	Bconstat(2) CON -- bios/bios.c:914
+bios-r1	BIOS-falcontc	33	13:1	EXACT	EQUAL	Bconstat(3) MIDI -- bios/bios.c:914
+bios-r1	BIOS-falcontc	34	13:1	EXACT	EQUAL	Bconstat(4) IKBD -- bios/bios.c:914
+bios-r1	BIOS-falcontc	35	13:1	EXACT	EQUAL	Bconstat(5) RAWCON -- bios/bios.c:914
+bios-r1	BIOS-falcontc	36	13:1	EXACT	EQUAL	Bconstat(6) Bconmap 6 -- bios/bios.c:914
+bios-r1	BIOS-falcontc	37	13:1	EXACT	EQUAL	Bconstat(10) past the map -- bios/bios.c:914
+bios-r1	BIOS-falcontc	38	13:1	EXACT	EQUAL	Bconstat(-1) negative -- bios/bios.c:914
+bios-r1	BIOS-falcontc	41	13:2	EXACT	EQUAL	Bconin(4) IKBD char_dummy -- bios/bios.c:958
+bios-r1	BIOS-falcontc	42	13:2	EXACT	EQUAL	Bconin(5) RAWCON char_dummy -- bios/bios.c:958
+bios-r1	BIOS-falcontc	43	13:2	EXACT	EQUAL	Bconin(10) past the map -- bios/bios.c:958
+bios-r1	BIOS-falcontc	44	13:2	EXACT	EQUAL	Bconin(-1) negative -- bios/bios.c:958
+bios-r1	BIOS-falcontc	47	13:3	EXACT	EQUAL	Bconout(2,'*') CON -- bios/bios.c:991, chardev.c:91
+bios-r1	BIOS-falcontc	48	13:3	EXACT	EQUAL	Bconout(5,'*') raw CON -- bios/bios.c:991, chardev.c:98
+bios-r1	BIOS-falcontc	49	13:3	EXACT	EQUAL	Bconout(10,'A') past the map -- bios/bios.c:1001-1003
+bios-r1	BIOS-falcontc	50	13:3	EXACT	EQUAL	Bconout(-1,'A') negative -- bios/bios.c:1008-1010
+bios-r1	BIOS-falcontc	53	13:5	NONZERO	EQUAL	Setexc(0x2,-1) bus error -- bios/bios.c:1070
+bios-r1	BIOS-falcontc	54	13:5	NONZERO	EQUAL	Setexc(0x21,-1) trap #1 -- bios/bios.c:1070
+bios-r1	BIOS-falcontc	55	13:5	NONZERO	EQUAL	Setexc(0x100,-1) etv_timer -- bios/bios.c:1070
+bios-r1	BIOS-falcontc	56	13:5	NONZERO	EQUAL	Setexc(0x101,-1) etv_critic -- bios/bios.c:1070
+bios-r1	BIOS-falcontc	57	13:5	NONZERO	EQUAL	Setexc(0x102,-1) etv_term -- bios/bios.c:1070
+bios-r1	BIOS-falcontc	60	13:6	EXACT	EQUAL	Tickcal() -- bios/bios.c:1096 returns 20
+bios-r1	BIOS-falcontc	63	13:8	EXACT	EQUAL	Bcostat(0) PRT -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	64	13:8	EXACT	EQUAL	Bcostat(1) AUX -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	65	13:8	EXACT	EQUAL	Bcostat(2) CON -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	66	13:8	EXACT	EQUAL	Bcostat(3) IKBD slot -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	67	13:8	EXACT	EQUAL	Bcostat(4) MIDI slot -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	68	13:8	EXACT	EQUAL	Bcostat(5) RAWCON -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	69	13:8	EXACT	EQUAL	Bcostat(6) Bconmap 6 -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	70	13:8	EXACT	DIFF	Bcostat(7) Bconmap 7 -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	71	13:8	EXACT	EQUAL	Bcostat(-1) negative -- bios/bios.c:1143
+bios-r1	BIOS-falcontc	74	13:10	NONZERO	EQUAL	Drvmap() -- bios/bios.c:1206, blkdev.c:833
+bios-r1	BIOS-falcontc	77	13:11	EXACT	EQUAL	Kbshift(-1) -- bios/ikbd.c:145
+bios-r1	BIOS-falcontc	80	13:12	EXACT	EQUAL	BIOS 12 past bios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS-falcontc	81	13:127	EXACT	EQUAL	BIOS 127 past bios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS-falcontc	82	13:255	EXACT	EQUAL	BIOS 255 past bios_ent -- bios/vectors.S:1325-1326
+bios-r1	BIOS-falcontc	85	14:0x02	PTR_RAM	EQUAL	Physbase() -- bios/screen.c:1042
+bios-r1	BIOS-falcontc	86	14:0x03	PTR_RAM	EQUAL	Logbase() -- bios/screen.c:1071
+bios-r1	BIOS-falcontc	87	14:0x04	EXACT.W	DIFF	Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile)
+bios-r1	BIOS-falcontc	90	14:0x05	EXACT.W	EQUAL	Setscreen(-1,-1,-1) -- WORD setscreen, bios/screen.c:1102
+bios-r1	BIOS-falcontc	93	14:0x07	EXACT.W	DIFF	Setcolor(0,-1) -- bios/screen.c:1192 (palette: profile)
+bios-r1	BIOS-falcontc	94	14:0x07	EXACT.W	DIFF	Setcolor(1,-1) -- bios/screen.c:1192 (palette: profile)
+bios-r1	BIOS-falcontc	95	14:0x07	EXACT.W	EQUAL	Setcolor(15,-1) -- bios/screen.c:1192 (palette: profile)
+bios-r1	BIOS-falcontc	98	14:0x0E	PTR_RAM	EQUAL	Iorec(0) RS-232 -- bios/xbios.c:336
+bios-r1	BIOS-falcontc	99	14:0x0E	PTR_RAM	EQUAL	Iorec(1) IKBD -- bios/xbios.c:336
+bios-r1	BIOS-falcontc	100	14:0x0E	PTR_RAM	EQUAL	Iorec(2) MIDI -- bios/xbios.c:336
+bios-r1	BIOS-falcontc	101	14:0x0E	EXACT	EQUAL	Iorec(3) invalid -- bios/xbios.c:336
+bios-r1	BIOS-falcontc	102	14:0x0E	EXACT	EQUAL	Iorec(-1) invalid -- bios/xbios.c:336
+bios-r1	BIOS-falcontc	105	14:0x0F	EXACT	DIFF	Rsconf(-1 x6) old ucr/rsr/tsr -- bios/serport.c:226
+bios-r1	BIOS-falcontc	106	14:0x0F	EXACT	EQUAL	Rsconf(-2,..) baud -- bios/serport.c:220-221
+bios-r1	BIOS-falcontc	109	14:0x10	PTR_RAM	EQUAL	Keytbl(-1,-1,-1) -- bios/ikbd.c:122
+bios-r1	BIOS-falcontc	112	14:0x11	IGNORE	EQUAL	Random() -- bios/xbios.c:421
+bios-r1	BIOS-falcontc	115	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,-1) checksum -- bios/floppy.c:725-735
+bios-r1	BIOS-falcontc	116	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,1) exec checksum -- bios/floppy.c:725-735
+bios-r1	BIOS-falcontc	117	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,1,0) serial+BPB -- bios/floppy.c:703-717
+bios-r1	BIOS-falcontc	118	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,1,0) checksum -- bios/floppy.c:731-735
+bios-r1	BIOS-falcontc	119	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,7,-1) type out of range -- bios/floppy.c:711
+bios-r1	BIOS-falcontc	122	14:0x15	EXACT.W	EQUAL	Cursconf(5,0) -- WORD cursconf, bios/vt52.c:893,918
+bios-r1	BIOS-falcontc	125	14:0x17	NONZERO	EQUAL	Gettime() -- bios/clock.c:1266
+bios-r1	BIOS-falcontc	128	14:0x1C	EXACT	DIFF	Giaccess(0,7) mixer -- bios/sound.c:94
+bios-r1	BIOS-falcontc	129	14:0x1C	EXACT	DIFF	Giaccess(0,14) port A -- bios/sound.c:94
+bios-r1	BIOS-falcontc	132	14:0x20	EXACT	EQUAL	Dosound(-1) idle table -- bios/sound.c:145-157
+bios-r1	BIOS-falcontc	135	14:0x21	EXACT.W	EQUAL	Setprt(-1) -- WORD setprt, bios/parport.c:49
+bios-r1	BIOS-falcontc	136	14:0x22	PTR_RAM	EQUAL	Kbdvbase() -- bios/xbios.c:716
+bios-r1	BIOS-falcontc	137	14:0x23	EXACT.W	EQUAL	Kbrate(-1,-1) -- WORD kbrate, bios/ikbd.c:439
+bios-r1	BIOS-falcontc	138	14:0x25	IGNORE	EQUAL	Vsync() -- void, bios/screen.c:1205
+bios-r1	BIOS-falcontc	141	14:0x28	EXACT	EQUAL	XBIOS 0x28 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	142	14:0x2D	EXACT	EQUAL	XBIOS 0x2D empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	143	14:0x2F	EXACT	EQUAL	XBIOS 0x2F empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	144	14:0x30	EXACT	EQUAL	XBIOS 0x30 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	145	14:0x31	EXACT	EQUAL	XBIOS 0x31 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	146	14:0x32	EXACT	EQUAL	XBIOS 0x32 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	147	14:0x33	EXACT	EQUAL	XBIOS 0x33 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	148	14:0x34	EXACT	EQUAL	XBIOS 0x34 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	149	14:0x35	EXACT	EQUAL	XBIOS 0x35 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	150	14:0x36	EXACT	EQUAL	XBIOS 0x36 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	151	14:0x37	EXACT	EQUAL	XBIOS 0x37 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	152	14:0x38	EXACT	EQUAL	XBIOS 0x38 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	153	14:0x39	EXACT	EQUAL	XBIOS 0x39 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	154	14:0x3A	EXACT	EQUAL	XBIOS 0x3A empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	155	14:0x3B	EXACT	EQUAL	XBIOS 0x3B empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	156	14:0x3C	EXACT	EQUAL	XBIOS 0x3C empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	157	14:0x3D	EXACT	EQUAL	XBIOS 0x3D empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	158	14:0x3E	EXACT	EQUAL	XBIOS 0x3E empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	159	14:0x3F	EXACT	EQUAL	XBIOS 0x3F empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	160	14:0x41	EXACT	EQUAL	XBIOS 0x41 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	161	14:0x42	EXACT	EQUAL	XBIOS 0x42 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	162	14:0x43	EXACT	EQUAL	XBIOS 0x43 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	163	14:0x44	EXACT	EQUAL	XBIOS 0x44 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	164	14:0x45	EXACT	EQUAL	XBIOS 0x45 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	165	14:0x46	EXACT	EQUAL	XBIOS 0x46 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	166	14:0x47	EXACT	EQUAL	XBIOS 0x47 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	167	14:0x48	EXACT	EQUAL	XBIOS 0x48 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	168	14:0x49	EXACT	EQUAL	XBIOS 0x49 empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	169	14:0x4A	EXACT	EQUAL	XBIOS 0x4A empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	170	14:0x4B	EXACT	EQUAL	XBIOS 0x4B empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	171	14:0x4C	EXACT	EQUAL	XBIOS 0x4C empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	172	14:0x4D	EXACT	EQUAL	XBIOS 0x4D empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	173	14:0x4E	EXACT	EQUAL	XBIOS 0x4E empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	174	14:0x4F	EXACT	EQUAL	XBIOS 0x4F empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	175	14:0x5C	EXACT	EQUAL	XBIOS 0x5C empty slot -- bios/xbios.c:1251-1257
+bios-r1	BIOS-falcontc	178	14:0x29	EXACT	DIFF	Floprate(0,-1) rate -- bios/floppy.c:1058-1061
+bios-r1	BIOS-falcontc	179	14:0x29	EXACT	DIFF	Floprate(0,-4) HD? -- bios/floppy.c:1050-1051
+bios-r1	BIOS-falcontc	180	14:0x29	EXACT	EQUAL	Floprate(2,-1) no floppy 2 -- bios/floppy.c:1044-1045
+bios-r1	BIOS-falcontc	183	14:0x2C	EXACT	DIFF	Bconmap(-1) mapped device -- bios/serport.c:1089-1090
+bios-r1	BIOS-falcontc	184	14:0x2C	PTR_RAM	EQUAL	Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+bios-r1	BIOS-falcontc	185	14:0x2C	EXACT	EQUAL	Bconmap(0) maps nothing -- bios/serport.c:1095-1097
+bios-r1	BIOS-falcontc	186	14:0x2C	EXACT	EQUAL	Bconmap(10) past the table -- bios/serport.c:1095-1097
+bios-r1	BIOS-falcontc	189	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,48,b0) read all 48 -- bios/nvram.c:30,183-197
+bios-r1	BIOS-falcontc	190	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,0,b0) count 0 -- bios/nvram.c:180-181
+bios-r1	BIOS-falcontc	191	14:0x2E	EXACT.W	DIFF	NVMaccess(0,-1,1,b0) start<0 -- bios/nvram.c:180-181
+bios-r1	BIOS-falcontc	192	14:0x2E	EXACT.W	DIFF	NVMaccess(0,47,2,b0) past 48 -- bios/nvram.c:180-181
+bios-r1	BIOS-falcontc	193	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,1,NULL) -- bios/nvram.c:180-181
+bios-r1	BIOS-falcontc	194	14:0x2E	EXACT.W	DIFF	NVMaccess(3,..) bad op -- bios/nvram.c:206-208
+bios-r1	BIOS-falcontc	197	14:0x40	EXACT.W	EQUAL	Blitmode(-1) -- bios/xbios.c:886
+bios-r1	BIOS-falcontc	200	14:0x51	EXACT.W	EQUAL	EgetShift() -- bios/screen.c:210
+bios-r1	BIOS-falcontc	201	14:0x52	EXACT.W	EQUAL	EsetBank(-1) -- bios/screen.c:222
+bios-r1	BIOS-falcontc	202	14:0x53	EXACT.W	EQUAL	EsetColor(0,-1) -- bios/screen.c:241
+bios-r1	BIOS-falcontc	203	14:0x53	EXACT.W	EQUAL	EsetColor(15,-1) -- bios/screen.c:241
+bios-r1	BIOS-falcontc	204	14:0x53	EXACT.W	EQUAL	EsetColor(255,-1) -- bios/screen.c:241
+bios-r1	BIOS-falcontc	205	14:0x55	IGNORE	EQUAL	EgetPalette(0,16,b0) -- bios/screen.c:290
+bios-r1	BIOS-falcontc	206	14:0x55	IGNORE	EQUAL	EgetPalette(240,16,b0) -- bios/screen.c:290
+bios-r1	BIOS-falcontc	207	14:0x56	EXACT.W	EQUAL	EsetGray(-1) -- bios/screen.c:313
+bios-r1	BIOS-falcontc	208	14:0x57	EXACT.W	EQUAL	EsetSmear(-1) -- bios/screen.c:334
+bios-r1	BIOS-falcontc	211	14:0x58	EXACT.W	DIFF	VsetMode(-1) -- bios/videl.c:619
+bios-r1	BIOS-falcontc	212	14:0x59	EXACT.W	DIFF	VgetMonitor() -- bios/videl.c:664
+bios-r1	BIOS-falcontc	213	14:0x5B	EXACT	DIFF	VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724
+bios-r1	BIOS-falcontc	214	14:0x5E	EXACT.W	DIFF	VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862
+bios-r1	BIOS-falcontc	215	14:0x5F	EXACT.W	DIFF	Vfixmode(0x1C) -- bios/videl.c:917
+bios-r1	BIOS-falcontc	218	14:0x67	EXACT.W	DIFF	Dsp_GetWordSize() -- bios/dsp.c:508
+bios-r1	BIOS-falcontc	219	14:0x6A	IGNORE	DIFF	Dsp_Available(b0,b1) x -- bios/dsp.c:619 (no has_dsp test)
+bios-r1	BIOS-falcontc	220	14:0x6A	IGNORE	DIFF	Dsp_Available(b0,b1) y -- bios/dsp.c:619
+bios-r1	BIOS-falcontc	221	14:0x72	EXACT.W	DIFF	Dsp_GetProgAbility() -- bios/dsp.c:976
+bios-r1	BIOS-falcontc	222	14:0x75	EXACT.W	DIFF	Dsp_InqSubrAbility(0) -- bios/dsp.c:1146
+bios-r1	BIOS-falcontc	223	14:0x77	EXACT.W	DIFF	Dsp_Hf0(-1) -- bios/dsp.c:1200
+bios-r1	BIOS-falcontc	224	14:0x78	EXACT.W	DIFF	Dsp_Hf1(-1) -- bios/dsp.c:1222
+bios-r1	BIOS-falcontc	225	14:0x79	EXACT.W	DIFF	Dsp_Hf2() -- bios/dsp.c:1247
+bios-r1	BIOS-falcontc	226	14:0x7A	EXACT.W	DIFF	Dsp_Hf3() -- bios/dsp.c:1257
+bios-r1	BIOS-falcontc	227	14:0x7D	EXACT.B	DIFF	Dsp_Hstat() -- UBYTE dsp_hstat, bios/dsp.c:1273
+bios-r1	BIOS-falcontc	230	14:0x82	EXACT	DIFF	Soundcmd(0,-1) -- bios/dmasound.c:342
+bios-r1	BIOS-falcontc	231	14:0x82	EXACT	DIFF	Soundcmd(1,-1) -- bios/dmasound.c:342
+bios-r1	BIOS-falcontc	232	14:0x82	EXACT	DIFF	Soundcmd(6,-1) -- bios/dmasound.c:342
+bios-r1	BIOS-falcontc	233	14:0x88	EXACT	DIFF	Buffoper(-1) -- bios/dmasound.c:499
+bios-r1	BIOS-falcontc	234	14:0x8C	EXACT	DIFF	Sndstatus(0) -- bios/dmasound.c:751
+bios-r1	BIOS-falcontc	235	14:0x8D	EXACT	DIFF	Buffptr(b0) -- bios/dmasound.c:772
+bios-r1	BIOS-falcontc	238	14:0x8E	EXACT	EQUAL	XBIOS 0x8E past xbios_ent -- bios/vectors.S:1325-1326
+super-r1	SUPER	19	1:0x20	EXACT	EQUAL	Super(1L) in user state: 0 -- x20_inq, bdos/rwa.S:340-346
+super-r1	SUPER	21	1:0x20	NONZERO	EQUAL	Super(0L) enters supervisor state, returns the token -- x20_usr, bdos/rwa.S:280-301
+super-r1	SUPER	22	1:0x20	EXACT	EQUAL	Super(1L) in supervisor state: -1 -- x20_inq, bdos/rwa.S:340-346
+super-r1	SUPER	24	1:0x20	IGNORE	EQUAL	Super(token) = SuperToUser leaves supervisor state -- x20_sup, bdos/rwa.S:305-336
+super-r1	SUPER	25	1:0x20	EXACT	EQUAL	Super(1L) after SuperToUser: 0 -- x20_inq
+super-r1	SUPER	27	14:0x26	EXACT	EQUAL	Supexec(cb 0): the callback's 0x12345678 -- bios/vectors.S:1376-1378
+super-r1	SUPER	28	14:0x26	EXACT	EQUAL	Supexec(cb 1): the callback's -2, sign-extended -- bios/vectors.S:1376-1378
+super-r1	SUPER	29	14:0x26	EXACT	EQUAL	Supexec(cb 2): Super(1L) inside the callback, -1 -- bios/vectors.S:1376-1378, bdos/rwa.S:340-346
+super-r1	SUPER	30	1:0x20	EXACT	EQUAL	Super(1L) after Supexec: 0, the caller's state -- bios/vectors.S:1376-1378
+super-r1	SUPER-falcontc	19	1:0x20	EXACT	EQUAL	Super(1L) in user state: 0 -- x20_inq, bdos/rwa.S:340-346
+super-r1	SUPER-falcontc	21	1:0x20	NONZERO	EQUAL	Super(0L) enters supervisor state, returns the token -- x20_usr, bdos/rwa.S:280-301
+super-r1	SUPER-falcontc	22	1:0x20	EXACT	EQUAL	Super(1L) in supervisor state: -1 -- x20_inq, bdos/rwa.S:340-346
+super-r1	SUPER-falcontc	24	1:0x20	IGNORE	EQUAL	Super(token) = SuperToUser leaves supervisor state -- x20_sup, bdos/rwa.S:305-336
+super-r1	SUPER-falcontc	25	1:0x20	EXACT	EQUAL	Super(1L) after SuperToUser: 0 -- x20_inq
+super-r1	SUPER-falcontc	27	14:0x26	EXACT	EQUAL	Supexec(cb 0): the callback's 0x12345678 -- bios/vectors.S:1376-1378
+super-r1	SUPER-falcontc	28	14:0x26	EXACT	EQUAL	Supexec(cb 1): the callback's -2, sign-extended -- bios/vectors.S:1376-1378
+super-r1	SUPER-falcontc	29	14:0x26	EXACT	EQUAL	Supexec(cb 2): Super(1L) inside the callback, -1 -- bios/vectors.S:1376-1378, bdos/rwa.S:340-346
+super-r1	SUPER-falcontc	30	1:0x20	EXACT	EQUAL	Super(1L) after Supexec: 0, the caller's state -- bios/vectors.S:1376-1378
+xbios-bconmap-r1	XBIOS-bconmap	18	14:0x2C	PTR_RAM	DIFF	Bconmap(-2) BCONMAP {maptab, maptabsize, mapped_device} and MAPTAB[0] -- bios/serport.c:962-968
+xbios-bconmap-r1	XBIOS-bconmap-falcontc	18	14:0x2C	PTR_RAM	DIFF	Bconmap(-2) BCONMAP {maptab, maptabsize, mapped_device} and MAPTAB[0] -- bios/serport.c:962-968
+xbios-chardev-r1	XBIOS-chardev	21	14:0x0E	PTR_RAM	EQUAL	Iorec(0) RS-232 -- bios/xbios.c:339-340
+xbios-chardev-r1	XBIOS-chardev	22	14:0x0E	PTR_RAM	EQUAL	Iorec(1) IKBD -- bios/xbios.c:341-342
+xbios-chardev-r1	XBIOS-chardev	23	14:0x0E	PTR_RAM	EQUAL	Iorec(2) MIDI -- bios/xbios.c:343-344
+xbios-chardev-r1	XBIOS-chardev	24	14:0x0E	EXACT	EQUAL	Iorec(4) invalid -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev	25	14:0x0E	EXACT	EQUAL	Iorec(0x7FFF) WORD max -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev	26	14:0x0E	EXACT	EQUAL	Iorec(-2) negative -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev	27	14:0x0E	EXACT	EQUAL	Iorec(-32768) WORD min -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev	30	14:0x0F	EXACT	EQUAL	Rsconf(-2,..) baud code -- bios/serport.c:220-221
+xbios-chardev-r1	XBIOS-chardev	31	14:0x0F	EXACT	DIFF	Rsconf(-1 x6) old ucr/rsr/tsr (machine: TT MFP, Falcon SCC) -- bios/serport.c:226
+xbios-chardev-r1	XBIOS-chardev	34	14:0x10	PTR_RAM	EQUAL	Keytbl(-1,-1,-1) -- bios/ikbd.c:133
+xbios-chardev-r1	XBIOS-chardev	37	14:0x22	PTR_RAM	EQUAL	Kbdvbase() -- bios/xbios.c:718
+xbios-chardev-r1	XBIOS-chardev	40	14:0x23	EXACT.W	EQUAL	Kbrate(-1,-1) power-up 15/2 -- bios/ikbd.c:441
+xbios-chardev-r1	XBIOS-chardev	43	14:0x2C	EXACT	EQUAL	Bconmap(-1) mapped device (TT 6, Falcon 7) -- bios/serport.c:1089-1090
+xbios-chardev-r1	XBIOS-chardev	44	14:0x2C	PTR_RAM	EQUAL	Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+xbios-chardev-r1	XBIOS-chardev	45	14:0x2C	EXACT	EQUAL	Bconmap(1) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	46	14:0x2C	EXACT	EQUAL	Bconmap(2) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	47	14:0x2C	EXACT	EQUAL	Bconmap(3) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	48	14:0x2C	EXACT	EQUAL	Bconmap(4) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	49	14:0x2C	EXACT	EQUAL	Bconmap(5) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	50	14:0x2C	EXACT	EQUAL	Bconmap(11) past the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	51	14:0x2C	EXACT	EQUAL	Bconmap(0x7FFF) WORD max -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	52	14:0x2C	EXACT	EQUAL	Bconmap(-3) negative -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev	53	14:0x2C	EXACT	EQUAL	Bconmap(-32768) WORD min -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	21	14:0x0E	PTR_RAM	EQUAL	Iorec(0) RS-232 -- bios/xbios.c:339-340
+xbios-chardev-r1	XBIOS-chardev-falcontc	22	14:0x0E	PTR_RAM	EQUAL	Iorec(1) IKBD -- bios/xbios.c:341-342
+xbios-chardev-r1	XBIOS-chardev-falcontc	23	14:0x0E	PTR_RAM	EQUAL	Iorec(2) MIDI -- bios/xbios.c:343-344
+xbios-chardev-r1	XBIOS-chardev-falcontc	24	14:0x0E	EXACT	EQUAL	Iorec(4) invalid -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev-falcontc	25	14:0x0E	EXACT	EQUAL	Iorec(0x7FFF) WORD max -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev-falcontc	26	14:0x0E	EXACT	EQUAL	Iorec(-2) negative -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev-falcontc	27	14:0x0E	EXACT	EQUAL	Iorec(-32768) WORD min -- bios/xbios.c:345-346
+xbios-chardev-r1	XBIOS-chardev-falcontc	30	14:0x0F	EXACT	EQUAL	Rsconf(-2,..) baud code -- bios/serport.c:220-221
+xbios-chardev-r1	XBIOS-chardev-falcontc	31	14:0x0F	EXACT	DIFF	Rsconf(-1 x6) old ucr/rsr/tsr (machine: TT MFP, Falcon SCC) -- bios/serport.c:226
+xbios-chardev-r1	XBIOS-chardev-falcontc	34	14:0x10	PTR_RAM	EQUAL	Keytbl(-1,-1,-1) -- bios/ikbd.c:133
+xbios-chardev-r1	XBIOS-chardev-falcontc	37	14:0x22	PTR_RAM	EQUAL	Kbdvbase() -- bios/xbios.c:718
+xbios-chardev-r1	XBIOS-chardev-falcontc	40	14:0x23	EXACT.W	EQUAL	Kbrate(-1,-1) power-up 15/2 -- bios/ikbd.c:441
+xbios-chardev-r1	XBIOS-chardev-falcontc	43	14:0x2C	EXACT	DIFF	Bconmap(-1) mapped device (TT 6, Falcon 7) -- bios/serport.c:1089-1090
+xbios-chardev-r1	XBIOS-chardev-falcontc	44	14:0x2C	PTR_RAM	EQUAL	Bconmap(-2) BCONMAP pointer -- bios/serport.c:1092-1093
+xbios-chardev-r1	XBIOS-chardev-falcontc	45	14:0x2C	EXACT	EQUAL	Bconmap(1) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	46	14:0x2C	EXACT	EQUAL	Bconmap(2) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	47	14:0x2C	EXACT	EQUAL	Bconmap(3) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	48	14:0x2C	EXACT	EQUAL	Bconmap(4) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	49	14:0x2C	EXACT	EQUAL	Bconmap(5) below the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	50	14:0x2C	EXACT	EQUAL	Bconmap(11) past the map -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	51	14:0x2C	EXACT	EQUAL	Bconmap(0x7FFF) WORD max -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	52	14:0x2C	EXACT	EQUAL	Bconmap(-3) negative -- bios/serport.c:1095-1097
+xbios-chardev-r1	XBIOS-chardev-falcontc	53	14:0x2C	EXACT	EQUAL	Bconmap(-32768) WORD min -- bios/serport.c:1095-1097
+xbios-flush-r1	XBIOS-flush	23	13:1	EXACT	EQUAL	Bconstat(2) before the keys: 0 -- bios/ikbd.c:242-246
+xbios-flush-r1	XBIOS-flush	25	14:0x25	IGNORE	EQUAL	Vsync() wait 1/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	26	14:0x25	IGNORE	EQUAL	Vsync() wait 2/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	27	14:0x25	IGNORE	EQUAL	Vsync() wait 3/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	28	14:0x25	IGNORE	EQUAL	Vsync() wait 4/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	29	14:0x25	IGNORE	EQUAL	Vsync() wait 5/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	30	14:0x25	IGNORE	EQUAL	Vsync() wait 6/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	31	14:0x25	IGNORE	EQUAL	Vsync() wait 7/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	32	14:0x25	IGNORE	EQUAL	Vsync() wait 8/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	33	14:0x25	IGNORE	EQUAL	Vsync() wait 9/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	34	14:0x25	IGNORE	EQUAL	Vsync() wait 10/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	35	14:0x25	IGNORE	EQUAL	Vsync() wait 11/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	36	14:0x25	IGNORE	EQUAL	Vsync() wait 12/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	37	14:0x25	IGNORE	EQUAL	Vsync() wait 13/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	38	14:0x25	IGNORE	EQUAL	Vsync() wait 14/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	39	14:0x25	IGNORE	EQUAL	Vsync() wait 15/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	40	14:0x25	IGNORE	EQUAL	Vsync() wait 16/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	41	14:0x25	IGNORE	EQUAL	Vsync() wait 17/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	42	14:0x25	IGNORE	EQUAL	Vsync() wait 18/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	43	14:0x25	IGNORE	EQUAL	Vsync() wait 19/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	44	14:0x25	IGNORE	EQUAL	Vsync() wait 20/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	45	14:0x25	IGNORE	EQUAL	Vsync() wait 21/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	46	14:0x25	IGNORE	EQUAL	Vsync() wait 22/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	47	14:0x25	IGNORE	EQUAL	Vsync() wait 23/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	48	14:0x25	IGNORE	EQUAL	Vsync() wait 24/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	49	14:0x25	IGNORE	EQUAL	Vsync() wait 25/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	50	14:0x25	IGNORE	EQUAL	Vsync() wait 26/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	51	14:0x25	IGNORE	EQUAL	Vsync() wait 27/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	52	14:0x25	IGNORE	EQUAL	Vsync() wait 28/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	53	14:0x25	IGNORE	EQUAL	Vsync() wait 29/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	54	14:0x25	IGNORE	EQUAL	Vsync() wait 30/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	55	14:0x25	IGNORE	EQUAL	Vsync() wait 31/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	56	14:0x25	IGNORE	EQUAL	Vsync() wait 32/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	57	14:0x25	IGNORE	EQUAL	Vsync() wait 33/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	58	14:0x25	IGNORE	EQUAL	Vsync() wait 34/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	59	14:0x25	IGNORE	EQUAL	Vsync() wait 35/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	60	14:0x25	IGNORE	EQUAL	Vsync() wait 36/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	61	14:0x25	IGNORE	EQUAL	Vsync() wait 37/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	62	14:0x25	IGNORE	EQUAL	Vsync() wait 38/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	63	14:0x25	IGNORE	EQUAL	Vsync() wait 39/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	64	14:0x25	IGNORE	EQUAL	Vsync() wait 40/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	65	14:0x25	IGNORE	EQUAL	Vsync() wait 41/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	66	14:0x25	IGNORE	EQUAL	Vsync() wait 42/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	67	14:0x25	IGNORE	EQUAL	Vsync() wait 43/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	68	14:0x25	IGNORE	EQUAL	Vsync() wait 44/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	69	14:0x25	IGNORE	EQUAL	Vsync() wait 45/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	70	14:0x25	IGNORE	EQUAL	Vsync() wait 46/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	71	14:0x25	IGNORE	EQUAL	Vsync() wait 47/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	72	14:0x25	IGNORE	EQUAL	Vsync() wait 48/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	73	14:0x25	IGNORE	EQUAL	Vsync() wait 49/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	74	14:0x25	IGNORE	EQUAL	Vsync() wait 50/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	75	14:0x25	IGNORE	EQUAL	Vsync() wait 51/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	76	14:0x25	IGNORE	EQUAL	Vsync() wait 52/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	77	14:0x25	IGNORE	EQUAL	Vsync() wait 53/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	78	14:0x25	IGNORE	EQUAL	Vsync() wait 54/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	79	14:0x25	IGNORE	EQUAL	Vsync() wait 55/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	80	14:0x25	IGNORE	EQUAL	Vsync() wait 56/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	81	14:0x25	IGNORE	EQUAL	Vsync() wait 57/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	82	14:0x25	IGNORE	EQUAL	Vsync() wait 58/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	83	14:0x25	IGNORE	EQUAL	Vsync() wait 59/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	84	14:0x25	IGNORE	EQUAL	Vsync() wait 60/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	85	14:0x25	IGNORE	EQUAL	Vsync() wait 61/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	86	14:0x25	IGNORE	EQUAL	Vsync() wait 62/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	87	14:0x25	IGNORE	EQUAL	Vsync() wait 63/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	88	14:0x25	IGNORE	EQUAL	Vsync() wait 64/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	89	14:0x25	IGNORE	EQUAL	Vsync() wait 65/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	90	14:0x25	IGNORE	EQUAL	Vsync() wait 66/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	91	14:0x25	IGNORE	EQUAL	Vsync() wait 67/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	92	14:0x25	IGNORE	EQUAL	Vsync() wait 68/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	93	14:0x25	IGNORE	EQUAL	Vsync() wait 69/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	94	14:0x25	IGNORE	EQUAL	Vsync() wait 70/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	95	14:0x25	IGNORE	EQUAL	Vsync() wait 71/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	96	14:0x25	IGNORE	EQUAL	Vsync() wait 72/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	97	14:0x25	IGNORE	EQUAL	Vsync() wait 73/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	98	14:0x25	IGNORE	EQUAL	Vsync() wait 74/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	99	14:0x25	IGNORE	EQUAL	Vsync() wait 75/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	100	14:0x25	IGNORE	EQUAL	Vsync() wait 76/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	101	14:0x25	IGNORE	EQUAL	Vsync() wait 77/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	102	14:0x25	IGNORE	EQUAL	Vsync() wait 78/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	103	14:0x25	IGNORE	EQUAL	Vsync() wait 79/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	104	14:0x25	IGNORE	EQUAL	Vsync() wait 80/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	105	14:0x25	IGNORE	EQUAL	Vsync() wait 81/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	106	14:0x25	IGNORE	EQUAL	Vsync() wait 82/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	107	14:0x25	IGNORE	EQUAL	Vsync() wait 83/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	108	14:0x25	IGNORE	EQUAL	Vsync() wait 84/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	109	14:0x25	IGNORE	EQUAL	Vsync() wait 85/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	110	14:0x25	IGNORE	EQUAL	Vsync() wait 86/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	111	14:0x25	IGNORE	EQUAL	Vsync() wait 87/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	112	14:0x25	IGNORE	EQUAL	Vsync() wait 88/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	113	14:0x25	IGNORE	EQUAL	Vsync() wait 89/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	114	14:0x25	IGNORE	EQUAL	Vsync() wait 90/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	115	14:0x25	IGNORE	EQUAL	Vsync() wait 91/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	116	14:0x25	IGNORE	EQUAL	Vsync() wait 92/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	117	14:0x25	IGNORE	EQUAL	Vsync() wait 93/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	118	14:0x25	IGNORE	EQUAL	Vsync() wait 94/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	119	14:0x25	IGNORE	EQUAL	Vsync() wait 95/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	120	14:0x25	IGNORE	EQUAL	Vsync() wait 96/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	121	14:0x25	IGNORE	EQUAL	Vsync() wait 97/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	122	14:0x25	IGNORE	EQUAL	Vsync() wait 98/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	123	14:0x25	IGNORE	EQUAL	Vsync() wait 99/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	124	14:0x25	IGNORE	EQUAL	Vsync() wait 100/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	125	14:0x25	IGNORE	EQUAL	Vsync() wait 101/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	126	14:0x25	IGNORE	EQUAL	Vsync() wait 102/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	127	14:0x25	IGNORE	EQUAL	Vsync() wait 103/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	128	14:0x25	IGNORE	EQUAL	Vsync() wait 104/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	129	14:0x25	IGNORE	EQUAL	Vsync() wait 105/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	130	14:0x25	IGNORE	EQUAL	Vsync() wait 106/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	131	14:0x25	IGNORE	EQUAL	Vsync() wait 107/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	132	14:0x25	IGNORE	EQUAL	Vsync() wait 108/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	133	14:0x25	IGNORE	EQUAL	Vsync() wait 109/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	134	14:0x25	IGNORE	EQUAL	Vsync() wait 110/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	135	14:0x25	IGNORE	EQUAL	Vsync() wait 111/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	136	14:0x25	IGNORE	EQUAL	Vsync() wait 112/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	137	14:0x25	IGNORE	EQUAL	Vsync() wait 113/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	138	14:0x25	IGNORE	EQUAL	Vsync() wait 114/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	139	14:0x25	IGNORE	EQUAL	Vsync() wait 115/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	140	14:0x25	IGNORE	EQUAL	Vsync() wait 116/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	141	14:0x25	IGNORE	EQUAL	Vsync() wait 117/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	142	14:0x25	IGNORE	EQUAL	Vsync() wait 118/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	143	14:0x25	IGNORE	EQUAL	Vsync() wait 119/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	144	14:0x25	IGNORE	EQUAL	Vsync() wait 120/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	145	14:0x25	IGNORE	EQUAL	Vsync() wait 121/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	146	14:0x25	IGNORE	EQUAL	Vsync() wait 122/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	147	14:0x25	IGNORE	EQUAL	Vsync() wait 123/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	148	14:0x25	IGNORE	EQUAL	Vsync() wait 124/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	149	14:0x25	IGNORE	EQUAL	Vsync() wait 125/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	150	14:0x25	IGNORE	EQUAL	Vsync() wait 126/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	151	14:0x25	IGNORE	EQUAL	Vsync() wait 127/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	152	14:0x25	IGNORE	EQUAL	Vsync() wait 128/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	153	14:0x25	IGNORE	EQUAL	Vsync() wait 129/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	154	14:0x25	IGNORE	EQUAL	Vsync() wait 130/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	155	14:0x25	IGNORE	EQUAL	Vsync() wait 131/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	156	14:0x25	IGNORE	EQUAL	Vsync() wait 132/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	157	14:0x25	IGNORE	EQUAL	Vsync() wait 133/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	158	14:0x25	IGNORE	EQUAL	Vsync() wait 134/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	159	14:0x25	IGNORE	EQUAL	Vsync() wait 135/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	160	14:0x25	IGNORE	EQUAL	Vsync() wait 136/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	161	14:0x25	IGNORE	EQUAL	Vsync() wait 137/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	162	14:0x25	IGNORE	EQUAL	Vsync() wait 138/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	163	14:0x25	IGNORE	EQUAL	Vsync() wait 139/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	164	14:0x25	IGNORE	EQUAL	Vsync() wait 140/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	165	14:0x25	IGNORE	EQUAL	Vsync() wait 141/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	166	14:0x25	IGNORE	EQUAL	Vsync() wait 142/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	167	14:0x25	IGNORE	EQUAL	Vsync() wait 143/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	168	14:0x25	IGNORE	EQUAL	Vsync() wait 144/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	169	14:0x25	IGNORE	EQUAL	Vsync() wait 145/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	170	14:0x25	IGNORE	EQUAL	Vsync() wait 146/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	171	14:0x25	IGNORE	EQUAL	Vsync() wait 147/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	172	14:0x25	IGNORE	EQUAL	Vsync() wait 148/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	173	14:0x25	IGNORE	EQUAL	Vsync() wait 149/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	174	14:0x25	IGNORE	EQUAL	Vsync() wait 150/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	175	14:0x25	IGNORE	EQUAL	Vsync() wait 151/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	176	14:0x25	IGNORE	EQUAL	Vsync() wait 152/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	177	14:0x25	IGNORE	EQUAL	Vsync() wait 153/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	178	14:0x25	IGNORE	EQUAL	Vsync() wait 154/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	179	14:0x25	IGNORE	EQUAL	Vsync() wait 155/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	180	14:0x25	IGNORE	EQUAL	Vsync() wait 156/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	181	14:0x25	IGNORE	EQUAL	Vsync() wait 157/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	182	14:0x25	IGNORE	EQUAL	Vsync() wait 158/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	183	14:0x25	IGNORE	EQUAL	Vsync() wait 159/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	184	14:0x25	IGNORE	EQUAL	Vsync() wait 160/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	185	14:0x25	IGNORE	EQUAL	Vsync() wait 161/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	186	14:0x25	IGNORE	EQUAL	Vsync() wait 162/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	187	14:0x25	IGNORE	EQUAL	Vsync() wait 163/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	188	14:0x25	IGNORE	EQUAL	Vsync() wait 164/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	189	14:0x25	IGNORE	EQUAL	Vsync() wait 165/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	190	14:0x25	IGNORE	EQUAL	Vsync() wait 166/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	191	14:0x25	IGNORE	EQUAL	Vsync() wait 167/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	192	14:0x25	IGNORE	EQUAL	Vsync() wait 168/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	193	14:0x25	IGNORE	EQUAL	Vsync() wait 169/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	194	14:0x25	IGNORE	EQUAL	Vsync() wait 170/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	195	14:0x25	IGNORE	EQUAL	Vsync() wait 171/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	196	14:0x25	IGNORE	EQUAL	Vsync() wait 172/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	197	14:0x25	IGNORE	EQUAL	Vsync() wait 173/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	198	14:0x25	IGNORE	EQUAL	Vsync() wait 174/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	199	14:0x25	IGNORE	EQUAL	Vsync() wait 175/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	200	14:0x25	IGNORE	EQUAL	Vsync() wait 176/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	201	14:0x25	IGNORE	EQUAL	Vsync() wait 177/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	202	14:0x25	IGNORE	EQUAL	Vsync() wait 178/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	203	14:0x25	IGNORE	EQUAL	Vsync() wait 179/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	204	14:0x25	IGNORE	EQUAL	Vsync() wait 180/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	205	14:0x25	IGNORE	EQUAL	Vsync() wait 181/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	206	14:0x25	IGNORE	EQUAL	Vsync() wait 182/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	207	14:0x25	IGNORE	EQUAL	Vsync() wait 183/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	208	14:0x25	IGNORE	EQUAL	Vsync() wait 184/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	209	14:0x25	IGNORE	EQUAL	Vsync() wait 185/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	210	14:0x25	IGNORE	EQUAL	Vsync() wait 186/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	211	14:0x25	IGNORE	EQUAL	Vsync() wait 187/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	212	14:0x25	IGNORE	EQUAL	Vsync() wait 188/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	213	14:0x25	IGNORE	EQUAL	Vsync() wait 189/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	214	14:0x25	IGNORE	EQUAL	Vsync() wait 190/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	215	14:0x25	IGNORE	EQUAL	Vsync() wait 191/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	216	14:0x25	IGNORE	EQUAL	Vsync() wait 192/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	217	14:0x25	IGNORE	EQUAL	Vsync() wait 193/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	218	14:0x25	IGNORE	EQUAL	Vsync() wait 194/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	219	14:0x25	IGNORE	EQUAL	Vsync() wait 195/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	220	14:0x25	IGNORE	EQUAL	Vsync() wait 196/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	221	14:0x25	IGNORE	EQUAL	Vsync() wait 197/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	222	14:0x25	IGNORE	EQUAL	Vsync() wait 198/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	223	14:0x25	IGNORE	EQUAL	Vsync() wait 199/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	224	14:0x25	IGNORE	EQUAL	Vsync() wait 200/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush	225	13:1	IGNORE	EQUAL	Bconstat(2): NewTOS input pump, the injector feeds the keys here
+xbios-flush-r1	XBIOS-flush	226	13:1	IGNORE	EQUAL	Bconstat(2): a second pump (an injector armed only at the first)
+xbios-flush-r1	XBIOS-flush	228	13:1	EXACT	DIFF	Bconstat(2) = -1: keys in the ring before the flush -- bios/ikbd.c:242-246
+xbios-flush-r1	XBIOS-flush	229	14:0x0E	PTR_RAM	DIFF	Iorec(1) before the flush: head 0, tail 12 (three 4-byte entries) -- bios/ikbd.c:157-173
+xbios-flush-r1	XBIOS-flush	231	13:1	EXACT	EQUAL	Bconstat(2) after the flush: 0 -- bios/ikbd.c:242-246
+xbios-flush-r1	XBIOS-flush	232	14:0x0E	PTR_RAM	DIFF	Iorec(1) after the flush: head == tail == 12
+xbios-flush-r1	XBIOS-flush-falcontc	23	13:1	EXACT	EQUAL	Bconstat(2) before the keys: 0 -- bios/ikbd.c:242-246
+xbios-flush-r1	XBIOS-flush-falcontc	25	14:0x25	IGNORE	EQUAL	Vsync() wait 1/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	26	14:0x25	IGNORE	EQUAL	Vsync() wait 2/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	27	14:0x25	IGNORE	EQUAL	Vsync() wait 3/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	28	14:0x25	IGNORE	EQUAL	Vsync() wait 4/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	29	14:0x25	IGNORE	EQUAL	Vsync() wait 5/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	30	14:0x25	IGNORE	EQUAL	Vsync() wait 6/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	31	14:0x25	IGNORE	EQUAL	Vsync() wait 7/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	32	14:0x25	IGNORE	EQUAL	Vsync() wait 8/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	33	14:0x25	IGNORE	EQUAL	Vsync() wait 9/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	34	14:0x25	IGNORE	EQUAL	Vsync() wait 10/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	35	14:0x25	IGNORE	EQUAL	Vsync() wait 11/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	36	14:0x25	IGNORE	EQUAL	Vsync() wait 12/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	37	14:0x25	IGNORE	EQUAL	Vsync() wait 13/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	38	14:0x25	IGNORE	EQUAL	Vsync() wait 14/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	39	14:0x25	IGNORE	EQUAL	Vsync() wait 15/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	40	14:0x25	IGNORE	EQUAL	Vsync() wait 16/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	41	14:0x25	IGNORE	EQUAL	Vsync() wait 17/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	42	14:0x25	IGNORE	EQUAL	Vsync() wait 18/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	43	14:0x25	IGNORE	EQUAL	Vsync() wait 19/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	44	14:0x25	IGNORE	EQUAL	Vsync() wait 20/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	45	14:0x25	IGNORE	EQUAL	Vsync() wait 21/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	46	14:0x25	IGNORE	EQUAL	Vsync() wait 22/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	47	14:0x25	IGNORE	EQUAL	Vsync() wait 23/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	48	14:0x25	IGNORE	EQUAL	Vsync() wait 24/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	49	14:0x25	IGNORE	EQUAL	Vsync() wait 25/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	50	14:0x25	IGNORE	EQUAL	Vsync() wait 26/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	51	14:0x25	IGNORE	EQUAL	Vsync() wait 27/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	52	14:0x25	IGNORE	EQUAL	Vsync() wait 28/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	53	14:0x25	IGNORE	EQUAL	Vsync() wait 29/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	54	14:0x25	IGNORE	EQUAL	Vsync() wait 30/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	55	14:0x25	IGNORE	EQUAL	Vsync() wait 31/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	56	14:0x25	IGNORE	EQUAL	Vsync() wait 32/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	57	14:0x25	IGNORE	EQUAL	Vsync() wait 33/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	58	14:0x25	IGNORE	EQUAL	Vsync() wait 34/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	59	14:0x25	IGNORE	EQUAL	Vsync() wait 35/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	60	14:0x25	IGNORE	EQUAL	Vsync() wait 36/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	61	14:0x25	IGNORE	EQUAL	Vsync() wait 37/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	62	14:0x25	IGNORE	EQUAL	Vsync() wait 38/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	63	14:0x25	IGNORE	EQUAL	Vsync() wait 39/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	64	14:0x25	IGNORE	EQUAL	Vsync() wait 40/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	65	14:0x25	IGNORE	EQUAL	Vsync() wait 41/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	66	14:0x25	IGNORE	EQUAL	Vsync() wait 42/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	67	14:0x25	IGNORE	EQUAL	Vsync() wait 43/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	68	14:0x25	IGNORE	EQUAL	Vsync() wait 44/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	69	14:0x25	IGNORE	EQUAL	Vsync() wait 45/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	70	14:0x25	IGNORE	EQUAL	Vsync() wait 46/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	71	14:0x25	IGNORE	EQUAL	Vsync() wait 47/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	72	14:0x25	IGNORE	EQUAL	Vsync() wait 48/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	73	14:0x25	IGNORE	EQUAL	Vsync() wait 49/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	74	14:0x25	IGNORE	EQUAL	Vsync() wait 50/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	75	14:0x25	IGNORE	EQUAL	Vsync() wait 51/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	76	14:0x25	IGNORE	EQUAL	Vsync() wait 52/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	77	14:0x25	IGNORE	EQUAL	Vsync() wait 53/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	78	14:0x25	IGNORE	EQUAL	Vsync() wait 54/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	79	14:0x25	IGNORE	EQUAL	Vsync() wait 55/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	80	14:0x25	IGNORE	EQUAL	Vsync() wait 56/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	81	14:0x25	IGNORE	EQUAL	Vsync() wait 57/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	82	14:0x25	IGNORE	EQUAL	Vsync() wait 58/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	83	14:0x25	IGNORE	EQUAL	Vsync() wait 59/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	84	14:0x25	IGNORE	EQUAL	Vsync() wait 60/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	85	14:0x25	IGNORE	EQUAL	Vsync() wait 61/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	86	14:0x25	IGNORE	EQUAL	Vsync() wait 62/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	87	14:0x25	IGNORE	EQUAL	Vsync() wait 63/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	88	14:0x25	IGNORE	EQUAL	Vsync() wait 64/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	89	14:0x25	IGNORE	EQUAL	Vsync() wait 65/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	90	14:0x25	IGNORE	EQUAL	Vsync() wait 66/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	91	14:0x25	IGNORE	EQUAL	Vsync() wait 67/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	92	14:0x25	IGNORE	EQUAL	Vsync() wait 68/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	93	14:0x25	IGNORE	EQUAL	Vsync() wait 69/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	94	14:0x25	IGNORE	EQUAL	Vsync() wait 70/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	95	14:0x25	IGNORE	EQUAL	Vsync() wait 71/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	96	14:0x25	IGNORE	EQUAL	Vsync() wait 72/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	97	14:0x25	IGNORE	EQUAL	Vsync() wait 73/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	98	14:0x25	IGNORE	EQUAL	Vsync() wait 74/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	99	14:0x25	IGNORE	EQUAL	Vsync() wait 75/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	100	14:0x25	IGNORE	EQUAL	Vsync() wait 76/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	101	14:0x25	IGNORE	EQUAL	Vsync() wait 77/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	102	14:0x25	IGNORE	EQUAL	Vsync() wait 78/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	103	14:0x25	IGNORE	EQUAL	Vsync() wait 79/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	104	14:0x25	IGNORE	EQUAL	Vsync() wait 80/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	105	14:0x25	IGNORE	EQUAL	Vsync() wait 81/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	106	14:0x25	IGNORE	EQUAL	Vsync() wait 82/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	107	14:0x25	IGNORE	EQUAL	Vsync() wait 83/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	108	14:0x25	IGNORE	EQUAL	Vsync() wait 84/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	109	14:0x25	IGNORE	EQUAL	Vsync() wait 85/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	110	14:0x25	IGNORE	EQUAL	Vsync() wait 86/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	111	14:0x25	IGNORE	EQUAL	Vsync() wait 87/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	112	14:0x25	IGNORE	EQUAL	Vsync() wait 88/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	113	14:0x25	IGNORE	EQUAL	Vsync() wait 89/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	114	14:0x25	IGNORE	EQUAL	Vsync() wait 90/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	115	14:0x25	IGNORE	EQUAL	Vsync() wait 91/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	116	14:0x25	IGNORE	EQUAL	Vsync() wait 92/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	117	14:0x25	IGNORE	EQUAL	Vsync() wait 93/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	118	14:0x25	IGNORE	EQUAL	Vsync() wait 94/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	119	14:0x25	IGNORE	EQUAL	Vsync() wait 95/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	120	14:0x25	IGNORE	EQUAL	Vsync() wait 96/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	121	14:0x25	IGNORE	EQUAL	Vsync() wait 97/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	122	14:0x25	IGNORE	EQUAL	Vsync() wait 98/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	123	14:0x25	IGNORE	EQUAL	Vsync() wait 99/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	124	14:0x25	IGNORE	EQUAL	Vsync() wait 100/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	125	14:0x25	IGNORE	EQUAL	Vsync() wait 101/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	126	14:0x25	IGNORE	EQUAL	Vsync() wait 102/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	127	14:0x25	IGNORE	EQUAL	Vsync() wait 103/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	128	14:0x25	IGNORE	EQUAL	Vsync() wait 104/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	129	14:0x25	IGNORE	EQUAL	Vsync() wait 105/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	130	14:0x25	IGNORE	EQUAL	Vsync() wait 106/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	131	14:0x25	IGNORE	EQUAL	Vsync() wait 107/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	132	14:0x25	IGNORE	EQUAL	Vsync() wait 108/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	133	14:0x25	IGNORE	EQUAL	Vsync() wait 109/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	134	14:0x25	IGNORE	EQUAL	Vsync() wait 110/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	135	14:0x25	IGNORE	EQUAL	Vsync() wait 111/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	136	14:0x25	IGNORE	EQUAL	Vsync() wait 112/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	137	14:0x25	IGNORE	EQUAL	Vsync() wait 113/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	138	14:0x25	IGNORE	EQUAL	Vsync() wait 114/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	139	14:0x25	IGNORE	EQUAL	Vsync() wait 115/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	140	14:0x25	IGNORE	EQUAL	Vsync() wait 116/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	141	14:0x25	IGNORE	EQUAL	Vsync() wait 117/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	142	14:0x25	IGNORE	EQUAL	Vsync() wait 118/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	143	14:0x25	IGNORE	EQUAL	Vsync() wait 119/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	144	14:0x25	IGNORE	EQUAL	Vsync() wait 120/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	145	14:0x25	IGNORE	EQUAL	Vsync() wait 121/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	146	14:0x25	IGNORE	EQUAL	Vsync() wait 122/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	147	14:0x25	IGNORE	EQUAL	Vsync() wait 123/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	148	14:0x25	IGNORE	EQUAL	Vsync() wait 124/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	149	14:0x25	IGNORE	EQUAL	Vsync() wait 125/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	150	14:0x25	IGNORE	EQUAL	Vsync() wait 126/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	151	14:0x25	IGNORE	EQUAL	Vsync() wait 127/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	152	14:0x25	IGNORE	EQUAL	Vsync() wait 128/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	153	14:0x25	IGNORE	EQUAL	Vsync() wait 129/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	154	14:0x25	IGNORE	EQUAL	Vsync() wait 130/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	155	14:0x25	IGNORE	EQUAL	Vsync() wait 131/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	156	14:0x25	IGNORE	EQUAL	Vsync() wait 132/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	157	14:0x25	IGNORE	EQUAL	Vsync() wait 133/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	158	14:0x25	IGNORE	EQUAL	Vsync() wait 134/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	159	14:0x25	IGNORE	EQUAL	Vsync() wait 135/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	160	14:0x25	IGNORE	EQUAL	Vsync() wait 136/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	161	14:0x25	IGNORE	EQUAL	Vsync() wait 137/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	162	14:0x25	IGNORE	EQUAL	Vsync() wait 138/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	163	14:0x25	IGNORE	EQUAL	Vsync() wait 139/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	164	14:0x25	IGNORE	EQUAL	Vsync() wait 140/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	165	14:0x25	IGNORE	EQUAL	Vsync() wait 141/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	166	14:0x25	IGNORE	EQUAL	Vsync() wait 142/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	167	14:0x25	IGNORE	EQUAL	Vsync() wait 143/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	168	14:0x25	IGNORE	EQUAL	Vsync() wait 144/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	169	14:0x25	IGNORE	EQUAL	Vsync() wait 145/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	170	14:0x25	IGNORE	EQUAL	Vsync() wait 146/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	171	14:0x25	IGNORE	EQUAL	Vsync() wait 147/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	172	14:0x25	IGNORE	EQUAL	Vsync() wait 148/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	173	14:0x25	IGNORE	EQUAL	Vsync() wait 149/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	174	14:0x25	IGNORE	EQUAL	Vsync() wait 150/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	175	14:0x25	IGNORE	EQUAL	Vsync() wait 151/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	176	14:0x25	IGNORE	EQUAL	Vsync() wait 152/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	177	14:0x25	IGNORE	EQUAL	Vsync() wait 153/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	178	14:0x25	IGNORE	EQUAL	Vsync() wait 154/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	179	14:0x25	IGNORE	EQUAL	Vsync() wait 155/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	180	14:0x25	IGNORE	EQUAL	Vsync() wait 156/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	181	14:0x25	IGNORE	EQUAL	Vsync() wait 157/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	182	14:0x25	IGNORE	EQUAL	Vsync() wait 158/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	183	14:0x25	IGNORE	EQUAL	Vsync() wait 159/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	184	14:0x25	IGNORE	EQUAL	Vsync() wait 160/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	185	14:0x25	IGNORE	EQUAL	Vsync() wait 161/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	186	14:0x25	IGNORE	EQUAL	Vsync() wait 162/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	187	14:0x25	IGNORE	EQUAL	Vsync() wait 163/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	188	14:0x25	IGNORE	EQUAL	Vsync() wait 164/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	189	14:0x25	IGNORE	EQUAL	Vsync() wait 165/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	190	14:0x25	IGNORE	EQUAL	Vsync() wait 166/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	191	14:0x25	IGNORE	EQUAL	Vsync() wait 167/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	192	14:0x25	IGNORE	EQUAL	Vsync() wait 168/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	193	14:0x25	IGNORE	EQUAL	Vsync() wait 169/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	194	14:0x25	IGNORE	EQUAL	Vsync() wait 170/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	195	14:0x25	IGNORE	EQUAL	Vsync() wait 171/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	196	14:0x25	IGNORE	EQUAL	Vsync() wait 172/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	197	14:0x25	IGNORE	EQUAL	Vsync() wait 173/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	198	14:0x25	IGNORE	EQUAL	Vsync() wait 174/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	199	14:0x25	IGNORE	EQUAL	Vsync() wait 175/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	200	14:0x25	IGNORE	EQUAL	Vsync() wait 176/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	201	14:0x25	IGNORE	EQUAL	Vsync() wait 177/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	202	14:0x25	IGNORE	EQUAL	Vsync() wait 178/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	203	14:0x25	IGNORE	EQUAL	Vsync() wait 179/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	204	14:0x25	IGNORE	EQUAL	Vsync() wait 180/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	205	14:0x25	IGNORE	EQUAL	Vsync() wait 181/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	206	14:0x25	IGNORE	EQUAL	Vsync() wait 182/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	207	14:0x25	IGNORE	EQUAL	Vsync() wait 183/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	208	14:0x25	IGNORE	EQUAL	Vsync() wait 184/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	209	14:0x25	IGNORE	EQUAL	Vsync() wait 185/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	210	14:0x25	IGNORE	EQUAL	Vsync() wait 186/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	211	14:0x25	IGNORE	EQUAL	Vsync() wait 187/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	212	14:0x25	IGNORE	EQUAL	Vsync() wait 188/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	213	14:0x25	IGNORE	EQUAL	Vsync() wait 189/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	214	14:0x25	IGNORE	EQUAL	Vsync() wait 190/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	215	14:0x25	IGNORE	EQUAL	Vsync() wait 191/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	216	14:0x25	IGNORE	EQUAL	Vsync() wait 192/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	217	14:0x25	IGNORE	EQUAL	Vsync() wait 193/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	218	14:0x25	IGNORE	EQUAL	Vsync() wait 194/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	219	14:0x25	IGNORE	EQUAL	Vsync() wait 195/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	220	14:0x25	IGNORE	EQUAL	Vsync() wait 196/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	221	14:0x25	IGNORE	EQUAL	Vsync() wait 197/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	222	14:0x25	IGNORE	EQUAL	Vsync() wait 198/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	223	14:0x25	IGNORE	EQUAL	Vsync() wait 199/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	224	14:0x25	IGNORE	EQUAL	Vsync() wait 200/200 -- bios/screen.c:1205
+xbios-flush-r1	XBIOS-flush-falcontc	225	13:1	IGNORE	EQUAL	Bconstat(2): NewTOS input pump, the injector feeds the keys here
+xbios-flush-r1	XBIOS-flush-falcontc	226	13:1	IGNORE	EQUAL	Bconstat(2): a second pump (an injector armed only at the first)
+xbios-flush-r1	XBIOS-flush-falcontc	228	13:1	EXACT	DIFF	Bconstat(2) = -1: keys in the ring before the flush -- bios/ikbd.c:242-246
+xbios-flush-r1	XBIOS-flush-falcontc	229	14:0x0E	PTR_RAM	DIFF	Iorec(1) before the flush: head 0, tail 12 (three 4-byte entries) -- bios/ikbd.c:157-173
+xbios-flush-r1	XBIOS-flush-falcontc	231	13:1	EXACT	EQUAL	Bconstat(2) after the flush: 0 -- bios/ikbd.c:242-246
+xbios-flush-r1	XBIOS-flush-falcontc	232	14:0x0E	PTR_RAM	DIFF	Iorec(1) after the flush: head == tail == 12
+xbios-ptr-r1	XBIOS-ptr	24	14:0x0E	PTR_RAM	EQUAL	Iorec(0) RS-232 EXT_IOREC -- bios/xbios.c:339-340
+xbios-ptr-r1	XBIOS-ptr	25	14:0x0E	PTR_RAM	EQUAL	Iorec(1) IKBD IOREC -- bios/xbios.c:341-342
+xbios-ptr-r1	XBIOS-ptr	26	14:0x0E	PTR_RAM	EQUAL	Iorec(2) MIDI IOREC -- bios/xbios.c:343-344
+xbios-ptr-r1	XBIOS-ptr	28	14:0x0E	PTR_RAM	EQUAL	Iorec(1): the pointer the flush writes through
+xbios-ptr-r1	XBIOS-ptr	30	13:1	EXACT	EQUAL	Bconstat(2) after the flush: 0 -- bios/ikbd.c:242-246
+xbios-ptr-r1	XBIOS-ptr	31	14:0x0E	PTR_RAM	EQUAL	Iorec(1) read back after the flush: head == tail
+xbios-ptr-r1	XBIOS-ptr	33	1:0x20	NONZERO	EQUAL	Super(0L): Getmpb's MD is read in supervisor state
+xbios-ptr-r1	XBIOS-ptr	34	13:0	IGNORE	EQUAL	Getmpb(buffer 0): MPB, the MD via mp_free -- bios/biosmem.c:144-150
+xbios-ptr-r1	XBIOS-ptr	35	1:0x20	IGNORE	EQUAL	Super(token) = SuperToUser -- bdos/rwa.S:305-336
+xbios-ptr-r1	XBIOS-ptr-falcontc	24	14:0x0E	PTR_RAM	EQUAL	Iorec(0) RS-232 EXT_IOREC -- bios/xbios.c:339-340
+xbios-ptr-r1	XBIOS-ptr-falcontc	25	14:0x0E	PTR_RAM	EQUAL	Iorec(1) IKBD IOREC -- bios/xbios.c:341-342
+xbios-ptr-r1	XBIOS-ptr-falcontc	26	14:0x0E	PTR_RAM	EQUAL	Iorec(2) MIDI IOREC -- bios/xbios.c:343-344
+xbios-ptr-r1	XBIOS-ptr-falcontc	28	14:0x0E	PTR_RAM	EQUAL	Iorec(1): the pointer the flush writes through
+xbios-ptr-r1	XBIOS-ptr-falcontc	30	13:1	EXACT	EQUAL	Bconstat(2) after the flush: 0 -- bios/ikbd.c:242-246
+xbios-ptr-r1	XBIOS-ptr-falcontc	31	14:0x0E	PTR_RAM	EQUAL	Iorec(1) read back after the flush: head == tail
+xbios-ptr-r1	XBIOS-ptr-falcontc	33	1:0x20	NONZERO	EQUAL	Super(0L): Getmpb's MD is read in supervisor state
+xbios-ptr-r1	XBIOS-ptr-falcontc	34	13:0	IGNORE	EQUAL	Getmpb(buffer 0): MPB, the MD via mp_free -- bios/biosmem.c:144-150
+xbios-ptr-r1	XBIOS-ptr-falcontc	35	1:0x20	IGNORE	EQUAL	Super(token) = SuperToUser -- bdos/rwa.S:305-336
+xbios-system-r1	XBIOS-system	26	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,0,-1) type 0 BPB -- bios/floppy.c:679,706-713
+xbios-system-r1	XBIOS-system	27	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,0,-1) type 0 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	28	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,1,-1) type 1 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	29	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,2,-1) type 2 BPB -- bios/floppy.c:681,706-713
+xbios-system-r1	XBIOS-system	30	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,2,-1) type 2 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	31	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,3,-1) type 3 BPB -- bios/floppy.c:682,706-713
+xbios-system-r1	XBIOS-system	32	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,3,-1) type 3 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	33	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,4,-1) type 4 HD BPB -- bios/floppy.c:683,706-713
+xbios-system-r1	XBIOS-system	34	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,4,-1) type 4 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	35	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,5,-1) type 5 ED BPB -- bios/floppy.c:684,706-713
+xbios-system-r1	XBIOS-system	36	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,5,-1) type 5 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	37	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,6,-1) type 6 800K BPB -- bios/floppy.c:685,706-713
+xbios-system-r1	XBIOS-system	38	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,6,-1) type 6 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	40	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,0x7FFF,-1) WORD max -- bios/floppy.c:706
+xbios-system-r1	XBIOS-system	41	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-32768,-1) WORD min -- bios/floppy.c:706
+xbios-system-r1	XBIOS-system	42	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,-1) nothing but the checksum -- bios/floppy.c:698,706
+xbios-system-r1	XBIOS-system	44	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,3,1) bytes 32..287 untouched -- bios/floppy.c:690-736
+xbios-system-r1	XBIOS-system	45	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,3,1) bytes 288..509 untouched -- bios/floppy.c:690-736
+xbios-system-r1	XBIOS-system	46	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,3,1) checksum, executable -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system	48	14:0x12	IGNORE	EQUAL	Protobt(b0,0xABCDEF,-1,-1) serial bytes -- bios/floppy.c:698-704
+xbios-system-r1	XBIOS-system	49	14:0x12	IGNORE	EQUAL	Protobt(b0,0xFFFFFF,-1,-1) largest literal serial -- bios/floppy.c:699,701-703
+xbios-system-r1	XBIOS-system	50	14:0x12	IGNORE	EQUAL	Protobt(b0,0,-1,-1) serial 0 is stored -- bios/floppy.c:698,701-703
+xbios-system-r1	XBIOS-system	51	14:0x12	IGNORE	EQUAL	Protobt(b0,-2,-1,-1) negative: no serial -- bios/floppy.c:698
+xbios-system-r1	XBIOS-system	52	14:0x12	IGNORE	EQUAL	Protobt(b0,0x80000000,-1,-1) LONG min: no serial -- bios/floppy.c:698
+xbios-system-r1	XBIOS-system	53	14:0x12	IGNORE	EQUAL	Protobt(b0,0x1000000,-1,-1) random serial, bytes 0..7 untouched -- bios/floppy.c:699-700
+xbios-system-r1	XBIOS-system	54	14:0x12	IGNORE	EQUAL	Protobt(b0,0x1000000,-1,-1) random serial, bytes 11..31 untouched -- bios/floppy.c:699-704
+xbios-system-r1	XBIOS-system	55	14:0x12	IGNORE	EQUAL	Protobt(b0,0x7FFFFFFF,-1,-1) random serial, LONG max -- bios/floppy.c:699-700
+xbios-system-r1	XBIOS-system	57	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,0) non-executable -- bios/floppy.c:727-735
+xbios-system-r1	XBIOS-system	58	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,2) exec 2 is executable -- bios/floppy.c:727-735
+xbios-system-r1	XBIOS-system	59	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,0x7FFF) WORD max executable -- bios/floppy.c:727-735
+xbios-system-r1	XBIOS-system	60	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,-32768) WORD min keeps (non-executable) -- bios/floppy.c:727-728
+xbios-system-r1	XBIOS-system	63	14:0x15	EXACT.W	EQUAL	Cursconf(5,1) -- bios/vt52.c:911-912
+xbios-system-r1	XBIOS-system	64	14:0x15	EXACT.W	EQUAL	Cursconf(5,-1) -- bios/vt52.c:911-912
+xbios-system-r1	XBIOS-system	65	14:0x15	EXACT.W	EQUAL	Cursconf(5,0x7FFF) -- bios/vt52.c:911-912
+xbios-system-r1	XBIOS-system	68	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,1,b0) one byte -- bios/nvram.c:181-199
+xbios-system-r1	XBIOS-system	69	14:0x2E	EXACT.W	DIFF	NVMaccess(0,47,1,b0) last user byte -- bios/nvram.c:178,193-197
+xbios-system-r1	XBIOS-system	70	14:0x2E	EXACT.W	DIFF	NVMaccess(0,8,6,b0) the reset block at 8 -- bios/nvram.c:41,193-197
+xbios-system-r1	XBIOS-system	71	14:0x2E	EXACT.W	DIFF	NVMaccess(0,48,1,b0) start past the user area -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system	72	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,49,b0) count past the user area -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system	73	14:0x2E	EXACT.W	DIFF	NVMaccess(0,-32768,1,b0) WORD min start -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system	74	14:0x2E	EXACT.W	DIFF	NVMaccess(-1,..) bad op -- bios/nvram.c:208-210
+xbios-system-r1	XBIOS-system	75	14:0x2E	EXACT.W	DIFF	NVMaccess(0x7FFF,..) bad op -- bios/nvram.c:208-210
+xbios-system-r1	XBIOS-system	76	14:0x2E	EXACT.W	DIFF	NVMaccess(3,0,1,NULL) bad op, NULL first -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system-falcontc	26	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,0,-1) type 0 BPB -- bios/floppy.c:679,706-713
+xbios-system-r1	XBIOS-system-falcontc	27	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,0,-1) type 0 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	28	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,1,-1) type 1 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	29	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,2,-1) type 2 BPB -- bios/floppy.c:681,706-713
+xbios-system-r1	XBIOS-system-falcontc	30	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,2,-1) type 2 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	31	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,3,-1) type 3 BPB -- bios/floppy.c:682,706-713
+xbios-system-r1	XBIOS-system-falcontc	32	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,3,-1) type 3 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	33	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,4,-1) type 4 HD BPB -- bios/floppy.c:683,706-713
+xbios-system-r1	XBIOS-system-falcontc	34	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,4,-1) type 4 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	35	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,5,-1) type 5 ED BPB -- bios/floppy.c:684,706-713
+xbios-system-r1	XBIOS-system-falcontc	36	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,5,-1) type 5 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	37	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,6,-1) type 6 800K BPB -- bios/floppy.c:685,706-713
+xbios-system-r1	XBIOS-system-falcontc	38	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,6,-1) type 6 checksum -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	40	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,0x7FFF,-1) WORD max -- bios/floppy.c:706
+xbios-system-r1	XBIOS-system-falcontc	41	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-32768,-1) WORD min -- bios/floppy.c:706
+xbios-system-r1	XBIOS-system-falcontc	42	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,-1) nothing but the checksum -- bios/floppy.c:698,706
+xbios-system-r1	XBIOS-system-falcontc	44	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,3,1) bytes 32..287 untouched -- bios/floppy.c:690-736
+xbios-system-r1	XBIOS-system-falcontc	45	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,3,1) bytes 288..509 untouched -- bios/floppy.c:690-736
+xbios-system-r1	XBIOS-system-falcontc	46	14:0x12	IGNORE	EQUAL	Protobt(b0,0x123456,3,1) checksum, executable -- bios/floppy.c:730-735
+xbios-system-r1	XBIOS-system-falcontc	48	14:0x12	IGNORE	EQUAL	Protobt(b0,0xABCDEF,-1,-1) serial bytes -- bios/floppy.c:698-704
+xbios-system-r1	XBIOS-system-falcontc	49	14:0x12	IGNORE	EQUAL	Protobt(b0,0xFFFFFF,-1,-1) largest literal serial -- bios/floppy.c:699,701-703
+xbios-system-r1	XBIOS-system-falcontc	50	14:0x12	IGNORE	EQUAL	Protobt(b0,0,-1,-1) serial 0 is stored -- bios/floppy.c:698,701-703
+xbios-system-r1	XBIOS-system-falcontc	51	14:0x12	IGNORE	EQUAL	Protobt(b0,-2,-1,-1) negative: no serial -- bios/floppy.c:698
+xbios-system-r1	XBIOS-system-falcontc	52	14:0x12	IGNORE	EQUAL	Protobt(b0,0x80000000,-1,-1) LONG min: no serial -- bios/floppy.c:698
+xbios-system-r1	XBIOS-system-falcontc	53	14:0x12	IGNORE	EQUAL	Protobt(b0,0x1000000,-1,-1) random serial, bytes 0..7 untouched -- bios/floppy.c:699-700
+xbios-system-r1	XBIOS-system-falcontc	54	14:0x12	IGNORE	EQUAL	Protobt(b0,0x1000000,-1,-1) random serial, bytes 11..31 untouched -- bios/floppy.c:699-704
+xbios-system-r1	XBIOS-system-falcontc	55	14:0x12	IGNORE	EQUAL	Protobt(b0,0x7FFFFFFF,-1,-1) random serial, LONG max -- bios/floppy.c:699-700
+xbios-system-r1	XBIOS-system-falcontc	57	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,0) non-executable -- bios/floppy.c:727-735
+xbios-system-r1	XBIOS-system-falcontc	58	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,2) exec 2 is executable -- bios/floppy.c:727-735
+xbios-system-r1	XBIOS-system-falcontc	59	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,0x7FFF) WORD max executable -- bios/floppy.c:727-735
+xbios-system-r1	XBIOS-system-falcontc	60	14:0x12	IGNORE	EQUAL	Protobt(b0,-1,-1,-32768) WORD min keeps (non-executable) -- bios/floppy.c:727-728
+xbios-system-r1	XBIOS-system-falcontc	63	14:0x15	EXACT.W	EQUAL	Cursconf(5,1) -- bios/vt52.c:911-912
+xbios-system-r1	XBIOS-system-falcontc	64	14:0x15	EXACT.W	EQUAL	Cursconf(5,-1) -- bios/vt52.c:911-912
+xbios-system-r1	XBIOS-system-falcontc	65	14:0x15	EXACT.W	EQUAL	Cursconf(5,0x7FFF) -- bios/vt52.c:911-912
+xbios-system-r1	XBIOS-system-falcontc	68	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,1,b0) one byte -- bios/nvram.c:181-199
+xbios-system-r1	XBIOS-system-falcontc	69	14:0x2E	EXACT.W	DIFF	NVMaccess(0,47,1,b0) last user byte -- bios/nvram.c:178,193-197
+xbios-system-r1	XBIOS-system-falcontc	70	14:0x2E	EXACT.W	DIFF	NVMaccess(0,8,6,b0) the reset block at 8 -- bios/nvram.c:41,193-197
+xbios-system-r1	XBIOS-system-falcontc	71	14:0x2E	EXACT.W	DIFF	NVMaccess(0,48,1,b0) start past the user area -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system-falcontc	72	14:0x2E	EXACT.W	DIFF	NVMaccess(0,0,49,b0) count past the user area -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system-falcontc	73	14:0x2E	EXACT.W	DIFF	NVMaccess(0,-32768,1,b0) WORD min start -- bios/nvram.c:178-179
+xbios-system-r1	XBIOS-system-falcontc	74	14:0x2E	EXACT.W	DIFF	NVMaccess(-1,..) bad op -- bios/nvram.c:208-210
+xbios-system-r1	XBIOS-system-falcontc	75	14:0x2E	EXACT.W	DIFF	NVMaccess(0x7FFF,..) bad op -- bios/nvram.c:208-210
+xbios-system-r1	XBIOS-system-falcontc	76	14:0x2E	EXACT.W	DIFF	NVMaccess(3,0,1,NULL) bad op, NULL first -- bios/nvram.c:178-179

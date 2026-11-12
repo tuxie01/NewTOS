@@ -1,0 +1,8 @@
+bios-r1 exit 0
+super-r1 exit 0
+xbios-bconmap-r1 exit 0
+xbios-chardev-r1 exit 0
+xbios-flush-r1 exit 0
+xbios-ptr-r1 exit 0
+xbios-system-r1 exit 0
+done
