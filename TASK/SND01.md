@@ -484,3 +484,21 @@ interface and DMA ring. HDMI audio has no chapter in the BCM2711 datasheet, so S
 CLAUDE.md rule 6 (circle and Linux `vc4-hdmi` as the template, every register confirmed on the Pi); not decided yet.
 Still open: Q-N1 to Q-N7 of the spec review above (path, `Setinterrupt`, sample byte order, rates, `_SND`, release
 of the probes).
+
+## Decisions 2026-11-12 (owner and lead)
+
+Owner: "Ich würde den DMA weg gehen wollen, rest überlasse ich dir" (I want to take the DMA path, the rest I leave
+to you). The lead decides the rest:
+
+- **Q-N1 (owner):** DMA transport, D-tick first (control-block ring over a staging ring, refilled in the 200 Hz tick),
+  D-irq second (per-chunk `INTEN`).
+- **Q-N2 (lead):** `Setinterrupt` stays "recorded, never called, warning" (spec option D) for the first version, as
+  `Mfpint`/`Xbtimer` today; serving program handlers is a later ticket with the ADR-031 amendment.
+- **Q-N3 (lead):** native `SndBufPtr` layout and 64-bit `Setbuffer` addresses as the SDK header defines them
+  (`docs/COMPATIBILITY.md:1960`); a null or unwritable `Buffptr` pointer ends the program through the existing
+  crash path, like every other unwritable pointer (BIOS06, `tos-api/src/uaccess.rs`).
+- **Q-N4 (lead):** big-endian 16-bit samples as on the Falcon (ported Atari programs and the SDK header expect it).
+  The PWM FIFO takes duty-cycle words, not PCM, so every sample is converted anyway; the byte swap costs nothing extra.
+- **Q-N5, Q-N6:** decided after H1 (the measured PWM clock decides the reachable rates and the cookie).
+- **Q-N7 (lead):** approved: [SND03](SND03.md) (hardware probe H1-H5), [SND04](SND04.md) (oracle cases O1-O5),
+  [SND05](SND05.md) (implementation: DMA ring, PWM jack backend, XBIOS 0x80-0x8D), after SND03 and SND04.
