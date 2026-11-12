@@ -1,0 +1,28 @@
+RUNINFO A69 tester run, 2026-11-12, verdict PARTIAL
+Scope: A69 (just_draw text branch: MD_REPLACE gate on the G_TEXT->G_BOXTEXT promotion, fix 8b7dcdd16) tested at main HEAD aad8ffbd0 in QEMU (Pi adds no observation, owner 2026-11-12).
+Machine: Ingo's MacBook Air; macOS 27.2; Claude Code 2.1.322
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3450d5e45512f75f/wt (detached aad8ffbd0), agent dir 6,5G (wt 6,4G).
+
+Commands and outcome
+1. cargo xtask build --board qemu-virt : OK. cargo xtask build --board rpi4 : OK (serial/build-*.log). No clippy run (not required by anything failing; not driven).
+2. cargo xtask test : 2459 / 0 / 7, baseline (docs/STATUS.md, as measured by the A68 rerun) 2459 / 0 / 7 (serial/cargo-xtask-test.log). The three A69 tests ran green: a69_transparent_fl3dbak_g_text_stays_unboxed_over_the_background, a69_replace_fl3dbak_g_text_is_promoted_and_filled_backgrcol_without_border, a69_transparent_fl3dbak_g_boxtext_is_filled_backgrcol_and_keeps_its_border. (A first test run overlapped an edit of my own tree for the pre-fix kernel; discarded, the log is of the clean rerun.)
+3. tools/mkcard.sh card.img method/NEWDESK.INF (method/mkcard-call.txt): exit 0. Manifest method/card.img.manifest: optional_missing none (verbatim "optional_missing none"); image_sha256 058b8726...c7. Image sha after the boots equals the manifest value (card not modified).
+4. raspi4b + card QMP screendump (method/shot.py, kernel8.img): "[desk] desktop up (1 drives)", 0 EXC/PANIC. screendumps/desktop-rpi4-sd.png inspected visually with Read: green desktop, menu bar Desk/File/View/Options, HARD DISK C and TRASH icons, text intact, not black.
+5. qemu-virt (ramfb) screendump, kernel ELF: "[desk] desktop up (0 drives)", 0 EXC/PANIC. screendumps/desktop-qemu-virt.png inspected visually: 1920x1080 green desktop, menu bar, Trash and Printer icons.
+6. Before/after pair, idle desktop (raspi4b + card): kernel with the MD_REPLACE gate neutralised (method/prefix-revert.patch: `if mode_replace || true`, my own tree only, restored by git checkout) vs the fixed kernel: PNGs byte-identical (sha256 2904c1d9088746229e1bd50f1c4f4079b268b78a621117d3e2425c1e3ae977d7 for fixed x2 and pre-fix). Identical is expected: the idle desktop contains no TRANSPARENT FL3DBAK text; the receipt itself reports 0 pixel difference even in the TeraDesk dialog.
+   Note: the pre-fix variant is an approximation (gate removed from the current code, which also carries A133); not the true parent of 8b7dcdd16 (that did not compile with later code, per the A68 rerun).
+
+Failures with reproducing command: none.
+
+Drove: both builds, full host tests vs baseline incl. the three A69 red/green tests (the red-before state is documented in the receipt, not re-measured by me), mkcard card, raspi4b+SD desktop and qemu-virt desktop screendumps visually inspected, one before/after pair (idle desktop, identical).
+Not driven: the receipt's TeraDesk "Disk Volume Information" dialog pair (needs the injector/action-file harness of measurements/measurement-2026-09-20-a68-a70/method/, not rebuilt here; the receipt records 0 pixel difference for it, so it could not discriminate anyway) and any other receipt scene. Observable A69 behaviour (TRANSPARENT G_TEXT over a patterned ground) is covered by the host pixel tests only; no shipped QEMU scene shows it. Hence PARTIAL.
+Real-Pi4-only: none claimed (owner 2026-11-12).
+Out-of-scope observations: boots print no fixed PASS lines; criterion used: desktop up and 0 exceptions. Main tree has an untracked measurements/measurement-2026-11-12-pitest03/ (not mine, untouched). The real card (disk6) was not touched.
+
+Gitignored outputs (under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3450d5e45512f75f/):
+ card.img 64M 058b872658e1efe1a58be330076ad827302754de55a076358912ce91cbf7c736
+ kernel-rpi4.elf 15M 1db2bc29ac4c8f7a0fe85564506c456dcffa5d73d338081844827db0cc2d3009
+ kernel-qemu-virt.elf 15M c0d0eac51c5c69dcb5b9d7de07010e371154c4bc17cf38bb8ab7f2d476ae6bf8
+ kernel8-rpi4.img 1,6M 2bf41719057165d9f85f3b95fb29339d0456aa2b15b343a116896d7f492b8000
+ kernel8-rpi4-prefix.img 1,6M 23e1ea0d4faffc54f182205bb1283a3e88babd046f9dd535e115761031878e77

@@ -1,0 +1,13 @@
+diff --git a/tos-api/src/aes/object.rs b/tos-api/src/aes/object.rs
+index 56160cf54..bccb6a0cb 100644
+--- a/tos-api/src/aes/object.rs
++++ b/tos-api/src/aes/object.rs
+@@ -3277,7 +3277,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
+                 if d3 != 0 && ipat == IP_HOLLOW && icol == WHITE {
+                     ipat = IP_SOLID;
+                     icol = BACKGR_COL.load(Ordering::Relaxed) as Pel;
+-                    if mode_replace {
++                    if mode_replace || true {
+                         mode_replace = false;
+                         if !is_box {
+                             is_box = true;

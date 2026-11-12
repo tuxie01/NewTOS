@@ -1,0 +1,1 @@
+tools/mkcard.sh $A/card.img $R/method/NEWDESK.INF
