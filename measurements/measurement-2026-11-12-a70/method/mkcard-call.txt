@@ -1,0 +1,1 @@
+tools/mkcard.sh target-agents/agent-a6a676b6c1dd665d2/card.img measurements/measurement-2026-11-12-a70/method/NEWDESK.INF

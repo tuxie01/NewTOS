@@ -1,0 +1,13 @@
+diff --git a/tos-api/src/aes/object.rs b/tos-api/src/aes/object.rs
+index 56160cf54..1211f647a 100644
+--- a/tos-api/src/aes/object.rs
++++ b/tos-api/src/aes/object.rs
+@@ -3056,7 +3056,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
+             //   hollow white — FL3DBAK (0x0400) does not carry the FL3DOBJ bit
+             //   (0x0200), so a FL3DBAK button stays `IP_HOLLOW`/`WHITE` like a
+             //   non-3D one (`gemoblib.c:639-658`).
+-            let takes_3d_face = if ob_type == G_BUTTON { d3obj } else { ob_type != G_IBOX && d3 != 0 };
++            let takes_3d_face = ob_type != G_IBOX && d3 != 0;
+             if takes_3d_face && ipat == IP_HOLLOW && icol == WHITE {
+                 ipat = IP_SOLID;
+                 icol = match d3 {

@@ -1,0 +1,30 @@
+RUNINFO A70 tester run, 2026-11-12, verdict PASS
+Scope: A70 (just_draw: FL3DBAK G_BUTTON stays hollow white; 3D face colour only under FL3DOBJ; fix 8b7dcdd16) tested at main HEAD d3f567329 in QEMU.
+Machine: Ingo’s MacBook Air ; macOS 27.2 ; Claude Code 2.1.322 (Claude Code)
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a6a676b6c1dd665d2/wt (detached d3f567329), scratch dir 5,8G (wt about 5,6G). Tree clean after the run.
+
+Commands and outcome
+1. cargo xtask build --board qemu-virt : OK (serial/build-qemu-virt.log). 2. cargo xtask build --board rpi4 : OK (serial/build-rpi4.log). Rustc warning lines present in both; compared by exit status only.
+   (A first attempt with CARGO_TARGET_DIR set outside the tree failed in programs/build.sh; rerun without it, OK.)
+3. cargo xtask test : 2459 / 0 / 7, baseline docs/STATUS.md 2459 / 0 / 7 (serial/test.log, summed "test result" lines). The three a70_* tests are ok in it.
+4. tools/mkcard.sh target-agents/agent-a6a676b6c1dd665d2/card.img method/NEWDESK.INF (method/mkcard-call.txt): exit 0 (serial/mkcard.log). Manifest method/card.img.manifest, quoted: "optional_missing none".
+5. raspi4b + card (shot.py, kernel8.img, -append serial=on): "[desk] desktop up (1 drives)", 0 EXC/PANIC (serial/rpi4-fixed.log). screendumps/desktop-rpi4-sd-fixed.png, viewed with Read: green desktop, menu bar Desk/File/View/Options, HARD DISK C and TRASH icons, text intact, not black.
+6. Fix-neutralised kernel (method/neutralise.patch: takes_3d_face gate reverted to the pre-A70 form, applied in my tree only, restored): rpi4 build OK (serial/build-rpi4-neutral.log), different kernel8 sha. Same scene screendumps/desktop-rpi4-sd-neutral.png, viewed: same. cmp: byte-identical to the fixed one (sha256 2904c1d9...). Expected by design: no shipped dialog or RSC carries a FL3DBAK G_BUTTON (receipt TASK/A70-STATUS-DONE.MD).
+7. Host test with the same neutralise patch: cargo test -p tos-api --test aes_object_3d_text_button a70_ -> a70_fl3dbak_g_button_stays_hollow_white_with_a_black_border FAILED, the other two ok (serial/a70-test-neutralised.log). So the fix is what makes the red test green (fixed: all three ok, step 3).
+8. qemu-virt (ramfb) QMP screendump, kernel ELF: "[desk] desktop up (0 drives)", 0 EXC/PANIC (serial/qemu-virt.log). screendumps/desktop-qemu-virt.png, viewed: 1920x1080 green desktop, menu bar, TRASH and PRINTER icons, text intact.
+9. cargo clippy -p tos-api: 74 warning lines in total; no baseline measured by me, not compared (see open-ness below).
+
+Failures with reproducing command: none (the one FAILED test in step 7 is the intended red of the neutralised tree).
+Drove: both builds, full host tests vs baseline, A70 tests red with the fix neutralised and green with it, card via mkcard.sh, raspi4b desktop with SD (visual), qemu-virt desktop (visual), fixed vs neutralised pair on raspi4b (identical, as designed). The owner accepted the 2026-09-20 scene pairs of A68-A70 visually; not re-driven.
+Not verified: a FL3DBAK G_BUTTON on screen in QEMU (none shipped; covered by host pixel tests only); clippy delta against a baseline.
+Real-Pi4-only: none claimed (owner 2026-11-12).
+Out-of-scope observations: boots print no fixed PASS lines; criterion used: desktop up and 0 exceptions. Real card disk6 untouched.
+
+Image manifest: method/card.img.manifest (host_clang line, optional_missing none).
+Gitignored outputs (under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a6a676b6c1dd665d2/):
+ card.img  64M 3506ad792413e46422389b179235617c60c2a03da7a8f41b6f284cdd32c37d17
+ kernel8-rpi4.img 1,6M 45ec44e8e3e34e7fac8214a503ebb5b11c338f55f2ef110e361ffe876229179b
+ kernel8-rpi4-neutral.img 1,6M 5ef485ad48e46afbb9867d70727869ba19cc212ce27d4e58ce6941854c2723db
+ kernel-rpi4.elf  15M ffe93a7bfdc0ebaa4edf73980f67306169663106abb79f1b20ed88f0303e1cee
+ kernel-qemu-virt.elf  15M e1f67e778d0da38baf7661cf484cfa1b5c163bdcf2bc5132762b008ccbc94dc0

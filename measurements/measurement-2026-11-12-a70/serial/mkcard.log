@@ -1,0 +1,6 @@
+mkcard: target-agents/agent-a6a676b6c1dd665d2/card.img (64 MiB, MBR + FAT16, label NTCARD)
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+  + C:\NEWDESK.INF <- measurements/measurement-2026-11-12-a70/method/NEWDESK.INF
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+done: target-agents/agent-a6a676b6c1dd665d2/card.img
+manifest: target-agents/agent-a6a676b6c1dd665d2/card.img.manifest (1 files; copy it into the measurement run, RUNINFO.TXT cites it)
