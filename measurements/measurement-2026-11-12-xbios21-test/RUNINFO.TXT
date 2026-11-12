@@ -1,0 +1,27 @@
+measurement-2026-11-12-xbios21-test -- tester run for TASK/XBIOS21 (Setcolor/Setpalette shadow seeded with the EmuTOS table)
+=================================================================================================================
+Tester agent: tester-xbios21 (Sonnet), different from developer-xbios21. Commit under test: a89bf7357 (HEAD at start, main tree, no code change by me).
+WHY: acceptance of XBIOS21: bios-r1 cases 93 Setcolor(0,-1) and 94 Setcolor(1,-1) must become EQUAL (0x0FFF / 0x0F00) on tt and falcontc; no regression.
+HOW:
+  1. cargo xtask test  -> 2459 passed / 0 failed / 7 ignored (sum of all "test result" lines), exit 0 (matches developer's 2459/0/7).
+  2. method/run-all.sh (copy of the xbios-full one) first line only: cargo xtask tosdump bios tosdump/cases/bios-r1.tsv
+     --out runs/bios-r1 --scratch <session scratchpad>/scr --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN
+     --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN   (exit 0; kernel rpi4 --release built by tosdump, dumper build id a89b).
+     Card scratch on the system disk (scratchpad) -> mkcard succeeded first try. Oracle side not re-run (committed references). Only bios-r1 run
+     (the table with cases 93-95); the other 6 XBIOS tables of the xbios-full run were not repeated.
+RESULT:
+  tosdiff tt:       30 of 147 cases differ (xbios-full run: 32)   tosdiff falcontc: 35 of 147 differ (xbios-full: 37)  -> drop by 2 per profile
+  Case-set diff against measurements/measurement-2026-11-12-xbios-full/runs/bios-r1/tosdiff-*.txt: only-old = {93, 94} on both profiles; only-new = {} on both
+  -> cases 93, 94 now EQUAL on tt and falcontc (EXACT.W, so equal to oracle 0x0FFF / 0x0F00); case 95 (Setcolor(15,-1)) not in either DIFF list, stays EQUAL;
+  no case that was EQUAL before differs now. tosdiff --validate exit 0.
+INPUTS (gitignored; sha256)
+  kernel8.img   29b82e0985fd6e5392c62c3e6d7d9e1ee85f73b4735b0e6bc6009af25eba71a1
+  kernel ELF    f70484481f438f786f43a3caad09b902c2ab4c93ad3ce9495cd4cab54893bc5e
+  DUMPBIOS.NAP  74a3e71a8b88c0e89b2136382e042cfba8393c838a1008f17a216c7aae7d2990
+  tosdiff       b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+  NEWTOS BIN    runs/bios-r1/BIOS.BIN 5b368f1c6f07830cd92881768c99e8384bad5aea41ccd7d4f83fb8ebcb4c85a2
+  card image    dc8ad2df609de3c9f3f9ab9ebe5fad0f80123de806100b31dbd5e759bba78719 (after run a04cb14cf639fffcb47d626896fdcd65b07e93fda18384414452ac88b537a5b7); deleted by the runner
+  Manifest: runs/bios-r1/card.img.manifest; optional_missing none   (verbatim)
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: none (main tree); target-agents/agent-a3cfcad530b35e6af not created (0 B). This run dir: 604K.
+Open: none for this scope (QEMU raspi4b only; Setcolor is a pure shadow-table change, no rendering/HW-only path claimed).
