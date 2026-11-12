@@ -2,7 +2,7 @@
 
 Status: OPEN (2026-11-12) | Priority: P2
 
-Type: research (spec and ADR-017 amendment), then developer. Owner decision 2026-11-12 ("Muessen wir fixen das es
+Type: research (spec and ADR-017 amendment), then developer. Owner decision 2026-11-12 ("Müssen wir fixen das es
 korrekt ist": we have to fix it so it is correct), from the full XBIOS run
 `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`.
 
