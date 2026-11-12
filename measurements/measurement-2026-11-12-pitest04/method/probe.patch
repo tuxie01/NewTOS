@@ -1,0 +1,7 @@
+Temporary probe, own tree only (inserted in kernel/src/lib.rs before the
+"if (shiftbits & MODE_CTRL)" comment in the boot path, reverted afterwards):
+ svc #1 with x8=0x154 (Ssystem), x0=2023 (and 2024), x1=0, x2=0;
+ kprintln!("[pitest04-probe] Ssystem(2023)={} stride_bytes={} Ssystem(2024)={}",
+           ret, vdi_backend::stride_bytes(), r24);
+Commands (cwd = wt): cargo xtask build --board {qemu-virt,rpi4};
+ gtimeout 60 cargo xtask run --board {qemu-virt,rpi4} --headless

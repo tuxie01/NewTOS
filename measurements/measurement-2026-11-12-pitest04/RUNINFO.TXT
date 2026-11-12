@@ -1,0 +1,35 @@
+PITEST04 tester run (phase test), commit 17ab1e29a, branch pitest04. Tester agent-a8cf03126b7fa8cf2.
+Scope: Ssystem mode 2023 S_NEWTOS_SCRPITCH returns the kernel's framebuffer pitch on both boards.
+host_clang: not recorded (no SD image built; no image booted, kernel-only headless runs).
+
+Clone: target-agents/agent-a8cf03126b7fa8cf2/wt  (size: 6,1G, whole agent dir, cleaned by accept/land)
+
+Commands and outcomes
+1. cargo xtask build --board qemu-virt (clean commit): OK (kernel 93 warnings, tos-api 64).
+2. cargo xtask build --board rpi4 (clean commit): OK (same warning counts).
+3. cargo clippy -p tos-api --all-targets: 118 warnings = developer's HEAD-before value 118, no new ones.
+4. cargo xtask test (full): 2459 passed / 0 failed / 7 ignored (summed over all "test result" lines);
+   baseline docs/STATUS.md 2459/0/7. rc=0. serial/host-tests.log
+5. Temporary probe (method/probe.patch) built into both kernels, not committed, reverted
+   (git checkout kernel/src/lib.rs in my tree; tested tree is clean again for steps 1-4).
+   cargo xtask run --board qemu-virt --headless (gtimeout 60, killed by timeout rc=124 as the desktop idles):
+     [pitest04-probe] Ssystem(2023)=7680 stride_bytes=7680 Ssystem(2024)=-32
+   cargo xtask run --board rpi4 --headless (same):
+     [pitest04-probe] Ssystem(2023)=2560 stride_bytes=2560 Ssystem(2024)=-32
+   2023 equals the kernel's vdi_backend::stride_bytes() on both boards; 7680 = 1920*4, 2560 = 640*4
+   (no padding on QEMU, so the padded-pitch case is covered only by the host test with 1984*4).
+   2024 (first free NewTOS number) -> -32 (EINVFN), as the ticket states.
+   Both boots reach "[desk] desktop up (0 drives)", 0 "exception" lines (grep -ci). serial/qemu-virt.log, serial/rpi4.log
+   Both of these boots ran with the probe kernel; the baseline boot without probe was not separately
+   run (the probe is additive and runs before the console init; no fixed PASS lines exist in this boot,
+   it ends at the desktop).
+
+Failures: none.
+Drove: host tests, both builds, 2023 value through the real trap dispatcher on both boards, 2024 error.
+Could not verify / not driven: screendump (no rendering change, none taken); SD/C: (not needed); padded pitch
+  on a real VideoCore with pitch != width*4 (QEMU raspi4b reports no padding).
+Real-Pi4-only: 1 item: Ssystem(2023) vs. the mailbox-reported pitch on silicon (could differ from width*4).
+Out-of-scope observations: none.
+Manifests: no image booted (kernel-only run), no <image>.manifest; optional_missing: n/a.
+Gitignored outputs cited: kernel8.img (rpi4 debug build of the clean commit) target-agents/agent-a8cf03126b7fa8cf2/wt/target/aarch64-unknown-none-softfloat/debug/kernel8.img, 1,6M, sha256 63bc5cb334b0cebedbf6ea5b4eebaab011265621c1509f986e06ad821ceb22bf
+  (the probe kernels were overwritten by the clean rebuild; serial logs are copied here).
