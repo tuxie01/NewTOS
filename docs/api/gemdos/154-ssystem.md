@@ -178,12 +178,60 @@ NewTOS identity, but that is a separate decision.
 
 Approved 2026-10-23, **built 2026-10-23** (kernel part, `S_NEWTOS_USBSNAP` in
 `tos-api/src/gemdos/ssystem.rs`, store and encoder in
-`kernel/src/drivers/usb/snapshot.rs`). The first free number is now **2023**;
-`tos-api/tests/gemdos_ssystem_sysinfo.rs` and `gemdos_ssystem_cpuinfo.rs` pin it.
+`kernel/src/drivers/usb/snapshot.rs`). Mode 2023 (below) took the first free
+number, so it is now **2024** (PITEST04); `tos-api/tests/gemdos_ssystem_sysinfo.rs` and
+`gemdos_ssystem_cpuinfo.rs` pin it (the developer of PITEST04 moves both pins).
 
 | Mode | Value | Group | Notes |
 |------|------:|-------|-------|
 | `S_NEWTOS_USBSNAP` | 2022 | input / USB | (USB01 step 2): snapshot of the enumerated USB devices into a caller buffer — device list with hub/port route, speed, VID/PID, chosen driver role + rejection reason, raw device/configuration/HID-report descriptors, per-device ring of raw interrupt reports, optional timed mute of the input decoder. Versioned little-endian buffer, `Ssystem(2022, buf, len)` with a 32-byte request header at `buf`; `E_OK` / `ERROR` (no USB controller, e.g. `raspi4b`) / `EINVAL`. Full spec: [`../usb/usb-snapshot.md`](../usb/usb-snapshot.md) |
+
+### NewTOS-own mode 2023 — the framebuffer pitch (PITEST04)
+
+Specified 2026-11-12 (owner decision, `TASK/PITEST04.md`); **not built yet**.
+A sibling of 2013-2015 (the display group), but numbered after the USB snapshot
+because 2016-2022 are taken.
+
+| Mode | Value | Group | Notes |
+|------|------:|-------|-------|
+| `S_NEWTOS_SCRPITCH` | 2023 | display | bytes per scan line of the visible framebuffer, **bytes**, as the kernel uses it (the distance from one line to the next, which may exceed `width * bpp / 8`). `Ssystem(2023)` returns it directly in `x0`; `ERROR` while no display is up. |
+
+- **Unit and meaning.** Bytes, not pixels: `ScreenInfo::stride_bytes` is "Bytes per
+  scan line (the hardware pitch). May exceed `width * bpp / 8`"
+  (`tos-api/src/host.rs:576@stride_bytes`). Kernel source of the value:
+  `kernel/src/host_env.rs:302@stride_bytes` = `vdi_backend::stride_bytes()` =
+  `active_fb().stride_px() * 4` (`kernel/src/vdi_backend.rs:1051@stride_bytes`).
+  Do not derive it from 2013 and 2015.
+- **`raspi4b` (`board-rpi4`).** The pitch the VideoCore reports in the mailbox "get pitch"
+  tag (`kernel/src/drivers/bcm2711/framebuffer.rs:274@pitch`, request slot
+  `I_PITCH` at `kernel/src/drivers/bcm2711/framebuffer.rs:94@I_PITCH`), stored as `pitch / 4` pixels
+  (`kernel/src/drivers/bcm2711/framebuffer.rs:596@stride_px`). Return value = that
+  pitch rounded down to a multiple of 4 (inferred: integer division at `:596`; the
+  firmware's pitch for XRGB8888 is a multiple of 4 in the observed case, 2560 at 640 wide,
+  `docs/api/xbios/02-physbase.md`). Not a rule that it equals `width * 4`.
+- **`qemu-virt` (`board-qemu-virt`).** `stride_px()` returns the width
+  (`kernel/src/drivers/qemu_virt/ramfb.rs:142@stride_px`), published at
+  `kernel/src/drivers/qemu_virt/ramfb.rs:207@width`; the ramfb config is programmed with stride `WIDTH * 4`
+  (`kernel/src/drivers/qemu_virt/ramfb.rs:193@stride`). Return value = `width * 4`.
+- **Before the display is up.** `Host::screen()` is `None` when
+  `vdi_backend::available()` is false (width or height 0,
+  `kernel/src/vdi_backend.rs:1033@available`; `kernel/src/host_env.rs:289@screen`).
+  The mode answers `ERROR`, exactly as 2013-2015 do (board table row below;
+  `tos-api/src/gemdos/ssystem.rs:186@S_NEWTOS_SCRWIDTH`, where `None` becomes
+  `ERROR`). Hostless (unit test): `ERROR`.
+- **Unsupported case.** No other error code: "fact not known" is `ERROR`, as for every
+  system-information mode. A kernel without the mode answers `EINVFN`
+  (`tos-api/src/gemdos/ssystem.rs:146@EINVFN`).
+- **Range.** The result is a `Long`; a pitch above `i32::MAX` is not reachable
+  (inferred: `size_bytes` is a `u32` of one screen; no mode in use approaches it).
+- **FreeMiNT conflict check.** `sys/mint/ssystem.h` (@ `f906416`) uses 0-29, 100, `0x54f8`
+  and reserves 900-999 and 1000-1999 (`references/freemint/sys/mint/ssystem.h:74`, `:83`);
+  the dispatcher's highest case is 3000 (argument in "Why the number block is free").
+  No `SCRPITCH` name in the header (grep, this run). No conflict found.
+- **Dispatcher note for the developer** (not a contract): the scalar arm is the range
+  `S_NEWTOS_CPUMEAS..=S_NEWTOS_SERIAL | S_NEWTOS_INPUTMODE`
+  (`tos-api/src/gemdos/ssystem.rs:141@S_NEWTOS_CPUMEAS`); 2023 lies outside it and needs
+  its own arm into `sysinfo_value`.
 
 ### NewTOS-own modes 2090, 2091 — debug features only (TASK/HW08)
 
@@ -416,14 +464,14 @@ Where a fact is not known on a board, the answer is `ERROR` — the same rule as
 | 2009 | KiB | 0 | 0 |
 | 2010 | percent, `ERROR` with `bcache=0` | `ERROR` | `ERROR` |
 | 2011, 2012 | KiB | KiB | `ERROR` until `bdos::mem::init` |
-| 2013–2015 | framebuffer | framebuffer if a display is up | `ERROR` |
+| 2013–2015, 2023 | framebuffer (2023: pitch, bytes) | framebuffer if a display is up | `ERROR` |
 | 2016 | firmware answer | `ERROR` | `ERROR` |
 | 2017 | 0–3 | 0–3 | `ERROR` |
 | 2018 | 0 / 1 | 1 | `ERROR` |
 | 2019 | string | string | `ERROR` |
 | 2020 | 0 / 1 | 0 / 1 | `ERROR` |
 
-Tests: `tos-api/tests/gemdos_ssystem_sysinfo.rs` (2023 answers `EINVFN`; 2021 is
+Tests: `tos-api/tests/gemdos_ssystem_sysinfo.rs` (until PITEST04 is built, 2023 answers `EINVFN`; 2021 is
 `S_NEWTOS_RESET`, 2022 the USB snapshot — on a host without a USB stack a
 well-formed 2022 request is `ERROR`); the snapshot itself:
 `tos-api/tests/gemdos_ssystem_usbsnap.rs` (return values of
@@ -721,3 +769,10 @@ fix, not a spec correction:
    the `mode == -1` probe) are in NewTOS scope for now; every other mode →
    `ENOSYS`. Confirm no early consumer needs `S_OSVERSION`/`S_OSNAME` (identity)
    or `S_SETEXC`/`S_SECLEVEL` before Phase-08.
+
+## Open points
+
+- Inferred: the `raspi4b` pitch is a multiple of 4 (`pitch / 4` truncates at `kernel/src/drivers/bcm2711/framebuffer.rs:596@stride_px`); only the 640-wide observation backs it.
+- Inferred: no pitch reaches `i32::MAX`.
+- Mode 2023 is specified, not built; the tests pinning 2023 as free (`tos-api/tests/gemdos_ssystem_sysinfo.rs:308@the_block_ends_at_2020_and_2023_is_the_first_free_number`, `tos-api/tests/gemdos_ssystem_cpuinfo.rs:191@mode`) move to 2024 with the build.
+- Out of scope: the rest of this file was not re-audited; the 2022 row is untouched.
