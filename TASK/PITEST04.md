@@ -1,6 +1,6 @@
 # PITEST04 — Ssystem key for the framebuffer's bytes per line
 
-Status: IMPLEMENTED (2026-11-12) | Priority: P2 | Commit: self | Missing: tester run on QEMU raspi4b and qemu-virt; pi: value recorded in the PITEST03 Pi run
+Status: DONE (2026-11-12) | Priority: P2 | Commit: 466e721d3 | Receipt: PITEST04-STATUS-DONE.MD
 
 Title: Ssystem key for the framebuffer's bytes per line
 
