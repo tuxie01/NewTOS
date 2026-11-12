@@ -503,6 +503,14 @@ to you). The lead decides the rest:
   The PWM FIFO takes duty-cycle words, not PCM, so every sample is converted anyway; either order costs the same.
   The form of the switch (a `Setmode` bit, a `Soundcmd` mode, or an existing convention such as GSXB) is settled in
   the spec before SND05 builds it: look for an existing convention first, invent bits only if there is none.
-- **Q-N5, Q-N6:** decided after H1 (the measured PWM clock decides the reachable rates and the cookie).
+- **Q-N5 (owner, 2026-11-12, after H1):** `_SND` = `0x14` as drafted in §5 (owner: "ok machen wir so", ok, we do it
+  that way). The H1 result does not change the draft. The ADR-012 amendment text of §5 goes into `docs/MEMORY.md` with
+  [SND05](SND05.md), in the commit that creates the cookie.
+- **Q-N6 (owner, 2026-11-12, after H1):** no resampling; every rate is set directly through the PWM range register,
+  computed from the measured clock, never from the requested one. H1 on the real Pi: `clk_pwm` 107 143 019 Hz
+  (`measurements/measurement-2026-11-12-snd03-pi/RUNINFO.TXT`). The rates are those the spec maps the prescale values
+  to (EmuTOS maps Falcon prescales to the four STe rates, `docs/api/xbios/_dmasound-group.md` §4.7); integer RNG
+  hits each within 0.003 % (6258 Hz: RNG 17121; 12517: 8560; 25033: 4280; 50066: 2140; lead's arithmetic).
+  Same owner answer.
 - **Q-N7 (lead):** approved: [SND03](SND03.md) (hardware probe H1-H5), [SND04](SND04.md) (oracle cases O1-O5),
   [SND05](SND05.md) (implementation: DMA ring, PWM jack backend, XBIOS 0x80-0x8D), after SND03 and SND04.

@@ -1,0 +1,18 @@
+measurement-2026-11-12-snd03-pi-restore -- the owner's Pi card back to its normal kernel after the SND03 probe run
+=================================================================================================================
+Date: 2026-11-12. No measurement: the card's C:\kernel8.img goes back from the probe kernel (kerns03.img, run
+measurements/measurement-2026-11-12-snd03-pi/RUNINFO.TXT) to kern1112.img. Owner's word: "ok machen wir so und die
+karte steckt wieder im mac" (ok, we do it that way, and the card is back in the Mac), answering the lead's plan to
+restore the old kernel8.img. Host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (card manifest).
+
+Kernel source: measurements/measurement-2026-11-12-pi-checks/kernels/KERNELS.TXT (kern1112.img
+  ac44f0b2d1fc70fbf76c00daeb280f761f5b36f3a1b9323f5a0342355dbf467e, commit f1fb97b59, features none), the same bytes
+  as measurements/measurement-2026-11-12-snd03-pi/card-before/C/kernel8.img.
+Commands (dry run first: 0 new, 1 changed C:\kernel8.img, 1 same C:\kern1112.img, 121 extra):
+  tools/sync-card.sh sync --list method/snd03-card.list --boot /Volumes/BOOT BOOT --drive C /Volumes/BOOT BOOT
+    --kernels measurements/measurement-2026-11-12-pi-checks/kernels --active kern1112.img [--write --run-dir <run>]
+Result: written and verified, read back after remount. card.manifest (= C:\CARDMAN.TXT, sha256
+  3e81990fe0c7a725189aac0e8acde1d7e89f9df7779d498603ff30f3c811bdc0); optional_missing none.
+  card-before/C/kernel8.img = the probe kernel (7b9ef3df...), gitignored.
+Card after: C:\kernel8.img ac44f0b2... (kern1112.img); C:\kerns03.img 7b9ef3df... stays for the open hearing test
+  (SND03): copy it to kernel8.img with this tool when a device with a 3.5 mm jack is at hand.
