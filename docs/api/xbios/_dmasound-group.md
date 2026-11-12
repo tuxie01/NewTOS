@@ -61,6 +61,17 @@ body copied, constants/register tables as data, every statement with
 > (GPIP7, vector `0x13C`), not channel 7 / vector `0x11C` (§4.4, S6; marked
 > "(corrected 2026-11-12, measured)").
 
+> **Spec step for TASK/SND05 (researcher, 2026-11-12).** (1) §9.3 now settles the form
+> of the Q-N4 byte-order switch (owner decision: big-endian by default, a NewTOS switch
+> for native little-endian) as a **draft for owner approval**: it reuses the GSXB
+> `Soundcmd(SET16BITFORMAT, ...)` number and flag constants that the SDK header already
+> defines; nothing is invented except the NewTOS-side semantics of that call, which no
+> pinned source states. (2) The wrong `Setbuffer` -> `SOURCE_AD` mapping of
+> `docs/hardware/pwm-audio.md` §9 is corrected there (the DMA source is a staging ring
+> that the CPU converts into; §9.1.4 point 1 below was already right and now only
+> points at the corrected note). (3) The hardware implementation contract for the
+> developer is `docs/hardware/pwm-audio.md` §12.
+
 ---
 
 ## 0. The result up front
@@ -647,8 +658,9 @@ The byte order of the 16-bit values is that of the m68k side (big-endian) — no
 stated there, but follows from the target machine. **Added 2026-11-12:** the SDK's
 `falcon.h` overlay says "big-endian" explicitly for the extended modes
 (`sdk/libc/overlay/include/mint/falcon.h:380@MODE_MONO16`: "16 bit mono,
-big-endian"), which supports the same reading for the base modes. **For NewTOS an
-open contract question, see §9.3.**
+big-endian"), which supports the same reading for the base modes. **For NewTOS the
+byte order is decided by the owner (2026-11-12): big-endian by default, switch form
+proposed in §9.3.1 (draft).**
 
 ---
 
@@ -957,8 +969,10 @@ Nothing here is from memory; each line names the table.
    8-bit stereo is 2 bytes per frame; the FIFO needs 8 bytes per frame. A DMA source
    buffer must be a staging area of 32-bit words produced from the PCM by the CPU
    (scale to `RNG`, bias signed to unsigned, widen, interleave `L R`). **This
-   corrects the mapping table in `docs/hardware/pwm-audio.md` §9**, which maps the
-   `Setbuffer` start/end directly onto `SOURCE_AD`/`TXFR_LEN`. Circle's PWM sound
+   is the corrected model, and `docs/hardware/pwm-audio.md` §9 now says the same**
+   (corrected 2026-11-12; until then its table mapped the `Setbuffer` start/end
+   directly onto `SOURCE_AD`/`TXFR_LEN`, which is wrong: the DMA reads the
+   kernel's staging ring, never the program's buffer). Circle's PWM sound
    confirms the staging design: its chunks are `u32` words and the chunk size is
    asserted against the Lite length limit (`references/circle/lib/sound/dmasoundbuffers.cpp:92-96`;
    tertiary, GPLv3 — read, not copied).
@@ -1093,10 +1107,106 @@ memory of the caller is a separate contract point (EmuTOS does nothing, `:785`).
 §4.8: signed and interleaved is proved; the **byte order of the 16-bit values** is
 not proved by EmuTOS. On m68k it is big-endian, and the SDK header's "big-endian"
 on the extended modes (§4.8) points the same way; a native AArch64 LP64 producer
-writes little-endian. **Open contract question (Q-N4)** — a wrong guess sounds like
-noise, not like an error, hence the explicit mark. Note for the options: the PWM
-path converts every sample on the CPU anyway (§9.1.4, point 1), so reading either
-byte order costs one byte swap per sample, not an extra pass.
+writes little-endian. A wrong guess sounds like noise, not like an error, hence the
+explicit rule below. The PWM path converts every sample on the CPU anyway (§9.1.4,
+point 1), so reading either byte order costs one byte swap per sample, not an extra
+pass (arithmetic, not measured).
+
+**Decision (owner, 2026-11-12, Q-N4; `TASK/SND01.md` "Decisions 2026-11-12"):**
+16-bit samples are **big-endian by default**, as on the Falcon, so sample files and
+unchanged Atari programs work as they are; a **NewTOS switch** selects native
+little-endian samples for a ported program that computes its samples in C. 8-bit
+samples have no byte order and are unaffected. The form of the switch follows.
+
+#### 9.3.1 Form of the switch — DRAFT FOR OWNER APPROVAL
+
+**Search for an existing convention (done 2026-11-12), result:**
+
+| Place | What it has | Cite |
+|---|---|---|
+| EmuTOS | no format or byte-order control at all; `Soundcmd` modes 7 and up fall out of the `switch` to `return 0` (no error, nothing set); `Setmode` accepts 0-2 only and answers `EBADRQ` above | `bios/dmasound.c:302` (Falcon branch), `:336` (STe branch), `:408-409` (`Setmode`) |
+| FreeMiNT `sys/mint/falcon.h` | no byte-order constants; the Falcon driver (`sys/xdd/audio/`) has no endian handling (grep for `endian` finds nothing) | `references/freemint/sys/mint/falcon.h:195-420`, `references/freemint/sys/xdd/audio/` |
+| **GSXB / Milan extension (SDK header, `SND_EXT`)** | **an existing convention.** `Soundcmd` mode `SET16BITFORMAT = 9` ("16 bits format") and `Sndstatus` command `SND_QUERY16BIT = 9`; format flag bits `SND_FORMATSIGNED` (bit 0), `SND_FORMATUNSIGNED` (1), `SND_FORMATBIGENDIAN` (2), `SND_FORMATLITTLEENDIAN` (3); `SND_INQUIRE = -1`; extended `Setmode` values 3-7 are all "big-endian" modes | `sdk/libc/overlay/include/mint/falcon.h:221@SET16BITFORMAT`, `:327@SND_QUERY16BIT`, `:352@SND_FORMATSIGNED`, `:354@SND_FORMATBIGENDIAN`, `:355@SND_FORMATLITTLEENDIAN`, `:364@SND_INQUIRE`, `:380@MODE_MONO16` (the same lines in `sdk/libc/mintlib/include/mint/falcon.h:221,354,355`) |
+
+What the header gives is **names and numbers only**. Which `data` a
+`Soundcmd(SET16BITFORMAT, data)` takes, what it returns, and that `data` is built
+from the `SND_FORMAT*` flags, appear in **no pinned source** (no FreeMiNT, EmuTOS
+or SDK code uses them; the only hits are the header definitions). Reading them as
+"mode 9 takes a `SND_FORMAT*` mask, `-1` inquires" is an **inference** from the
+names and from the comment "Return values for SND_QUERY{8,16,24,32}BIT" above the
+flags (`sdk/libc/overlay/include/mint/falcon.h:350@SND_FORMATSIGNED`).
+
+The header marks mode 9, the `SND_QUERY*` commands and the modes 3-7 "Only
+available with `SND_EXT`" (`:217@SETRATE`, `:320@SND_QUERYFORMATS`, `:378@MODE_MONO16`), i.e. a GSXB-aware
+program reads `_SND` bit `0x20` before using them. The owner-approved `_SND` value
+`0x14` has **no** `0x20` (SND01 Q-N5, `TASK/SND05.md` "ADR-012 amendment text"),
+because NewTOS does not implement the rest of GSXB (`NSoundcmd`, free rates,
+24/32 bit). So the switch below is **not** announced by the cookie; a program that
+knows NewTOS asks by calling.
+
+**Proposed minimal form (inference-based draft; what is invented is marked):**
+
+1. **Switch:** `Soundcmd(9, data)` (`SET16BITFORMAT`), `data` = `SND_FORMATBIGENDIAN`
+   (4) or `SND_FORMATLITTLEENDIAN` (8), optionally or-ed with `SND_FORMATSIGNED` (1).
+   The call sets the byte order of 16-bit samples read from a `Setbuffer` buffer
+   (`Setmode(STEREO16)`), and returns the **new current value**, like every other
+   `Soundcmd` set (§3/0x82). Default after start: `0x05` (signed, big-endian).
+2. **Inquiry:** `Soundcmd(9, -1)` (`SND_INQUIRE`) returns the current value without
+   changing it.
+3. **Invalid `data`** (neither or both of bits 2 and 3, `SND_FORMATUNSIGNED` set, any
+   other bit): nothing is set, the current value is returned, **no error code** —
+   the same rule as the existing `Soundcmd(SETPRESCALE, n)` for an out-of-range value
+   (`bios/dmasound.c:347-356`, §3/0x82) and as `Soundcmd`'s "never returns an error"
+   (`:302`, `:336`). Unsigned samples are not offered (the owner decided byte order
+   only).
+4. **Presence test for a program:** the result of `Soundcmd(9, -1)` is non-zero on
+   NewTOS (`0x05` or `0x09`) and **`0` on EmuTOS** and on every system without the
+   extension, because EmuTOS answers any unknown `Soundcmd` mode with `0`
+   (`bios/dmasound.c:302`/`:336`), nothing set. That makes the call a safe probe
+   on the oracle. **Do not** use `Sndstatus(SND_QUERY16BIT)` for the probe: EmuTOS
+   reads any non-zero `reset` as "reset" and clears `channel_attenuation` on a
+   Falcon (`bios/dmasound.c:759-764`), so the probe would change the sound state
+   there.
+5. **Scope:** the sound system's single state (the registers of §4.1 are global
+   too; `Locksnd` is advisory, §9.7). It applies to buffers **played after** the
+   call; a frame already queued by `Setbuffer` is converted with the order that is
+   current when its samples are converted (a consequence of the CPU conversion in
+   the 200 Hz tick, `docs/hardware/pwm-audio.md` §12.8 — the developer decides
+   whether to latch the order at `Setbuffer`; **open point**, below).
+6. **`Sndstatus(1)`** does not touch it (EmuTOS' rule for the oracle: the mode
+   registers stay, §3/0x8C and §9.1.6 O4).
+
+**Alternatives that were looked at and rejected:**
+
+* *A `Setmode` value (3 or above).* EmuTOS rejects it with `EBADRQ`
+  (`bios/dmasound.c:408-409`), which would make a clean probe, but the extended
+  `Setmode` values 3-7 are **taken** by GSXB with the meaning "big-endian 16/24/32
+  bit mono/stereo" (`sdk/libc/overlay/include/mint/falcon.h:380@MODE_MONO16` to
+  `:384@MODE_MONO32`); a NewTOS meaning on the same numbers would collide with them.
+* *A high bit in the `Setmode` or `Soundcmd` mode word.* Would be invented: no
+  convention, no precedent; EmuTOS would reject it (`mode > 2`) or ignore it
+  (`switch` default), so it is detectable, but it buys nothing over the existing
+  mode 9.
+* *Little-endian as the default.* The owner decided against it: unchanged Atari
+  programs and sample files are big-endian.
+
+**Open points for the owner (not decided here):**
+
+* **Q-N4a Form:** accept `Soundcmd(9, ...)` as above (reuse of the GSXB number,
+  NewTOS-side semantics inferred), or pick another form.
+* **Q-N4b Lifetime:** if a program switches to little-endian and ends, the next
+  program (an unchanged Atari program) would get noise. The proposal is to
+  **reset to big-endian when the process that set it terminates** (a NewTOS
+  rule, no EmuTOS counterpart — EmuTOS has no process-bound sound state), and
+  otherwise to leave it to the program. Alternative: per-process state; the
+  sound device then holds the order of the process that owns the playing buffer
+  (more bookkeeping, no cross-talk).
+* **Q-N4c Latching:** convert a queued frame with the order current at
+  `Setbuffer` time (latched per frame), or at conversion time. Latched per frame
+  is the less surprising one; the cost is one flag in the frame record.
+* **COMPATIBILITY:** `Soundcmd(9, -1)` answers `0` on the oracle and `0x05` on
+  NewTOS — a NewTOS extension, to be listed as such in `docs/COMPATIBILITY.md`
+  when built (not an unintended difference).
 
 ### 9.4 Recording
 
@@ -1116,8 +1226,11 @@ otherwise programs look for a DSP.
 
 The Falcon rate table (§4.7) is tied to a 25.175 MHz clock. Which rates a PWM or HDMI
 output on the Pi hits is **Track B** and expressly not in this spec
-(`TASK/SND01.md` step 2, `docs/hardware/pwm-audio.md` §5.4-§5.5). A backend must
-either hit exactly or resample; which of the two the hardware research decides.
+(`TASK/SND01.md` step 2, `docs/hardware/pwm-audio.md` §5.4-§5.5). **Decided
+(owner, 2026-11-12, Q-N6, `TASK/SND01.md` "Decisions 2026-11-12"):** no resampling;
+every rate is set directly through the PWM range register, computed from the
+measured `clk_pwm`, never from the requested one (`docs/hardware/pwm-audio.md`
+§12.2).
 
 ### 9.7 `Locksnd` is advisory
 

@@ -18,6 +18,10 @@
 > an appendix. Whoever needs a number that is listed there measures it or
 > procures a source — does not guess it.
 >
+> **§12 is the implementation contract for the developer** (TASK/SND05):
+> clock, GPIO, PWM, DMA channel, cache, interrupt and ring sizing, each
+> item marked cited / measured / inferred / not measured.
+>
 > **Real-Pi measurements (2026-11-12).** Facts marked **MEASURED** come
 > from the owner's run of the SND03 probe on a real Pi 4:
 > `measurements/measurement-2026-11-12-snd03-pi/RUNINFO.TXT` (values
@@ -40,9 +44,11 @@
    therefore **not** be refilled "from an interrupt"; exactly two ways
    remain: **refill from a foreign timer** (§7.2) or **DMA** (§7.3).
 3. **There is no DMA driver in this tree.** The DMA path is fully
-   documented in the datasheet and fits the Falcon buffer contract
-   strikingly well (§9), but it is **additional work**: a channel driver
-   with control blocks, bus pointers and GIC hookup.
+   documented in the datasheet. It carries the Falcon buffer contract
+   **through a CPU-converted staging ring**, not from the program's buffer
+   (§9, §12.1), and it is **additional work**: a channel driver with control
+   blocks, bus pointers, cache maintenance and (for the interrupt variant)
+   GIC hookup.
 4. **The load is real on the timer path.** At 49 kHz stereo the FIFO
    drains in **651 µs**; that is at least **1537 visits per second**
    against today's 200 Hz system tick, and about **98 000 peripheral
@@ -1075,6 +1081,12 @@ per stereo frame → **32 frames**. Hence
 That is the actual finding of this section: **between the two ways lie
 about three orders of magnitude of interrupt load.**
 
+> **Note (2026-11-12): the 200 Hz tick is enough for the DMA path.** The
+> "today's tick is not enough" bullet above is about the CPU writing
+> `FIF1` directly (the timer path). With a DMA ring the CPU only refills a
+> staging ring once per tick and the DMA drains it at the PWM rate; the ring
+> size, not the FIFO depth, then sets the slack (§12.8, arithmetic).
+
 ---
 
 ## 9. How this maps onto the spec's buffer contract
@@ -1083,27 +1095,47 @@ about three orders of magnitude of interrupt load.**
 > `docs/api/xbios/_dmasound-group.md` §4 on one side and from §3/§7.3 of
 > this note on the other. It is **not** a hardware statement and **not**
 > a decision; the lead takes that.
+>
+> **Corrected 2026-11-12.** The first version of this table mapped the
+> `Setbuffer` start and end address straight onto the control block's
+> `SOURCE_AD` and `TXFR_LEN`. **That was wrong.** A PWM FIFO word is one
+> duty-cycle value in `0…RNG` (Table 157 text, Table 158 text, §3.4), not a
+> PCM sample: a Falcon buffer (8 or 16 bit, signed, big-endian by default,
+> 2 or 4 bytes per frame) cannot be the DMA source as it stands. The correct
+> model is:
+>
+> **program buffer → CPU conversion (sample format and byte order → duty
+> words `0…RNG`, `L R` interleaved, 8 bytes per stereo frame) → kernel
+> staging ring → DMA channel (control blocks chained over the ring) →
+> `FIF1`.**
+>
+> The DMA never reads the program's buffer. `SOURCE_AD` and `TXFR_LEN` in a
+> control block describe the **ring**. A DMA **Lite** channel (7-10) moves at
+> most **65 535 bytes per control block** (`TXFR_LEN` is 16 bits, Table 48),
+> i.e. 16 383 words; a full channel 0-6 has 30 bits (Table 43); either limit
+> bounds a ring half, not a program frame. Source of the model: datasheet
+> Tables 157/158 and `docs/api/xbios/_dmasound-group.md` §9.1.4 point 1;
+> circle's PWM sound uses the same structure (`u32` chunks,
+> `references/circle/lib/sound/dmasoundbuffers.cpp:92-96`, tertiary, read not
+> copied).
 
-| Spec contract (§4 there) | PWM + timer (§7.2) | PWM + DMA (§7.3) |
+| Spec contract (§4 there) | PWM + timer (§7.2) | PWM + DMA over a staging ring (§7.3, §12) |
 |---|---|---|
-| Start address, **exclusive** end address | software pointer; the hardware knows no buffer | `SOURCE_AD` + `TXFR_LEN` in the CB; length = `end − start` |
-| **Even** frame length | optional | `TXFR_LEN` in bytes, alignment freely selectable |
-| `SB_PLA_ENA` (one frame, then stop) | software state | `NEXTCONBK = 0` → "The DMA will stop (and clear the `ACTIVE` bit) … when `NEXTCONBK` is set to `0x0000_0000`" (§4.2.1.1) |
-| `SB_PLA_RPT` (endless loop) | software state | CB points to itself |
-| End-of-frame **interrupt** | **none from the PWM** (§7.1); only "timer notices it is done" | `TI.INTEN` → `CS.INT` → INTID 112+*n*. **A real end-of-frame interrupt.** |
-| `Buffptr` — running counter | software must count itself | `SOURCE_AD` is readable and kept up to date: "Source address for the DMA operation. **Updated by the DMA engine as the transfer progresses**" (§4.2, Table 41) |
-| 24-bit address limit of the Falcon | not applicable (internals) | replaced by the 1 GiB window (§7.3) — a different limit, but a real one |
+| Start address, **exclusive** end address | software pointer into the program's buffer | a **kernel frame record** (start, end, loop flag, current index). Not in any control block |
+| **Even** frame length | optional | the converter works per frame (8 bytes of ring per stereo frame); the control blocks cover ring halves of fixed size |
+| `SB_PLA_ENA` (one frame, then stop) | software state | software state: the converter stops feeding the frame and appends silence (mid-level words). A control block with `NEXTCONBK = 0` would stop the channel at the end of a **ring half** (§4.2.1.1), not at a program frame; the ring is cyclic, so the stop is a channel reset after the last audible word |
+| `SB_PLA_RPT` (endless loop) | software state | software state: the converter restarts at the frame start; the control-block ring stays cyclic |
+| End-of-frame **interrupt** | **none from the PWM** (§7.1); only "timer notices it is done" | D-tick: found by polling in the 200 Hz tick, up to 5 ms late. D-irq: `TI.INTEN` on a ring-half block raises `CS.INT` → INTID 112+*n* **per ring half**, not per program frame; the program frame end is mapped by software from the frame record |
+| `Buffptr` — running counter | software must count itself | `SOURCE_AD` (readable, "Updated by the DMA engine as the transfer progresses", Table 41) is the position in the **ring**; `CONBLK_AD` read returns the active block (Table 39). Software maps the ring position back to the program buffer through the frame record. The DMA read position runs ahead of the audible sample by at most the FIFO content (inference: FIFO depth 64 words, measured, §3.5) |
+| 24-bit address limit of the Falcon | not applicable (internals) | not applicable to the program's buffer (the CPU reads it). The 1 GiB legacy window (§7.3) applies to the **ring and the control blocks** — kernel memory — a constraint for the kernel's allocation of those, not for `Setbuffer` |
 
-**The point that stands out here:** the DMA path delivers the two things
-the spec marked as expensive or as a gap
-(`_dmasound-group.md` §9.1 "The end-of-buffer interrupt — the biggest
-gap", and §4.5 "Polling as a substitute"), **directly from documented
-hardware**: an end-of-frame interrupt and an accompanying source address
-counter. The timer path delivers neither without additional bookkeeping.
-That is an argument that belongs on the table before the order decision
-— the spec had initially noted `Buffptr` polling for NewTOS as the
-"realistic first playback path"; this note shows that the DMA path is
-technically the one closer to the contract, even if it is more work.
+**What the DMA path still gives**, derived from the above: pacing by the
+PWM's own DREQ (no CPU write per word, §8), and a per-chunk completion
+interrupt if wanted. **What it does not give**, contrary to the first
+version of this note: a program-frame end interrupt and a program-buffer
+pointer straight from hardware. The spec's end-of-buffer problem
+(`_dmasound-group.md` §9.1) is solved in software on either path; the DMA
+path changes the transport, not that.
 
 ---
 
@@ -1272,6 +1304,294 @@ rules remain unsourced until the ARM ARM is procured. (**Still open.**)
    is **not** backed with our pinned sources. Ticket of its own.
 2. **A DMA driver is missing from the tree as a whole**, not just for
    audio — `kernel/src/drivers/bcm2711/` has emmc, framebuffer, mailbox,
-   pl011. Whoever builds it for SND01 builds it for more.
+   pl011. (The argument "whoever builds it for SND01 builds it for more" is
+   void: HW05 is OBSOLETE, owner 2026-11-12, `TASK/SND01.md` "Spec review"
+   preamble; a DMA driver now serves sound only.)
 3. **`references/README.md`, checklist:** the ARM ARM stands there as
    TODO. For the DMA path it is needed.
+
+---
+
+## 12. Implementation contract for the developer (TASK/SND05)
+
+> **Status 2026-11-12 (researcher).** This section is the hardware-facing
+> contract that `TASK/SND05.md` builds against. Each item carries one of
+> four labels: **CITED** (datasheet table, firmware wiki, or EmuTOS source,
+> named), **MEASURED** (the SND03 runs: real Pi
+> `measurements/measurement-2026-11-12-snd03-pi/RUNINFO.TXT`, QEMU
+> `measurements/measurement-2026-11-12-snd03/RUNINFO.TXT`), **INFERRED**
+> (reasoned from the cited or measured facts; the developer may follow it
+> but it is not load-bearing as a fact), **NOT MEASURED** (nothing in any
+> run or source; the first Pi run of the SND05 code measures it).
+> **What no run has exercised:** a PWM-paced DMA transfer (`PERMAP = 1`,
+> `DEST_DREQ`, destination `FIF1`). H3 measured memory to memory
+> (`PERMAP = 0`); the tones were fed by the CPU. So every statement about
+> DREQ pacing is CITED or NOT MEASURED, never MEASURED. And **the tone was
+> never heard** (the owner had no 3.5 mm device, `RUNINFO.TXT` of the Pi
+> run): "plays without FIFO error" is measured, "sounds right" is not.
+> Datasheet = `references/datasheets/RP-008248-DS-1-bcm2711-peripherals.pdf`
+> (table numbers as in §1), firmware wiki =
+> `references/rpi4-boot/firmware-wiki-mailbox-property-interface.md`.
+
+### 12.1 The data path
+
+**CITED + INFERRED.** Program buffer (Falcon PCM) → CPU conversion in the
+200 Hz tick → kernel staging ring of 32-bit duty words (`L R` interleaved)
+→ one DMA channel, control blocks chained cyclically over the ring,
+`PERMAP = 1`, destination `FIF1` fixed → PWM1 FIFO → GPIO 40/41. The DMA
+never touches the program's buffer (§9). One word per channel per
+`RNG` period of `clk_pwm` (§5.4, Table 156/157/158 text). Both channels
+share one FIFO and one `RNG` value; `RPTL1/2` stay 0 (§3.5, `FIF1` text).
+
+### 12.2 Clock — mailbox, then use the measured rate
+
+1. **CITED (firmware wiki).** Clock id `0x0a` = PWM (wiki "Clocks" list).
+   Tags: "Get clock state" `0x00030001`, "Set clock state" `0x00038001`
+   (request: id, state with bit 0 = on), "Set clock rate" `0x00038002`
+   (request: id, rate, skip-turbo; "the clock rate may be clamped"), "Get
+   clock rate measured" `0x00030047` ("the true/actual clock rate (instead of
+   the last requested value … ) which respects clamping, throttling and
+   clock divider limitations").
+2. **MEASURED (real Pi, H1).** At kernel entry the firmware reports PWM
+   state 0 (off), rate 0, and no FIFO word is consumed in 200 ms: **the
+   driver must switch the clock on.** After "Set clock state on" (reply 1)
+   and "Set clock rate 100 000 000" (reply 100 000 000; the probe passed
+   skip-turbo = 1, `kernel/src/snd_probe.rs:1029@TAG_SET_CLOCK_RATE`) the firmware reports state 1,
+   rate 100 000 000, **measured 107 143 064 Hz**, and the FIFO timing gives
+   **107 143 019 Hz** (0.00004 % apart; `RNG 10 000`, 10 716 words in
+   27 004 279 counter ticks at `CNTFRQ` 54 000 000).
+3. **The contract (INFERRED from 2.).** The driver (a) sets state on, (b)
+   requests 100 MHz, (c) **ignores the reply value**, (d) reads "Get clock
+   rate measured" for id `0x0a` and uses **that** number as `f_pwm`, (e) does
+   this once at backend init, before the first `CTL` enable, and does not
+   re-request while the PWM runs (a cross-reference, iosoft article via
+   `TASK/SND01.md`, warns that changing the clock under a running PWM can
+   lock it up — a hypothesis, not a source). Never hard-code 107 143 019,
+   107 143 064 or 107 142 857: the last (750 MHz / 7) is an unsourced
+   interpretation (§5.2). The measured tag is the existing
+   `kernel/src/drivers/bcm2711/mailbox.rs:468@get_clock_rate_measured`;
+   "set clock rate" is `:488@set_clock_rate`; "set clock state" has no
+   NewTOS wrapper yet (only the probe's raw tag,
+   `kernel/src/snd_probe.rs:195@TAG_SET_CLOCK_STATE`).
+4. **Direct clock-manager writes: not used.** The CPRMAN register stays
+   unsourced (§5.2 way C, §10.1); the contract is way B only.
+5. **NOT MEASURED:** whether the measured rate stays the same on another
+   firmware, another `core_freq`, or under throttling; the tag's own text
+   says it follows throttling. So `RNG` is computed from the tag at every
+   backend init (not cached across boots, not hard-coded).
+
+### 12.3 Sample rates — `RNG` from the measured clock (Q-N6)
+
+**Arithmetic, no source** (formula of §5.4): `RNG = round(f_pwm / f_sample)`,
+actual rate `f_pwm / RNG`. Owner decision Q-N6 (`TASK/SND01.md` "Decisions
+2026-11-12"): no resampling, no rate "close enough" by the program's
+clock — each rate is set through `RNG1 = RNG2`. The STe rates as
+`docs/api/xbios/_dmasound-group.md` §4.7 lists them, at the **measured**
+`f_pwm` of the Pi run (107 143 019 Hz, the number the §5.5 table was
+computed from; the developer's code computes from the tag of §12.2, so the
+`RNG` column below is a check value, not a constant):
+
+| Rate (spec §4.7) | `RNG` at 107 143 019 Hz | Actual rate | Error |
+|---:|---:|---:|---:|
+| 50 066 (`mode_control` 3) | 2 140 | 50 066.83 | +17 ppm |
+| 25 033 (2) | 4 280 | 25 033.42 | +17 ppm |
+| 12 517 (1) | 8 560 | 12 516.71 | -23 ppm |
+| 6 285 (0) | 17 047 | 6 285.15 | +24 ppm |
+
+The eight Falcon prescale rates (`Devconnect`, `prescale` 1-5, 7, 9, 11:
+49 170 … 8 195 Hz, spec §4.7) use the same formula; their `RNG` values at the
+same clock are in the last table of §5.5. Q-N6 as recorded names the four STe
+rates; whether the eight Falcon rates are served the same way is **not stated
+in the decision** (the spec's §4.7 lists them; EmuTOS writes the Falcon
+prescale raw to `freq_int`, `bios/dmasound.c:683`) — **open point for the
+lead**, not decided here. Mono and 8-bit modes change the staging, not the
+rate: one frame is always two FIFO words (mono: both words equal, INFERRED,
+the PWM has no mono mode in the cited tables).
+
+### 12.4 GPIO, `PACTL_CS` and the PWM registers
+
+1. **GPIO 40/41 → ALT0.** CITED §6.2 (`GPFSEL4` offset `0x10`, `FSEL40` bits
+   2:0, `FSEL41` bits 5:3, value `100`). **MEASURED:** the firmware leaves
+   `GPFSEL4 = 00000064` (ALT0 on both). The driver **still** does the
+   read-modify-write itself and does not rely on the firmware.
+2. **`PACTL_CS` bit 23.** CITED (§4.2.1.3 text, in §7.3 above): bit 23
+   `DMA_CNTRL_MUX_2`, "0 selects DSI0, 1 selects PWM1", reset `0x1`, "other
+   bits … only written back with the previously read value". **MEASURED:**
+   `08800000` at kernel entry (bit 23 set; bit 27 uninterpreted). The driver
+   **reads `PACTL_CS`, ORs bit 23, writes it back** (`0xFE20_4E00`, as
+   `kernel/src/snd_probe.rs:137@PACTL_CS`), and never writes a constant.
+3. **PWM1** base `0x7E20_C800` (ARM `0xFE20_C800`), offsets Table 152.
+   **MEASURED, CPU-fed (T1-T3 of the Pi run, no GAPO/RERR1 after 1.5-2 s):**
+   `CTL = 0`; `DMAC.ENAB` off; `CTL = CLRF`; `STA = 0x13C` (W1C of
+   `WERR1 RERR1 GAPO1 GAPO2 BERR`); `RNG1 = RNG2 = R`; then
+   `CTL = PWEN1|USEF1|PWEN2|USEF2` (bits 0, 5, 8, 13), optional
+   `MSEN1|MSEN2` (bits 7, 15) as in T4 (`kernel/src/snd_probe.rs:786@pwm_off`,
+   `:881@pwm_start`). Both modes ran without error; which sounds better is
+   **NOT MEASURED** (hearing test open).
+4. **`DMAC` for the DMA-fed case: NOT MEASURED.** CITED Table 155: `ENAB`
+   bit 31, `PANIC` 15:8, `DREQ` 7:0, both thresholds default 7. The datasheet
+   does not say whether the threshold counts words in the FIFO or free
+   space (§10.3 open). Contract: set `DMAC = ENAB | (7 << 8) | 7`
+   (the reset thresholds), check `STA.GAPO1/2`, `RERR1`, `WERR1` after the
+   first run, and put the observed behaviour into §10.3. A different
+   threshold is a measurement, not a guess.
+5. **Start order (INFERRED, not measured with DMA):** configure `RNG`/`DMAC`
+   with `CTL` still `CLRF`-cleared and the channels off; start the DMA channel
+   so the FIFO fills through `DREQ`; set `PWEN` last. The probe filled the
+   FIFO from the CPU before `PWEN` (`pwm_start`), the DMA equivalent of that
+   is "DMA first".
+6. **Stop (INFERRED):** let the converter append mid-level words, reset the
+   DMA channel (`CS.RESET`, bit 31, W1SC, Table 38), then `pwm_off`. An empty
+   FIFO drops the output to the `SBIT` level (§3.5 inference: an audible
+   click), so stop on `RNG/2`, as the probe's tone code ended on the middle
+   value before switching off (`kernel/src/snd_probe.rs:937@tone`).
+
+### 12.5 DMA channel and control blocks
+
+1. **Which channels the firmware visibly uses — MEASURED (H4, real Pi).** `CS` at
+   kernel entry: ch 0, 2, 4, 5, 7, 8, 9, 10 `00000008`; ch 1, 3 `20000008`;
+   ch 6 `20000009`; (ch 11-14 are DMA4, not in the device-tree mask).
+   Decoded with datasheet Table 38 (CITED): bit 3 `DREQ` reads 1 on every
+   channel (un-paced reads back 1); **bit 29 `DISDEBUG`** is set on ch 1, 3,
+   6; ch 6 also has bit 0 `ACTIVE` set with `CONBLK_AD 0`. `ENABLE` =
+   `00007fff`, `INT_STATUS` 0. The device-tree mask `0x7f5` (§7.3) already
+   excludes 1 and 3.
+2. **Channel choice — INFERENCE, the developer's call.** Prefer a full
+   channel (0-6) that shows no firmware footprint and is in the device-tree
+   mask: **0, 2, 4, 5**. Channel **5** is the one **MEASURED** working from
+   the kernel (H3: END, INT, exact copy; INTID 117) and is the proposal.
+   Avoid 6 (footprint: `DISDEBUG` and `ACTIVE` at boot, so something used it;
+   what is not in any source) and 1, 3 (footprint and excluded by the mask).
+   Lite channels 7-10 also show no footprint but were not exercised; they
+   would limit one block to 65 535 bytes (Table 48), which an 8 KiB ring does
+   not reach. The iosoft article's list (2, 11-14) is a hypothesis, not a
+   source. "No footprint at boot" does not prove the firmware never uses the
+   channel later (NOT MEASURED).
+3. **Control block (CITED Table 34; Lite Table 35 has no `STRIDE`):** 8 words,
+   256-bit (32-byte) aligned: `TI`, `SOURCE_AD`, `DEST_AD`, `TXFR_LEN`,
+   `STRIDE` = 0, `NEXTCONBK`, 0, 0. `TI` (Table 40): `PERMAP` = 1 (bits
+   20:16), `DEST_DREQ` (bit 6), `SRC_INC` (bit 8), `DEST_INC` = 0, `INTEN`
+   (bit 0) = 0 for D-tick and 1 for D-irq; `WAIT_RESP` (bit 3) is optional
+   per the table text (the H3 copy set it, `kernel/src/snd_probe.rs:556@dma_copy`;
+   for a `FIF1` destination not measured). `DEST_AD` = `0x7E20_C818`
+   (CITED, §4.1 legacy master addresses). `SOURCE_AD` = bus address of the ring
+   half. `TXFR_LEN` = ring-half bytes (full channel: 30 bits, Table 43).
+4. **Ring of two blocks (INFERRED from 3. and Table 39/45):** block A covers
+   the first half of the ring and points at B, B the second half and points at A,
+   so the channel never ends and `NEXTCONBK` is never patched while running
+   (Table 45: only safe when paused). `CONBLK_AD` read returns the active block
+   (Table 39); `SOURCE_AD` read is the position inside it (Table 41, "Updated
+   by the DMA engine as the transfer progresses").
+5. **Channel start (MEASURED sequence, H3 on ch 5):** `CS = RESET` (bit 31),
+   wait until `ACTIVE` clears, clear `DEBUG` error bits only when set (W1C;
+   QEMU 11.1.2 stores the written value instead, measured), `CONBLK_AD` =
+   bus address of block A, `dsb`, `CS = WAIT_FOR_OUTSTANDING_WRITES (bit 28) |
+   END | INT | ACTIVE`. Completion read as `CS.END`, `ERROR` (bit 8), `DEBUG`.
+6. **A cyclic ring replays stale data if the CPU misses a refill (INFERRED):**
+   the channel does not stop at the end of a half; a missed tick makes the
+   listener hear the last ring contents again, not silence. The refill must
+   therefore be the highest-priority work of the tick (§12.8).
+7. **Do not clear `ENABLE` bits while the channel runs** ("Disabling whilst
+   the DMA is operating will be fatal", Table 62 text, CITED). `ENABLE` reads
+   `7fff` at boot (MEASURED); the driver reads it and sets the bit of the chosen
+   channel only if it is clear.
+
+### 12.6 Memory the DMA sees, and cache maintenance
+
+1. **Bus address (CITED §1.2.4, §4.1, Table 62; MEASURED H3 addresses
+   `c0200000`, `c01ff000`, `c01fe000`):** bus = `0xC000_0000 | PA`, valid
+   with `ENABLE.PAGE = 0` for the first GiB of RAM only. **The ring and every
+   control block must lie below 1 GiB of physical memory** — the probe's
+   `bus()` refuses addresses above it (`kernel/src/snd_probe.rs:509@bus`). The
+   program's buffer does not have this limit: the DMA does not read it (§9).
+2. **Coherency — MEASURED (H3, real Pi):** CPU caches and the DMA are not
+   coherent in either direction. Run 1 without maintenance: the DMA read stale
+   RAM (624 new, 400 old words) and the CPU saw its stale destination; run 2
+   with `dc cvac` on the source and `dc civac` + `ivac` on the destination: an
+   exact copy of 1 024 words. QEMU has no cache model and passes without it,
+   so QEMU cannot test this.
+3. **For this design only the clean direction matters (INFERRED):** the DMA
+   writes to a fixed peripheral register (`FIF1`), never to RAM, so there is
+   no destination in memory for the CPU to read stale. Needed:
+   (a) after the CPU writes new words into the ring, **clean** (`dc cvac`) the
+   written range before the DMA can read it — in practice once per tick,
+   covering the refilled words, then `dsb`; (b) the two control blocks are
+   written once and **cleaned** once (the probe cleans its block,
+   `kernel/src/snd_probe.rs:556@dma_copy`); (c) **no invalidate** of the ring.
+   The channel's progress registers (`SOURCE_AD`, `CONBLK_AD`, `TXFR_LEN`)
+   are device registers, read with plain MMIO reads; they are not memory.
+   Existing helpers: `kernel/src/arch/aarch64/mmu.rs:371@clean_dcache_range`
+   (clean by VA, 64-byte lines) and
+   `kernel/src/arch/aarch64/mmu.rs:402@clean_invalidate_dcache_range`.
+   Align the ring to 64 bytes so a clean never straddles an unrelated line.
+4. **NOT MEASURED:** the same clean-only rule with a *peripheral* destination
+   (H3 copied memory to memory), and a non-cacheable mapping of the ring as an
+   alternative to cleaning — H3 did not test it; the owner's cross-reference
+   (iosoft) names it as an option for Linux, not for this kernel.
+5. **Barrier (CITED by precedent only):** `dsb` after the cleans and before
+   `CS.ACTIVE` is what the probe does (`dsb()` before the start) and what the
+   mailbox code does; the ARM ARM is still not in `references/` (§10.9).
+
+### 12.7 Interrupt
+
+**MEASURED (H5, real Pi and QEMU):** channel 5's line is **INTID 117**
+(`96 + 16 + 5`); it reads pending at the GIC distributor with the SPI disabled
+and enabled, and 0 after `CS.INT` was cleared. Delivery to the CPU through
+`GICC_IAR` was **not** exercised (IRQs were masked). **D-tick needs no
+interrupt:** leave `INTEN = 0` and the SPI disabled. For D-irq (later): INTID
+`112 + n` for a full channel `n` (CITED Table 102, derivation §7.3);
+`kernel/src/drivers/gic.rs:95@enable_spi`; the handler must clear `CS.INT` by
+writing 1 (W1C, Table 38 — sticky even when the next block has `INTEN = 0`) and
+`INT_STATUS` (Table 61) is read-only. Two ring halves ending between two ISR
+runs merge into one pending bit (INFERRED from the W1C sticky text).
+
+### 12.8 Sizing the ring for the 200 Hz tick (D-tick, owner Q-N1)
+
+**Arithmetic, no source; every input is a cited or measured number, every
+result is inferred.** The tick is 200 Hz (`_hz_200`, one refill every 5 ms).
+Stereo = 2 words per frame, 4 bytes per word.
+
+| Rate | words per tick (5 ms) | frames | 1 024-word ring lasts | 2 048-word ring lasts |
+|---:|---:|---:|---:|---:|
+| 50 066 | 500.7 (at most 502) | 250.3 | 10.2 ms (2.0 ticks) | 20.4 ms (4.1 ticks) |
+| 25 033 | 250.3 | 125.2 | 20.4 ms | 40.9 ms |
+| 12 517 | 125.2 | 62.6 | 40.9 ms | 81.8 ms |
+| 6 285 | 62.9 | 31.4 | 81.5 ms | 162.9 ms |
+
+(`ring words / (2 · rate)`; 2 048 words = 8 192 bytes = 128 cache lines of 64 B.
+For the Falcon prescale 1 rate, 49 170 Hz, 491.7 words per tick.)
+
+* **Needed per refill:** at most one tick of audio, about 502 words =
+  2 008 bytes ≈ 32 cache lines to clean, at the highest rate.
+* **Minimum that works with a perfect tick:** the ring must hold one tick of
+  audio, 502 words; the next power of two is **1 024 words**, which lasts 2.0
+  ticks at 50 066 Hz, one tick of reserve.
+* **Margin for a late tick:** if a tick may be late by `J`, the ring must hold
+  `2 · rate · (5 ms + J)` words. One lost tick (`J = 5 ms`) at 50 066 Hz:
+  about 1 002 words — a 1 024-word ring has no margin left. The jitter `J` is
+  **NOT MEASURED**: traps run with IRQs masked and `emmc.rs` polls
+  (`TASK/SND01.md` "Spec review" §3: a consequence of two read facts, not a
+  measurement), and the tick's own work (`vbl::irq_tick`) is skipped unless it
+  interrupted EL0 (`kernel/src/vbl.rs:97@irq_tick`; the sound refill must not sit
+  behind that gate — see the localization in `TASK/SND05.md`).
+* **Proposal (INFERRED): 2 048 words (8 KiB), two halves of 1 024 words.**
+  That is four ticks at the top rate, three ticks of reserve; at the lowest
+  rate (6 285 Hz) the ring is 163 ms deep, which costs latency, not
+  correctness (the program's `Buffptr` and frame end come from the DMA read
+  position, not from how far ahead the converter has written, INFERRED; the
+  one place the depth is audible is a `Setbuffer` change queued behind the
+  already converted words, up to 163 ms at 6 285 Hz — the developer may convert
+  fewer words ahead at low rates).
+* **Slack reality check:** the PWM FIFO adds up to 64 words (MEASURED depth,
+  H2) between the DMA and the pins, 0.64 ms at 50 066 Hz; it is not counted.
+* **Cost of the conversion per tick: NOT MEASURED** (about 502 words at the
+  top rate; no run timed the conversion).
+
+### 12.9 What to measure on the first Pi run of the SND05 code
+
+The first run that uses `PERMAP = 1` is also the first measurement of: `DMAC`
+threshold behaviour (§10.3); clean-only coherency with a peripheral
+destination (§12.6 item 4); the tick's jitter `J` (§12.8); whether channel 5
+stays free; and, above all, **the tone heard** (owner's open hearing test).
+These belong in a measurement run by the tester, not in this document.
+
