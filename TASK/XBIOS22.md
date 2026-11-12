@@ -88,6 +88,14 @@ Owner 2026-11-12: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to
 4. `VsetMode(-1)` (query only) answers a fixed word; `VsetMode(mode != -1)` stays out. The exact word is proposed
    in the spec (`docs/api/xbios/`) with its reasoning before the developer builds it; the lead brings it back.
 
-Still open: question 2 (`VgetSize`: A, B or C, and for B/C which byte count), and whether to publish `_VDO`
+Owner 2026-11-12, second answer: "VgetSize : B" and "_VDO-Cookie ja" (_VDO cookie yes).
+
+2. `VgetSize(mode)`: B, the size of the current screen only (case 213 then differs from the oracle; a
+   COMPATIBILITY entry). Which byte count (32-bpp `Physbase` screen, 8 294 400 at 1920x1080, or the 16-bit VDI
+   device pixel, 4 147 200) is still asked.
+5. `_VDO` is published: an ADR-012 amendment (with [ARCH06](ARCH06.md)); value and text drafted from the spec before
+   the developer builds it.
+
+Superseded by the answer above: Still open: question 2 (`VgetSize`: A, B or C, and for B/C which byte count), and whether to publish `_VDO`
 (ADR-012 amendment, with [ARCH06](ARCH06.md)). The lead made no recommendation on these; the owner answers them
 separately.
