@@ -1,0 +1,27 @@
+RUNINFO A68 tester run, 2026-11-12, verdict PARTIAL
+Scope: A68 (just_draw text branch takes the frame thickness from the TEDINFO via sst_th, fix 8b7dcdd16) tested at main HEAD 014cb4b695c7b3e0c40f7fc9ed65531ec74c2a7c in QEMU.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (no image manifest exists, see below)
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ab0e3d77cd14703ad/wt (detached at 014cb4b695c7b3e0c40f7fc9ed65531ec74c2a7c; 8b7dcdd16 is an ancestor, checked). Scratch dir target-agents/agent-ab0e3d77cd14703ad size 5,8G.
+
+Commands and outcome
+1. cargo xtask build --board qemu-virt : OK (serial/build-qemu-virt.log). Warnings: tos-api 64, kernel 93 (receipt: 64 / 94; no new warning).
+2. cargo xtask build --board rpi4 : OK (serial/build-rpi4.log).
+   (A first attempt with an exported CARGO_TARGET_DIR failed in programs/build.sh linking HELLOGEM.NAP; tester setup error, rerun without it was OK.)
+3. cargo xtask test : 2459 / 0 / 7, baseline docs/STATUS.md 2459 / 0 / 7 (serial/cargo-xtask-test.log, summed "test result" lines).
+4. cargo test -p tos-api --test aes_object_3d_text_button : 8 passed, includes
+   a68_boxtext_te_thickness_255_is_a_one_pixel_outside_border and a68_fl3dind_boxtext_te_thickness_255_draws_like_minus_one : ok.
+5. cargo xtask run --board rpi4 --headless (80 s, bounded) : boot reaches "[desk] desktop up (0 drives)", 0 EXC/PANIC (serial/boot-rpi4-run.log).
+6. cargo xtask run --board qemu-virt --headless (80 s, bounded) : boot reaches "[desk] desktop up", 0 EXC/PANIC (serial/boot-qemu-virt-run.log).
+   Note: these boots print no fixed "PASS" lines (grep PASS = 0); criterion used: desktop up and 0 exceptions.
+7. QMP screendump via method/shot.py: qemu-virt (ramfb) desktop captured, inspected visually with Read: green desktop, menu bar Desk/File/View/Options, Trash and Printer icons, text intact (screendumps/desktop-qemu-virt.png). 0 EXC/PANIC.
+8. QMP screendump raspi4b without SD: captured file is entirely black 640x480 (screendumps/desktop-rpi4.png, desktop-rpi4-settle25.png) although serial says desktop up. Not a usable observation.
+9. tools/mkcard.sh for an SD card (to repeat step 8 with C:) failed on this host: "Volume on disk7s1 failed to mount" (no image, no manifest).
+
+Failures with reproducing command: none in the A68 scope.
+
+Drove: build both boards, full host tests vs baseline, the two A68 red/green tests, boot both boards headless to desktop with 0 exceptions, a visual qemu-virt screendump.
+Could not verify: a raspi4b visual (screendump black without SD; mkcard failed), and the receipt's nine before/after pixel-identical pairs (not re-run; no shipped tree carries te_thickness 255, so scene output is unchanged by design, per the receipt). Hence PARTIAL.
+Real-Pi4-only: none claimed (owner 2026-11-12: Pi adds no observation).
+Out-of-scope observations: boots print no fixed PASS markers on either board; cargo xtask run leaves its QEMU child alive when the cargo process is killed (I killed my own PIDs only).
+Image manifests: none (no image booted).
+Gitignored outputs: target-agents/agent-ab0e3d77cd14703ad/kernel-rpi4.elf 7e0d5c41139716033b36fba0965a0216271ce3d68aafde684c94ddddaf439521 ( 15M); target-agents/agent-ab0e3d77cd14703ad/kernel-qemu-virt.elf 8765ddf8225969a48b85c6fbdaa95bddc5e3039e259c1fa9b38e258b335f0b07 ( 15M).
