@@ -1,6 +1,6 @@
 # XBIOS21 — `Setcolor(n,-1)` returns 0: the ST palette shadow starts empty
 
-Status: IMPLEMENTED (2026-11-12) | Priority: P2 | Commit: self | Missing: tester acceptance
+Status: DONE (2026-11-12) | Priority: P2 | Commit: a89bf7357 | Receipt: XBIOS21-STATUS-DONE.MD
 
 Type: developer (spec check first). Owner decision 2026-11-12 ("ja ticket": yes, a ticket), from the full XBIOS run
 `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`.
