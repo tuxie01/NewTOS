@@ -33,6 +33,16 @@ image stays where the caller put it. No other change to how the card is
 built. Check `tools/sync-card.sh` for the same pattern and say in the
 receipt whether it is affected.
 
+**Changed by the owner 2026-11-12 (replaces the paragraph above):** the
+whole card is built on the system disk, not only the mount point. The
+scripts create the image, attach, mount, fill and unmount it in a temporary
+directory (`mktemp -d` under `$TMPDIR`), and move the finished image and its
+manifest to the caller's output path as the last step. The cleanup trap
+removes the temporary directory on success and on any failure. Nothing of
+the build touches `/Volumes/Daten` before that move. Clones, worktrees and
+cargo target directories stay on the data volume (TOOL46 unchanged). This
+applies to both scripts, `tools/make-sd-image.sh` included.
+
 ## Acceptance
 
 - `tools/mkcard.sh` and `tools/make-sd-image.sh` each build an image whose
@@ -47,6 +57,8 @@ receipt whether it is affected.
   failure in the middle.
 - The receipt states the cause of `diskutil`'s refusal as far as it can be
   shown (mount point location, volume flags); if it cannot, it says so.
+- The temporary directory is gone after every run, on success and after a
+  forced failure (owner 2026-11-12).
 
 If the temporary mount point does not make the mount work: verdict
 `BLOCKED` with what was observed. No workaround beyond this ticket's fix.
