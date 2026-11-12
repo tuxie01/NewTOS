@@ -1,0 +1,20 @@
+#R 02
+#E 1A E0 00 1C 60
+#Q 41 40 43 40 43 40
+#W 00 00 12 02 2C 14 00 C:\COREMARK\*.*@
+#W 00 00 02 08 26 0C 00 @
+#W 00 00 02 0A 26 0C 00 @
+#W 00 00 02 0D 26 0C 00 @
+#M 00 00 00 FF C HARD DISK C@ @
+#F FF 07 @ *.*@
+#N FF 07 @ *.*@
+#D FF 02 @ *.*@
+#Y 06 FF *.GTP@ @
+#G 06 FF *.APP@ @
+#G 06 FF *.PRG@ @
+#G 06 FF *.NAP@ @
+#P 06 FF *.TTP@ @
+#P 06 FF *.NTP@ @
+#F 06 FF *.TOS@ @
+#F 06 FF *.NCP@ @
+#T 00 03 03 FF   TRASH@ @

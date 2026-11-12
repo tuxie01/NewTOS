@@ -1,0 +1,13 @@
+diff --git a/tos-api/src/aes/object.rs b/tos-api/src/aes/object.rs
+index 56160cf54..31de364fc 100644
+--- a/tos-api/src/aes/object.rs
++++ b/tos-api/src/aes/object.rs
+@@ -3255,7 +3255,7 @@ fn just_draw(t: ObjTree, obj: i16, x: i16, y: i16, clip: ClipRect, backend: &dyn
+                 // passed through unchanged by `tools/mkrsc.py` — a 1-px
+                 // *outside* border. `sst_th` is that fold's single home; the
+                 // raw `ted.te_thickness` is never read here.
+-                let mut th = t.sst_th(obj);
++                let mut th = ted.te_thickness;
+                 effect_th = th;
+                 // 3D background (EmuTOS `:582-599`): a hollow-white text
+                 // background takes the solid 3D background colour *for any

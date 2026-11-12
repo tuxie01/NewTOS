@@ -1,0 +1,30 @@
+RUNINFO A68 tester rerun, 2026-11-12, verdict PASS (completes PARTIAL run measurements/measurement-2026-11-12-a68/)
+Scope: A68 (just_draw text branch takes the frame thickness from the TEDINFO via sst_th, fix 8b7dcdd16) tested at main HEAD 580aa581b in QEMU, now with an SD image on raspi4b.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa28ccb2b02915b46/wt (detached 580aa581b), scratch dir size 5,7G (wt 5,6G).
+
+Commands and outcome
+1. cargo xtask build --board qemu-virt : OK (serial/build-qemu-virt.log)
+2. cargo xtask build --board rpi4 : OK (serial/build-rpi4.log). Rustc "generated N warnings" lines are in the logs; none compared beyond exit status 0 (the old run recorded tos-api 64 / kernel 93, receipt 64 / 94).
+3. cargo xtask test : 2459 / 0 / 7, baseline docs/STATUS.md 2459 / 0 / 7 (serial/cargo-xtask-test.log, summed "test result" lines). Includes the two A68 red/green tests (verified in the old run, step 4 there).
+4. tools/mkcard.sh <card.img> method/NEWDESK.INF (method/mkcard-call.txt) : exit 0 on this host (TOOL67 fix works; the old run failed here). Manifest method/card.img.manifest. optional_missing none (verbatim: "optional_missing none").
+5. raspi4b QMP screendump with the card (method/shot.py, -append serial=on, kernel8.img, -drive card.img,if=sd): serial "[desk] desktop up (1 drives)", 0 EXC/PANIC. Screendump screendumps/desktop-rpi4-sd.png inspected visually with Read: NOT black; green desktop, menu bar Desk/File/View/Options, HARD DISK C icon, Trash icon, text intact.
+6. qemu-virt (ramfb) QMP screendump, kernel ELF: "[desk] desktop up (0 drives)", 0 EXC/PANIC. screendumps/desktop-qemu-virt.png inspected visually: 1920x1080 green desktop, menu bar, Trash and Printer icons, text intact.
+7. Before/after pair, one scene (idle kernel desktop, raspi4b + card): a kernel with only the A68 hunk reverted (method/prefix-revert.patch, applied in my own tree only, restored afterwards; kernel8 sha differs from the fixed one) vs the fixed kernel. Pixels byte-identical (cmp; sha256 2904c1d9... for fixed x2 and pre-fix x2). This matches the receipt: no shipped tree carries te_thickness 255, so output is unchanged by design.
+   (A first attempt reverting the whole object.rs to 8b7dcdd16^ did not compile; it is discarded, serial/build-rpi4-prefix.log is the later successful hunk-only build.)
+   Note: shot.py of the old run omitted -append serial=on and used the ELF on raspi4b (empty serial log); fixed in method/shot.py. On qemu-virt the ELF, not kernel8.img, must be passed.
+
+Failures with reproducing command: none.
+
+Drove: both builds, full host tests vs baseline, mkcard card, raspi4b boot with SD to desktop with a visually inspected non-black screendump, qemu-virt desktop screendump, one before/after pixel pair (identical).
+Could not verify / not re-driven: the receipt's other eight before/after pairs (TeraDesk #Z states, alert, Desk menu); the 255-thickness behaviour is covered by the host pixel tests only, no shipped tree reaches it in QEMU.
+Real-Pi4-only: none claimed (owner 2026-11-12: Pi adds no observation).
+Out-of-scope observations: boots print no fixed "PASS" lines; criterion used: desktop up and 0 exceptions. The real card (disk6) was not touched.
+
+Image manifest: method/card.img.manifest (image_sha256 73fd0a152af704448236072f9cc4e27d3179d57fec6dbf443ea868f5937e8ffe, host_clang line above, optional_missing none).
+Gitignored outputs (under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aa28ccb2b02915b46/):
+ card.img 64M 73fd0a152af704448236072f9cc4e27d3179d57fec6dbf443ea868f5937e8ffe
+ kernel-rpi4.elf 15M dfc9ceb4a06428b1cb68f31c7d1539c14227e51348263915728dde5b4ddf5f1c
+ kernel-qemu-virt.elf 15M be3c2bcd65dff1f6f4811cf7677ee1d484718a1088a337ba17d10a78ec4f87b4
+ kernel8-rpi4.img 87afbb4d7838f905f6faea2cc3041afe4a8930ee5fe702a79c87ed1c384e0867
+ kernel8-rpi4-prefix.img 3c05a5febfd4cdf11fe3765fb2395eee604842b1fa85adb5f6561fc37136fd34
