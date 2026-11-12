@@ -44,6 +44,17 @@
 # together with the image when a build fails, so a manifest always belongs to
 # the image beside it.
 #
+# The whole card is built on the system disk, in a fresh `mktemp -d`
+# directory under $TMPDIR (TASK/TOOL67): the image is created, attached,
+# partitioned (macOS mounts the partition at /Volumes/NEWTOS), filled,
+# unmounted, detached and checked there, and its manifest written there. As
+# the last step the finished image and its manifest move to image-path and
+# image-path.manifest; nothing is written to image-path's directory before.
+# The reason: diskutil refuses to mount on the external data volume
+# /Volumes/Daten, where the workers' scratch lies (TOOL46). The cleanup trap
+# detaches the device and removes the temporary directory on success and on
+# any failure; on a failure it also deletes image-path and its manifest.
+#
 set -euo pipefail
 
 IMG="${1:-/tmp/sd.img}"
@@ -107,11 +118,11 @@ build_example() {
 }
 
 # The manifest (see the header) is assembled at the very end from the parts
-# collected on the way: MANIFEST_FILES gets one `file` line per file on the
-# card (written by list_card_files just before each partition is unmounted),
-# OPTIONAL_MISSING one entry per optional part that is not on the card.
+# collected on the way: the partial manifest (<build image>.manifest.part)
+# gets one `file` line per file on the card (written by list_card_files just
+# before each partition is unmounted), OPTIONAL_MISSING one entry per
+# optional part that is not on the card.
 MANIFEST="${IMG}.manifest"
-MANIFEST_FILES="${IMG}.manifest.part"
 OPTIONAL_MISSING=()
 
 # Record an optional part that is not on the card: print it now and keep it
@@ -123,27 +134,33 @@ optional_missing() {
 }
 
 # Append one `file <sha256> <bytes> <drive>:\<path>` line per file under the
-# mounted partition $1 (drive letter $2) to MANIFEST_FILES, sorted by path,
+# mounted partition $1 (drive letter $2) to the partial manifest, sorted by path,
 # plus a `metadata <path>` line per macOS volume metadata directory that came
 # back -- the shared manifest writer does it (tools/sd-manifest.sh, `files`).
 list_card_files() {
-  "$SCRIPT_DIR/sd-manifest.sh" files "$1" "$2" "$IMG"
+  "$SCRIPT_DIR/sd-manifest.sh" files "$1" "$2" "$BIMG"
 }
 
+[ -d "$(dirname "$IMG")" ] || { echo "error: directory of $IMG not found; no image written" >&2; exit 1; }
+
+# The build directory on the system disk (see the header) and the image in it.
+WORK=$(mktemp -d "${TMPDIR:-/tmp}/make-sd-image.XXXXXX")
+BIMG="$WORK/$(basename "$IMG")"
+DEV=
+cleanup() { [ -z "$DEV" ] || hdiutil detach "$DEV" >/dev/null 2>&1 || true; DEV=; }
+# On any failure also delete the image at image-path, so that nothing (e.g.
+# `cargo xtask run`, which defaults to /tmp/sd.img) boots a stale one; the
+# manifest goes with it.
+trap 'rc=$?; cleanup; rm -rf "$WORK"; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST"' EXIT
+
 echo "Creating ${IMG} (${SIZE_MB} MiB, MBR + FAT16, volume ${VOL})…"
-rm -f "$IMG" "$MANIFEST" "$MANIFEST_FILES"
-dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB" status=none 2>/dev/null \
-  || dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB"
+dd if=/dev/zero of="$BIMG" bs=1m count="$SIZE_MB" status=none 2>/dev/null \
+  || dd if=/dev/zero of="$BIMG" bs=1m count="$SIZE_MB"
 
 # Attach the zero-filled file as a raw block device (no filesystem yet).
-DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount "$IMG" \
+DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount "$BIMG" \
         | head -1 | awk '{print $1}')
 echo "attached ${DEV}"
-cleanup() { hdiutil detach "$DEV" >/dev/null 2>&1 || true; }
-# On any failure from here on, also delete the half-written image, so that
-# nothing (e.g. `cargo xtask run`, which defaults to /tmp/sd.img) boots it.
-# The partial manifest goes with it.
-trap 'rc=$?; cleanup; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST_FILES"' EXIT
 
 # One MBR FAT16 partition spanning the whole disk, mounted at /Volumes/$VOL.
 #
@@ -1025,12 +1042,9 @@ sync
 list_card_files "$V" C
 diskutil unmount "${DEV}s1" >/dev/null
 cleanup
-# The device is detached; from here a failure only has to take the partial
-# manifest with it (the image itself stays, as before, for inspection).
-trap 'rc=$?; [ "$rc" -eq 0 ] || rm -f "$MANIFEST_FILES"' EXIT
 
 # Sanity-check the MBR: partition 0 must be type 0x06 (FAT16), 0x55AA present.
-python3 - "$IMG" ${SD_FSBENCH_D:+fsbench} <<'PY'
+python3 - "$BIMG" ${SD_FSBENCH_D:+fsbench} <<'PY'
 import sys, struct
 d = open(sys.argv[1], 'rb').read(512)
 assert d[510] == 0x55 and d[511] == 0xAA, "missing 0x55AA MBR signature"
@@ -1047,14 +1061,21 @@ if len(sys.argv) > 2:
     print(f"OK: MBR FAT16 partition 2 (D:) type=0x{typ2:02x} start_lba={start2} sectors={count2}")
 PY
 
-# Assemble the manifest (format v1: tools/sd-manifest.sh) from MANIFEST_FILES,
-# the optional_missing entries and the SD_* switches in the environment; the
-# writer deletes MANIFEST_FILES.
+# Assemble the manifest (format v1: tools/sd-manifest.sh) from the partial
+# manifest, the optional_missing entries and the SD_* switches in the
+# environment; the writer deletes the partial manifest.
 om_args=()
 for m in ${OPTIONAL_MISSING[@]+"${OPTIONAL_MISSING[@]}"}; do om_args+=(--optional-missing "$m"); done
-"$SCRIPT_DIR/sd-manifest.sh" write "$IMG" "$SIZE_MB" tools/make-sd-image.sh \
+"$SCRIPT_DIR/sd-manifest.sh" write "$BIMG" "$SIZE_MB" tools/make-sd-image.sh \
   ${om_args[@]+"${om_args[@]}"}
-trap - EXIT
+
+# The last step: the manifest names image-path as given (its `image` line
+# said the build path), then image and manifest move to the caller's path.
+while IFS= read -r line; do
+  if [ "$line" = "image $BIMG" ]; then printf 'image %s\n' "$IMG"; else printf '%s\n' "$line"; fi
+done < "${BIMG}.manifest" > "${BIMG}.manifest.final"
+mv -f "$BIMG" "$IMG"
+mv -f "${BIMG}.manifest.final" "$MANIFEST"
 
 echo "done: ${IMG}"
 if [ "${#OPTIONAL_MISSING[@]}" -eq 0 ]; then

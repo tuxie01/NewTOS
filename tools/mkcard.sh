@@ -45,9 +45,17 @@
 # SD_* switches (those belong to tools/make-sd-image.sh), so its manifest says
 # `switch n/a`; it has no optional parts, so `optional_missing none`.
 #
-# The image is attached with hdiutil as a user-owned raw device and the
-# partition is mounted on a private mount point next to the image, never
-# under /Volumes/<label>. QEMU images only -- never a real card.
+# The whole card is built on the system disk, in a fresh `mktemp -d`
+# directory under $TMPDIR (TASK/TOOL67): the image is created, attached with
+# hdiutil as a user-owned raw device, its partition mounted on a private
+# mount point in that directory (never under /Volumes/<label>), filled,
+# unmounted and detached there, and its manifest written there. As the last
+# step the finished image and its manifest move to <image> and
+# <image>.manifest; nothing is written to <image>'s directory before. The
+# reason: diskutil refuses a mount point on the external data volume
+# /Volumes/Daten, where the workers' scratch lies (TOOL46). The cleanup trap
+# unmounts, detaches and removes the temporary directory on success and on
+# any failure. QEMU images only -- never a real card.
 #
 # Test-disk mode (MKCARD_TESTDISK; TASK/TOOL07): the card for disk cases on
 # NewTOS. The test partition is the oracle's test image (profile disk,
@@ -104,19 +112,37 @@ if [ -n "$TESTDISK" ]; then
     done
   fi
 fi
+[ -d "$(dirname "$IMG")" ] || { echo "mkcard: directory of $IMG not found" >&2; bad=$((bad + 1)); }
 if [ "$bad" -ne 0 ]; then
   echo "mkcard: $bad problem(s); no image written" >&2
   exit 1
 fi
+
+# The build directory on the system disk (see the header) and the image in
+# it; MANIFEST is the caller's <image>.manifest.
+MANIFEST="${IMG}.manifest"
+WORK=$(mktemp -d "${TMPDIR:-/tmp}/mkcard.XXXXXX")
+BIMG="$WORK/$(basename "$IMG")"
+trap 'rm -rf "$WORK"' EXIT
+
+# The last step: the manifest names <image> as given (its `image` line said
+# the build path), then image and manifest move to the caller's path.
+finish() {
+  local line
+  while IFS= read -r line; do
+    if [ "$line" = "image $BIMG" ]; then printf 'image %s\n' "$IMG"; else printf '%s\n' "$line"; fi
+  done < "${BIMG}.manifest" > "${BIMG}.manifest.final"
+  mv -f "$BIMG" "$IMG"
+  mv -f "${BIMG}.manifest.final" "$MANIFEST"
+}
 
 # ---- test-disk mode (MKCARD_TESTDISK): see the header ----------------------
 if [ -n "$TESTDISK" ]; then
   export MTOOLSRC=/dev/null MTOOLS_NO_VFAT=1 MTOOLS_SKIP_CHECK=1 TZ=UTC
   SOURCE_DATE_EPOCH=$(date -j -u -f %Y%m%d%H%M%S "${STAMP}00" +%s)
   export SOURCE_DATE_EPOCH
-  MANIFEST="${IMG}.manifest"
-  STAGE="$(cd "$(dirname "$IMG")" && pwd)/stage.$$"
-  trap 'rc=$?; rm -rf "$STAGE"; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST" "${IMG}.manifest.part"' EXIT
+  STAGE="$WORK/stage"
+  trap 'rc=$?; rm -rf "$WORK"; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST"' EXIT
   le32() { od -An -t u4 -j "$2" -N 4 "$1" | tr -d ' '; }
   byte() { od -An -t u1 -j "$2" -N 1 "$1" | tr -d ' '; }
   # The test image: an MBR with entry 1 only (the layout of tools/mktestdisk.sh).
@@ -139,19 +165,18 @@ if [ -n "$TESTDISK" ]; then
   CARD=$((SIZE_MB * 2048)); PSTART=$((tbytes / 512)); PCOUNT=$((CARD - PSTART))
   [ "$PCOUNT" -ge 32768 ] || { echo "mkcard: MKCARD_SIZE_MIB $SIZE_MB leaves less than 16 MiB after the test image" >&2; exit 1; }
   echo "mkcard: ${IMG} (${SIZE_MB} MiB, test image ${TESTDISK} as C:, program partition D: LBA ${PSTART}+${PCOUNT}, label ${LABEL})"
-  rm -f "$IMG" "$MANIFEST" "${IMG}.manifest.part"
-  dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB" status=none
-  dd if="$TESTDISK" of="$IMG" bs=512 conv=notrunc status=none
+  dd if=/dev/zero of="$BIMG" bs=1m count="$SIZE_MB" status=none
+  dd if="$TESTDISK" of="$BIMG" bs=512 conv=notrunc status=none
   # MBR entry 2: CHS for 16 heads x 63 sectors (as the test image's entry 1).
   chs() { local l=$1 c h s; c=$((l / 1008)); h=$(((l / 63) % 16)); s=$((l % 63 + 1))
           [ "$c" -le 1023 ] || { c=1023; h=254; s=63; }
           printf '\\%03o\\%03o\\%03o' "$h" $((s | ((c >> 8) & 3) << 6)) $((c & 255)); }
   le() { printf '\\%03o\\%03o\\%03o\\%03o' $(($1 & 255)) $((($1 >> 8) & 255)) $((($1 >> 16) & 255)) $((($1 >> 24) & 255)); }
   printf "\\000$(chs "$PSTART")\\006$(chs $((CARD - 1)))$(le "$PSTART")$(le "$PCOUNT")" |
-    dd of="$IMG" bs=1 seek=462 conv=notrunc status=none
+    dd of="$BIMG" bs=1 seek=462 conv=notrunc status=none
   # FAT16 on D:, the cluster size the smallest that keeps it below 65525 clusters.
   spc=4; while [ $((PCOUNT / spc)) -ge 65000 ]; do spc=$((spc * 2)); done
-  DPART="${IMG}@@$((PSTART * 512))"
+  DPART="${BIMG}@@$((PSTART * 512))"
   mformat -i "$DPART" -T "$PCOUNT" -h 16 -s 63 -H "$PSTART" -c "$spc" -N 4E544344 -v "$LABEL" ::
   for d in $DIRS; do
     mkdir -p "$STAGE/D/$d"; p=
@@ -171,36 +196,35 @@ if [ -n "$TESTDISK" ]; then
     echo "  + D:\\$(printf '%s' "$d" | tr '/' '\\') <- $s"
   done
   # The test partition must be the test image's, byte for byte.
-  cmp -s <(dd if="$IMG" bs=512 skip="$TSTART" count="$TCOUNT" status=none) \
+  cmp -s <(dd if="$BIMG" bs=512 skip="$TSTART" count="$TCOUNT" status=none) \
          <(dd if="$TESTDISK" bs=512 skip="$TSTART" count="$TCOUNT" status=none) ||
     { echo "mkcard: the test partition differs from the test image" >&2; exit 1; }
-  "$SCRIPT_DIR/sd-manifest.sh" files "$STAGE/C" C "$IMG"
-  "$SCRIPT_DIR/sd-manifest.sh" files "$STAGE/D" D "$IMG"
-  "$SCRIPT_DIR/sd-manifest.sh" write "$IMG" "$SIZE_MB" \
+  "$SCRIPT_DIR/sd-manifest.sh" files "$STAGE/C" C "$BIMG"
+  "$SCRIPT_DIR/sd-manifest.sh" files "$STAGE/D" D "$BIMG"
+  "$SCRIPT_DIR/sd-manifest.sh" write "$BIMG" "$SIZE_MB" \
     "tools/mkcard.sh, MKCARD_TESTDISK $(shasum -a 256 "$TESTDISK" | awk '{print $1}') $TESTDISK" --switches n/a
+  finish
   echo "done: ${IMG}"
   echo "manifest: ${MANIFEST} ($(sed -n '/^file /p' "$MANIFEST" | wc -l | tr -d ' ') files; copy it into the measurement run, RUNINFO.TXT cites it)"
   exit 0
 fi
 
-MANIFEST="${IMG}.manifest"
-MANIFEST_FILES="${IMG}.manifest.part"
-MNT="$(cd "$(dirname "$IMG")" && pwd)/mnt.$$"
+MNT="$WORK/mnt"
 DEV=
 cleanup() {
   [ -d "$MNT" ] && { diskutil unmount "$MNT" >/dev/null 2>&1 || true; rmdir "$MNT" 2>/dev/null || true; }
   [ -z "$DEV" ] || hdiutil detach "$DEV" >/dev/null 2>&1 || true
   DEV=
+  rm -rf "$WORK"
 }
-trap 'rc=$?; cleanup; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST" "$MANIFEST_FILES"' EXIT
+trap 'rc=$?; cleanup; [ "$rc" -eq 0 ] || rm -f "$IMG" "$MANIFEST"' EXIT
 
 echo "mkcard: ${IMG} (${SIZE_MB} MiB, MBR + FAT16, label ${LABEL})"
-rm -f "$IMG" "$MANIFEST" "$MANIFEST_FILES"
-dd if=/dev/zero of="$IMG" bs=1m count="$SIZE_MB" status=none
-DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount "$IMG" | head -1 | awk '{print $1}')
+dd if=/dev/zero of="$BIMG" bs=1m count="$SIZE_MB" status=none
+DEV=$(hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount "$BIMG" | head -1 | awk '{print $1}')
 diskutil partitionDisk "$DEV" 1 MBR "MS-DOS FAT16" "$LABEL" 100% >/dev/null
 diskutil unmount "${DEV}s1" >/dev/null
-mkdir -p "$MNT"; diskutil mount -mountPoint "$MNT" "${DEV}s1" >/dev/null
+mkdir "$MNT"; diskutil mount -mountPoint "$MNT" "${DEV}s1" >/dev/null
 export COPYFILE_DISABLE=1; mdutil -i off "$MNT" >/dev/null 2>&1 || true
 
 for d in $DIRS; do mkdir -p "$MNT/$d"; echo "  + C:\\$(printf '%s' "$d" | tr '/' '\\')\\ (empty folder)"; done
@@ -218,12 +242,13 @@ find "$MNT" -name '._*' -delete 2>/dev/null || true; dot_clean -m "$MNT" 2>/dev/
 rm -rf "$MNT/.fseventsd" "$MNT/.Spotlight-V100" "$MNT/.Trashes" "$MNT/.TemporaryItems" 2>/dev/null || true
 sync
 
-"$SCRIPT_DIR/sd-manifest.sh" files "$MNT" C "$IMG"
+"$SCRIPT_DIR/sd-manifest.sh" files "$MNT" C "$BIMG"
 diskutil unmount "$MNT" >/dev/null
 rmdir "$MNT"
 hdiutil detach "$DEV" >/dev/null
 DEV=
 
-"$SCRIPT_DIR/sd-manifest.sh" write "$IMG" "$SIZE_MB" tools/mkcard.sh --switches n/a
+"$SCRIPT_DIR/sd-manifest.sh" write "$BIMG" "$SIZE_MB" tools/mkcard.sh --switches n/a
+finish
 echo "done: ${IMG}"
 echo "manifest: ${MANIFEST} ($(sed -n '/^file /p' "$MANIFEST" | wc -l | tr -d ' ') files; copy it into the measurement run, RUNINFO.TXT cites it)"

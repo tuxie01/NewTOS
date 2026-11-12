@@ -127,7 +127,7 @@ Die Dauern unterscheiden sich um den Faktor 10. Das ist Rechengeschwindigkeit (6
 - Der Fenstertitel lautet bei NEWDESK `C:\`, bei EmuDESK `C:\*.*`, für dieselbe `#W`-Zeile. Beleg: dasselbe Bild.
 - Die Cursorblinkperiode beträgt bei EmuTOS 30 VBL (0,595 s bei 50,4 Hz), bei NewTOS 0,5 s fest. Beleg: `measurements/measurement-2026-11-07-desk70/oracle/o-m1tos.frames.txt` gegen `measurements/measurement-2026-11-07-desk70/newtos/n-m1ncp/screens.txt`.
 - Ein einziges Mal (Erkundungslauf, Bild nicht aufbewahrt) zeigte NewTOS für unter 5 ms ein grünes Rechteck in Fenstergröße auf dem weißen Schirm. In den 6 aufbewahrten Läufen trat es nicht wieder auf.
-- `tools/make-sd-image.sh:550-553@launch_native` zitiert die gelöschte `launch_native` als Grund, warum der Desktop kein `Dsetpath` macht.
+- `tools/make-sd-image.sh:566-569@launch_native` zitiert die gelöschte `launch_native` als Grund, warum der Desktop kein `Dsetpath` macht.
 - `docs/analysis/deps/mapping.tsv` hat keine einzige Zeile für die Schicht `desk/`. `cargo xtask deps pro_run --up` meldet deshalb `unmapped` (Route Researcher).
 - `docs/api/desktop/_hw-test-2026-09-17.md:1293-1296` verspricht ebenfalls die Pause. Das ist ein datierter Schnappschuss und damit historisch, kein Befund.
 

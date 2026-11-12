@@ -1,6 +1,6 @@
 # TOOL67 — mkcard.sh and make-sd-image.sh work with an image on the data volume
 
-Status: OPEN (2026-11-12) | Priority: P1
+Status: IMPLEMENTED (2026-11-12) | Priority: P1 | Commit: self | Missing: tester run (both scripts with the image on the data volume, output dir untouched until the final move, file-level comparison with the unchanged scripts, tosdump --scratch on the data volume, forced failure leaves no temp dir, mount or device)
 
 Title: mkcard.sh and make-sd-image.sh work with an image on the data volume
 

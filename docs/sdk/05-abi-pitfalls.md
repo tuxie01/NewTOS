@@ -583,7 +583,7 @@ output read waits for a key itself (`Cnecin()`); a `.NAP` runs on the GEM screen
 console handoff. (Corrected by TASK/SDK04: this entry used to promise a
 "press any key" pause for every `.NCP`; no such code exists.) `AUTO` programs run **before** the AES; their output is
 painted over when the desktop comes up (`kernel/src/launch.rs:385@run_auto_folder`,
-`tools/make-sd-image.sh:198@AUTO`).
+`tools/make-sd-image.sh:214@AUTO`).
 
 **Do**: choose `.NCP` for text tools; in a `.NAP` write diagnostics to a file
 (the `Fopen`/`Fseek`/`Fwrite`/`Fclose`-per-line pattern of
