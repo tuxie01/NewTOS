@@ -1,0 +1,8 @@
+mkcard: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/out1/card.img (64 MiB, MBR + FAT16, label NTCARD)
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+  + C:\HELLO.TXT <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/in/HELLO.TXT
+  + C:\SUB\X.TXT <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/in/HELLO.TXT
+  + C:\NEWDESK.INF <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/in/NEWDESK.INF
+hdiutil: WARNING: 'hdiutil detach ...' is deprecated. Please use 'diskutil eject ...' instead.
+done: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/out1/card.img
+manifest: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/out1/card.img.manifest (3 files; copy it into the measurement run, RUNINFO.TXT cites it)

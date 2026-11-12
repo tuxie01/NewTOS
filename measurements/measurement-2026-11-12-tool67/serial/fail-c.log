@@ -1,0 +1,4 @@
+Creating /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/fo3/sd.img (64 MiB, MBR + FAT16, volume NEWTOS)…
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.
+attached /dev/disk7
+cp: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/fsb/A.DAT: Permission denied

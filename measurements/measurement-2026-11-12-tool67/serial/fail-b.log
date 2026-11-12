@@ -1,0 +1,2 @@
+mkcard: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/fo2/card.img (64 MiB, MBR + FAT16, label NTCARD)
+hdiutil: WARNING: 'hdiutil attach -nomount ...' is deprecated. Please use 'diskutil image attach --noMount ...' instead.

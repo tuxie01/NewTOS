@@ -1,0 +1,5 @@
+mkcard: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/out3/td.img (128 MiB, test image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/in/test.img as C:, program partition D: LBA 131072+131072, label NTCARD)
+  + D:\HELLO.TXT <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/in/HELLO.TXT
+  + D:\SUB\X.TXT <- /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/in/HELLO.TXT
+done: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/out3/td.img
+manifest: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/out3/td.img.manifest (3 files; copy it into the measurement run, RUNINFO.TXT cites it)

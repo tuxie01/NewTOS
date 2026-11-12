@@ -1,0 +1,116 @@
+TOOL67 tester run, 2026-11-12. Verdict: PARTIAL (see "Open items").
+Agent a7d9a9372a5ef92c5 (tester). Commit tested: 8db332393 (branch tool67), detached worktree
+/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7d9a9372a5ef92c5/wt (agent dir: 3.0G du -sh).
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every manifest).
+
+SCOPE: tools/mkcard.sh and tools/make-sd-image.sh build the whole card in a mktemp -d directory under
+$TMPDIR and move image and manifest to the caller's path on /Volumes/Daten as the last step.
+Board: host tools; QEMU raspi4b only for the tosdump runs. Baseline ("unchanged") = main's tools/ at 88eaaa8d1
+(git archive into the session scratchpad; make-sd-image's unchanged copy was run from the worktree so its
+inputs are the same, then removed).
+
+WHAT PASSED (driven myself)
+1. mkcard.sh normal mode, image on the data volume (target-agents/agent-a7d9a9372a5ef92c5/out1/card.img):
+   rc 0, no manual diskutil/hdiutil, no prompt. A watcher (serial/watch1.log, 0.25 s) shows the output dir
+   empty for the whole build while hdiutil info lists the image attached from $TMPDIR/mkcard.XXXXXX/card.img;
+   only at the end card.img appears. Manifest `image` line = the path given.
+2. MKCARD_TESTDISK mode (test image tools/mktestdisk.sh, sha256 5d2b76d3...): fixed (data volume) and unchanged
+   (scratchpad) images have EQUAL sha256 9d7e8bfd3b0ee011392ed9987ba03de2b51892d41fb05a574de74631b8de2629;
+   manifests differ only in the `image` and `created` lines. -> acceptance bullet met as written.
+3. make-sd-image.sh, image on the data volume (out4/sd.img): rc 0, no manual calls, watcher serial/watch4.log
+   same pattern (output dir empty while the image is attached from $TMPDIR/make-sd-image.XXXXXX). 54 files.
+4. cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --scratch <agent dir>/td-scratch (data volume): "run ended
+   normally after 19 s ... rc=0", tosdiff --validate exit 0, "result run complete" (serial/tosdump1.log).
+   Same with --disk (MKCARD_TESTDISK path): testpart identical, fsck_msdos -n exit 0 before and after,
+   run complete (serial/tosdump2.log). Scratch subdirectory removed afterwards.
+5. Forced failures (bash, serial/fail-*.log, state via method/snap.sh = count of $TMPDIR/mkcard.* and
+   make-sd-image.*, attached images, mounts):
+   (a) mkcard.sh with a source of mode 000 (cp fails after the mount): "Permission denied", rc 1; a good card
+       that existed at the path is deleted (as before the change); afterwards tmpdirs 0, attached images 0,
+       mounts 0.
+   (b) mkcard.sh sent SIGTERM while the image was attached ($TMPDIR dir present, 1 image attached): rc 143,
+       out dir empty, afterwards tmpdirs 0 / attached 0 / mounts 0.
+   (c) make-sd-image.sh with SD_FSBENCH_D holding an unreadable .DAT (fails after attach, /dev/disk7): rc 1,
+       out dir empty, afterwards 0 / 0 / 0.
+   After every successful run snap.sh also read 0 / 0 / 0 (no $TMPDIR/mkcard.*, no make-sd-image.*).
+6. Builds: cargo xtask build --board qemu-virt rc 0 (93 pre-existing kernel warnings), --board rpi4 rc 0.
+   No Rust touched: clippy delta not applicable, cargo xtask test not required (no tos-api/tos-types/xtask change),
+   not run. bash -n of both scripts clean.
+   (A first rpi4 build call failed only because I had exported CARGO_TARGET_DIR outside the worktree: xtask
+   looks in <wt>/target; rerun without it rc 0. Harness usage, not a ticket finding.)
+
+SHA256 COMPARISON AGAINST THE UNCHANGED SCRIPTS (the restated criterion)
+A. mkcard normal mode, same inputs and stamp (NEWDESK.INF=`test inf\r\n`, HELLO.TXT, SUB/X.TXT, default stamp):
+   - Every `file` line of the manifest equal (3 files; mkcard-fixed vs mkcard-base-scratchpad): MET.
+   - Image bytes (serial/byte-classification.txt, offsets in serial/diff-offsets-*.txt, scripts method/*.py):
+     fixed vs unchanged-in-scratchpad: 5175 differing bytes. Classified: volume serial (offsets 32297-32298),
+     directory time stamps (root dir 163862..164121, SUB cluster), .fseventsd / freed residue (clusters 2-3 and
+     the freed clusters 4-9 of the unchanged image, 180237..194618), AND a class outside the three: file
+     placement. The unchanged script run under the scratchpad leaves a deleted `.Spotlight-V100` (root entry
+     POTLI~3, LFN ".Spotlight-V100", plist text "PolicyDate" in freed cluster 8) in front of the files, so
+     HELLO.TXT/SUB/X.TXT/NEWDESK.INF sit at clusters 10-13 and their root/SUB dir entries and FAT entries
+     differ; the fixed image has them at clusters 4-7. Spotlight indexes under the scratchpad's volume
+     location and not under $TMPDIR's. Two runs of the unchanged script in the scratchpad both give 10-13, two
+     runs of the fixed script both give 4-7 (the layout depends on the mount location, not on run).
+   - CONTROL (same unchanged script, image under $TMPDIR, i.e. the same mount location as the fixed script):
+     manifest `file` lines equal, image differs in 70 bytes, ALL classified: volume serial 3 bytes, directory
+     time stamps 17 bytes (root 11, SUB 6), .fseventsd/.UUID residue 50 bytes (clusters 2-3,
+     180237..182307). Fixed vs fixed (out1 vs out1b) shows exactly the same three classes (70 bytes, 3+17+46...
+     see file) and unchanged vs unchanged (scratchpad) too. So no byte attributable to the script change.
+B. make-sd-image.sh, image on the data volume vs unchanged: 54 vs 54 files, same paths and sizes. sha256 differs
+   for C:\DATA.BIN, C:\KERNEL8.IMG, C:\LYNXBOOT.IMG only; they are written from /dev/urandom by design
+   (tools/make-sd-image.sh:202-204 and tools/sd-manifest.sh). Image: 9199 differing bytes: those 3 files'
+   clusters (4080+4084+512), volume serial (2), directory time stamps (root 171, subdirs 156, incl. bytes of
+   deleted LFN entries), freed .fseventsd residue (188, clusters 2-9), and 6 bytes of two deleted directory
+   entries (0xE5 in both images, offsets 217255..217268 and 221415..221428: LFN fragments of Python-style
+   random temp names `tmp...`, short names SYSACC~3.TMP). The three urandom files and the random-named
+   deleted entries are outside the three named classes by construction (the receipt says so too).
+
+OPEN ITEMS (why PARTIAL, not PASS)
+- The restated criterion literally FAILS for two reasons that are not defects of the fix: (1) mkcard normal
+  mode: placement bytes caused by the unchanged script's deleted .Spotlight-V100 at the scratchpad location
+  (the control at the fixed script's location has only the three classes); (2) make-sd-image.sh: three
+  /dev/urandom files and two deleted random-name entries. The lead decides whether these count as covered
+  (Spotlight residue = same family as .fseventsd; urandom by design) or the criterion needs another word.
+  Everything else of the Acceptance is met.
+- Cause of diskutil's refusal (acceptance bullet): not re-derived by me (would need manual diskutil on
+  /Volumes/Daten, forbidden). I can only confirm that the fixed scripts mount on $TMPDIR and work with the image
+  on /Volumes/Daten, and that the developer's receipt states the cause as shown/not shown.
+- sync-card.sh "not affected": not run (touches the real card; forbidden).
+
+DRIVE vs COULD NOT VERIFY
+Drove: every item above. Not verified: sync-card.sh; diskutil refusal cause; the prompt-freeness was observed
+(no prompt appeared in any run) not instrumented.
+
+REAL-PI4-ONLY: none (host tools). Real card (disk6: BOOT, NEWTOS1..5) untouched: no mount/unmount/eject/write;
+only `diskutil list`/`mount` read for diagnosis. No diskutil/hdiutil by hand except `hdiutil info` (read-only)
+and `diskutil list`.
+
+OUT-OF-SCOPE OBSERVATIONS
+- make-sd-image.sh mounts at the fixed path /Volumes/NEWTOS: a real card volume with that name would be written
+  (as the receipt notes); the real card on this host has NEWTOS1..5, none named NEWTOS.
+- hdiutil attach/detach print deprecation warnings.
+
+IMAGE MANIFESTS (copied to manifests/; optional_missing lines verbatim)
+mkcard-fixed.card.img.manifest, mkcard-base-scratchpad..., mkcard-base-tmpdir-control..., mkcard-testdisk-fixed/
+base: `optional_missing none`.
+make-sd-image-fixed.sd.img.manifest and make-sd-image-base: `optional_missing C:\ZVIEW\SAMPLES\ -- sdk/zview/build/samples/IMAGES absent (gen-samples.py did not run; needs Python with Pillow) -- build it with: sdk/zview/build-zview.sh`
+The tosdump runs' cards: manifest lines in serial/tosdump1.log: `optional_missing none`.
+The worktree's 13 required gitignored build outputs (sdk/*/build, tosdump/build, present) were copied from the
+main tree to run make-sd-image.sh (inputs, same as the developer).
+
+GITIGNORED OUTPUTS CITED (path, du -sh, sha256)
+target-agents/agent-a7d9a9372a5ef92c5/out1/card.img 64M ed7e0b31eb88071f96bcdb3d4fa149dc80acf0447eabc53d82294bb49505ae18
+.../out1b/card.img 64M 2454978a22d1a577b4976df80aed128cb30b322d325cc5fbfcf976265a55579c
+.../ctl-card.img 64M 63c1af6b6ebd137ce8b4f0abd8782b90b979a8b82d728a4e01f688b34121f6b0
+.../out3/td.img 128M 9d7e8bfd3b0ee011392ed9987ba03de2b51892d41fb05a574de74631b8de2629
+.../out4/sd.img 64M c9fb6b6bdc7352c8e934440eb90649e5ee5f8af64a0634d0f0eadb87bbba26cc
+scratchpad (unchanged scripts): out/card.img 64M d6ed467abca1a7f0a73a9da3d5b13b30a42cb4dbd4be2cdbfa9b1280caafb7e9;
+ outb/card.img 8ed2e40dbf93068feacf5714c42b5d17517bc9c083927ae66899695251bb2b0f; out3/td.img 128M 9d7e8bfd...(equal);
+ out5/sd.img 64M 889b1d26b7abba4446019848f37ae7c374f1f3b2ede080fa041e3d542588e27f
+.../td-out/BIOS.BIN 48K 303ba857658337d4659731fc75d7c2f9dfa9b26eb63fe4c4ee4b0db33bbd5fcf
+
+REPRODUCE: see method/ (fatdiff.py, classify2.py, snap.sh); calls:
+ tools/mkcard.sh <img> <NEWDESK.INF> HELLO.TXT=<f> SUB/X.TXT=<f>   (fixed from the worktree, unchanged from main's tools/ at 88eaaa8d1)
+ MKCARD_TESTDISK=<test.img> tools/mkcard.sh ...;  tools/make-sd-image.sh <img>
+ cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out <dir> --scratch <dir> [--disk]
