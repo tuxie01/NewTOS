@@ -1,0 +1,11 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a4ef322ddf8dbc7da/sd-plain.img
+image_sha256 cbfe7ece43bde12fb16a9c92632e3808d43618e191248942a8f1734c53058b5a
+size_mib 64
+created 2026-11-12T14:39:54Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file c8e06db3ea921eb3717c9dea85283afe4cdb9a7a2b073c31e4586055ccd12055 374 C:\NEWDESK.INF

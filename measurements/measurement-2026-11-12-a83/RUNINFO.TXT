@@ -1,0 +1,39 @@
+A83 tester run, 2026-11-12. Verdict: PARTIAL (all driven checks green; the window-title scene could not be driven, see below).
+Scope: wind_set(WF_NAME/WF_INFO) keeps the caller's pointer, title/info read live through the owner's mapping; fix commit a46e5873b, tested at main HEAD 311690d40 (a46e5873b is an ancestor).
+Where the code lives now: tos-api/src/aes/window.rs (LiveStr:323, owner_kva:397, label_walk:409, live_title_tests:6426); the receipt's kernel/src/desk/{win,main}.rs moved with DESK43 U10 into programs/desktop/src/win.rs and main.rs (set_window_strings ~main.rs:2251, wind_set_ptr, fixed WNode w_name/w_info buffers).
+Machine: Ingo's MacBook Air (scutil ComputerName); macOS 27.2; Claude Code 2.1.322; host clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a4ef322ddf8dbc7da/wt (detached 311690d40), 2,4G (agent dir 6,2G); worktree-setup run.
+
+COMMANDS (board / outcome)
+ 1 cargo xtask build --board qemu-virt -> OK, 159 rustc warnings (build/build-virt.log, rebuilt build/build-virt2.log)
+ 2 cargo xtask build --board rpi4      -> OK, 159 rustc warnings (build/build-rpi4.log)
+ 3 cargo xtask test (full)             -> 2459 passed / 0 failed / 7 ignored (summed over all "test result" lines) = Hosttests baseline 2459/0/7 as measured by the A81 run
+     (host-tests/xtask-test.log). Includes aes::window::live_title_tests (5 named tests + label_walk) ok and tests/aes_window_name_pointer.rs 3/3 ok
+     (a_null_pointer_is_an_empty_title, a_title_longer_than_79_characters_is_not_truncated, t10_title_rewritten_in_place_shows_on_the_next_frame_repaint).
+ 4 cargo clippy -p tos-api --lib --tests -> rc 0, 118 warnings (build/clippy-tos-api.log); none at tos-api/src/aes/window.rs lines 320-420 (LiveStr/owner_kva/label_walk) or 6420-end (live_title_tests), none in aes_window_name_pointer.rs.
+     No baseline count was compared (kernel clippy not run): no claim of "no new warnings" beyond the A83 code regions.
+ 5 QEMU raspi4b headless, -append serial=on, QMP screendump after serial marker "[launch] EL0" (+20 s), kernel8.img of main HEAD, cards by tools/mkcard.sh (method/mkcard-call.sh):
+     a) tera card (TeraDesk via #Z): screendumps/tera-A.png, visually inspected: green WF_NEWDESK background, menu bar Desk/File/View/Window/Options, 4 HARD DISC icons, TRASH, pointer; no corruption.
+        sha256 5148fde2... = the A81 dump and the 2026-09-20 A83 tera-A-idle (byte-identical).
+     b) plain card (kernel-launched desktop, no autorun): screendumps/plain-A.png, visually inspected: desktop with menu bar, 4 "Hard disk" icons, Trash, Printer; no corruption. serial "[desk] desktop up (1 drives)".
+     serial/: 0 matches of EXC|PANIC|panic in tera/plain logs.
+ 6 QEMU qemu-virt headless, ramfb, QMP screendump after "desktop up" (+5 s): screendumps/virt-desktop.png, visually inspected: green desktop, menu bar, Trash and Printer icons at the bottom corners (1920x1080); sha256 2e0f487f... = A81's virt dump. serial ends "[desk] desktop up (0 drives)"; 0 exceptions.
+     (First virt attempt used the rpi4 build's `kernel` ELF, which both board builds write to the same path: empty serial, killed; redone after rebuilding qemu-virt. Not a product fault.)
+
+DROVE: both board builds, full host tests incl. the receipt's two test files, clippy of the A83 code regions, raspi4b idle desktop (kernel desktop and TeraDesk), qemu-virt idle desktop.
+COULD NOT VERIFY (=> PARTIAL):
+ - The receipt's raspi4b window scenes (desk B/C, tera B/C, nav B/C/D: a directory window whose title/info are read live from an EL0 owner or from the desktop's WNode buffers). They need a double-click; raspi4b has no input, and the 2026-09-20 method used a scratch kernel with an input injector (method/make_scratch.sh, apply_injector.py, a79_patch.py) patched into kernel/src/desk/ and the old tree, which no longer exists after DESK43 U10. No injector exists on main, so no window with a title was ever on screen in this run: the pixel claim for the live title read (Titel `C:\*.*`, info line, navigate in place) is NOT re-measured at HEAD. What is covered instead is the host test layer (owner-mapping read, dangling VA, block-end, two-page string, 79+ chars, NULL, in-place rewrite) and an idle boot that goes through the same wind_set/redraw paths without fault.
+ - qemu-virt has input but no C:, hence no directory window to open either; not attempted via QMP input.
+ To close: a ticket for a committed input-injection / window-open test hook for raspi4b (or a TeraDesk INF that reopens a saved directory window at start), then re-run the A79 scenes.
+REAL-Pi4-ONLY: none required (owner 2026-11-12: Pi adds no observation).
+OUT-OF-SCOPE OBSERVATIONS: both board builds write the debug `kernel` ELF to the same path, so the qemu-virt ELF must be copied out before building rpi4 (or vice versa). Cosmetic: 159 rustc warnings on both builds.
+
+IMAGE MANIFESTS (copies: method/sd-tera.img.manifest, method/sd-plain.img.manifest): both host_clang Apple clang version 21.0.0 (clang-2100.4.1.1), `optional_missing none`.
+ sd-tera.img image_sha256 8c84bbfbce60ba2c27e0ac12ee9c8634a7079d1f612827937ba0b6a9845a1e11 (6 files, DESKTOP.NAP etc. from main's sdk/apps/teradesk/build/dist)
+ sd-plain.img image_sha256 cbfe7ece43bde12fb16a9c92632e3808d43618e191248942a8f1734c53058b5a (NEWDESK.INF without #Z)
+
+GITIGNORED OUTPUTS (under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a4ef322ddf8dbc7da/, size, sha256)
+ sd-tera.img 64M 8c84bbfb...a1e11 (full above); sd-plain.img 64M cbfe7ece43bde12fb16a9c92632e3808d43618e191248942a8f1734c53058b5a
+ kernel8-rpi4.img 1642370 bytes d5658be5bdf10809d2026d9e0d0b73e62da6a4370f44f804ae6add600caad4ca
+ kernel-virt.elf 15302296 bytes 483f1c9ec5ca3a95176d9759fb116d6f21ceb478beee8663d312dcc87debcad8
+ PNG sha256: tera-A 5148fde2f61b378d55275c085b3031155b4a4bed7d4084bff8380860fc92a690; plain-A 0e6f770497da100b6707ff8ac1a79f24f30272a0e371bc368d9b10f56a2c324b; virt-desktop 2e0f487f1ab9cf62f8f65c3c1d58811ef099e783325907e728086f3b748df21b
