@@ -167,3 +167,18 @@ by `deps --up` as unmapped in the touched layer and predate this ticket; the ret
 (`Getcookie`/`Setcookie`, `selftest_cookie`); the 200 Hz tick path (`rust_irq_handler`) and anything riding it
 (frame tick, input pump, cursor blink) — the refill adds work in the tick.
 
+
+## Stopped by the owner (2026-11-12)
+
+Owner: "ich möchte das alle agents ihre arbeit einstellen, den aktuell stand dokumentieren" (I want all agents to stop
+their work and the current state documented). The developer's work is on branch `snd05`, commit `1415fb08c`
+(pushed to origin, not merged); its `TASK/SND05.md` has the section "State when stopped (2026-11-12)".
+
+- Done on the branch: XBIOS 0x80-0x8D (new `sound` module in tos-api's xbios directory), the 200 Hz ring converter,
+  DMA and PWM drivers (new `dma` and `pwm_audio` modules in the kernel's bcm2711 drivers; files exist only on the branch), `_SND` set by the driver, 25 host tests green; QEMU raspi4b
+  boots to the desktop without a backend (no measured PWM clock there).
+- Open: full `cargo xtask test`, the docs (ADR-012 amendment, COMPATIBILITY, DEVIATIONS, spec §11, `mapping.tsv`
+  rows), the native test program, a developer run, the real-Pi run.
+- Spec gaps decided provisionally in the code, to be confirmed: `Settracks(·, rec)` and `Soundcmd(ADCINPUT)` keep the
+  Falcon behaviour (store, no error); prescales invalid for the CODEC and `clk` 1/2 take the formula rate; the sample
+  mode is latched per pass; `Soundcmd(9, 0x08)` always sets the signed bit (returns `0x09`); `Sndstatus` returns 0.
