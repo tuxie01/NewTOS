@@ -49,3 +49,21 @@ Type: developer (probe as a debug feature), then a real-Pi run with the owner. S
 - H5 measured (QEMU 11.1.2 raspi4b): memory-to-memory DMA with `PERMAP = 0` works (END, INT, progress registers), and
   the channel's interrupt is pending at the GIC distributor (INTID 117 for channel 5) until `CS.INT` is cleared. QEMU
   aborts on PWM1 (synchronous external abort) and stops at `PACTL_CS`.
+
+## Real-Pi run (owner, 2026-11-12)
+
+Run `measurements/measurement-2026-11-12-snd03-pi/RUNINFO.TXT` (three screen photos). H1-H4 measured, H5 confirmed on
+the Pi:
+
+- H1: `clk_pwm` is off at boot (firmware state 0); after the mailbox request (on, 100 MHz) it runs at
+  107 143 019 Hz by FIFO timing, 107 143 064 Hz by the firmware's own measurement. The requested rate is not the
+  effective one: rates are computed from the measured clock.
+- H2: PWM FIFO depth 64 words; `PACTL_CS` bit 23 (DREQ 1 = PWM1) and GPIO 40/41 ALT0 are already set by the firmware.
+- H3: DMA and CPU caches are not coherent in either direction; with clean (source) and invalidate (destination)
+  the copy is exact (4096 bytes in 125-132 us).
+- H4: system timer at 1 MHz; the firmware re-arms C0 and C2, C1 and C3 stay 0; DMA enable mask `7fff`.
+- Tones T1-T4 played without FIFO gap or error. **Hearing test open:** the owner had no device with a 3.5 mm jack
+  (owner: "Ja halte den Hörtest offen", yes, keep the hearing test open). The probe kernel stays on the card as
+  `C:\kerns03.img`.
+
+Still missing for the acceptance: the tone heard (owner); `docs/hardware/pwm-audio.md` updated with these facts.

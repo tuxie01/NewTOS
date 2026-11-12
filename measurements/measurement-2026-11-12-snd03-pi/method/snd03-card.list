@@ -1,0 +1,10 @@
+# snd03-card.list -- what tools/sync-card.sh puts onto the owner's Pi card for the SND03 hardware probe.
+# Format: tools/sync-card.sh header. The probe is the kernel itself; it needs no program, no file and no change
+# to cmdline.txt or config.txt. So this list names no file: the kernel comes through
+#   --kernels <run>/kernels --active kerns03.img
+# (BOOT:kerns03.img + BOOT:kernel8.img; the card's old kernel8.img is saved to card-before/ first), built after
+# the change has landed with
+#   tools/sync-card.sh kernels <agent scratch>/kernels kerns03.img=snd-probe
+# and copied to measurements/measurement-2026-11-12-snd03/kernels/ (KERNELS.TXT records commit and dirty flags).
+# Optional, not needed: `serial=on` in cmdline.txt puts the same text on the serial line (GPIO 14/15).
+# The probe writes no drive. After the run the old kernel8.img goes back from card-before/.

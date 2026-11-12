@@ -1,0 +1,76 @@
+measurement-2026-11-12-snd03-pi -- owner's real-Pi run of the SND03 sound hardware probe (H1-H4, tones; hearing test open)
+=================================================================================================================
+Date: 2026-11-12. Run on the real Pi 4 by the owner; three screen photos sent in the chat, values transcribed by the
+lead by looking. Host clang (card manifest host_clang): Apple clang version 21.0.0 (clang-2100.4.1.1).
+Developer run, test sheet and QEMU H5: measurements/measurement-2026-11-12-snd03/RUNINFO.TXT (sheet TESTBLATT.md there).
+
+KERNEL AND CARD
+  kernels/KERNELS.TXT: kerns03.img sha256 7b9ef3df0ee8929914f7beb0ddfc5a27c34890060d33ccb0fede51903a5c76d3,
+    commit b5b67a0de, tree_dirty=no, features=snd-probe, release, built by
+    tools/sync-card.sh kernels target-agents/lead-snd03/kernels kerns03.img=snd-probe (log kernels/build-kerns03.log).
+  Card written on the owner's word ("karte steckt du kannst sie bespielen"; card is in, you can write it) after a dry
+    run: tools/sync-card.sh sync --list method/snd03-card.list --boot /Volumes/BOOT BOOT --drive C /Volumes/BOOT BOOT
+    --kernels <run>/kernels --active kerns03.img --write --run-dir <run>. Result: 1 new (C:\kerns03.img), 1 changed
+    (C:\kernel8.img), 121 extra untouched, read back after remount equal. Manifest card.manifest (= C:\CARDMAN.TXT,
+    sha256 06dd6f517210d802115204a6af8d35b5133435d6c6b027d69c9a8b85e54d2249); optional_missing none.
+    card.manifest says tree_dirty=yes: the only untracked path at that time was this run directory.
+  Saved before writing (card-before/C/): kernel8.img ac44f0b2d1fc70fbf76c00daeb280f761f5b36f3a1b9323f5a0342355dbf467e
+    (= kern1112.img, still on the card), cmdline.txt 01ba4719..., config.txt eafa3a8e....
+  No headphones or speaker: the owner has no device with a 3.5 mm jack at hand. The tones were played but nobody
+    listened. Owner: "Ja halte den Hörtest offen" (yes, keep the hearing test open). The probe kernel stays on the
+    card as C:\kerns03.img for the later hearing test.
+
+PHOTOS (sha256)
+  photos/page1.jpg 1932x2576 2214712 B 8277194f3fc4a62778d1bf54a89127909b288be32b6b8a1cdb4328644f3ab3b2  (H4)
+  photos/page2.jpg 2576x1932 1713646 B 04dd018cc4a5199677fccfd8787f26c07463026803ef286483a319a105f2138b  (H3, H5, H1 as found)
+  photos/page3.jpg 2576x1932 1906459 B ffe7d3544c4e077a4fa5610af931455c112bd70880e533a39ac6aa4597099848  (H2, H1, tones)
+
+RESULTS (values from the photos; interpretation marked as such)
+H4 -- boot state (page 1)
+  At kernel entry (CNTPCT 2657319) and at the probe (CNTPCT 878798579) the same picture:
+  SYST CS 00000000, C1 00000000, C3 00000000; C0 and C2 hold values near CLO (entry: CLO 00742806, C0 00742f13,
+    C2 00745963). Within 100002 us: C0 016bd583 -> 016d5c23, C2 016bbc9a -> 016d47cf (the firmware re-arms C0 and C2);
+    C1, C3 unchanged at 0. SYST CLO advanced 100003 in 100002 us: the system timer runs at 1 MHz.
+  DMA ENABLE 00007fff (EN 7fff, PAGE 0, PAGELITE 0), INT_STATUS 00000000.
+  DMA CS: ch 0,2,4,5,7,8,9,10 = 00000008; ch 1,3 = 20000008; ch 6 = 20000009; ch 11 = 20000309; ch 12,13 = 00000308;
+    ch 14 = 20000308. CONBLK_AD 0 on all. DEBUG: 040180n0 for ch 0-6, 100187n0..10018a00 for ch 7-10, 1b000400..
+    1e000400 for ch 11-14. "DMA channels with CS = CONBLK_AD = 0, no DEBUG error: mask 0000" (the probe's free test
+    finds no channel because bit 3 is set on every CS; the mask is not usable as it stands).
+  PACTL_CS 08800000 (bit 23: DREQ 1 = PWM1), set by the firmware.
+  CM words at circle's PWM offset 0xa0/0xa4 (unsourced, read only): 00000200 00000000.
+H3 -- DMA memory to memory, channel 5, 4096 bytes, PERMAP 0 (page 2); bus SRC c0200000 DST c01ff000 CB c01fe000
+  run 1 (no cache maintenance): END after 125 us, CS 1000000e (END 1 INT 1 ERROR 0), INT_STATUS 00000020,
+    TXFR_LEN 0. CPU reads DST: 0 new SRC, 0 old SRC, 1024 old DST (CPU sees its stale cached DST).
+    After dc ivac DST (what the DMA wrote): 624 new SRC, 400 old SRC, 0 old DST (the DMA read SRC partly from RAM
+    that the CPU's writes had not reached yet).
+  run 2 (dc cvac SRC; dc civac + ivac DST): END after 132 us, CS 1000000e, DST 1024 of 1024 words = SRC.
+  -> On the real Pi the CPU caches are not coherent with the DMA in either direction: clean before the DMA reads,
+     invalidate before the CPU reads what the DMA wrote. With both, the copy is exact.
+H5 -- on the real Pi (page 2, both runs): GIC INTID 117 pending with the SPI disabled 1, enabled 1, 0 after CS.INT
+  cleared. Same as QEMU (measurements/measurement-2026-11-12-snd03/RUNINFO.TXT).
+H1 -- clk_pwm
+  Firmware view as found (mailbox, clock id 0x0a PWM): state 0 (off), rate 0, measured 65917968 Hz, max 500000000 Hz.
+  PWM1 timing as found, RNG 10000: STA 00000101 (BERR 1), no FIFO word consumed in 200 ms: clk_pwm NOT running.
+  Probe asked the firmware: Set clock state on -> reply 1; Set clock rate 100000000 -> reply 100000000.
+  After the request: state 1, rate 100000000, measured 107143064 Hz, max 500000000.
+  CM words at 0xa0/0xa4 (unsourced, read only): 00000096 00007800.
+  Timing after the request, RNG 10000: STA 00000601 (no GAPO, RERR1, WERR1, BERR); 10716 words consumed in 27004279
+    ticks (CNTFRQ 54000000), 10720 written => clk_pwm = 107143019 Hz (10714 periods/s per channel).
+  -> The firmware accepts 100 MHz but the clock runs at 107.143 MHz (its own measurement and the FIFO timing agree to
+     0.00004 %). Software must use the measured rate, not the requested one. Interpretation, unsourced: 107142857 Hz =
+     750 MHz / 7, i.e. an integer divider on a 750 MHz source; not a fact until sourced.
+H2 -- PWM1 (page 3)
+  As found: CTL 00000000 STA 00000002 DMAC 00000707 RNG1 00000020 RNG2 00000020.
+  FIFO depth, channels disabled: 64 words until FULL1. STA after CLRF 00000002, at FULL1 00000001, after one more
+    write 00000005 (WERR1 1).
+TONES (page 3)
+  GPFSEL4 00000064 -> 00000064 (GPIO 40/41 ALT0 = PWM1, already set by the firmware), back to 00000064 after the tones.
+  T1 both 440 Hz 2000 ms; T2 left only (GPIO 40) 440 Hz 1500 ms; T3 right only (GPIO 41) 880 Hz 1500 ms; T4 both
+    440 Hz 2000 ms mark/space. All at RNG 2233 = 47981 Hz; each "played, STA 00000601 (GAPO1 0 GAPO2 0 RERR1 0)".
+  Hearing: NOT checked (no device with a jack). Open.
+SUMMARY line on the screen: "H2 FIFO depth 64 words; H1 clk_pwm as found not running, at the tone 107143019 Hz".
+
+VERDICT
+  H1, H2, H3, H4 measured on the real Pi; H5 confirmed on the real Pi. Tone heard: open (owner keeps it open).
+  Side observation: the tone and FIFO registers show no gap or error, so PWM1 ran through all four tones.
+  Still to do after the run: restore C:\kernel8.img from card-before/ (card was in the Pi when this was written).
