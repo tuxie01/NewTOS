@@ -21,13 +21,13 @@
 //! `Setscreen`'s `rez` is accepted-but-ignored — there is no in-system
 //! resolution change (the firmware `config.txt` owns the HDMI mode).
 //!
-//! The palette (`Setpalette` / `Setcolor`) keeps an ST-format shadow for
-//! the read-back contract *and* programs the live VDI colour LUT the
-//! framebuffer displays through (the host's [`RasterBackend`], the same
-//! CLUT the VDI `vs_color` uses), so an XBIOS palette write changes the
-//! on-screen colour.
-//!
-//! [`RasterBackend`]: crate::vdi::backend::RasterBackend
+//! The palette (`Setpalette` / `Setcolor`) is the 16-entry ST(e) palette
+//! shadow that stands in for EmuTOS' ST(e) palette registers, seeded with
+//! EmuTOS' boot palette (`dflt_palette & 0x0FFF`). It does **not** reach the
+//! VDI colour table: NewTOS's VDI is the truecolor one, and on EmuTOS's
+//! Falcon/truecolor profile the XBIOS ST palette is not the VDI palette
+//! either (owner decision 2026-11-12, `TASK/XBIOS21.md`; spec
+//! `docs/api/xbios/07-setcolor.md` "Boot palette" and Pi binding).
 
 use crate::bdos::process::{self, usermem};
 use crate::host;
@@ -291,16 +291,15 @@ pub fn setscreen(args: &TrapArgs) -> i64 {
     0
 }
 
-/// `Setpalette` (0x06) — load a 16-entry ST palette. Our framebuffer is
-/// truecolor (no hardware CLUT), so NewTOS emulates the 16 STe palette
-/// registers with the VDI's 16-entry CLUT (`vdi_backend::PALETTE`). Each
-/// caller word is kept in the ST-format shadow (contract, read back by
-/// `Setcolor(n, -1)`) *and* pushed into that live CLUT so the colour
-/// change is displayed. `x0` = palette ptr.
+/// `Setpalette` (0x06) — load all 16 entries of the ST(e) palette from the
+/// caller's 16 packed words. `x0` = palette ptr; a null pointer is ignored.
 ///
-/// Register index → CLUT index is identity: NewTOS's VDI `MAP_COL[]` is
-/// the identity 16-entry map (see `tos-api/src/vdi/inquiry.rs`), so the
-/// STe hardware-register index and the VDI pen coincide. Spec:
+/// The words go into the palette shadow (`& 0x0FFF`, STe class), which
+/// `Setcolor(n, -1)` reads back — the store EmuTOS shares between the two
+/// calls (the ST(e) registers, `bios/vectors.S:358-383`). EmuTOS defers the
+/// load to the next VBL; NewTOS has no ST(e) palette to keep tear-free and
+/// applies it at once. Like EmuTOS on its truecolor VDI, the write does not
+/// touch the VDI colour table (owner decision 2026-11-12, XBIOS21). Spec:
 /// `docs/api/xbios/06-setpalette.md` (Pi/BCM2711 binding).
 pub fn setpalette(args: &TrapArgs) -> i64 {
     let ptr = args.arg_u64(0);
@@ -317,55 +316,61 @@ pub fn setpalette(args: &TrapArgs) -> i64 {
             Err(_) => return i64::from(crate::uaccess::FAULTED),
         }
     }
-    let pal = palette();
-    for (i, (slot, &w)) in pal.iter_mut().zip(words.iter()).enumerate() {
-        let word = w & 0x0FFF; // STe: 0x0RGB, 4 bits/gun
-        *slot = word;
-        apply_to_clut(i as u16, word);
+    for (slot, &w) in palette().iter_mut().zip(words.iter()) {
+        *slot = w & PALETTE_MASK;
     }
     0
 }
 
-/// `Setcolor` (0x07) — set or query one palette entry. `x0` = index
-/// (0..15), `x1` = ST color value, or `-1` to query. Returns the old
-/// value. A write updates both the ST-format shadow (contract) and the
-/// live VDI CLUT (`vdi_backend::PALETTE`), so the colour changes on
-/// screen; a query (`value < 0`) leaves both untouched. Spec:
-/// `docs/api/xbios/07-setcolor.md` (Pi/BCM2711 binding).
+/// `Setcolor` (0x07) — set or query one ST(e) palette entry (EmuTOS
+/// `atari_setcolor`, `bios/screen.c:1015-1036`). `x0` = index, masked
+/// `& 0x0F`; `x1` = packed colour word, or any negative value to query.
+/// Returns the entry's previous word `& 0x0FFF`; a query writes nothing.
+/// After boot the entries hold `DFLT_PALETTE`. The VDI colour table is
+/// not touched (owner decision 2026-11-12, XBIOS21). Spec:
+/// `docs/api/xbios/07-setcolor.md`.
 pub fn setcolor(args: &TrapArgs) -> i64 {
     let index = (args.arg_u16(0) & 0x0F) as usize;
     let value = args.arg_i16(1);
     let pal = palette();
-    let old = pal[index] as Long as i64;
+    let old = (pal[index] & PALETTE_MASK) as Long as i64;
     if value >= 0 {
-        let word = (value as u16) & 0x0FFF;
-        pal[index] = word;
-        apply_to_clut(index as u16, word);
+        pal[index] = (value as u16) & PALETTE_MASK;
     }
     old
 }
 
-/// Push one ST/STe palette word into the live VDI colour LUT the backend
-/// displays through, so an XBIOS palette write actually changes the
-/// on-screen colour (the same CLUT `vs_color` programs, via the host's
-/// `RasterBackend::set_color`).
-///
-/// The STe packed word is `0x0RGB` — bits 11-8 red, 7-4 green, 3-0 blue,
-/// 4 significant bits per gun (`docs/api/xbios/07-setcolor.md` §"Packed
-/// colour word"). Each nibble (0..=15) expands to the VDI's 0..=1000 gun
-/// range by `n * 1000 / 15` (full-range: nibble `0xF` → `1000`); the
-/// backend then does the 0..1000 → 8-bit framebuffer expansion itself
-/// (`kernel/src/vdi_backend.rs`), matching the spec's "4→8-bit" note.
-fn apply_to_clut(index: u16, word: u16) {
-    let Some(raster) = host::host().and_then(|h| h.raster()) else {
-        return; // No display up (hostless / display-less): shadow only.
-    };
-    let gun = |nibble: u16| nibble * 1000 / 15;
-    let r = gun((word >> 8) & 0x0F);
-    let g = gun((word >> 4) & 0x0F);
-    let b = gun(word & 0x0F);
-    raster.set_color(index, r, g, b);
-}
+/// The STe-class palette word mask `0x0FFF` (4 bits per gun): EmuTOS uses it
+/// on every profile with an STe shifter, TT shifter or Videl
+/// (`bios/screen.c:437-440,1026-1029`); NewTOS has no plain-ST `0x0777`
+/// profile (owner decision 2026-11-12, XBIOS21 question 3).
+const PALETTE_MASK: u16 = 0x0FFF;
+
+/// EmuTOS' boot palette of the 16 ST(e) registers: `dflt_palette[]`
+/// (`bios/screen.c:54-59`, values `bios/screen.h:56-71`) `& 0x0FFF`, as
+/// `initialise_ste_palette` loads it (`bios/screen.c:64-71`, called from
+/// `initialise_palette_registers`, `:432-457`). Register order, not VDI pen
+/// order: register 1 is red, register 15 black. Measured on the oracle:
+/// `Setcolor(0,-1) = 0x0FFF`, `Setcolor(1,-1) = 0x0F00` (bios-r1 cases
+/// 93/94, `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`).
+const DFLT_PALETTE: [u16; 16] = [
+    0x0FFF, // RGB_WHITE
+    0x0F00, // RGB_RED
+    0x00F0, // RGB_GREEN
+    0x0FF0, // RGB_YELLOW
+    0x000F, // RGB_BLUE
+    0x0F0F, // RGB_MAGENTA
+    0x00FF, // RGB_CYAN
+    0x0555, // RGB_LTGRAY
+    0x0333, // RGB_GRAY
+    0x0F33, // RGB_LTRED
+    0x03F3, // RGB_LTGREEN
+    0x0FF3, // RGB_LTYELLOW
+    0x033F, // RGB_LTBLUE
+    0x0F3F, // RGB_LTMAGENTA
+    0x03FF, // RGB_LTCYAN
+    0x0000, // RGB_BLACK
+];
 
 // ── Cursconf (VT52 text-cursor config) ───────────────────────────────────
 
@@ -384,13 +389,16 @@ pub fn cursconf(args: &TrapArgs) -> i64 {
     i64::from(crate::vdi::alpha_cursconf(backend, function, operand))
 }
 
-/// 16-entry ST palette shadow (0x0RGB, 3 bits per gun).
+/// The 16-entry ST(e) palette shadow (`0x0RGB`, 4 bits per gun), the
+/// NewTOS stand-in for EmuTOS' ST(e) palette registers. Its boot state is
+/// [`DFLT_PALETTE`] (the static's initial value, loaded with the kernel
+/// image), as EmuTOS' `screen_init` loads the registers at boot.
 fn palette() -> &'static mut [u16; 16] {
     use core::cell::UnsafeCell;
     struct Pal(UnsafeCell<[u16; 16]>);
     // SAFETY: single-CPU, IRQ-off trap path.
     unsafe impl Sync for Pal {}
-    static PAL: Pal = Pal(UnsafeCell::new([0u16; 16]));
+    static PAL: Pal = Pal(UnsafeCell::new(DFLT_PALETTE));
     // SAFETY: single trap path; never concurrently borrowed.
     unsafe { &mut *PAL.0.get() }
 }

@@ -319,46 +319,38 @@ the `colorNum & 0x0F` masking are preserved.
 ## Pi / BCM2711 binding
 
 > Re-points the *hardware reference* (the ST(e) palette registers) at the NewTOS
-> palette shadow and the VDI colour table. The **contract is unchanged** —
-> `colorNum & 0x0F`, `color < 0` query, the previous masked word returned — and
-> now includes the boot palette of the section above.
+> palette shadow. The **contract is unchanged** — `colorNum & 0x0F`, `color < 0`
+> query, the previous masked word returned — and includes the boot palette of the
+> section above.
 
-- **What `setcolor` does today.** The index is masked `& 0x0F`; the old word is read
-  from the 16-entry shadow `PAL` (`tos-api/src/xbios/screen.rs:388@palette`, every
-  entry initialised to `0`); when `color >= 0` the entry is stored `& 0x0FFF` and
-  pushed into the VDI colour table by `apply_to_clut`
-  (`tos-api/src/xbios/screen.rs:335@setcolor`, `:359@apply_to_clut`); the old word
-  is returned as a WORD. `color < 0` writes neither. Nothing seeds `PAL` at boot:
-  this is the defect of XBIOS21 (cases 93/94: oracle `0x0FFF`/`0x0F00`, NewTOS `0`).
-  `setpalette` (`tos-api/src/xbios/screen.rs:305@setpalette`) writes the same shadow
-  and the same table, immediately (EmuTOS defers to the next VBL).
-- **Two tables, one index space (inferred from the code, not measured).** `apply_to_clut`
-  passes the XBIOS register index straight to `RasterBackend::set_color(index, ...)`
-  as a VDI pen. NewTOS's VDI folds `MAP_COL` to the identity
-  (`tos-api/src/vdi/inquiry.rs:5@MAP_COL`, `kernel/src/vdi_backend.rs:56@VIDEL_PALETTE1`:
-  pen 0 white, pen 1 black, ... pen 15 `(667,0,667)`), whereas the EmuTOS register order
-  above has register 1 red and register 15 black. The EmuTOS VDI never mixes the two on
-  a Videl/truecolor machine (see "Do `Setpalette` and `VgetRGB` ..." above), so the
-  identity pen-from-register write in `apply_to_clut` is a NewTOS construction, not
-  EmuTOS behaviour.
-- **Proposal for the XBIOS21 owner check: which table leads at boot.**
-
-  | Option | Boot state | Consequence |
-  |--------|-----------|-------------|
-  | **A. The shadow leads (recommended)**: seed `PAL` from `dflt_palette & 0x0FFF` (table above) at boot; do **not** touch the VDI colour table. | `Setcolor(n,-1)` equals the oracle for every n (cases 93-95); the desktop/AES colours (VDI table, ADR-024 pens 0..15) are unchanged. | A program that saves with `Setcolor(n,-1)` and restores with `Setcolor(n,saved)` writes `saved` into the VDI table via `apply_to_clut` at restore time: pen `n` takes the *register-n* colour of the default table (pen 1 turns red, pen 15 turns black). On EmuTOS Falcon/truecolor the same restore changes nothing visible (the XBIOS ST registers are not the VDI palette there), so for exact visual fidelity `apply_to_clut` should be dropped for truecolor (a second owner question, below). |
-  | **B. The VDI table leads**: derive the shadow from the VDI table on every query (4-bit quantise of pen `n`). | One source of truth; a `vs_color` change shows in `Setcolor(n,-1)`. | Case 93 returns `0x0FFF` (pen 0 white) but case 94 returns black `0x0000`, not `0x0F00`: **not equal to the oracle** for n = 1..15 except 0 (pen order differs from register order), so acceptance of XBIOS21 cannot hold; also contradicts EmuTOS, where the VDI does not feed `Setcolor` on Videl. |
-  | **C. Shadow seeded and mapped**: seed `PAL` with the EmuTOS table and keep `apply_to_clut` but route register `n` to pen `REV_MAP_COL[n]` (the table `tos-api/src/vdi/escape.rs:74@REV_MAP_COL`). | Restore of a saved default palette is a visual no-op for the default look; `Setcolor(n,c)` colours the same pen as the same call on a 16-colour EmuTOS. | Needs the mapping in `setcolor`/`setpalette`; behaviour then matches an ST/STe EmuTOS, not the Falcon/truecolor profile NewTOS declared (ADR-024). |
-
-  Recommendation: **A**, plus the owner question "does an XBIOS palette write still
-  reach the VDI table in the truecolor VDI?". The source says: on the Falcon profile
-  it does not (`vdi/vdi_col.c:601-614,648-662`); dropping `apply_to_clut` would make
-  `Setcolor`/`Setpalette` shadow-only (the pre-Step-2 state `06-setpalette.md`
-  describes) — ADR-024 consequences for programs that recolour via `Setpalette`
-  (ST-style demos/games) would then show no change on screen, which is also what a
-  Falcon truecolor EmuTOS shows. Keeping `apply_to_clut` (A as stated) keeps today's
-  visible effect at the price of the pen/register order mismatch.
-- **Mask.** Return mask `0x0FFF` (STe class), as measured on both oracle profiles.
-- **Host tests asked by XBIOS21** (`TASK/XBIOS21.md` Work 3): the default word for
-  every n from the table; set-then-query returns the set word (`& 0x0FFF`); a query does
-  not change the shadow.
+- **Owner decision 2026-11-12 (`TASK/XBIOS21.md`).** (1) Option A: the shadow leads,
+  seeded at boot with `dflt_palette & 0x0FFF`; (2) an XBIOS palette write
+  (`Setcolor`/`Setpalette`) does **not** reach the VDI colour table in the truecolor
+  VDI; (3) no `0x0777` plain-ST mask, NewTOS is STe-class `0x0FFF`.
+- **What `setcolor` does (XBIOS21).** The index is masked `& 0x0F`; the old word is read
+  from the 16-entry shadow `PAL` (`tos-api/src/xbios/screen.rs:396@palette`) and
+  returned `& 0x0FFF` as a WORD; when `color >= 0` the entry is stored `& 0x0FFF`
+  (`tos-api/src/xbios/screen.rs:332@setcolor`). `color < 0` writes nothing. Storing the
+  masked word instead of EmuTOS's raw one is unobservable: the only read is the masked
+  return.
+- **Boot state.** `PAL`'s initial value is `DFLT_PALETTE`
+  (`tos-api/src/xbios/screen.rs:356@DFLT_PALETTE`), the table of section "Boot palette"
+  in register order, loaded with the kernel image — the counterpart of EmuTOS's
+  `initialise_ste_palette` at `screen_init`. No ST-medium/ST-high fix-up
+  (`fixup_ste_palette`) and no ST-compatible Videl rewrite apply: NewTOS boots neither
+  rez.
+- **Not the VDI colour table.** `setcolor` and `setpalette` do not call the raster
+  backend: the VDI pens (ADR-024, `kernel/src/vdi_backend.rs:56@VIDEL_PALETTE1`) are
+  independent of the XBIOS palette, as on EmuTOS's Falcon/truecolor profile
+  (`vdi/vdi_col.c:601-614,648-662`). The pre-XBIOS21 `apply_to_clut`, which pushed
+  register `n` into VDI pen `n`, is gone; with it the register/pen order mismatch of the
+  identity mapping. Consequence: a program that recolours the screen through
+  `Setcolor`/`Setpalette` shows no change on screen, which is what a Falcon truecolor
+  EmuTOS shows; a "save with `Setcolor(n,-1)`, restore with `Setcolor(n,saved)`" round
+  trip changes nothing visible either.
+- **Mask.** `0x0FFF` (STe class) on store and return, as measured on both oracle profiles.
+- **Host tests** (`tos-api/tests/xbios21_boot_palette.rs`): the default word for every n
+  after boot, set-then-query, a query does not write, `Setpalette` feeds `Setcolor`,
+  index wrap `& 0x0F`, any negative colour queries, no write reaches the backend's colour
+  table.
 - **1080p.** Geometry-independent; unchanged.

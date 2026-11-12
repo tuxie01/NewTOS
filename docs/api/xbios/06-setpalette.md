@@ -189,37 +189,26 @@ preserved so palette-animation programs stay tear-free.
 ## Pi / BCM2711 binding
 
 > Re-points the *hardware reference* (the STe/Videl 16 palette registers +
-> the `colorptr`/VBL deferred load) at the emulated 16-entry CLUT over the
-> 32 bpp VideoCore framebuffer. The **contract is unchanged** — a 16-word
-> ST-packed palette pointer input, `void` return. Peripheral + driver: see
-> `docs/HARDWARE-PROFILE.md` §2/§3.1.
+> the `colorptr`/VBL deferred load) at the NewTOS 16-entry ST(e) palette
+> shadow. The **contract is unchanged** — a 16-word ST-packed palette pointer
+> input, `void` return.
 
-- **No hardware CLUT — the framebuffer is truecolor.** The BCM2711
-  framebuffer is 32 bpp XRGB8888 (`kernel/src/drivers/bcm2711/framebuffer.rs:34-36`); there are no
-  16 palette registers to load. NewTOS emulates a **16-entry CLUT**: PEL
-  indices 0..15 map to packed RGB, which the VDI expands per pixel
-  (`kernel/src/vdi_backend.rs:26-59`).
-- **What `Setpalette` does today.** `setpalette` copies the 16 caller words
-  into a **local ST-format shadow** (`0x0RGB`, 3 bits/gun), masked `&
-  0x0FFF` (`tos-api/src/xbios/screen.rs:91-103`). It is applied
-  **immediately** into that shadow, not deferred to a VBL, and — critically
-  — it does **not** touch the VDI's live `PALETTE`
-  (`vdi_backend.rs:49-50`) that actually colours the framebuffer.
-- **Mismatch flagged (Step-2).** The XBIOS palette shadow and the VDI CLUT
-  are two disconnected tables: `Setpalette`/`Setcolor` update the ST-format
-  shadow in `tos-api/src/xbios/screen.rs`, while `vs_color` updates
-  `vdi_backend::PALETTE`. So an XBIOS palette write does **not** change any
-  displayed colour, and the "applied at next VBL" timing is not modelled.
-  Wiring the XBIOS shadow to the VideoCore CLUT (via the `RasterBackend`
-  `set_color`) is a Step-2 item — not fixed in this pass.
-- **Colour format bridge.** ST packs 3 significant bits/gun into `0x0RGB`;
-  the VideoCore path is 8 bits/gun. When wired, each ST nibble expands to
-  8 bits (as `Setcolor`'s 4→8 note describes). The VDI's own `vs_color`
-  already works in the 0..1000-per-gun range and scales to 8 bit
-  (`vdi_backend.rs:62-68`, `:142-151`).
-- **Datasheet.** No peripheral register is involved (the CLUT is pure
-  software over the framebuffer); the framebuffer itself is the VideoCore
-  mailbox buffer, BCM2711 datasheet §1.3 mailbox transport.
-- **1080p later.** Unaffected by resolution; the 16-entry CLUT model holds
-  at any geometry until a truecolor VDI path (`CONF_WITH_VDI_16BIT`) is
-  adopted.
+- **What `setpalette` does (XBIOS21, owner decision 2026-11-12).** A null
+  pointer is ignored. Otherwise the 16 caller words are read in the caller's
+  space first (a fault ends the call with the palette untouched), then stored
+  `& 0x0FFF` into the same shadow `Setcolor` reads and writes
+  (`tos-api/src/xbios/screen.rs:304@setpalette`; the shadow and its boot
+  state: `docs/api/xbios/07-setcolor.md`, Pi binding). EmuTOS shares that store
+  too (the ST(e) registers, `bios/vectors.S:358-383`).
+- **Immediate, not at the next VBL.** NewTOS has no ST(e) palette that is
+  scanned out, so there is no tearing to avoid; `colorptr` is not written.
+  Unlike EmuTOS, a `Setcolor(n,-1)` right after `Setpalette` already returns
+  the new word (EmuTOS: the old one until the VBL has run; inferred from the
+  code, not measured).
+- **No VDI colour-table write.** The framebuffer is 32 bpp
+  (`kernel/src/drivers/bcm2711/framebuffer.rs:34@DEPTH_BPP`) and the VDI is the truecolor one
+  (ADR-024); its pens are not the XBIOS palette, as on EmuTOS's Falcon/truecolor
+  profile, where `vs_color` touches no XBIOS palette (`vdi/vdi_col.c:601-614`).
+  So `Setpalette` changes no displayed colour (owner decision 2, `TASK/XBIOS21.md`).
+- **Datasheet.** No peripheral register is involved.
+- **1080p.** Unaffected by resolution.

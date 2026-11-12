@@ -796,7 +796,7 @@ set_cache	bios/processor.S	-	-	design:hardware:m68k-cpu	m68k CPU/FPU detection a
 atari_get_current_mode_info	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 atari_getrez	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 atari_physbase	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-atari_setcolor	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+atari_setcolor	bios/screen.c	tos-api/src/xbios/screen.rs	setcolor	mapped	the masked read-modify-write of one ST(e) palette entry; the registers are the PAL shadow, mask 0x0FFF, no VDI write (XBIOS21)
 atari_setphys	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 atari_setrez	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:824	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 calc_vram_size	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
@@ -818,7 +818,7 @@ get_pixel_size	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling:
 get_std_pixel_size	bios/screen.c	tos-api/src/vdi/workstation.rs	get_std_pixel_size	mapped	-
 getrez	bios/screen.c	tos-api/src/xbios/screen.rs	getrez	mapped	Getrez 0x04
 initialise_palette_registers	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-initialise_ste_palette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+initialise_ste_palette	bios/screen.c	tos-api/src/xbios/screen.rs	palette	mapped	the boot load dflt_palette[] & mask: the PAL shadow starts as DFLT_PALETTE, mask 0x0FFF (XBIOS21)
 initialise_tt_palette	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 logbase	bios/screen.c	tos-api/src/xbios/screen.rs	logbase	mapped	Logbase 0x03
 physbase	bios/screen.c	tos-api/src/xbios/screen.rs	physbase	mapped	Physbase 0x02
