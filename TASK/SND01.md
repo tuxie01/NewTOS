@@ -456,3 +456,22 @@ makes STe-style programs poke registers that do not exist. The draft recommends
 * Observed, not acted on: ADR-031's table row for `bell_hook`/`kcl_hook` says "no
   sound device yet" — it changes once a backend exists (bell and key click through
   the sound device).
+
+## Cross-reference from the owner (2026-11-12): iosoft DMA article
+
+The owner pointed to https://iosoft.blog/2020/05/25/raspberry-pi-dma-programming/ (Linux user space, `/dev/mem`;
+read by the lead 2026-11-12). Not a source in the Track B hierarchy (`docs/SOURCE-ANALYSIS-PROTOCOL.md`, below rank
+6): it gives hypotheses for the hardware probe (H1-H4), no facts for the code.
+
+- PWM paced by DREQ, a looping control-block chain writing `PWM_FIF1` with `PWM_DMAC` enabled (threshold 1): the
+  pattern of the recommended ring (step 1).
+- Clock manager for the PWM: `CLK_PWM_CTL`/`CLK_PWM_DIV` with a password, stop (bit 5), wait for busy (bit 7), set
+  the divisor, start with source 6 and enable (bit 4). Addresses and password value are not given there; on the Pi 4
+  the article uses a 375 MHz base for source 6 (250 MHz on Pi 0-3). Changing the clock while the PWM runs can lock it
+  up. This is exactly the gap of `docs/hardware/pwm-audio.md` §5.2 (no clock-manager register in the datasheet):
+  H1 measures it, the article says what to expect.
+- DMA channels on the Pi 4: the article recommends 2, 11-14 (others are used by the firmware); a fact for H4 to check
+  against the firmware's channel mask, not to assume.
+- Cache coherency: the article needs uncached VideoCore-mailbox memory because Linux caches user memory. Bare metal,
+  NewTOS maps the staging ring and control blocks itself (non-cacheable attribute or explicit cache maintenance,
+  ARM ARM); H3 decides which.
