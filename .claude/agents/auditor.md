@@ -85,6 +85,10 @@ Reading produces hypotheses and PLAUSIBLE findings, never "equal".
   `( cmd & pid=$!; sleep N; kill $pid 2>/dev/null )`. Hatari 2.6.1 and
   `m68k-atari-mint-gcc` 7.5.0 are not on PATH; their paths come from
   `tools/oracle/oracle.env`.
+- Cards and images are built by the project scripts only. Never call
+  `hdiutil` or `diskutil` by hand, and never touch a real card or a
+  `/dev/disk*` the scripts did not attach. A script that fails to build a
+  card is a reason for `BLOCKED` or UNMEASURED, not for a workaround.
 
 ## The oracle
 
@@ -193,7 +197,8 @@ Reading produces hypotheses and PLAUSIBLE findings, never "equal".
 ## Flow
 
 1. **Pre-flight.** Record NewTOS commit, EmuTOS commit, ROM hash, Hatari
-   version, image hash. Run the **oracle canary** exactly as in
+   version, image hash, the machine (`scutil --get ComputerName`), macOS
+   (`sw_vers -productVersion`) and Claude Code version (`claude --version`). Run the **oracle canary** exactly as in
    `docs/analysis/ORACLE.md` §6 for every profile you use (disk cases: also
    the disk-profile canary), then one case table on NewTOS at the audited
    commit. Canary fails, ROM unidentified or harness down → `BLOCKED`.
@@ -271,6 +276,7 @@ coverage: equal=<n> accepted=<n> diff=<n> unmeasured=<n> of <total>
 tickets:  remeasured=<n> equal=<n> diff=<n> | n/a
 route:    developer=<n> sdk=<n> researcher=<n> pi4=<n>
 evidence: <path of the report file> | <reason, when BLOCKED>
+note:     <one line worth knowing that needs no action> | none
 cleanup:  OK | FAILED: <one line>
 ```
 

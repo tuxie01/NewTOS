@@ -72,6 +72,11 @@ both boards. Read the ticket (`TASK/<ID>.md`) and the cited spec yourself.
 
 - macOS host: there is **no `timeout`**. Use `gtimeout`, or
   `( cmd & pid=$!; sleep N; kill $pid 2>/dev/null )`.
+- Cards and images are built by the project scripts only
+  (`tools/mkcard.sh`, `tools/make-sd-image.sh`, `cargo xtask tosdump`).
+  Never call `hdiutil` or `diskutil` by hand, and never touch a real card
+  or a `/dev/disk*` the scripts did not attach. A script that fails to
+  build a card is reported, not worked around.
 - Your worktree, clones and every `CARGO_TARGET_DIR` / `--target-dir` live
   under `<main repo>/target-agents/agent-<id>/` (named in your context at
   start), never in `/tmp` or the session scratchpad.
@@ -130,8 +135,11 @@ clippy:   new=<n>
 tests:    <passed>/<failed>/<ignored> | n/a
 evidence: TASK/<ID>-STATUS-UNFINISHED.MD
 open:     <n> (<one line>) | 0
+note:     <one line worth knowing that needs no action> | none
 cleanup:  OK | FAILED: <one line>
 ```
 
-`DONE` requires a commit on your branch, both builds `OK` and `clippy new=0`. Anything else
+`open` counts only points somebody must act on (an acceptance criterion
+that cannot be met as worded is one); a remark without an action goes into
+`note`. `DONE` requires a commit on your branch, both builds `OK` and `clippy new=0`. Anything else
 is `BLOCKED`, with the reason in `open`.

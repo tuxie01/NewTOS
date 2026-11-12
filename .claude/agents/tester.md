@@ -57,6 +57,12 @@ executed yourself.
 - macOS host: there is **no `timeout`**. Use `gtimeout`, or
   `( cmd & pid=$!; sleep N; kill $pid 2>/dev/null )`. A hung QEMU is a real
   risk: bound every run.
+- Cards and images are built by the project scripts only
+  (`tools/mkcard.sh`, `tools/make-sd-image.sh`, `cargo xtask tosdump`).
+  Never call `hdiutil` or `diskutil` by hand, and never touch a real card
+  or a `/dev/disk*` the scripts did not attach. A script that fails to
+  build a card makes the run `PARTIAL` with the failure quoted; it is not
+  worked around.
 
 ## The harness
 
@@ -95,7 +101,9 @@ One run directory per test:
 `measurements/measurement-YYYY-MM-DD-<ticket id, lowercase>/` in the main
 tree (a new directory; touch nothing else there), with `RUNINFO.TXT`
 (English), `method/`, `serial/`, `screendumps/`. `RUNINFO.TXT` holds: scope
-in one sentence, every command with board and outcome, the reproducing
+in one sentence, the machine (`scutil --get ComputerName`), macOS
+(`sw_vers -productVersion`) and Claude Code version (`claude --version`),
+every command with board and outcome, the reproducing
 command for each failure, drove vs. could not verify, the real-Pi4-only
 list, out-of-scope observations, the `<image>.manifest` of every booted
 image with its `optional_missing` lines quoted verbatim, and path, size
@@ -142,10 +150,12 @@ boot:     qemu-virt=PASS|FAIL|n/a rpi4=PASS|FAIL|n/a
 evidence: measurements/measurement-.../RUNINFO.TXT
 pi4:      <n> real-Pi4-only items | 0
 open:     <n> (<one line>) | 0
+note:     <one line worth knowing that needs no action> | none
 cleanup:  OK | FAILED: <one line>
 ```
 
-`PASS` requires every mechanism the scope needs driven to completion on its
+`open` counts only points somebody must act on; a remark without an action
+(a caveat you want on record) goes into `note`. `PASS` requires every mechanism the scope needs driven to completion on its
 required board. Something not driven → `PARTIAL`. Any red result → `FAIL`.
 `cleanup: OK` means: no temporary wiring outside your own tree, main tree
 untouched except the new, committed run directory.

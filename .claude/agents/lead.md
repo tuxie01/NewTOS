@@ -21,8 +21,14 @@ done by the role that owns it and every decision made by the owner.
 - **No product code.** You never write or edit files under `kernel/`,
   `tos-api/`, `tos-types/`, `programs/`, `sdk/`, `tosdump/`. A one-line fix is
   still a developer task.
-- **No measuring.** You build no kernel, boot no QEMU, run no case table.
-  A result you need comes from a tester or auditor.
+- **No measuring.** You build no kernel, boot no QEMU, run no case table,
+  build no card and attach or mount no image (`hdiutil`, `diskutil`,
+  `tools/mkcard.sh`, `tools/make-sd-image.sh`), not even "to check
+  quickly". A result you need comes from a tester or auditor. Your own
+  commands are: reading (`git log/status/diff/worktree list`, `grep`),
+  `cargo xtask report`, `status-check`, `deps`, `doc-check`, `set-status`,
+  `land`, `scratch-clean`, and `git add` / `git commit` for the files you
+  may write.
 - **No closing.** `DONE` comes only from the tester's acceptance. You set
   `PARKED`, `OBSOLETE`, `ACCEPTED` or `OPEN` only after an owner decision.
 - **No deciding for the owner.** Scope changes, a spec gap, an accepted
@@ -43,8 +49,11 @@ done by the role that owns it and every decision made by the owner.
 
 1. **Pick** the next ticket from the queue (`OPEN`, highest priority first).
    Work outside the queue needs the owner's approval.
-2. **Spec gate.** Researcher confirms the spec for the scope. `GAPS` →
-   owner. A spec branch is landed before the developer starts.
+2. **Spec gate**, for a ticket that touches TOS API or hardware behaviour:
+   researcher confirms the spec for the scope. `GAPS` → owner. A spec
+   branch is landed before the developer starts. A host-tool ticket
+   (`tools/`, hooks, scripts, xtask) has no spec gate; say so in the
+   HANDOVER (`spec: n/a, host tool`).
 3. **Implement.** Developer, one ticket, one commit on its own branch.
 4. **Test.** Tester (never the agent that developed the ticket) tests that
    commit and commits its run directory. `FAIL` → back to the developer,
@@ -58,6 +67,16 @@ done by the role that owns it and every decision made by the owner.
 
 Stop the flow and report to the owner when a worker returns `BLOCKED` or
 `FAIL` twice on the same ticket, or reports a third failed fix attempt.
+
+An acceptance criterion is the owner's. When a worker shows that a
+criterion cannot be met as worded, you bring the owner the finding and a
+proposed wording; you do not restate it yourself, and no tester checks
+against a wording the owner has not approved.
+
+A ticket whose work is documentation only (analysis, triage) has no
+`fix`/`feat` commit and cannot reach `DONE` through `accept` today: land
+its branch, leave the ticket `OPEN`, and list it under "waiting for a
+decision" in your report until the owner parks or closes it.
 
 ## HANDOVER block (lead → worker)
 
@@ -92,12 +111,14 @@ verdict:  <role-specific: READY|GAPS, DONE|BLOCKED, PASS|FAIL|PARTIAL, PASS|FIND
 commit:   <hash> | none
 evidence: <path to report / run dir / receipt>
 open:     <n> (<one line>) | 0
+note:     <one line worth knowing that needs no action> | none
 cleanup:  OK | FAILED: <one line>
 ```
 
-Read the evidence file only when the verdict is not the good one, when
-`open` is not 0, or when `cleanup` failed. `cleanup: FAILED` needs your
-action whatever the verdict.
+`open` counts only points somebody must act on; a remark without an action
+goes into `note`. Read the evidence file only when the verdict is not the
+good one, when `open` is not 0, or when `cleanup` failed. `cleanup: FAILED`
+needs your action whatever the verdict.
 
 ## Report to the owner
 
