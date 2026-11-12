@@ -514,5 +514,11 @@ to you). The lead decides the rest:
   rates as FreeMiNT lists them, spec §4.7; corrected 2026-11-12, the first version wrote 6258 Hz / RNG 17121 from
   memory, not from the spec).
   Same owner answer.
+- **Q-N4a-c (owner, 2026-11-12):** the switch is `Soundcmd(9, ...)` (GSXB `SET16BITFORMAT`, flags from
+  `sdk/libc/overlay/include/mint/falcon.h`); the order resets to big-endian when the setting process ends; it is latched
+  per frame at `Setbuffer`. Spec `docs/api/xbios/_dmasound-group.md` §9.3.1, approved together with the SND05 spec step
+  (commit `0164b3ca5`). Owner: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to everything as you proposed).
+- **Q-N6 addendum (owner, 2026-11-12):** the eight Falcon prescale rates (49 170 ... 8 195 Hz) are served like the STe
+  rates: `RNG` from the measured clock, no resampling (largest error 138 ppm, `docs/hardware/pwm-audio.md` §5.5). Same answer.
 - **Q-N7 (lead):** approved: [SND03](SND03.md) (hardware probe H1-H5), [SND04](SND04.md) (oracle cases O1-O5),
   [SND05](SND05.md) (implementation: DMA ring, PWM jack backend, XBIOS 0x80-0x8D), after SND03 and SND04.

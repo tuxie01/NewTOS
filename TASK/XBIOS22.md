@@ -78,3 +78,16 @@ Owner questions (options with consequences are in the three spec files):
    in XBIOS23 interacts), or answer the query with a fixed word (e.g. `0x1C`-class, geometry inexpressible) while
    `VsetMode(mode != -1)` stays out. Also: publish the `_VDO` cookie (ADR-012 amendment, open with TASK/ARCH06)?
    Programs gate the Videl calls on it (`sdk/apps/teradesk/video.c:140-160`).
+
+## Owner decision 2026-11-12
+
+Owner 2026-11-12: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to everything as you proposed), answering the lead's recommendations.
+
+1. `VgetMonitor` answers 2 (VGA), equal to the oracle.
+3. `VgetRGB`: A, a separate Falcon table of 16 entries.
+4. `VsetMode(-1)` (query only) answers a fixed word; `VsetMode(mode != -1)` stays out. The exact word is proposed
+   in the spec (`docs/api/xbios/`) with its reasoning before the developer builds it; the lead brings it back.
+
+Still open: question 2 (`VgetSize`: A, B or C, and for B/C which byte count), and whether to publish `_VDO`
+(ADR-012 amendment, with [ARCH06](ARCH06.md)). The lead made no recommendation on these; the owner answers them
+separately.

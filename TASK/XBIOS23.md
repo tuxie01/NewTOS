@@ -87,3 +87,11 @@ Owner questions:
 1. Value for `Getrez`: A 2 (recommended), B 3, C keep 4, D 7?
 2. If A or B: answer `VsetMode(-1)` as a query so programs can tell truecolor from mono (TASK/XBIOS22 Q4)?
 3. Amend ADR-017 as a Revision 3 (text above) or as an ADR-024 addendum?
+
+## Owner decision 2026-11-12
+
+Owner 2026-11-12: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to everything as you proposed), answering the lead's recommendations.
+
+1. A: `Getrez()` = 2 (`ST_HIGH`).
+2. Yes: `VsetMode(-1)` is answered as a query ([XBIOS22](XBIOS22.md) decision 4).
+3. As ADR-017 Revision 3, the draft text above; applied to `docs/MEMORY.md` in the implementing commit.

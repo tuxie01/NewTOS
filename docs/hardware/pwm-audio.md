@@ -1400,11 +1400,10 @@ computed from; the developer's code computes from the tag of §12.2, so the
 
 The eight Falcon prescale rates (`Devconnect`, `prescale` 1-5, 7, 9, 11:
 49 170 … 8 195 Hz, spec §4.7) use the same formula; their `RNG` values at the
-same clock are in the last table of §5.5. Q-N6 as recorded names the four STe
-rates; whether the eight Falcon rates are served the same way is **not stated
-in the decision** (the spec's §4.7 lists them; EmuTOS writes the Falcon
-prescale raw to `freq_int`, `bios/dmasound.c:683`) — **open point for the
-lead**, not decided here. Mono and 8-bit modes change the staging, not the
+same clock are in the last table of §5.5. Owner decision 2026-11-12 (`TASK/SND01.md`
+"Decisions", Q-N6 addendum): the eight Falcon rates are served the same way,
+`RNG` from the measured clock, no resampling (the spec's §4.7 lists them;
+EmuTOS writes the Falcon prescale raw to `freq_int`, `bios/dmasound.c:683`). Mono and 8-bit modes change the staging, not the
 rate: one frame is always two FIFO words (mono: both words equal, INFERRED,
 the PWM has no mono mode in the cited tables).
 

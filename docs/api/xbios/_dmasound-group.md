@@ -63,7 +63,7 @@ body copied, constants/register tables as data, every statement with
 
 > **Spec step for TASK/SND05 (researcher, 2026-11-12).** (1) §9.3 now settles the form
 > of the Q-N4 byte-order switch (owner decision: big-endian by default, a NewTOS switch
-> for native little-endian) as a **draft for owner approval**: it reuses the GSXB
+> for native little-endian) (approved by the owner 2026-11-12, Q-N4a-c): it reuses the GSXB
 > `Soundcmd(SET16BITFORMAT, ...)` number and flag constants that the SDK header already
 > defines; nothing is invented except the NewTOS-side semantics of that call, which no
 > pinned source states. (2) The wrong `Setbuffer` -> `SOURCE_AD` mapping of
@@ -660,7 +660,7 @@ stated there, but follows from the target machine. **Added 2026-11-12:** the SDK
 (`sdk/libc/overlay/include/mint/falcon.h:380@MODE_MONO16`: "16 bit mono,
 big-endian"), which supports the same reading for the base modes. **For NewTOS the
 byte order is decided by the owner (2026-11-12): big-endian by default, switch form
-proposed in §9.3.1 (draft).**
+in §9.3.1 (approved by the owner 2026-11-12).**
 
 ---
 
@@ -1118,7 +1118,7 @@ unchanged Atari programs work as they are; a **NewTOS switch** selects native
 little-endian samples for a ported program that computes its samples in C. 8-bit
 samples have no byte order and are unaffected. The form of the switch follows.
 
-#### 9.3.1 Form of the switch — DRAFT FOR OWNER APPROVAL
+#### 9.3.1 Form of the switch — approved by the owner 2026-11-12
 
 **Search for an existing convention (done 2026-11-12), result:**
 
@@ -1190,20 +1190,14 @@ knows NewTOS asks by calling.
 * *Little-endian as the default.* The owner decided against it: unchanged Atari
   programs and sample files are big-endian.
 
-**Open points for the owner (not decided here):**
+**Owner decisions 2026-11-12** (owner: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to everything as you proposed)):
 
-* **Q-N4a Form:** accept `Soundcmd(9, ...)` as above (reuse of the GSXB number,
-  NewTOS-side semantics inferred), or pick another form.
-* **Q-N4b Lifetime:** if a program switches to little-endian and ends, the next
-  program (an unchanged Atari program) would get noise. The proposal is to
-  **reset to big-endian when the process that set it terminates** (a NewTOS
-  rule, no EmuTOS counterpart — EmuTOS has no process-bound sound state), and
-  otherwise to leave it to the program. Alternative: per-process state; the
-  sound device then holds the order of the process that owns the playing buffer
-  (more bookkeeping, no cross-talk).
-* **Q-N4c Latching:** convert a queued frame with the order current at
-  `Setbuffer` time (latched per frame), or at conversion time. Latched per frame
-  is the less surprising one; the cost is one flag in the frame record.
+* **Q-N4a Form:** `Soundcmd(9, ...)` as above (reuse of the GSXB number, NewTOS-side
+  semantics inferred).
+* **Q-N4b Lifetime:** the order **resets to big-endian when the process that set it
+  terminates** (a NewTOS rule, no EmuTOS counterpart).
+* **Q-N4c Latching:** the order is **latched per frame at `Setbuffer` time** (one flag in
+  the frame record); switching later does not change a queued frame.
 * **COMPATIBILITY:** `Soundcmd(9, -1)` answers `0` on the oracle and `0x05` on
   NewTOS — a NewTOS extension, to be listed as such in `docs/COMPATIBILITY.md`
   when built (not an unintended difference).

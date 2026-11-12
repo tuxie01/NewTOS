@@ -61,3 +61,11 @@ Owner questions:
    VDI? EmuTOS Falcon/truecolor: no. Keeping it is today's visible effect, but a "save with `Setcolor(n,-1)`,
    restore with `Setcolor(n,saved)`" round trip then recolours VDI pens in register order (pen 1 red).
 3. `0x0777` plain-ST mask: not applicable (NewTOS is STe-class `0x0FFF`), confirm.
+
+## Owner decision 2026-11-12
+
+Owner 2026-11-12: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to everything as you proposed), answering the lead's recommendations.
+
+1. A: the shadow leads, seeded at boot with the EmuTOS table (`dflt_palette & 0x0FFF`, spec `docs/api/xbios/07-setcolor.md`).
+2. No: an XBIOS palette write (`Setcolor`/`Setpalette`) does not reach the VDI colour table in the truecolor VDI.
+3. Confirmed: no `0x0777` plain-ST mask; NewTOS is STe-class `0x0FFF`.

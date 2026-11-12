@@ -35,8 +35,9 @@ SND03 first.
 The spec that must exist before the developer starts (CLAUDE.md rules 1, 5, 6) is written; nothing of it is code.
 
 - Q-N4 form of the byte-order switch: `docs/api/xbios/_dmasound-group.md` §9.3.1, **a draft for owner approval**
-  (Q-N4a form, Q-N4b lifetime, Q-N4c latching are open there). The developer does not build the switch before the
-  owner approves; big-endian 16-bit samples (the default) can be built without it.
+  (Q-N4a form, Q-N4b lifetime, Q-N4c latching): approved by the owner 2026-11-12 with the whole spec step
+  ("ich stimme allem so zu wie du vorgeschlagen hast", I agree to everything as you proposed); the Falcon prescale
+  rates are served too (SND01 Q-N6 addendum).
 - The wrong `Setbuffer` -> `SOURCE_AD` mapping is corrected in `docs/hardware/pwm-audio.md` §9 (the DMA reads a
   CPU-converted staging ring, never the program's buffer).
 - Hardware implementation contract: `docs/hardware/pwm-audio.md` §12 (clock, rates, GPIO/`PACTL_CS`/PWM, channel and
