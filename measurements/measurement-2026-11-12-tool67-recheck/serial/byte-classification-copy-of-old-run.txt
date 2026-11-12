@@ -1,0 +1,58 @@
+## mkcard normal, fixed (out1) vs unchanged script, image in the session scratchpad
+A(fixed)
+   label /<label> entry@ 163840 clusters [] 0
+   file /HELLO.TXT entry@ 163936 clusters [4] 1
+   dir /SUB entry@ 163968 clusters [5] 1
+   dot /SUB/. entry@ 186368 clusters [] 0
+   dot /SUB/.. entry@ 186400 clusters [] 0
+   file /SUB/X.TXT entry@ 186432 clusters [6] 1
+   file /NEWDESK.INF entry@ 164000 clusters [7] 1
+B(base)
+   label /<label> entry@ 163840 clusters [] 0
+   file /HELLO.TXT entry@ 164032 clusters [10] 1
+   dir /SUB entry@ 164064 clusters [11] 1
+   dot /SUB/. entry@ 198656 clusters [] 0
+   dot /SUB/.. entry@ 198688 clusters [] 0
+   file /SUB/X.TXT entry@ 198720 clusters [12] 1
+   file /NEWDESK.INF entry@ 164096 clusters [13] 1
+FAT (cluster chain entries; follows placement)                                                      32 bytes first 32776 last 98331
+free/deleted clusters in both (.fseventsd/.Spotlight residue)                                      562 bytes first 180237 last 194618
+placement: cluster live in A as ('dir', '/SUB'), in B as None                                       96 bytes first 186381 last 186554
+placement: cluster live in A as ('file', '/HELLO.TXT'), in B as None                               143 bytes first 184320 last 184541
+placement: cluster live in A as ('file', '/NEWDESK.INF'), in B as None                            2048 bytes first 190464 last 192511
+placement: cluster live in A as ('file', '/SUB/X.TXT'), in B as None                              2048 bytes first 188416 last 190463
+placement: cluster live in A as None, in B as ('dir', '/SUB')                                       67 bytes first 198656 last 198748
+placement: cluster live in A as None, in B as ('file', '/HELLO.TXT')                                 7 bytes first 196608 last 196614
+placement: cluster live in A as None, in B as ('file', '/NEWDESK.INF')                              10 bytes first 202752 last 202761
+placement: cluster live in A as None, in B as ('file', '/SUB/X.TXT')                                 7 bytes first 200704 last 200710
+root dir entry (name/cluster/other)                                                                 90 bytes first 163936 last 164124
+root dir time field                                                                                 63 bytes first 163862 last 164121
+volume serial                                                                                        2 bytes first 32297 last 32298
+
+## mkcard normal, fixed (out1) vs unchanged script with the image under TMPDIR (control)
+dir time field                                                                                       6 bytes first 186381 last 186446
+free/deleted clusters in both (.fseventsd/.Spotlight residue)                                       50 bytes first 180237 last 182307
+root dir time field                                                                                 11 bytes first 163862 last 164014
+volume serial                                                                                        3 bytes first 32295 last 32298
+
+## fixed vs fixed (out1 vs out1b)
+dir time field                                                                                       6 bytes first 186381 last 186446
+free/deleted clusters in both (.fseventsd/.Spotlight residue)                                       46 bytes first 180237 last 182307
+root dir time field                                                                                 11 bytes first 163862 last 164014
+volume serial                                                                                        3 bytes first 32295 last 32298
+
+## unchanged vs unchanged, scratchpad (out vs outb)
+dir time field                                                                                       6 bytes first 198669 last 198734
+free/deleted clusters in both (.fseventsd/.Spotlight residue)                                      214 bytes first 180237 last 194614
+root dir time field                                                                                 14 bytes first 163862 last 164110
+volume serial                                                                                        3 bytes first 32295 last 32298
+
+## make-sd-image fixed vs unchanged
+OTHER dir cluster entry bytes                                                                        6 bytes first 217255 last 221428
+dir time field                                                                                     156 bytes first 217101 last 4030742
+free/deleted clusters in both (.fseventsd/.Spotlight residue)                                      188 bytes first 180237 last 194614
+root dir time field                                                                                171 bytes first 163862 last 166838
+urandom file /DATA.BIN                                                                            4080 bytes first 212992 last 217087
+urandom file /KERNEL8.IMG                                                                         4084 bytes first 206848 last 210943
+urandom file /LYNXBOOT.IMG                                                                         512 bytes first 210944 last 211455
+volume serial                                                                                        2 bytes first 32297 last 32298

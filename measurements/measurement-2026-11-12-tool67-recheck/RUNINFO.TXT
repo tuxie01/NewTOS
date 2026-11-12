@@ -1,0 +1,55 @@
+TOOL67 tester recheck, 2026-11-12. Verdict: PASS.
+Agent a4d7d932388f4b960 (tester). No new card build; no worktree, no clone (agent dir not created, nothing to clean).
+Scope: judge the existing run measurements/measurement-2026-11-12-tool67/ (run commit fd411e717, tested commit
+8db332393 on branch tool67) against the restated byte criterion of TASK/TOOL67.md "Acceptance" at main a2c2b76d6.
+Machine: Ingos-MacBook-Air.local, macOS 27.2 (26B123), Claude Code 2.1.322. macOS "Removable Volumes" grant: not stated.
+host_clang: see the manifests of the old run (Apple clang version 21.0.0 (clang-2100.4.1.1)); no image built here.
+
+Commands run here (host, no board): reads of the old run's files; cmp of bytes via dd/xxd on the still-present images
+ (old agent dir out4/sd.img = fixed, session scratchpad out5/sd.img = unchanged); re-run of the old method/classify2.py with a
+ print of every "OTHER" byte; method/tmpentries.py (new) -> serial/tmp-entries.txt. sha256 of both images re-checked equal
+ to the old RUNINFO (c9fb6b6b... and 889b1d26...).
+
+Per criterion point (old run = measurements/measurement-2026-11-12-tool67):
+1. Image under target-agents/agent-<id>/ on /Volumes/Daten, no manual diskutil/hdiutil, no prompt: old RUNINFO items 1,3 (watch logs). Taken from old run: MET.
+2. MKCARD_TESTDISK: image sha256 equal 9d7e8bfd3b0ee011392ed9987ba03de2b51892d41fb05a574de74631b8de2629 (old RUNINFO item 2): MET.
+3. mkcard normal, fixed vs unchanged control with image under $TMPDIR: manifest file lines equal; 70 differing bytes, all in
+   volume serial (3 bytes, 32295..32298), directory time stamp (root 11 bytes 163862..164014, SUB 6 bytes 186381..186446),
+   .fseventsd/.UUID residue (50 bytes, 180237..182307). Source: old serial/byte-classification.txt section "control",
+   offsets in old serial/diff-offsets-mkcard-fixed-vs-tmpdir-control.txt (70 lines). No byte outside the classes: MET.
+   (The scratchpad-location baseline differs in file placement because of a deleted .Spotlight-V100; superseded by the restated criterion.)
+4. make-sd-image fixed vs unchanged, 9199 differing bytes (old serial/diff-offsets-makesdimage-fixed-vs-base.txt), by class:
+   - volume serial: 2 bytes, 32297..32298
+   - root dir time stamp: 171 bytes, 163862..166838 (all in 32-byte entries of the same names in both images)
+   - dir time stamp (subdirectory clusters): 156 bytes, 217101..4030742 (same names in both images)
+   - .fseventsd residue (free clusters in both): 188 bytes, 180237..194614
+   - random by design, DATA.BIN: 4080 bytes 212992..217087; KERNEL8.IMG: 4084 bytes 206848..210943; LYNXBOOT.IMG: 512 bytes 210944..211455
+     (only those three files' clusters; file placement identical in both images)
+   - random by design, the two deleted tmp... directory entries: 6 bytes in the "OTHER" class of the old classifier,
+     offsets 217255, 217257, 217268 and 221415, 221417, 221428. SHOWN to be the two deleted entries (checked by me on the
+     images, serial/tmp-entries.txt): entry@217248 and entry@221408, both first byte 0xE5, attribute 0x0F (LFN),
+     name chars fixed "tmpdc51c6a" / unchanged "tmp3298587" and fixed "tmp1fd15e2" / unchanged "tmp49e64b3"
+     (differing byte = a random hex digit of the name). The old classifier put the other differing bytes of these two
+     entries (217262,217264,217266,217270 and 221422,221424,221426,221430, name characters at entry offsets 14,16,18,22)
+     into "dir time field" because it keys on the byte position; they are in the same two deleted tmp entries, so they too are
+     "random by design" (8 of the 156 bytes above). Result: all 14 differing bytes in the two entries are tmp name characters.
+   I also listed every differing time-field byte lying in a deleted (0xE5) entry: all other ones are in deleted short-name
+   entries with identical names in both images, at entry offsets 13,14,22 (creation/write time), i.e. time stamps.
+   Result: no differing byte outside volume serial, directory time stamp, .fseventsd, random by design: MET.
+5. tosdump --scratch on data volume ran to the end; no mount/device left, also after forced failures (a,b,c); temporary
+   directory gone after every run: taken from old RUNINFO items 4,5: MET.
+6. Cause of diskutil's refusal, sync-card.sh not affected: not re-run by me (forbidden: touches/needs manual diskutil, real card);
+   the old run did not verify them either; they are the developer receipt's statement (not tested by the harness).
+
+Not verified: sync-card.sh; the diskutil refusal cause (both stay as in the old run); the "Removable Volumes" grant (not stated).
+Real-Pi4-only: none (host tools). Real card on disk6 untouched by me (no diskutil/hdiutil call at all).
+Out-of-scope observations: those of the old run (make-sd-image.sh mounts /Volumes/NEWTOS fixed path; hdiutil deprecation warnings).
+
+Image manifests: not rebuilt here; the manifests of the images are in the old run's manifests/ directory. make-sd-image
+ optional_missing line (verbatim, old run): `optional_missing C:\ZVIEW\SAMPLES\ -- sdk/zview/build/samples/IMAGES absent (gen-samples.py did not run; needs Python with Pillow) -- build it with: sdk/zview/build-zview.sh`;
+ mkcard images: `optional_missing none`.
+Gitignored outputs cited (images still on disk when read, not copied):
+ target-agents/agent-a7d9a9372a5ef92c5/out4/sd.img 64M sha256 c9fb6b6bdc7352c8e934440eb90649e5ee5f8af64a0634d0f0eadb87bbba26cc
+ /private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/537a299a-ca86-4612-a7f6-131debf76754/scratchpad/out5/sd.img 64M sha256 889b1d26b7abba4446019848f37ae7c374f1f3b2ede080fa041e3d542588e27f
+ (the first lives in another agent's scratch dir, which is deleted on accept of the ticket; this run's evidence for it is serial/tmp-entries.txt)
+Reproduce: python3 -I method/tmpentries.py <fixed sd.img> <unchanged sd.img>; python3 -I old-run/method/classify2.py A B /DATA.BIN,/KERNEL8.IMG,/LYNXBOOT.IMG
