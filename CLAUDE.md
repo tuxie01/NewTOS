@@ -380,6 +380,19 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
 
 ---
 
+## Team
+
+The main session is the **lead** (`.claude/agents/lead.md`); the workers are
+`researcher`, `developer`, `tester` and `auditor` (briefs in the same
+directory). The lead hands one ticket to one worker with a `HANDOVER` block
+and acts on the worker's `<ROLE>-STATUS` block; both formats are defined in
+the briefs, and a worker's details go into its receipt, run directory or
+report, not into chat. `tools/hooks/role-guard.sh` holds each role to the
+files its brief allows (Write/Edit only; a file written by a Bash command is
+not seen). A session without an agent name counts as the lead.
+
+---
+
 ## Commit Discipline
 
 - Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
@@ -397,9 +410,9 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   if it changed **and** add a dated entry at the top of *Recent Decisions*
   (newest first; what + why + the commit hashes), in the **same** work unit —
   not "later". *Recent Decisions* holds at most 10 entries: move the oldest to
-  the log in `docs/archive/` in the same commit. A foreign uncommitted change already in
-  `STATUS.md` is **not** an excuse to skip it: `git stash push -- docs/STATUS.md`,
-  add your entry on the clean base, commit, then `git stash pop`.
+  the log in `docs/archive/` in the same commit. `docs/STATUS.md` and its
+  archive are edited by the lead only (owner 2026-11-11); a worker proposes
+  its line in its receipt. No `git stash` in the shared main tree.
 - After editing docs, run `cargo xtask doc-check <files you edited>`: every
   path, `file:line` and `ADR-NNN` cite in them must resolve.
   `CLAUDE.md`, `docs/STATUS.md` and `docs/MEMORY.md` are always clean.
@@ -445,9 +458,16 @@ Local, gitignored, never committed: `target/`, `Applications/`, `hardware/`,
   `commit-msg` (the `fix`/`feat` subject and every id it names) run only with
   `git config newtos.ticketChecks true`: switched on 2026-11-11 (owner,
   ADR-037 point 14). Ids count from the subject line only, never the body.
-- A ticket that changes `tools/git-hooks/**` is developed in its own git
-  worktree; the main tree's hooks change only when it is merged after the
-  tester's acceptance (owner 2026-11-11).
+- Every worker that writes tracked files works in its own git worktree on
+  its own branch under `target-agents/agent-<id>/wt` (owner 2026-11-12):
+  the developer on `<ticket id>`, the researcher on `spec-<ticket id>`, the
+  auditor on `audit-<scope>`. In the main tree only the tester commits (its
+  run directory, then `accept`) and the lead (`TASK/`, `docs/STATUS.md`,
+  ADRs). Order per ticket: the developer commits on its branch; the tester
+  tests that commit in its own detached worktree and commits its run
+  directory; the lead lands the branch; the tester accepts the landed
+  commit. So the main tree's hooks (`tools/git-hooks/**`) change only by a
+  tested, landed branch (owner 2026-11-11).
   A worktree branch never fast-forwards into `main`: it lands with
   `cargo xtask land <branch> -F <msg>` (a squash merge and a normal commit
   in the main tree, one commit per ticket, so main's stable hooks check it;
