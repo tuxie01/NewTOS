@@ -48,9 +48,19 @@ applies to both scripts, `tools/make-sd-image.sh` included.
 - `tools/mkcard.sh` and `tools/make-sd-image.sh` each build an image whose
   path lies under `target-agents/agent-<id>/` on `/Volumes/Daten`, with no
   manual `diskutil`/`hdiutil` call by the worker and no permission prompt.
-- For the same inputs and stamp, image sha256 and manifest equal those of an
-  image built by the unchanged script under the session scratchpad (the fix
-  changes no byte of the card).
+- For the same inputs and stamp, compared with an image built by the
+  unchanged script under the session scratchpad (restated by the owner
+  2026-11-12):
+  - `MKCARD_TESTDISK` mode: image sha256 equal;
+  - normal `mkcard.sh` mode and `tools/make-sd-image.sh`: every file sha256
+    in the manifest equal, and every differing image byte assigned to one of
+    the classes volume serial, directory time stamp or `.fseventsd`, with
+    offsets in `RUNINFO.TXT`; a byte outside these classes is a FAIL.
+
+  The owner's first criterion (image sha256 and manifest equal in every
+  mode) assumed reproducible images, which the unchanged scripts do not
+  produce in these two modes (developer receipt, 2026-11-12).
+  Byte-reproducible images there: follow-up TASK/TOOL68.md.
 - `cargo xtask tosdump` with `--scratch` on the data volume runs one case
   table to the end.
 - No mount point or attached device is left after a run, also after a forced
