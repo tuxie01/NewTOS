@@ -1,0 +1,83 @@
+measurement-2026-11-12-snd04 -- XBIOS DMA sound group 0x80-0x8D on the pinned oracle and on NewTOS (TASK/SND04, O1-O5)
+=====================================================================================================================
+Auditor (Opus), lead request 2026-11-12. Measurement + new probe; no product code, no commit, no reference re-recorded.
+Audit report: docs/audits/2026-11-12-snd04-dmasound.md.
+
+WHY
+  TASK/SND04: cases O1-O5 of TASK/SND01.md "Spec review" section 4, semantics S1-S7 of
+  docs/api/xbios/_dmasound-group.md section 9.1.2. S3 (Buffoper bit 0 at the end of a single-shot frame), S4 (Buffptr
+  granularity) and the Sndstatus(1) source conflict are in no pinned source.
+  THE ORACLE IS HATARI'S DMA SOUND MODEL, NOT SILICON: EmuTOS 1a7484ab drives Hatari 2.6.1's Falcon crossbar model
+  (profile falcontc) and its STe/TT DMA sound model (profile tt). tools/hatari-oracle.sh runs Hatari with --sound off;
+  the model still runs (counters advance, end-of-frame events reach the MFP), only host audio is off.
+
+WHY A PROBE, NOT A TABLE
+  DUMPBIOS' guard (tosdump/core/cases.c, call_policy) admits only Soundcmd(0|1|6,-1), Buffoper(-1), Sndstatus(0) and
+  Buffptr(buffer) from this group; Locksnd, Unlocksnd, Setbuffer, Setmode, Settracks, Setmontracks, Setinterrupt,
+  Dsptristate, Gpio, Devconnect and every set arm are refused as "not established". Editing the guard is outside the
+  auditor's remit (it is tosdump). O2/O3/O5 are timing (end of frame, pointer progress over time, interrupts) that
+  no case table expresses. So: a permanent probe, tosdump/probes/snprobe.c, like hkprobe.c.
+
+PIN / ORACLE
+  EmuTOS 1a7484aba1bfba23e2c0899e243b6d8177fe41df, ROM tools/oracle/etos512de-1a7484ab.img sha256
+  323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c (checked by tools/hatari-oracle.sh),
+  Hatari v2.6.1 (/Volumes/Daten/hatari-2.6.1_macos/...), config tools/oracle/hatari.cfg.
+  Canary (docs/analysis/ORACLE.md section 6) at HEAD 767688323 (the docs-only commit ef37dab68 landed between canary
+  and runs): canary.txt -- "canary tt: OK", "canary falcontc: OK".
+
+TREE
+  HEAD ef37dab68e0b5e51f5288568045a3c0e14b10e4a during all runs. Dirty (mine): tosdump/Makefile (snprobe targets),
+  tools/hatari-oracle.sh (SNPROBE.PRG accepted as a no-disk probe), new tosdump/probes/snprobe.c,
+  tosdump/probes/run-snprobe.sh, tosdump/build-snprobe-newtos.sh, docs/api/xbios/_dmasound-group.md, this dir,
+  the report. No kernel/, tos-api/, tos-types/ change. run.txt's "2 dirty paths" = the two new probe files.
+  Frozen tree for the NewTOS kernel: git worktree (detached, ef37dab68) at
+  /Volumes/Daten/Development/PiRusTOS/target-agents/agent-af3707a99691bdbb0/wt, `cargo xtask worktree-setup`;
+  size of target-agents/agent-af3707a99691bdbb0: 1.7G (du -sh, after the build).
+  host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of both manifests).
+
+GITIGNORED OUTPUTS CITED (sha256)
+  SNPROBE.PRG  11339d38f54adf62e90754caa137c101267fa593519c4319a29d4dcd0a47f767  (tosdump/build, m68k)
+  SNPROBE.NAP  47d8e4c294d121d22931f5064f822df59f6cd3d7905084e48f81dc15a65464c6  (tosdump/build, AArch64)
+  snprobe.c    58acdd784888b493382a13d525401adee4f6c258ecba09b7226909572ce3a7e7  (source of both)
+  kernel8.img  764f174ef7e02f2a6fc795aceee634feee543e3f018a38478b6ca5aa2d7621da  (rpi4 --release, features bios-arg-trace)
+  kernel ELF   bd28bd1ad93695c4b52ae88eef6f44f504defee190a92edaa4be4c481fb1cbad
+  DUMPBIOS.NAP 89b265a9299b458b20ecaad558e16c8ed7929d3c48e543ba04bfcfc88c39e105  (build id ef37)
+  tosdiff      b146758fe86770e3d73868637ae211e599a02eceb9d524ca92f67291bdc706c1
+  cards: bios-r1 0da4bf408db55834c96225fc9b76766bab1988abd061f11fbc44355848c4532b (after 22165afa...);
+         snprobe 5d951e861c45a0a65ee2fee6b4b8ad2c75e5fe3c1e27811c552bfadd5039c98c (after dbcc1007...);
+         images were in the session scratchpad and are deleted.
+  Manifests copied: newtos/bios-r1/card.img.manifest, newtos/snprobe/card.img.manifest; both say, verbatim:
+    optional_missing none
+
+METHOD (method/)
+  run-oracle.sh             two runs per profile of tosdump/probes/run-snprobe.sh emutos <profile>, then one
+                            input-check run per profile with hatari-oracle-xbiostrace.sh
+  hatari-oracle-xbiostrace.sh  copy of tools/hatari-oracle.sh: HERE fixed, `--trace xbios` added (diff: 2 lines)
+  run-newtos.sh             newtos-bios-r1.sh (cargo xtask tosdump bios bios-r1.tsv --tree <wt> --features
+                            bios-arg-trace, both pinned references) + run-snprobe.sh newtos on that kernel
+  Scratch: the session scratchpad (SNPROBE_SCRATCH, --scratch), deleted by the scripts.
+
+RESULTS
+  oracle/<profile>-run<n>/SNPROBE.LOG  tt runs byte-identical (d6718de3...); falcontc runs differ only in sub-tick
+                            timing (pointer values within a few bytes, stop positions, one torn read in run1);
+                            every structural result equal (diff in the report).
+  oracle/xbios-trace/       <profile>-xbios-calls.txt (Hatari's XBIOS trace, polling calls and PCs removed,
+                            uniq -c) + that run's SNPROBE.LOG: every argument arrived as the probe passes it;
+                            Xbtimer is printed without arguments by Hatari ("(Xbtimer)").
+  newtos/bios-r1/           tosdiff vs EMUTOS-1a7484ab-BIOS (tt) 32/147 DIFF and -BIOS-falcontc 37/147 DIFF;
+                            DMA sound cases 230-235 DIFF on both (NewTOS answers 0x82/0x88/0x8C/0x8D, Buffptr
+                            buffer untouched); input check biostrace-check.py PASS (147 calls, 0 rows differ).
+  newtos/snprobe/           SNPROBE.LOG: every one of the 41 group calls answers its function number
+                            (0x80..0x8D), Buffptr buffer untouched; B-F skipped (no DMA sound). BOOT-SERIAL.txt
+                            carries the [biostrace] line of each call: arguments as passed (checked line by line).
+  Measured semantics (falcontc | tt), details in docs/api/xbios/_dmasound-group.md section 9.1.6:
+    S3  Buffoper(-1) bit 0 drops at the end of a single-shot frame (tick 16-17 of an 81.8 ms frame) | same
+    S4  pointer in [start,end], byte granularity, stays at end after the frame, frozen at a stop, 0 before the
+        first start | even only, max end-2, reads start after the end/stop and after Setbuffer
+    S5  Setbuffer during a loop frame: next pass plays the new buffer | same
+    S2  timer A once per pass, at the START of each pass incl. the first, none at a single-shot end |
+        at the END of each pass, plus one at Buffoper(0) mid-frame
+    S6  Setinterrupt(1,1): MFP channel 15 (GPIP7, vector 0x13C) counts, channel 7 (0x11C) never | same
+    O4  Sndstatus(1): $8900/01, Buffoper(-1) and playback unchanged, attenuation zeroed, ADDERIN not zeroed
+        (Hatari models no codec toggle) | no-op
+    Buffptr torn reads (-239..-244 bytes mid-frame): 1 in 2 falcontc runs | 5 per tt run

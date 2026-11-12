@@ -1,0 +1,3 @@
+ 171416	   1588	 684128	 857132	  d142c	/private/tmp/claude-501/-Volumes-Daten-Development-PiRusTOS/dd3b654c-65c3-4cb0-ad34-cf754ac4504a/scratchpad/canary-20261112-020030/dumpers/19b7/DUMPVDI.PRG
+canary tt: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all)
+canary falcontc: OK (BIN+LOG bit-identical to EMUTOS-1a7484ab-VDI-all-falcontc)

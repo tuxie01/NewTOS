@@ -1,0 +1,150 @@
+SNPROBE TASK/SND04
+A01 Locksnd() ret=00000001 (1)
+A02 Locksnd() again ret=ffffff7f (-129)
+A03 Unlocksnd() ret=00000000 (0)
+A04 Unlocksnd() again ret=ffffff80 (-128)
+A05 Soundcmd(0,-1) ret=00000000 (0)
+A06 Soundcmd(1,-1) ret=00000000 (0)
+A07 Soundcmd(2,-1) ret=00000000 (0)
+A08 Soundcmd(3,-1) ret=00000000 (0)
+A09 Soundcmd(4,-1) ret=00000000 (0)
+A10 Soundcmd(5,-1) ret=00000000 (0)
+A11 Soundcmd(6,-1) ret=00000000 (0)
+A12 Soundcmd(7,-1) ret=00000000 (0)
+A13 Buffoper(-1) ret=00000000 (0)
+A14 Buffoper(-2) ret=00000000 (0)
+A15 Sndstatus(0) ret=00000000 (0)
+A16 Buffptr ret=00000000 play=00000000 record=22222222 res1=33333333 res2=44444444 spare=55555555,66666666
+A17 Setmode(3) ret=fffffffb (-5)
+A18 Setmode(0) ret=00000000 (0)
+A19 Settracks(4,0) ret=fffffffb (-5)
+A20 Settracks(0,0) ret=fffffffb (-5)
+A21 Setmontracks(4) ret=fffffffb (-5)
+A22 Setmontracks(0) ret=fffffffb (-5)
+A23 Setinterrupt(2,0) ret=fffffffb (-5)
+A24 Setinterrupt(0,0) ret=fffffffb (-5)
+A25 Setinterrupt(1,0) ret=fffffffb (-5)
+A26 Setinterrupt(0,1) ret=00000000 (0)
+A27 Setinterrupt(0,0) ret=fffffffb (-5)
+A28 Dsptristate(0,0) ret=fffffffb (-5)
+A29 Gpio(1,0) ret=fffffffb (-5)
+A30 Gpio(3,0) ret=fffffffb (-5)
+A31 Devconnect(4,8,0,0,1) ret=fffffffb (-5)
+A32 Devconnect(0,8,0,0,1) ret=00000000 (0)
+A33 Setbuffer(2,0,0) ret=fffffffb (-5)
+A34 Soundcmd(2,0x0080) ret=00000000 (0)
+A35 Soundcmd(0,0x0010) ret=0000000c (12)
+A36 Soundcmd(0,-1) ret=0000000c (12)
+A37 Soundcmd(0,0) ret=00000000 (0)
+A38 Soundcmd(6,4) ret=00000000 (0)
+A39 Soundcmd(6,3) ret=00000003 (3)
+A40 Buffoper(0) ret=00000000 (0)
+M01 buffers in ST-RAM below 16 MB: 1
+B01 Setmode(0) ret=00000000 (0)
+B02 Soundcmd(6,3) ret=00000003 (3)
+B03 Setbuffer(0,A,A+8192) ret=00000000 (0)
+B04 before start: play-A=0
+B04 Buffptr ret=00000000 play=00023ba0 record=22222222 res1=33333333 res2=44444444 spare=55555555,66666666
+B05 Buffoper(1) ret=00000000 (0)
+B06 t=0 bo=1 ptr=64
+B06 t=0 bo=1 ptr=120
+B06 t=1 bo=1 ptr=178
+B06 t=1 bo=1 ptr=234
+B06 t=1 bo=1 ptr=298
+B06 t=1 bo=1 ptr=354
+B06 t=1 bo=1 ptr=414
+B06 t=1 bo=1 ptr=470
+B06 t=1 bo=1 ptr=534
+B06 t=1 bo=1 ptr=590
+B06 t=1 bo=1 ptr=648
+B06 t=2 bo=1 ptr=710
+B06 t=2 bo=1 ptr=768
+B06 t=2 bo=1 ptr=824
+B06 t=2 bo=1 ptr=888
+B06 t=2 bo=1 ptr=944
+B06 t=2 bo=1 ptr=1002
+B06 t=2 bo=1 ptr=1064
+B06 t=2 bo=1 ptr=1122
+B06 t=3 bo=1 ptr=1186
+B06 t=3 bo=1 ptr=1244
+B06 t=3 bo=1 ptr=1306
+B06 t=3 bo=1 ptr=1364
+B06 t=3 bo=1 ptr=1426
+B07 samples>0=1 distinct=834 first=64 min=0 max=8180 last=0 minstep=4 maxstep=64 gcd=2 wraps=1 outofrange=0 bo_seen=3 off_tick=17 ptr_at_off=0 ptr_before_off=0 last_on_tick=17 end_tick=27
+B07 down t=17 8180->0
+B08 after end: play-A=0
+B08 Buffptr ret=00000000 play=00023ba0 record=22222222 res1=33333333 res2=44444444 spare=55555555,66666666
+B09 Buffoper(-1) after end ret=00000000 (0)
+C01 Setbuffer(0,A,A+8192) ret=00000000 (0)
+C02 Buffoper(3) ret=00000000 (0)
+C03 samples>0=1 distinct=3541 first=56 min=2 max=8190 last=4438 minstep=4 maxstep=264 gcd=2 wraps=4 outofrange=0 bo_seen=8 off_tick=-1 ptr_at_off=0 ptr_before_off=4438 last_on_tick=58 end_tick=58
+C03 down t=16 8188->2
+C03 down t=19 1364->1122
+C03 down t=32 8188->2
+C03 down t=49 8190->10
+C04 Buffoper(-1) while looping ret=00000003 (3)
+C05 Buffoper(0) ret=00000000 (0)
+C06 after stop: play-A=0, 4 ticks later 0
+C07 Buffoper(-1) after stop ret=00000000 (0)
+D01 Setbuffer(0,A,A+8192) ret=00000000 (0)
+D02 Buffoper(3) ret=00000000 (0)
+D03 Setbuffer(0,B,B+4096) while A loops ret=00000000 (0)
+D04 set at t=8 with play-A=4102
+D05 last play-A=8188; first in B at t=16 play-B=2
+D06 samples>0=1 distinct=1806 first=60 min=2 max=4092 last=2418 minstep=4 maxstep=262 gcd=2 wraps=4 outofrange=0 bo_seen=8 off_tick=-1 ptr_at_off=0 ptr_before_off=2418 last_on_tick=30 end_tick=30
+D06 down t=8 4092->2
+D06 down t=14 2628->2384
+D06 down t=16 4092->10
+D06 down t=25 4088->2
+D07 Buffoper(0) ret=00000000 (0)
+E01 IERA=14 IERB=60 IMRA=14 IMRB=60
+E02 Setinterrupt(0,1) ret=00000000 (0)
+E03 regs 8900/01=0000
+E04 t0=2717
+E05 samples>0=1 distinct=1004 first=12 min=0 max=8186 last=0 minstep=4 maxstep=262 gcd=2 wraps=2 outofrange=0 bo_seen=3 off_tick=16 ptr_at_off=0 ptr_before_off=0 last_on_tick=16 end_tick=26
+E05 down t=10 4952->4708
+E05 down t=16 8186->0
+E06 single-shot timerA count=1 ticks-t0=16
+E07 t0=2743
+E08 samples>0=1 distinct=3376 first=8 min=4 max=8190 last=4052 minstep=4 maxstep=260 gcd=2 wraps=4 outofrange=0 bo_seen=8 off_tick=-1 ptr_at_off=0 ptr_before_off=4052 last_on_tick=58 end_tick=58
+E08 down t=17 8190->4
+E08 down t=18 600->358
+E08 down t=33 8190->4
+E08 down t=49 8186->8
+E08 Buffoper(0) at t=58
+E09 loop timerA count=4 ticks-t0=17,33,49,58
+E10 Setinterrupt(0,0) ret=fffffffb (-5)
+E11 single-shot timerA, Setinterrupt(0,0) count=1 ticks-t0=16
+E12 Setinterrupt(1,1) ret=00000000 (0)
+E13 regs 8900/01=0000
+E14 t0=2833
+E15 samples>0=1 distinct=993 first=14 min=0 max=8188 last=0 minstep=4 maxstep=262 gcd=2 wraps=2 outofrange=0 bo_seen=3 off_tick=16 ptr_at_off=0 ptr_before_off=8188 last_on_tick=16 end_tick=26
+E15 down t=10 4954->4710
+E15 down t=16 8188->0
+E16 Setinterrupt(1,0) ret=fffffffb (-5)
+E17 single-shot GPIP7 (ch15) count=1 ticks-t0=0
+E18 single-shot GPIP5 (ch7) count=0 ticks-t0=
+E19 restored IERA=14 IERB=60 IMRA=14 IMRB=60 vectors 0x134 1 0x13C 1 0x11C 1
+F01 Setinterrupt(0,1) ret=00000000 (0)
+F02 Buffoper(3) ret=00000000 (0)
+F03 before: regs 8900/01=0003 Buffoper(-1)=3
+F03a Soundcmd(0,0x0050) (attenuation, zeroed by the reset) ret=0000004e (78)
+F03b Soundcmd(4,0x0001) ret=00000000 (0)
+F04 Sndstatus(1) ret=00000000 (0)
+F05 after: regs 8900/01=0003
+F06 Buffoper(-1) after Sndstatus(1) ret=00000003 (3)
+F07 play-A=1538, 3 ticks later 2774
+F08 Soundcmd(0,-1) after reset ret=0000004e (78)
+F09 Soundcmd(1,-1) after reset ret=00000000 (0)
+F10 Soundcmd(2,-1) after reset ret=00000000 (0)
+F11 Soundcmd(3,-1) after reset ret=00000000 (0)
+F12 Soundcmd(4,-1) after reset ret=00000000 (0)
+F13 Soundcmd(5,-1) after reset ret=00000000 (0)
+F14 Soundcmd(6,-1) after reset ret=00000003 (3)
+F15 Sndstatus(0) after reset ret=00000000 (0)
+F16 Buffoper(0) ret=00000000 (0)
+F17 Setinterrupt(0,0) ret=fffffffb (-5)
+F18 Devconnect(0,8,0,0,1) ret=00000000 (0)
+F19 Setmode(0) ret=00000000 (0)
+F20 Sndstatus(0) after re-init ret=00000000 (0)
+end

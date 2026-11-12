@@ -51,6 +51,16 @@ body copied, constants/register tables as data, every statement with
 > 5. **Wording:** "measured frequencies of the ST path" (§4.7) is "listed" — the
 >    FreeMiNT driver contains the numbers, it does not measure them.
 
+> **Oracle measurement 2026-11-12 (TASK/SND04, auditor).** S2–S6 of §9.1.2 and the
+> `Sndstatus(1)` conflict of §3/0x8C were measured on the pinned oracle, profiles
+> `falcontc` and `tt`, with the probe `tosdump/probes/snprobe.c` (`measurements/measurement-2026-11-12-snd04/RUNINFO.TXT`). Results:
+> §9.1.6. **The oracle is EmuTOS driving Hatari 2.6.1's DMA sound model** (Falcon
+> crossbar on `falcontc`, STe/TT DMA sound on `tt`), not silicon; where the two
+> Hatari models disagree, the text says so. One statement of this spec is
+> contradicted by the measurement: `Setinterrupt` mode 1 reaches MFP channel **15**
+> (GPIP7, vector `0x13C`), not channel 7 / vector `0x11C` (§4.4, S6; marked
+> "(corrected 2026-11-12, measured)").
+
 ---
 
 ## 0. The result up front
@@ -327,7 +337,13 @@ Meaning (FreeMiNT `sys/mint/falcon.h:272-275`): `SB_PLA_ENA = 1`,
 > bit 0 itself when a single-shot frame ends. EmuTOS has no reader of the bit;
 > the FreeMiNT driver never reads `control` (it keeps its own `status` counter,
 > `sys/xdd/audio/falcon.c:131-140`). A program that polls `Buffoper(-1)` until the
-> bit drops depends on it — see §9.1.2 S3 (measure on the oracle).
+> bit drops depends on it — see §9.1.2 S3.
+>
+> **Measured on the oracle (2026-11-12, §9.1.6):** yes, on both profiles. After
+> `Setbuffer(0, a, a+8192)` and `Buffoper(1)` (8-bit stereo, prescale 3) bit 0 reads
+> 1 for 16–17 ticks of `_hz_200` (the frame time, 4096 frames ≈ 81.8 ms) and 0 from
+> then on; `Buffoper(-1)` then answers `0`. In loop mode (`Buffoper(3)`) it answers
+> `3` throughout. Hatari's model, not silicon.
 
 ### 0x89 `Dsptristate(dspxmit, dsprec)` — `:521-540`
 
@@ -389,6 +405,20 @@ immediately (`:702-703`); otherwise `prescale` is mapped to the four STe rates
 > FreeMiNT describes) or EmuTOS is right about `$FF8900/01` cannot be decided from
 > the sources; EmuTOS is primary, but this is a measurement item (oracle, falcontc
 > profile): `Buffoper(SB_PLA_ENA)`, `Sndstatus(1)`, `Buffoper(-1)`.
+>
+> **Resolved by measurement (2026-11-12, §9.1.6, O4):** on the oracle, `Sndstatus(1)`
+> while a loop frame plays with `Setinterrupt(0,1)` leaves `$FFFF8900`/`$FFFF8901`
+> unchanged (`0x04`/`0x03` before and after), `Buffoper(-1)` still answers `3`, the
+> play pointer keeps advancing, and the attenuation set before reads `0` afterwards
+> (EmuTOS' own write, `:761`). **The rule for NewTOS is EmuTOS': `Sndstatus(1)`
+> neither stops playback nor disables the frame interrupt;** FreeMiNT's "interrupts
+> disabled, buffer operation disabled" (the TOS 4 description) is not what the
+> oracle does. Caveat: Hatari does not model the codec toggle either — ADDERIN
+> (`$FFFF8937`), set to `1` before the reset, still reads `1` after it, although the
+> source comment `:735-750` says the toggle zeroes it, and `Sndstatus` answers `0`
+> before and after. So the oracle settles EmuTOS' observable behaviour, not what
+> the silicon's toggle does. On `tt` the STe branch makes `Sndstatus(1)` a no-op
+> that answers `0` (`:756-757`), as measured.
 
 Field layout of the return — from FreeMiNT (`sys/mint/falcon.h:338-344`): bits 0-1
 are an error code (`SS_OK 0`, `SS_CTRL 1`, `SS_SYNC 2`, `SS_SCLK 3`), bit 4
@@ -396,7 +426,9 @@ are an error code (`SS_OK 0`, `SS_CTRL 1`, `SS_SYNC 2`, `SS_SCLK 3`), bit 4
 (inference, not cited)** — right after a reset the register value `$003F` named in
 the comment gives exactly `3` = `SS_SCLK` ("serial clock out of valid range"),
 which fits a just-zeroed clock matrix. A program should therefore call
-`Devconnect` after `Sndstatus(1)` and then check again.
+`Devconnect` after `Sndstatus(1)` and then check again. **Not reproduced by the
+oracle (2026-11-12):** `Sndstatus(1)` answers `0` on `falcontc` — Hatari keeps
+`codec_status` at 0 (§9.1.6); the inference stays unmeasured.
 
 ### 0x8D `Buffptr(ptr)` — `:772-803`
 
@@ -416,7 +448,11 @@ Flow: on the Falcon first set control bit 7, read the three counter bytes →
 > (added 2026-11-12):** the three counter bytes are read one after the other with
 > no latch in the code (`:792-794`, `:797-799`); while the counter advances, the
 > assembled value can be torn at a byte carry. Whether the hardware latches is not
-> in any pinned source.
+> in any pinned source. **Observed on the oracle (2026-11-12, §9.1.6):** mid-frame
+> reads that are 239–244 bytes *below* the previous one, e.g. `0x240F4` →
+> `0x24002` (middle byte read before, low byte after the carry) — on `tt` in most
+> runs, on `falcontc` once in two runs. Hatari does not latch; whether silicon does
+> stays open.
 
 ---
 
@@ -486,7 +522,8 @@ follows from the driver's structure.
 
 * `SB_PLA_ENA` alone: one frame, then the chip stops. The FreeMiNT driver uses
   exactly that for the single buffer (`falcon.c:176-181`) — **but note** that the
-  stop itself is not read anywhere (§3/0x88, "Not established").
+  stop itself is not read anywhere in the sources (§3/0x88); on the oracle the
+  stop is visible as `Buffoper(-1)` bit 0 dropping (measured 2026-11-12, §9.1.6).
 * `SB_PLA_ENA | SB_PLA_RPT` (= 3, `DMA_PLAY|DMA_LOOP`): "Play repeat (continuous
   loop mode)" — the name in FreeMiNT (`sys/mint/falcon.h:273`, constant
   `sys/xdd/audio/dmasnd.h:10-11`, used `falcon.c:186`). **Inference (not cited):**
@@ -517,8 +554,13 @@ The number is EmuTOS-proved: `MFP_TIMERA = 13`, and EmuTOS even defines the
 synonym **`MFP_DMASOUND`** (`include/biosdefs.h:192-193`). `Xbtimer` → `setup_timer`
 (writes `tacr = 0`, `tadr = data`, `tacr = control` for timer 0, `bios/mfp.c:133-141`)
 + `mfpint` → vector at `(0x40 + 13) * 4` = `0x134` (`bios/mfp.c:114-120,
-163-169`). MFP-i7 is interrupt 7, vector `(0x40 + 7) * 4` = `0x11C` (same
-formula).
+163-169`). MFP-i7 is **GPIP7 = MFP interrupt channel 15**, vector
+`(0x40 + 15) * 4` = `0x13C` (same formula) — EmuTOS names channel 15
+`MFP_MONODETECT` (`include/biosdefs.h:195`). (corrected 2026-11-12, measured: the
+2026-11-12 text said "interrupt 7, vector `0x11C`"; channel 7 is GPIP5,
+`MFP_DISK`, `include/biosdefs.h:185`. With `Setinterrupt(1,1)` a counting handler
+on channel 15 ran once per single-shot frame on both profiles, one on channel 7
+never, §9.1.6.)
 
 What `control = 8` means to the MFP (Timer A event-count mode) is MFP hardware
 semantics: **not stated in any pinned source** (EmuTOS only writes the value). It
@@ -805,15 +847,16 @@ Each item says where it comes from and whether it is established.
 | # | Semantic | Source | Status |
 |---|---|---|---|
 | S1 | `Setinterrupt(mode, cause)` return values: `mode > 1` → `EBADRQ`; Falcon branch returns `0` for any `cause`; STe/TT branch returns `0` only for `cause == 1`, else `EBADRQ` | `bios/dmasound.c:464-491` | read |
-| S2 | While enabled (`cause` bit 0 = play), the program's handler runs once at the end of each play frame, asynchronously to the main program | EmuTOS: only the comment "Timer-A or MFP-i7" (`:455`); FreeMiNT driver relies on one interrupt per frame (`falcon.c:121-146`, `:187`) | read (driver use) — "once per frame **pass** in loop mode" is **inference** |
-| S3 | `Buffoper(-1)` bit 0: whether it drops when a single-shot frame ends | no pinned source (§3/0x88) | **not established** → measure |
-| S4 | `Buffptr` `play`: lies in `[start, end]`, advances while playing, stops at `end`/loops back in loop mode | EmuTOS reads the counter only (`:797-800`); semantics from hardware | **not established** → measure (granularity, off-by-one, what it reads after the frame ended) |
-| S5 | `Setbuffer` during playback prepares the next frame (gapless double buffering) | FreeMiNT driver structure (`falcon.c:182-188`) | **inference** |
-| S6 | Handler vector selection: `mode 0` = Timer A = MFP interrupt 13 (vector `0x134`), `mode 1` = MFP i7 (vector `0x11C`) | `bios/dmasound.c:477-491`, `include/biosdefs.h:192-193`, `bios/mfp.c:114-120` | read |
+| S2 | While enabled (`cause` bit 0 = play), the program's handler runs once per play frame, asynchronously to the main program | EmuTOS: only the comment "Timer-A or MFP-i7" (`:455`); FreeMiNT driver relies on one interrupt per frame (`falcon.c:121-146`, `:187`) | **measured, the two Hatari models disagree on the moment** (§9.1.6): one interrupt per frame pass on both; `falcontc` raises it at the **start** of every pass (also the first, none when a single-shot frame ends), `tt` at the **end** of every pass (plus one when `Buffoper(0)` stops a frame midway). With `Setinterrupt(0,0)` none on `falcontc`; on `tt` the call is `EBADRQ` and the interrupt still comes (S1) |
+| S3 | `Buffoper(-1)` bit 0: whether it drops when a single-shot frame ends | no pinned source (§3/0x88) | **measured: drops** at the frame end (16–17 ticks for an 81.8 ms frame), both profiles; stays `3` in loop mode (§9.1.6) |
+| S4 | `Buffptr` `play`: lies in `[start, end]`, advances while playing, stops at `end`/loops back in loop mode | EmuTOS reads the counter only (`:797-800`); semantics from hardware | **measured, model-dependent** (§9.1.6): always in `[start, end]`, monotonic within a pass except torn reads. `falcontc`: byte granularity, reaches `end` (exclusive address) and stays there after a single-shot frame, frozen where `Buffoper(0)` stopped it, `0` before the first start. `tt`: even values only, at most `end - 2`, reads `start` after the frame and after a stop, `start` already after `Setbuffer`. `record` written (`0`) on `falcontc` only; `res1`/`res2` untouched on both |
+| S5 | `Setbuffer` during playback prepares the next frame (gapless double buffering) | FreeMiNT driver structure (`falcon.c:182-188`) | **measured** (§9.1.6): set in mid-frame, the running frame plays to its end, the next pass plays the new buffer, both profiles |
+| S6 | Handler vector selection: `mode 0` = Timer A = MFP interrupt 13 (vector `0x134`), `mode 1` = MFP i7 = GPIP7 = interrupt 15 (vector `0x13C`) | `bios/dmasound.c:477-491`, `include/biosdefs.h:192-195`, `bios/mfp.c:114-120` | read; **measured** (§9.1.6). (corrected 2026-11-12, measured: was "MFP i7 (vector `0x11C`)") |
 | S7 | Time budget: a handler has up to one frame time to queue the next frame (loop mode replays the old frame otherwise) | inference from S5 | **inference** |
 
 S3, S4 and part of S2 are what an oracle measurement settles: the oracle's falcontc
 profile runs the real EmuTOS Falcon code in Hatari (`docs/COMPATIBILITY.md:1636`).
+They were measured on 2026-11-12 (§9.1.6); S7 was not.
 The existing tosdump round only measures the inquiries (`tosdump/cases/bios-r1.tsv:230-234@Soundcmd`;
 `Buffoper(-1)`, `Sndstatus(0)`, `Soundcmd(m,-1)`); playback-state cases are marked
 "later" in `tosdump/cases/COVERAGE-BIOS.md:208-220@Locksnd`. Proposed cases are in the
@@ -894,9 +937,9 @@ inference, – = lost, ? = needs measurement)
 | C + U1/U2 | K | k | ? | k (FIFO granularity) | k | K |
 | D | K | – | ? | k | k | K |
 
-S3 is `?` in every row because it is a property of hardware nobody has measured in
-our sources; the NewTOS implementation of `Buffoper` decides it, and the decision
-has to match the oracle.
+S3 was `?` in every row because no pinned source states it; the oracle measured it
+on 2026-11-12 (bit 0 drops at the end of a single-shot frame, §9.1.6). Every option
+keeps it in software: the NewTOS `Buffoper` must clear bit 0 when its frame ends.
 
 #### 9.1.4 Datasheet facts the options stand on (Track B)
 
@@ -975,11 +1018,57 @@ Nothing here is from memory; each line names the table.
 * `Setinterrupt` can be built under every option; what differs is whether it does
   anything (S2). Under D it is an honest "recorded, never called" with the ADR-031
   warning.
-* `Buffoper` and `Buffptr` are served by software state in every option; S3/S4 need
-  the oracle measurement before the Developer fixes the rules.
+* `Buffoper` and `Buffptr` are served by software state in every option; S3/S4 were
+  measured on the oracle (§9.1.6): the Developer takes the rules from there.
 * Option A with U2 comes closest to the Falcon; option B with U1 is the cheapest
   complete DMA design. The comparison for the jack (work, CPU cost, testability,
   sources) is in `TASK/SND01.md` § "Spec review"; the owner chooses.
+
+#### 9.1.6 Oracle measurement (TASK/SND04, 2026-11-12)
+
+Probe `tosdump/probes/snprobe.c` (`make -C tosdump snprobe-m68k`, run by
+`tosdump/probes/run-snprobe.sh`), pinned oracle, profiles `falcontc` (Falcon
+branch, `has_falcon_dmasound`) and `tt` (STe/TT branch); two runs each, the inputs
+checked in a third run with Hatari's `--trace xbios`; evidence and run data: `measurements/measurement-2026-11-12-snd04/RUNINFO.TXT`. The `tt` runs
+are byte-identical, the `falcontc` runs differ only in sub-tick timing (pointer
+values within ±5 bytes, stop positions); every statement below holds in both runs.
+**The oracle is EmuTOS on Hatari 2.6.1's DMA sound model, not silicon.** Frame:
+8192 bytes, 8-bit stereo, `Soundcmd(6,3)` (≈ 50 kHz), so 4096 frames ≈ 81.8 ms =
+16.4 ticks of `_hz_200`; buffer in ST-RAM (`Mxalloc(…, 0)`).
+
+| Item | `falcontc` | `tt` |
+|---|---|---|
+| O1 `Locksnd` ×2, `Unlocksnd` ×2 | `1`, `-129`, `0`, `-128` | same |
+| O1 boot `Soundcmd(0..6,-1)`, `(7,-1)` | `0 0 0x80 0x80 3 3 3`, `0` | `0 0 0 0 0 0 0`, `0` |
+| O1 `Buffoper(-1)`, `(-2)`, `Sndstatus(0)` | `0`, `0`, `0` | same |
+| O1 `Buffptr` at boot | `play 0`, `record 0`, `res1`/`res2` untouched | `play 0`, `record` untouched, `res1`/`res2` untouched |
+| O1 `Setmode(3)`/`(0)`; `Settracks(4,0)`/`(0,0)`; `Setmontracks(4)`/`(0)` | `-5`/`0`; `-5`/`0`; `-5`/`0` | `-5`/`0`; `-5`/`-5`; `-5`/`-5` |
+| O1 `Setinterrupt(2,0)`, `(0,0)`, `(1,0)`, `(0,1)` (S1) | `-5`, `0`, `0`, `0` | `-5`, `-5`, `-5`, `0` |
+| O1 `Dsptristate(0,0)`; `Gpio(1,0)`, `(3,0)` | `0`; `0`, `-5` | `-5`; `-5`, `-5` |
+| O1 `Devconnect(4,8,0,0,1)`, `(0,8,0,0,1)` | `0`, `1` | `-5`, `0` |
+| O1 `Setbuffer(2,…)` | `-5` | `-5` |
+| O1 `Soundcmd(0,0x10)` then `(0,-1)`; `Soundcmd(6,4)` | `0x10`, `0x10`; `3` (unchanged) | `12`, `12` (§3/0x82 edge); `0` (unchanged) |
+| O2/S3 `Buffoper(-1)` during / after a single-shot frame | `1` until tick 16–17, then `0` | same |
+| O3/S4 play pointer while playing | `[start, end]`, any byte offset (gcd of the offsets 1) | `[start, end - 2]`, even offsets only |
+| O3/S4 pointer at / after a single-shot end | `end` (exclusive address), stays | `start` |
+| O3/S4 loop mode, 58 ticks | 3 wraps, near `start` after each; `Buffoper(-1)` = `3` | 3 wraps; same |
+| O3/S4 after `Buffoper(0)` mid-frame | frozen at the stop position | `start` |
+| O3/S4 `Buffptr` torn read (§3/0x8D (e)) | once in two runs (−239) | 5 per run in both runs (−242 or −244) |
+| S5 `Setbuffer(B)` in mid-frame of a loop | A plays to its end (`end - 7` last read), next pass in B at tick 16 | same (`end - 4`) |
+| O5/S2 `Setinterrupt(0,1)`, timer A, `Xbtimer(0,8,1,h)` + `Jenabint(13)`: single-shot | 1 interrupt, at tick 0 (the start) | 1, at tick 16 (the end) |
+| O5/S2 the same in loop mode, 58 ticks, then `Buffoper(0)` | 4, at ticks 0, 16, 33, 49 (start of each pass) | 4, at 17, 33, 49 (end of each pass) and 58 (the stop) |
+| O5 `Setinterrupt(0,0)` then a single-shot frame | `0`; no interrupt | `EBADRQ`; 1 interrupt at 16 |
+| O5/S6 `Setinterrupt(1,1)`, handlers on MFP channels 15 and 7 | ch 15 once (tick 0), ch 7 never | ch 15 once (tick 0), ch 7 never |
+| O5 `$FFFF8900` after `Setinterrupt(0,1)` / `(1,1)` | `0x04` / `0x01` | `0x00` / `0x00` (STe branch writes nothing, `:467-475`) |
+| O4 `Sndstatus(1)` in a playing loop | `0`; `$8900/01` `0x04 0x03` unchanged; `Buffoper(-1)` `3`; pointer advances; attenuation `0x50` → `0`; ADDERIN `1` → `1` | `0`; nothing changes (attenuation stays `78`) |
+
+What this gives the NewTOS backend (SND05): S3 and S5 are settled; S4 has two
+oracle answers, so the backend picks one model per machine profile it claims and
+states it. The `_SND` value under discussion (`0x14`, `TASK/SND01.md` §5) makes
+programs expect the Falcon branch, so the `falcontc` column is the target for a
+`0x14` NewTOS: frame interrupt at the start of each pass, pointer stays at `end`
+after a single-shot frame. Whether real Falcon silicon behaves like Hatari's
+crossbar model is not measured (no Falcon on the bench). S7 is not measured.
 
 ### 9.2 Pointer width for `Setbuffer`/`Buffptr` — a real ABI decision
 

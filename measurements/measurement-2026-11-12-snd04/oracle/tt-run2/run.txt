@@ -1,0 +1,4 @@
+snprobe run, side emutos (2026-11-12T01:08:25Z)
+tree      ef37dab68e0b5e51f5288568045a3c0e14b10e4a 2 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SNPROBE.PRG 11339d38f54adf62e90754caa137c101267fa593519c4319a29d4dcd0a47f767 SNPROBE.NAP 47d8e4c294d121d22931f5064f822df59f6cd3d7905084e48f81dc15a65464c6
+oracle    tools/hatari-oracle.sh tt (pinned ROM, tools/oracle/hatari.cfg)

@@ -24,3 +24,21 @@ Type: measurement (tosdump cases against the pinned oracle, falcontc profile). F
 
 - O1-O5 recorded on the oracle with committed references; the spec states the measured S3/S4 and resolves the
   `Sndstatus(1)` conflict; doc-check 0 failures.
+
+## Results (auditor, 2026-11-12)
+
+Run `measurements/measurement-2026-11-12-snd04/RUNINFO.TXT`, report `docs/audits/2026-11-12-snd04-dmasound.md`, probe
+`tosdump/probes/snprobe.c` (a table cannot express the timing; DUMPBIOS refuses the set arms of this group). Oracle =
+EmuTOS on Hatari 2.6.1's DMA-sound model; its Falcon (falcontc) and STe/TT (tt) models disagree in places.
+
+- O1: lock pair 1, -129, 0, -128; boot `Soundcmd(0..6,-1)` falcontc 0 0 0x80 0x80 3 3 3, tt all 0; NewTOS answers
+  the function number on all 41 calls.
+- O2 (S3): `Buffoper(-1)` bit 0 drops at the end of a single-shot frame (16-17 ticks for an 81.8 ms frame), stays 3
+  in loop mode.
+- O3 (S4): the play pointer stays within [start, end]; falcontc byte granularity, tt even values; torn reads seen.
+  S5: `Setbuffer` during a loop pass takes effect at the next pass.
+- O4: the `Sndstatus(1)` conflict is settled for EmuTOS: the sound registers stay, playback continues.
+- O5: one interrupt per frame pass (falcontc at the start of each pass, tt at the end); `Setinterrupt` mode 1 uses
+  MFP channel 15 (vector 0x13C), not 7 as the spec said (corrected).
+- Not measured: S7; the record path and the write arms of `Gpio`/`Dsptristate`/`Devconnect` only partly. Which
+  Hatari model matches real hardware is unknown.

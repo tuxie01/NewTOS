@@ -1,0 +1,7 @@
+snprobe run, side newtos (2026-11-12T01:11:46Z)
+tree      ef37dab68e0b5e51f5288568045a3c0e14b10e4a 2 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SNPROBE.PRG 11339d38f54adf62e90754caa137c101267fa593519c4319a29d4dcd0a47f767 SNPROBE.NAP 47d8e4c294d121d22931f5064f822df59f6cd3d7905084e48f81dc15a65464c6
+kernel    764f174ef7e02f2a6fc795aceee634feee543e3f018a38478b6ca5aa2d7621da /Volumes/Daten/Development/PiRusTOS/target-agents/agent-af3707a99691bdbb0/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+card      5d951e861c45a0a65ee2fee6b4b8ad2c75e5fe3c1e27811c552bfadd5039c98c (tools/mkcard.sh, C:\SNPROBE.NAP, #Z autorun)
+qemu      done
+card      after dbcc10077aa8b101dffd8c9921e219255e13f60f6e8744e04ae54f16ec8540c1 (the booted clone)

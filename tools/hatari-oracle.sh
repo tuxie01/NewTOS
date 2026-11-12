@@ -46,6 +46,8 @@
 #            or XDPROBE.PRG (tosdump/probes/xdprobe.c, TASK/FS31): the same,
 #            on an image with three partitions, so EmuTOS' drives are C: D: E:
 #            and the probe's GEMDOS drive is F: (HATARI_ORACLE_GEMDOS_DRIVE=F)
+#            or SNPROBE.PRG (tosdump/probes/snprobe.c, TASK/SND04): no table,
+#            touches no disk, profiles tt and falcontc, writes SNPROBE.LOG only
 #   table    the case table; staged as VDI.TSV / AES.TSV / RASTER.TSV /
 #            BIOS.TSV; - for a probe
 #   out-dir  receives hd/ (the GEMDOS drive: C:, in profile disk D:),
@@ -125,6 +127,7 @@ case $PRG in
     DCPROBE.PRG)  AREA=DCPROBE; PROBE=1 ;;
     WFPROBE.PRG)  AREA=WFPROBE; PROBE=1 ;;
     XDPROBE.PRG)  AREA=XDPROBE; PROBE=1 ;;
+    SNPROBE.PRG)  AREA=SNPROBE; PROBE=1; PROBE_DISK=0 ;;
     *) echo "unknown dumper: $PRG" >&2; exit 2 ;;
 esac
 if [ "$PROBE" = 1 ]; then

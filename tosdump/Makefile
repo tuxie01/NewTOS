@@ -20,6 +20,8 @@
 #   make wfprobe-newtos   WFPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hkprobe-m68k     HKPROBE.PRG, the OS-hook probe (probes/hkprobe.c)
 #   make hkprobe-newtos   HKPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make snprobe-m68k     SNPROBE.PRG, the DMA sound group probe (probes/snprobe.c)
+#   make snprobe-newtos   SNPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make axprobe-m68k     AXPROBE.PRG, a kbdvec hook during Bconin(1)
 #                         (probes/axprobe.c)
 #   make axprobe-newtos   AXPROBE.NAP, the same probe for NewTOS (AArch64)
@@ -95,7 +97,7 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test clean
+        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos snprobe-m68k snprobe-newtos hzprobe-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
@@ -103,7 +105,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos hzprobe-newtos host-test
+     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos snprobe-m68k snprobe-newtos hzprobe-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -212,6 +214,17 @@ $(BUILD)/HKPROBE.PRG: probes/hkprobe.c | $(BUILD)
 hkprobe-newtos: $(BUILD)/HKPROBE.NAP
 $(BUILD)/HKPROBE.NAP: probes/hkprobe.c build-hkprobe-newtos.sh | $(BUILD)
 	./build-hkprobe-newtos.sh $@
+
+# The DMA sound group probe (TASK/SND04): no disk, profiles tt and falcontc.
+# Run by probes/run-snprobe.sh.
+snprobe-m68k: $(BUILD)/SNPROBE.PRG
+$(BUILD)/SNPROBE.PRG: probes/snprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/snprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+snprobe-newtos: $(BUILD)/SNPROBE.NAP
+$(BUILD)/SNPROBE.NAP: probes/snprobe.c build-snprobe-newtos.sh | $(BUILD)
+	./build-snprobe-newtos.sh $@
 
 # The kbdvec-hook-during-Bconin(1) probe (TASK/XBIOS18): no disk; needs a key
 # and a serial byte injected while it waits. Run by probes/run-axprobe.sh.
