@@ -1,0 +1,42 @@
+host: arm64 Darwin; cc: Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+PASS  obspec_bits
+PASS  evnt_timer_words
+PASS  wind_set_addrin
+PASS  intin_long_words
+PASS  ptr_word_count
+PASS  aesglobal_fields
+PASS  setjmp-host
+PASS  cmdargs-host
+PASS  gmp-host
+PASS  spawn-host
+PASS  system-host
+PASS  quickstat-host
+PASS  fstat-host
+PASS  stat-host
+PASS  waith-host
+PASS  malloc-host
+PASS  sysinfo-host
+PASS  lp64-limits
+PASS  iorec-layout
+PASS  bconmap-layout
+PASS  sysvars-layout
+PASS  libc-link
+SKIP  rt-host -- skip: sdk/libm/libm.a not built
+SKIP  ldbl-host -- skip: sdk/libm/libm.a not built
+PASS  cookie-host
+PASS  inline-rsh-host
+PASS  c2p-host
+PASS  td-cookie-host
+PASS  td-nohard-host
+PASS  hypview-ref-host
+PASS  hypview-win-host
+PASS  hypview-prepare-host
+PASS  sysacc-cmdline-host
+SKIP  custom-font-host -- z-tools tree absent (run sdk/zview/build-zview.sh)
+PASS  zview-color-host
+PASS  libtest-host
+SKIP  libshare-host -- libshare tree / mintlib headers absent or host not LP64
+SKIP  newtos-cc-host -- skip: sdk/compiler-rt/libclang_rt.builtins.a not built
+
+host tests: 33 passed, 0 failed, 5 skipped

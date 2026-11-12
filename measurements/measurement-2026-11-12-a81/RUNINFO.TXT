@@ -1,0 +1,43 @@
+A81 tester run, 2026-11-12. Verdict: PASS (per the HANDOVER retest list; open items below are not failures).
+Scope: wind_set(DESKTOP, WF_NEWDESK) root index for LP64 callers, fix commit 11bf16c13, tested at main HEAD bad7cf4a1 (11bf16c13 is an ancestor).
+Machine: Ingo's MacBook Air (scutil ComputerName); macOS 27.2; Claude Code 2.1.322; host clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5362730566fb85e9/wt (detached at bad7cf4a1), 5,7G (agent dir 5,8G); worktree-setup run.
+
+COMMANDS (board / outcome)
+ 1 cargo xtask build --board qemu-virt  -> OK (159 rustc warnings; build/build-virt.log)
+ 2 cargo xtask build --board rpi4       -> OK (159 rustc warnings; build/build-rpi4.log)
+ 3 cargo xtask test (full)              -> 2459 passed / 0 failed / 7 ignored = Hosttests baseline 2459/0/7 (build/xtask-test.log).
+     includes tos-api/src/aes/window.rs newdesk_root_word_tests 3/3 ok and tests/aes_newdesk_root_word.rs 3/3 ok.
+ 4 sdk/gemlib/build-gemlib.sh, then sdk/run-host-tests.sh -> 33 passed / 0 failed / 5 skipped; PASS wind_set_addrin
+     (build/sdk-host.log). The 5 skips are env-related (e.g. newtos-cc-host: compiler-rt/libclang_rt.builtins.a not built); SDK baseline in STATUS is 38/0/0, so only wind_set_addrin is claimed here.
+ 5 Fix neutralised on the host (my tree only, never committed): window.rs set_newdesk packed arm changed to pb.intin(4), then
+     cargo test -p tos-api --test aes_newdesk_root_word -> lp64_packed_form_takes_the_root_from_the_word_after_the_pointer FAILED
+     (1024 of 1024 pixels untouched), lp64_packed_form_with_root_0_paints_the_whole_background FAILED, native_form ok
+     (build/neutralised-host.log). Tree restored with git checkout HEAD -- window.rs (my worktree).
+     Reproduce: edit tos-api/src/aes/window.rs line 1278 to pb.intin(4); run the command above.
+ 6 QEMU raspi4b, headless, -append serial=on, QMP screendump (method/run.sh), kernel8.img of main HEAD (sha256 below),
+     card by tools/mkcard.sh (method/mkcard-call.sh): TeraDesk via #Z autorun (INF files from A78/A81 run). Marker "[launch] EL0" at 15.2 s.
+     screendumps/fixed-A.png (+15 s) and fixedB-late.png (+30 s): visually inspected (Read): solid green TeraDesk background
+     (WF_NEWDESK tree, root 0), menu bar, 4 hard-disc icons, trash, no corruption. Both byte-identical (sha256 5148fde2...), also
+     identical to the 2026-09-20 developer dumps (sha256 5148fde2f61b378d...). Serial: 0 matches of EXC|PANIC|panic (serial/).
+     Note: serial/fixed-serial.log is from the run whose second marker spec never fired (my spec error, rc=2); the screendump was taken before that; fixedB run rc=0.
+ 7 QEMU qemu-virt, headless, ramfb, QMP screendump (method/run-virt.sh), ELF kernel of main HEAD, no card: screendumps/virt-desktop.png
+     visually inspected: green desktop, menu bar Desk/File/View/Options, Trash and Printer icons; serial ends "[desk] desktop up (0 drives)", 0 exceptions.
+
+DROVE: build both boards, full host tests, gemlib binding host test, host red/green of the fix, raspi4b TeraDesk scene, qemu-virt desktop.
+COULD NOT / DID NOT VERIFY:
+ - QEMU scene "fix-neutralised": not driven. A neutralised kernel needs a matching DESKTOP.NAP with pristine gemlib bindings (full gemlib+teradesk relink); TeraDesk passes root 0, so the receipt already measured identical pixels, and the host red run (5) covers the neutralisation. Listed, not claimed.
+ - cargo clippy: not run (not in the retest list); no claim about new clippy warnings.
+ - Boot lines / serial PASS lines of the complete selftest boot were not separately compared beyond 0 exceptions and desktop up.
+REAL-Pi4-ONLY: none required for this ticket (owner 2026-11-12: Pi adds no observation).
+OUT-OF-SCOPE OBSERVATIONS: main tree had an uncommitted TASK/A70.md modification and an untracked TASK/A70-STATUS-DONE-2.MD before my run; untouched by me. sdk host tests skip 5 here (compiler-rt not built in my fresh worktree).
+
+IMAGE MANIFEST (copy: sd-fixed.img.manifest): image_sha256 9580999768a24cb4bf7f557950ac25af6d91a0fa8cf8b6a1fc0cc5b53638dc84, 64 MiB,
+ host_clang Apple clang version 21.0.0 (clang-2100.4.1.1), optional_missing none
+ DESKTOP.NAP sha256 15bf0993a29e30d7467747b0de996a047b2dfc1d50567c81ca6941fef72fd569 (353312 bytes, from main's sdk/apps/teradesk/build/dist)
+
+GITIGNORED OUTPUTS (path under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5362730566fb85e9/, size, sha256)
+ sd-fixed.img 64M 9580999768a24cb4bf7f557950ac25af6d91a0fa8cf8b6a1fc0cc5b53638dc84
+ kernel8-rpi4-fixed.img (1642370 bytes) e946f7bc13fb6d973db98cda59587bb9bc9907149b13df10cd30b74ce0af8b9a
+ wt/target/aarch64-unknown-none-softfloat/debug/kernel (qemu-virt ELF, 15302304 bytes) 91d91b866a85c04b826c13d15e32015805921b8247ef6dc7b0b7e4a4682b3f0c
+ PNG sha256: fixed-A/fixedB-late 5148fde2f61b378d55275c085b3031155b4a4bed7d4084bff8380860fc92a690; virt-desktop 2e0f487f1ab9cf62f8f65c3c1d58811ef099e783325907e728086f3b748df21b
