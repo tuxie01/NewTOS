@@ -475,3 +475,12 @@ read by the lead 2026-11-12). Not a source in the Track B hierarchy (`docs/SOURC
 - Cache coherency: the article needs uncached VideoCore-mailbox memory because Linux caches user memory. Bare metal,
   NewTOS maps the staging ring and control blocks itself (non-cacheable attribute or explicit cache maintenance,
   ARM ARM); H3 decides which.
+
+## Owner decision 2026-11-12: the jack first
+
+Owner: "ok dann klinke als erster ausgang" (ok, then the jack as the first output). The PWM jack (GPIO 40/41,
+`docs/hardware/pwm-audio.md`) is the first output backend; HDMI ([SND02](SND02.md)) follows behind the same XBIOS
+interface and DMA ring. HDMI audio has no chapter in the BCM2711 datasheet, so SND02 needs an owner exception to
+CLAUDE.md rule 6 (circle and Linux `vc4-hdmi` as the template, every register confirmed on the Pi); not decided yet.
+Still open: Q-N1 to Q-N7 of the spec review above (path, `Setinterrupt`, sample byte order, rates, `_SND`, release
+of the probes).
