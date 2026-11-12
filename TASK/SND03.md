@@ -1,6 +1,6 @@
 # SND03 — Sound: hardware probe on the Pi 4 for the PWM jack and the DMA ring (H1-H5)
 
-Status: OPEN (2026-11-12) | Priority: P2
+Status: IMPLEMENTED (2026-11-12) | Priority: P2 | Commit: self | Missing: owner run on the real Pi (H1-H4 numbers, tone heard), docs/hardware/pwm-audio.md update with the measured facts
 
 Type: developer (probe as a debug feature), then a real-Pi run with the owner. Step 0 of [SND01](SND01.md)
 (decisions 2026-11-12: DMA path, jack first). Facts not in any pinned source are measured here, not assumed
@@ -35,3 +35,17 @@ Type: developer (probe as a debug feature), then a real-Pi run with the owner. S
 - H1-H4 measured on the real Pi with the numbers in a run's RUNINFO; H5 measured in QEMU; the tone heard (owner).
 - The feature off: kernel bytes unchanged (xtask check); `cargo xtask test` green; warnings delta 0.
 - `docs/hardware/pwm-audio.md` updated with the measured facts (translated to English as it is touched).
+
+## Implementation (developer, 2026-11-12)
+
+- Feature `snd-probe` (`kernel/Cargo.toml`), module `kernel/src/snd_probe.rs`, hooks in `kernel/src/lib.rs`
+  (`snapshot_boot_state` after "Phase 02 reached.", `run` after `fbcon::init`). board-rpi4 only; three screen pages,
+  each held until a key; boot arguments `sndprobe=qemu`, `sndprobe=nowait`. Run, sheet and card list:
+  `measurements/measurement-2026-11-12-snd03/RUNINFO.TXT`.
+- `clk_pwm`: the probe reads the clock-manager word at circle's offset (unsourced, read only) and the firmware's view
+  through the mailbox (clock id `0x0a` = PWM, `references/rpi4-boot/firmware-wiki-mailbox-property-interface.md`). Only
+  when no FIFO word is consumed does it ask the firmware ("Set clock state" on, "Set clock rate" 100 MHz); it never
+  writes a CPRMAN register.
+- H5 measured (QEMU 11.1.2 raspi4b): memory-to-memory DMA with `PERMAP = 0` works (END, INT, progress registers), and
+  the channel's interrupt is pending at the GIC distributor (INTID 117 for channel 5) until `CS.INT` is cleared. QEMU
+  aborts on PWM1 (synchronous external abort) and stops at `PACTL_CS`.

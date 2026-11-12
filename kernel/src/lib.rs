@@ -99,6 +99,11 @@ pub mod dbg_biostrace;
 /// only).
 #[cfg(feature = "fs-io-trace")]
 pub mod dbg_fsio;
+/// Sound hardware probe at boot (TASK/SND03; feature `snd-probe` only).
+#[cfg(all(feature = "snd-probe", feature = "board-rpi4"))]
+pub mod snd_probe;
+#[cfg(all(feature = "snd-probe", not(feature = "board-rpi4")))]
+compile_error!("feature `snd-probe` needs `board-rpi4` (BCM2711 DMA, PWM and System Timer)");
 
 // ---------------------------------------------------------------------------
 // kprintf! / kprintln! (Phase 03 D7) — formatter macros into the boot
@@ -248,6 +253,8 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
         kprintln!("[serial] output on: boot arguments contain `serial=on`");
     }
     kprintln!("Phase 02 reached.");
+    #[cfg(feature = "snd-probe")]
+    snd_probe::snapshot_boot_state();
 
     let dtb = if dtb_phys == 0 { None } else { Some(dtb_phys) };
     if let Some(p) = dtb {
@@ -502,6 +509,11 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
     // text cursor hidden, no line wrap (`docs/api/bios/_vt52.md` §1).
     // EmuTOS shows its AUTO programs on the console before the GUI.
     fbcon::init();
+    // Debug build only (`--features snd-probe`, TASK/SND03): the sound
+    // hardware probe, on the console just cleared; it holds each page until a
+    // key, then the boot continues.
+    #[cfg(feature = "snd-probe")]
+    snd_probe::run();
 
     // The PDs EmuTOS's `run` is while kernel code is on the stack
     // (TASK/PPARENT, TASK/PROC03, `tos_api::bdos::process::standin`):

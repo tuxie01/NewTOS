@@ -1,0 +1,4 @@
+RB2
+NewTOS booting on rpi4
+[serial] output on: boot arguments contain `serial=on`
+Phase 02 reached.

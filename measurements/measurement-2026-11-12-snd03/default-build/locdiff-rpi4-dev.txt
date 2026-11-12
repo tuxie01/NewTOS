@@ -1,0 +1,18 @@
+@0xd8558 kernel/src/lib.rs: line 976 -> 988 (+12) col 23
+@0xda270 kernel/src/lib.rs: line 1014 -> 1026 (+12) col 14
+@0xda288 kernel/src/lib.rs: line 1015 -> 1027 (+12) col 27
+@0xda3a8 kernel/src/lib.rs: line 717 -> 729 (+12) col 19
+@0xda3c0 kernel/src/lib.rs: line 731 -> 743 (+12) col 71
+@0xda428 kernel/src/lib.rs: line 723 -> 735 (+12) col 19
+@0xda530 kernel/src/lib.rs: line 911 -> 923 (+12) col 5
+@0xda560 kernel/src/lib.rs: line 903 -> 915 (+12) col 9
+@0xda578 kernel/src/lib.rs: line 902 -> 914 (+12) col 9
+@0xda5c0 kernel/src/lib.rs: line 833 -> 845 (+12) col 5
+@0xdab28 kernel/src/lib.rs: line 990 -> 1002 (+12) col 14
+@0xdab40 kernel/src/lib.rs: line 991 -> 1003 (+12) col 19
+@0xdac28 kernel/src/lib.rs: line 1026 -> 1038 (+12) col 14
+@0xdaca0 kernel/src/lib.rs: line 1046 -> 1058 (+12) col 19
+@0xdacb8 kernel/src/lib.rs: line 1126 -> 1138 (+12) col 14
+@0xdace8 kernel/src/lib.rs: line 867 -> 879 (+12) col 35
+@0xdad40 kernel/src/lib.rs: line 871 -> 883 (+12) col 9
+19 differing bytes in 17 words; unexplained: 0; base 0xffff000000080000

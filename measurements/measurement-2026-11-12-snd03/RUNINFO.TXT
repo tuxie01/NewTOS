@@ -1,0 +1,84 @@
+measurement-2026-11-12-snd03 -- SND03 sound hardware probe: H5 in QEMU raspi4b, default-build identity, Pi run prepared
+====================================================================================================================
+Developer (Opus, agent-adce16ed4b4b0609f), 2026-11-12. Worktree branch worktree-agent-adce16ed4b4b0609f, base HEAD
+767688323771520fbe0bd16f66a65a0a2c6f81e4; every build and run below was made on that base plus the uncommitted change
+(kernel/Cargo.toml feature `snd-probe`, kernel/src/lib.rs two hooks + module line, new kernel/src/snd_probe.rs), before
+the commit. Nothing written to any SD card, no hardware run.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1; no image manifest: no SD image built)
+optional_missing: none (no image built; snd03-card.list names no file)
+QEMU: qemu-system-aarch64 11.1.2 (Homebrew), -M raspi4b, no SD card, -display none.
+
+WHAT / WHY
+  TASK/SND03 work points 1 and 2: the kernel debug feature `snd-probe` (H1-H4 at boot plus the test tone on GPIO 40/41)
+  and H5 measured in QEMU raspi4b. Point 3 (the owner's run on the Pi) is prepared here: TESTBLATT.md (German) and
+  method/snd03-card.list. The lead writes the card.
+
+RESULT 1 -- H5 in QEMU raspi4b 11.1.2 (serial/qemu-h5.log, method/qemu-h5.sh; boot args serial=on sndprobe=qemu sndprobe=nowait)
+  Kernel image: target/snd03-scratch/final/kernel8-snd-probe.img (gitignored), sha256
+  0d8aed1d08032098a6605f57ce08f9db0abaa88deb80cd20294318a705049240 (rpi4 release, --features snd-probe).
+  * The modelled DMA does memory to memory with PERMAP = 0: channel 5, TI 0x119 (INTEN|WAIT_RESP|DEST_INC|SRC_INC),
+    4096 bytes, CB at bus 0xc01fe000, SRC 0xc0200000, DST 0xc01ff000 (bus = 0xC000_0000 | PA, datasheet 1.2.4).
+    CS.END and CS.INT set after 109 us / 48 us (two runs), CS.ERROR 0, DEBUG 0; INT_STATUS 0x20 (= channel 5);
+    after the run SOURCE_AD/DEST_AD = start + 0x1000, TXFR_LEN 0 (registers advance as the datasheet says).
+    All 1024 words arrive in both runs (QEMU has no cache model, so "no maintenance" also gives 1024/1024: H3 needs the Pi).
+  * The interrupt reaches the GIC distributor: GICD_ISPENDR bit of INTID 117 (= 96 + 16 + 5) reads 1 with the SPI disabled
+    and enabled, and 0 after CS.INT was cleared (IRQs masked, no interrupt taken). Delivery through GICC_IAR to the CPU
+    was not exercised.
+  => A DMA driver can have QEMU tests for control-block execution, completion flags, the progress registers and the
+     interrupt line at the GIC; the PWM side cannot (below).
+  * QEMU firmware model, clock id PWM (10): Get clock state 1, Get clock rate 700000000, Get max clock rate 700000000,
+    Get clock rate measured answers 0 bytes. Model values, not hardware facts. CPRMAN word at circle's offset 0xa0:
+    0x00000200 (QEMU's cprman model; unsourced offset, read only).
+  * H4 in QEMU: System Timer compare registers C0-C3 all 0, CS 0, CLO advances 1 per us (100101 in 100120 us of CNTPCT);
+    DMA ENABLE 0x0000ffff, PAGE 0, all 15 channels CS = CONBLK_AD = 0.
+  * Measured side facts on what QEMU does NOT model:
+    - PWM1 (0xFE20C800): synchronous external abort, "ESR=0x0000000096000010 ... FAR=0xffff0000fe20c800"
+      (serial/qemu-pwm-abort.log). Scratch build: kernel/src/snd_probe.rs with the one line `if qemu_mode() {` in `run`
+      changed by hand to `if false && qemu_mode() {` for that build only and restored from a copy right after
+      (no git command); image target/snd03-scratch/q-try3-pwm-scratch.img sha256
+      7c2de99e059a327a952edb912f9b3fa25aca89d6a151df7e8ab269e74ba372de. This settles the open point of
+      TASK/SND01.md section 1 ("RAZ/WI or abort"): abort.
+    - PACTL_CS (0xFE204E00): without `sndprobe=qemu` the boot stops at the probe's first read of it, right after
+      "Phase 02 reached." with no further output (serial/qemu-pactl-stop.log; earlier probe build, image
+      target/snd03-scratch/q-try1.img sha256 8d5718bc79be585a35f3f4d7066760a4894fc4b6afdf3b6b816fa4172c3e60ef). No
+      exception report because the exception vectors are not installed yet at that point (inference). Hence the
+      `sndprobe=qemu` switch also leaves PACTL_CS out.
+    - QEMU's DMA DEBUG register stored a blind W1C write of 7 and read it back as 7 (first run, not kept); the probe now
+      writes DEBUG only when an error bit is set, and reads 0 in QEMU.
+
+RESULT 2 -- feature off: kernel bytes unchanged (default-build/)
+  TOOL13 (the xtask command) is PARKED, so the TOOL08 hand method: method/buildall.sh (copy of
+  measurements/measurement-2026-10-28-tool08/method/buildall.sh with this worktree's path, plus a warning count) built
+  rpi4/qemu-virt x release/dev as raw binaries, once on the clean base before the change (default-build/base.sha256)
+  and once with the change, feature off (default-build/after-off.sha256). Same sizes (1538288 / 1642370 / 1500712 /
+  1609602). measurements/measurement-2026-10-28-tool08/method/locdiff.py explains every differing word:
+    rpi4-release 5 words, rpi4-dev 17, qemu-virt-release 6, qemu-virt-dev 13 -- all `line` fields of
+    core::panic::Location in kernel/src/lib.rs, +12 (the 12 new lines before them); unexplained 0 in all four
+    (default-build/locdiff-*.txt, exit 0). No code byte, no other data byte differs.
+  After the last edits (snd_probe.rs only, compiled out with the feature off) rpi4-release was rebuilt: sha256
+  66c2f4d7...142f2, equal to after-off/rpi4-release.bin.
+  Build warnings ("warning" lines of the xtask build logs, programs included): 159 on each of the 4 builds, base and
+  after-off. Clippy `-p kernel`: 121 warnings for board-rpi4, board-qemu-virt and board-rpi4,snd-probe, base 121: delta 0.
+  `--features board-qemu-virt,snd-probe` stops with the intended compile_error ("needs board-rpi4").
+
+RESULT 3 -- the Pi run, prepared, not run
+  TESTBLATT.md: the owner's sheet (German). method/snd03-card.list: names no file; the kernel goes on the card through
+  tools/sync-card.sh kernels <scratch>/kernels kerns03.img=snd-probe and sync --kernels ... --active kerns03.img, built
+  from the landed commit. What the probe prints on the Pi: kernel/src/snd_probe.rs module docs; per page:
+    page 1 H4: System Timer CS/CLO/CHI/C0-C3 and the DMA state at kernel entry and at the probe, changes within 100 ms
+      (a compare register the firmware re-arms shows here), PACTL_CS bit 23, CPRMAN words at circle's PWM offset.
+    page 2 H3/H5: the two DMA runs (word counts P/Z/M/other as the CPU sees DST and after dc ivac = what the DMA wrote),
+      the GIC pending bits; H1 firmware view (Get clock state/rate/measured/max for clock id 10).
+    page 3 H2: FIFO words until FULL1 with channels disabled, WERR1 after one more write; H1 timing at RNG 10000
+      (words consumed between two FIFO-full moments over 0.5 s against CNTPCT -> clk_pwm in Hz; GAPO/RERR flags);
+      only if no word is consumed: firmware "Set clock state" on + "Set clock rate" 100 MHz (firmware wiki tags, never a
+      clock-manager register write) and a second timing; tones T1-T4 at about 48 kHz; SUMMARY line.
+
+HOST TESTS
+  cargo xtask test (full), exit 0: 2454 passed, 0 failed, 7 ignored (sum of the "test result" lines).
+
+SCRATCH (gitignored, cited above)
+  The worktree's own target/snd03-scratch/ (the agent's target-agents directory is outside the isolated worktree and
+  could not be written), /Volumes/Daten/Development/PiRusTOS/.claude/worktrees/agent-adce16ed4b4b0609f/target/snd03-scratch,
+  19M (du -sh). Its base/*.bin and after-off/*.bin hashes are default-build/*.sha256; the three kernel images above.
+  The datasheet text used for the register cites was extracted there (ds.txt) with a throw-away script (pdftext.py).

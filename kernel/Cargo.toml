@@ -165,6 +165,17 @@ usb-diag = []
 # Off by default (the module and every hook are compiled out); for the real-Pi
 # Fbench run: `cargo xtask build --board rpi4 --release --features raster-prof`.
 raster-prof = []
+# Sound hardware probe (TASK/SND03): at boot, measures what the PWM jack and the
+# DMA ring need and no pinned source states -- the System Timer and DMA state
+# the firmware leaves (H4), a DMA memory-to-memory copy with and without cache
+# maintenance (H3) and whether its interrupt reaches the GIC (H5), the
+# effective PWM clock (H1) and the PWM FIFO depth (H2) -- and plays a quiet test
+# tone on the 3.5 mm jack (GPIO 40/41). Three screen pages, each held until a
+# key (`kernel/src/snd_probe.rs`); boot arguments `sndprobe=qemu` (leave out
+# what QEMU raspi4b does not model) and `sndprobe=nowait`. Writes no drive.
+# board-rpi4 only. Off by default (the module and its two hooks are compiled
+# out); `cargo xtask build --board rpi4 --release --features snd-probe`.
+snd-probe = []
 
 [dependencies]
 tos-types = { path = "../tos-types" }

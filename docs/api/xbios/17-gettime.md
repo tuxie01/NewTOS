@@ -228,7 +228,7 @@ stays reproducible). The kernel calls `time_init`
 (`tos-api/src/gemdos/time.rs:247@time_init`, EmuTOS `time_init`,
 `bdos/time.c:160-165`) once at boot, right after the host is installed, and
 logs `[clock] no RTC: clock starts at the build date YYYY-MM-DD 00:00:00`
-(`kernel/src/lib.rs:1310@log_boot_clock`). So `Gettime()` right after boot
+(`kernel/src/lib.rs:1327@log_boot_clock`). So `Gettime()` right after boot
 reads `os_dosdate << 16` plus the seconds since that call. Until 2026-10-31
 the boot value was 1980-01-01, or on the Pi board the FAT date of
 `C:\KERNEL8.IMG`; EmuTOS has no such source, and it is gone.

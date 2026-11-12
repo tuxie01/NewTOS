@@ -1,0 +1,6 @@
+@0xcaf90 kernel/src/lib.rs: line 1014 -> 1026 (+12) col 14
+@0xcbc08 kernel/src/lib.rs: line 990 -> 1002 (+12) col 14
+@0xcbc88 kernel/src/lib.rs: line 1046 -> 1058 (+12) col 19
+@0xcbcc0 kernel/src/lib.rs: line 1026 -> 1038 (+12) col 14
+@0xcbd10 kernel/src/lib.rs: line 867 -> 879 (+12) col 35
+6 differing bytes in 5 words; unexplained: 0; base 0xffff000000080000

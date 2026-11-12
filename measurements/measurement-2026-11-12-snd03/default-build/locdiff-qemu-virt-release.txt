@@ -1,0 +1,7 @@
+@0xc2458 kernel/src/lib.rs: line 1264 -> 1276 (+12) col 35
+@0xc29d8 kernel/src/lib.rs: line 1014 -> 1026 (+12) col 14
+@0xc3518 kernel/src/lib.rs: line 990 -> 1002 (+12) col 14
+@0xc3598 kernel/src/lib.rs: line 1046 -> 1058 (+12) col 19
+@0xc35d0 kernel/src/lib.rs: line 1026 -> 1038 (+12) col 14
+@0xc3668 kernel/src/lib.rs: line 867 -> 879 (+12) col 35
+7 differing bytes in 6 words; unexplained: 0; base 0xffff000040080000
