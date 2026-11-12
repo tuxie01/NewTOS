@@ -1,6 +1,6 @@
 # LIBC-BUF — erster `printf` auf ungepuffertes stdout legt nur 1 KiB Puffer an
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 41ba8f966 | Missing: real-Pi test
+Status: IMPLEMENTED (2026-11-11) | Priority: P3 | Commit: 41ba8f966 | Missing: tester acceptance in QEMU (owner 2026-11-12, Pi adds no observation)
 
 Migrated (owner batch 15, 2026-11-11, to IMPLEMENTED), evidence: commit 41ba8f966 (fix(sdk): redirected stdout keeps its 32 KiB buffer (LIBC-BUF)), VERIFIED: diff of 41ba8f966 (fix(sdk): redirected stdout keeps its 32 KiB buffer (LIBC-BU) touches sdk/libc/overlay/, names the id by subject, 28 files, legacy line: ERLEDIGT 2026-10-22 (QEMU, `41ba8f96`, Sonde LBUF rot/gruen, `measurements/measu
 
