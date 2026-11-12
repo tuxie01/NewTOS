@@ -8,6 +8,7 @@ Type: measurement. From the inventory snapshot docs/analysis/inventory-2026-11-1
 
 - Mapped XBIOS entries without a case: `Initmous`, `Mfpint`, `Midiws`, `Offgibit`, `Ongibit`, `Setpalette`, `Xbtimer`, `Floprd`, `Flopwr`, `Flopfmt`, `Flopver`, `DMAread`, `DMAwrite` (inventory section 2.2). `Bioskeys`, `Ikbdws`, `Scrdmp`, `Settime` have live tickets.
 - The six floppy and DMA entries answer an error code and are cheap to add.
+- Owner decision 2026-11-12: the floppy routines are obsolete (no floppy; reopen only for USB floppy support). `Floprd`, `Flopwr`, `Flopfmt`, `Flopver`, `DMAread`, `DMAwrite` answer `EUNDEV` as a sanctioned deviation (docs/COMPATIBILITY.md, "XBIOS floppy group") and leave this ticket; seven entries remain.
 
 ## Work
 
@@ -15,4 +16,4 @@ Type: measurement. From the inventory snapshot docs/analysis/inventory-2026-11-1
 
 ## Acceptance
 
-- The 13 entries appear in a table with an oracle dump.
+- The 7 remaining entries (`Initmous`, `Mfpint`, `Midiws`, `Offgibit`, `Ongibit`, `Setpalette`, `Xbtimer`) appear in a table with an oracle dump.

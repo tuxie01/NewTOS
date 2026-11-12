@@ -1214,8 +1214,8 @@ run `measurements/measurement-2026-09-27-hw03/`. The attempt limit is gone since
 HW08, next entry.
 
 **A kept sector is really tried again by every later write-back, with no
-limit** — user decision, 2026-11-06 (TASK/HW08, "Entscheidungen fuer den Fix",
-Weg B), against HW03's limit of three attempts. With the limit one sector given
+limit** — user decision, 2026-11-06 (TASK/HW08, "Entscheidungen fuer den Fix" = decisions for the fix,
+way B), against HW03's limit of three attempts. With the limit one sector given
 up on made every later `flush` report its old code, and so every `Fcreate` fail
 until a restart, card good again or not
 (`measurements/measurement-2026-11-06-hw08/RUNINFO.TXT`, case `b3`). EmuTOS has
@@ -1703,19 +1703,19 @@ have an RTC (the Falcon's NVRAM; Hatari passes the host clock): a value set
 with `Settime`/`Tsetdate`/`Tsettime` does not survive a restart, and each
 boot starts again at the build date.
 
-**Das Mausrad scrollt die Dateiliste der Dateiauswahl** — Anwenderwunsch
+**The mouse wheel scrolls the file list of the file selector** — owner request
 2026-11-04 (*"ueberall anders funktioniert es, nur in der Fileselektor box
-nicht"*), [A128](../TASK/A128.md). EmuTOS' `wheel_change` sendet nichts
-(`references/emutos/aes/geminput.c:411-420`, auskommentiert); NewTOS sendet
-`WM_ARROWED` an das Fenster unter dem Zeiger ([GUI04](../TASK/GUI04.md)). Solange
-`fsel_input`/`fsel_exinput` offen sind, verbraucht die Dateiauswahl die
-Raststufen und scrollt die Liste um 1 Zeile je Raststufe, wenn der Zeiger
-ueber der Liste oder der Schieberleiste steht; anderswo wird die Raststufe
-verworfen. Es geht **keine** `WM_ARROWED`-Nachricht an ein Fenster dahinter.
-Kein Programm kann es beobachten, ausser durch ein ausbleibendes `WM_ARROWED`
-waehrend der Auswahl; die Rueckgaben von `fsel_*`, Pfad und Name sind
-unveraendert. Andere `form_do`-Dialoge: unveraendert. Spec:
-`docs/api/aes/resource-fileselector.md` (A128); Code:
+nicht"*: it works everywhere else, only not in the file selector box),
+[A128](../TASK/A128.md). EmuTOS' `wheel_change` sends nothing
+(`references/emutos/aes/geminput.c:411-420`, commented out); NewTOS sends
+`WM_ARROWED` to the window under the pointer ([GUI04](../TASK/GUI04.md)). While
+`fsel_input`/`fsel_exinput` is open, the file selector consumes the wheel
+notches and scrolls the list by 1 line per notch when the pointer is over the
+list or its slider; elsewhere the notch is discarded. **No** `WM_ARROWED`
+message goes to a window behind it. No program can observe this except by a
+missing `WM_ARROWED` during the selection; the returns of `fsel_*`, path and
+name are unchanged. Other `form_do` dialogs: unchanged. Spec:
+`docs/api/aes/resource-fileselector.md` (A128); code:
 `tos-api/src/aes/input.rs:1034@WheelClaim`.
 
 **GDOS font chain (`vst_load_fonts`, TASK/V33)** — user decisions D1, D2, D3 of
@@ -1866,6 +1866,24 @@ unwritable pointer (`tos-api/src/uaccess.rs` module comment).
 ends and the system keeps running (memory protection). Test
 `null_mpb_from_a_program_is_refused_before_any_store_in_any_state`
 (`tos-api/src/bios/getmpb.rs`).
+
+**XBIOS floppy group: no floppy, every call answers `EUNDEV`** — owner
+decision 2026-11-12 ("the floppy routines are obsolete since we have no
+floppy, unless one wants to support a USB floppy"; ADR-012: no floppy
+controller, `_FDC` absent). `Floprd`, `Flopwr`, `Flopfmt`, `Flopver`,
+`Floprate`, `DMAread` and `DMAwrite` return `EUNDEV` for every drive
+(`tos-api/src/xbios/mod.rs:86@FLOPRATE`; spec `docs/api/xbios/_floppy-stubs.md`);
+`Protobt` is pure software and stays equal to EmuTOS.
+EmuTOS answers `EUNDEV` only for a drive outside its floppy table
+(`references/emutos/bios/floppy.c:1044-1045`); for drive A: and B: it
+reads and sets the step rate and drive type (`references/emutos/bios/floppy.c:1047-1063`)
+and runs the transfer functions against the drive.
+**Observable difference:** `Floprate(0,-1)` and `Floprate(0,-4)` (cases in
+`tosdump/cases/bios-r1.tsv`) and the transfer functions on drive A:/B:
+answer `EUNDEV` instead of a rate, a drive type or a transfer result;
+these cases count as ACCEPTED, and the floppy group needs no further
+oracle cases. Reopen when USB floppy support is wanted (a new ticket and
+an owner decision).
 
 ## EmuTOS is the reference, not the template
 
