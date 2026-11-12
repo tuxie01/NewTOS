@@ -27,3 +27,5 @@ image bytes.
   sha256.
 - Every file sha256 in the manifest equals that of the image built by the
   script before the change.
+
+TOOL67 residual: not yet shown without the macOS grant and not yet run on the second machine; the first card build after a Claude Code update, and the first on the other Mac, are the proof. A mount failure there reopens the question in a new ticket.

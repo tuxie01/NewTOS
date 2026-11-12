@@ -49,18 +49,30 @@ applies to both scripts, `tools/make-sd-image.sh` included.
   path lies under `target-agents/agent-<id>/` on `/Volumes/Daten`, with no
   manual `diskutil`/`hdiutil` call by the worker and no permission prompt.
 - For the same inputs and stamp, compared with an image built by the
-  unchanged script under the session scratchpad (restated by the owner
-  2026-11-12):
+  unchanged script with its image under `$TMPDIR`, the same place as the
+  fixed script's (restated by the owner 2026-11-12, twice):
   - `MKCARD_TESTDISK` mode: image sha256 equal;
   - normal `mkcard.sh` mode and `tools/make-sd-image.sh`: every file sha256
     in the manifest equal, and every differing image byte assigned to one of
     the classes volume serial, directory time stamp or `.fseventsd`, with
-    offsets in `RUNINFO.TXT`; a byte outside these classes is a FAIL.
+    offsets in `RUNINFO.TXT`;
+  - `tools/make-sd-image.sh` only, a fourth class "random by design",
+    limited to the bytes of `DATA.BIN`, `KERNEL8.IMG` and `LYNXBOOT.IMG`
+    (the three `head -c … /dev/urandom` lines of the script, lines 202-204
+    at 8db332393) and the two deleted directory entries with `tmp…` names;
+  - any other byte outside these classes is a FAIL.
 
   The owner's first criterion (image sha256 and manifest equal in every
   mode) assumed reproducible images, which the unchanged scripts do not
   produce in these two modes (developer receipt, 2026-11-12).
-  Byte-reproducible images there: follow-up TASK/TOOL68.md.
+  Byte-reproducible images there: follow-up TASK/TOOL68.md. The owner's
+  second wording (comparison card under the session scratchpad, three
+  classes) did not foresee the build location (the scratchpad build leaves
+  `.Spotlight-V100` residue that shifts the file clusters) or the random
+  files. The tester's control run, the unchanged script with its image
+  under `$TMPDIR`, is what shows that the fix causes no difference
+  (`measurements/measurement-2026-11-12-tool67/RUNINFO.TXT`,
+  `measurements/measurement-2026-11-12-tool67/serial/byte-classification.txt`).
 - `cargo xtask tosdump` with `--scratch` on the data volume runs one case
   table to the end.
 - No mount point or attached device is left after a run, also after a forced
