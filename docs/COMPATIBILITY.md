@@ -1885,6 +1885,26 @@ these cases count as ACCEPTED, and the floppy group needs no further
 oracle cases. Reopen when USB floppy support is wanted (a new ticket and
 an owner decision).
 
+**XBIOS for absent Atari hardware: NVRAM, TT shifter, DSP** — owner
+decision 2026-11-12 ("the same goes for DSP, TT shifter, NVMaccess", after
+the floppy group above). The Pi has none of them, and NewTOS does not
+emulate them: no `_VDO`/`_SND` cookie (ADR-012). Each of these calls takes
+the dispatcher's catch-all arm and returns its own function number
+(`tos-api/src/xbios/mod.rs:157@other`):
+`NVMaccess` (0x2E) answers `0x2E`, which is also what EmuTOS returns on a
+machine without an NVRAM chip (`references/emutos/bios/nvram.c:161-162`,
+ADR-012, TASK/XBIOS10); the TT-shifter calls `EsetShift` ... `EsetSmear`
+(0x50-0x57) answer 0x50-0x57; the DSP calls (from 0x60) are past the last
+entry and answer their number. EmuTOS on the tt and falcontc profiles runs
+the real NVRAM, TT-shifter and DSP code
+(`references/emutos/bios/nvram.c:155-214`, `references/emutos/bios/xbios.c:917-956`,
+`references/emutos/bios/xbios.c:1004-1062`).
+**Observable difference:** against those profiles, every NVRAM, TT-shifter
+and DSP case differs (e.g. `NVMaccess` in `tosdump/cases/bios-r1.tsv`);
+these cases count as ACCEPTED, and the three groups need no further oracle
+cases. Reopen when a port needs one of them (a new ticket and an owner
+decision).
+
 ## EmuTOS is the reference, not the template
 
 CLAUDE.md Rule 1 says EmuTOS source *is* the spec. Through this charter that
