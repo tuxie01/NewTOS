@@ -274,5 +274,7 @@ aligns the two on the next vblank.
   §1.3 (`references/datasheets/RP-008248-DS-1-bcm2711-peripherals.pdf`);
   the framebuffer allocate/get-pitch tags are firmware-property tags, not
   peripheral registers.
-- **1080p later.** The 640×480 geometry is hard-coded today; querying the
-  live HDMI mode and returning a mode-sized base is the deferred phase.
+- **Geometry other than 640x480.** The geometry is config.txt-driven, not hard-coded
+  (`kernel/src/drivers/mod.rs:31@BOOT_WIDTH`, default 1920x1080); a program reads it
+  through `Ssystem` 2013/2014/2015 or VDI `work_out`, see
+  `docs/analysis/screen-readout-spec-2026-11-12.md` (pitch has no program-readable source).
