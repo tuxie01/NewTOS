@@ -33,3 +33,10 @@ picture. It decides whether the nine `capture` tickets of the triage stay
 
 Researcher spec gate (`Physbase`, screen size and pixel format), developer
 on branch `pitest03`, tester, land, accept.
+
+## Spec gate (2026-11-12)
+
+Landed as daba4d67d: `docs/analysis/screen-readout-spec-2026-11-12.md`.
+Every value is cited except the bytes per line. Owner 2026-11-12, option
+(a): the pitch comes from a new `Ssystem` key, TASK/PITEST04.md. The
+developer starts on PITEST03 after PITEST04 is landed.
