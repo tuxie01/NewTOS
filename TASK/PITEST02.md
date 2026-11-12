@@ -52,3 +52,16 @@ Plus:
 - No ticket text is edited; no `Missing` field is rewritten.
 - A ticket whose required observation is not stated in its ticket or
   receipt is listed as "not stated", not guessed.
+
+## Umbrella (owner 2026-11-12)
+
+The triage is landed (af74d7700,
+`docs/analysis/pi-queue-triage-2026-11-12.md`). PITEST02 stays `OPEN` as
+the umbrella for the Pi queue.
+
+Not in the first program version, case to be named by the owner (triage
+STOP points, "Open points"):
+
+- A90 — no Pi-specific observation stated in ticket or receipt.
+- A118 — "HypView-Serie" is open in the receipts but not defined.
+- T04 — which of the 13 TeraDesk menu entries is not stated.
