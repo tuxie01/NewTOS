@@ -167,3 +167,65 @@ by `deps --up` as unmapped in the touched layer and predate this ticket; the ret
 (`Getcookie`/`Setcookie`, `selftest_cookie`); the 200 Hz tick path (`rust_irq_handler`) and anything riding it
 (frame tick, input pump, cursor blink) — the refill adds work in the tick.
 
+
+## State when stopped (2026-11-12)
+
+Developer (Opus, agent a9d05a81becfe1313), stopped by owner order before the work was finished. Work-in-progress
+commit on branch `snd05`; the ticket stays OPEN (line 3 untouched), no receipt, nothing merged.
+
+**Done (code, built, host-tested):**
+
+- `tos-api/src/xbios/sound.rs` (new): XBIOS 0x80-0x8D as EmuTOS' Falcon branch once a backend is available, the
+  function number before (`set_available`); spec §9.4 (record -> `EBADRQ` for `Setbuffer(1)` and the `Buffoper`
+  record bits), §9.5 (`Dsptristate`/`Gpio` -> `EBADRQ`), §9.1 option D (`Setinterrupt` stores the bits, warns once
+  per process as the MFP vector the frame end would use, `Hook::Vector(0x4D/0x4F)` with a new `Via::Setinterrupt`), §9.2 native `SndBufPtr` (play and
+  record = 0 as u64), §9.3.1 `Soundcmd(9, ...)` (default 0x05, latched per frame at `Setbuffer`, reset at the
+  setter's `Pterm`, hook in `pterm.rs`), boot state of spec §5. The converter: 2048-word ring = 1024 stereo slots,
+  each slot carries a record (frame, address after the sample, start generation) so a state change rewrites the
+  ring from 16 slots ahead of the DMA position; S3 (bit 0 drops when the engine reads the end slot), S4 falcontc
+  (0 before the first start, `end` after a single-shot frame, frozen at a stop), S5 (Setbuffer during a loop pass
+  takes effect at the next pass). RNG from the measured clock (STe rates for `freq_int` 0, else
+  25 175 000 / (256 (p + 1))); checked against the 107 143 019 Hz table of `docs/hardware/pwm-audio.md` §5.5.
+- `tos-api/src/xbios/sound/tests.rs` (new): 25 host tests, all pass (`cargo test -p tos-api --lib xbios::sound`).
+- `tos-api/src/xbios/mod.rs` (dispatch arm), `cookie.rs` (`SND`, `SND_VALUE` = 0x14, seed comment),
+  `bdos/process/usermem.rs` (`pool_kva`: non-faulting kernel alias for pool memory, used by the converter in the
+  tick; a frame outside the BDOS pools plays as silence), `bdos/process/hooks.rs`, `bdos/process/pterm.rs`.
+- Kernel: `kernel/src/drivers/bcm2711/dma.rs` (new, channel claim/start/`SOURCE_AD`, control block, bus address),
+  `kernel/src/drivers/bcm2711/pwm_audio.rs` (new, backend: mailbox clock on + 100 MHz + measured rate, which is the
+  QEMU detection (QEMU answers the measured tag with 0 bytes), GPIO 40/41 ALT0 RMW, `PACTL_CS` bit 23 RMW, PWM1
+  off/CLRF/STA/DMAC 7/7, two cyclic CBs on channel 5 with PERMAP 1 | DEST_DREQ | SRC_INC | WAIT_RESP, ring clean
+  after each write, `_SND` set via `cookie::set` after the probe; transport kept running once started),
+  `clock_tags.rs` (+ "Set clock state" encode/decode with 2 tests), `mailbox.rs` (`set_clock_state`), `gic.rs`
+  (refill in the tick branch after EOI, before `vbl::irq_tick`), `lib.rs` (init after the timer, not with
+  `snd-probe`), `selftest_cookie.rs` (`_SND` = 0x14 iff backend up, else EERROR). New code sits where it shifts
+  no anchored doc cite (`_SND` constants and `pub mod sound` at the file ends of `cookie.rs` / `xbios/mod.rs`).
+- Builds: `cargo xtask build --board rpi4` and `--board qemu-virt` clean; warnings equal to the base `993e57b99`
+  on both boards (tos-api 64, kernel 93; clippy tos-api 73, kernel 121): delta 0.
+- QEMU raspi4b smoke boot (debug): boots to the desktop; log line `[sound] no PWM clock (firmware: set clock state
+  Some(1), no measured rate) — no sound backend, _SND absent`. Log in the agent scratch dir only (no run dir).
+
+**Not done:**
+
+- Full `cargo xtask test` not run (only the sound test filter; the hooks change adds a NAMED entry, its tests not
+  yet run).
+- Docs of the commit: ADR-012 amendment in `docs/MEMORY.md`, `docs/COMPATIBILITY.md` rows 41/49 + the
+  `Soundcmd(9)` extension + Buffptr layout / `Dsptristate`/`Gpio` deviations, `docs/DEVIATIONS.md` rows (tracks
+  not used: always track 0; attenuation/gain stored, not applied; matrix not modelled; clocks other than 25.175 MHz
+  treated as internal; CODEC-invalid prescales 6, 8, 10, 12-15 played at their formula rate), spec §11
+  implementation notes, `docs/api/xbios/_dispatcher.md` §4 (0x8D), `docs/analysis/deps/mapping.tsv` rows for
+  `bios/dmasound.c`. Anchors in docs citing `tos-api/src/cookie.rs` and `tos-api/src/xbios/mod.rs` may have
+  shifted (doc-check not run).
+- Native test program (440 Hz, then left/right), the developer run under `measurements/`, the snprobe run on
+  NewTOS (in QEMU it can only show the function numbers again: no backend there).
+- Ticket line 3 / receipt.
+
+**Spec gaps found (decided in code, need lead/owner confirmation):**
+
+1. §9.4 lists `Settracks(·, rec)` and `Soundcmd(ADCINPUT)` as "nothing to serve" without a concrete answer; the
+   code keeps the Falcon behaviour (stored, no error) and answers `EBADRQ` only for `Setbuffer(1)` and the
+   `Buffoper` record bits (the ADR-012 amendment text names exactly those two).
+2. Falcon prescales "invalid for CODEC" (6, 8, 10, 12-15) and `clk` 1/2 have no NewTOS rule; code: formula rate,
+   internal clock.
+3. Mode (8/16 bit, mono) is latched per pass at pass start (only the byte order is specified, Q-N4c).
+4. `Soundcmd(9, 0x08)` stores and returns 0x09 (signed bit always set; spec item 1 says "optionally or-ed").
+5. `Sndstatus` returns 0 (no CODEC status source on the PWM path).

@@ -5,6 +5,7 @@ use crate::kprintln;
 
 const NTOS: u32 = u32::from_be_bytes(*b"NTOS");
 const MCH: u32 = u32::from_be_bytes(*b"_MCH");
+const SND: u32 = u32::from_be_bytes(*b"_SND");
 const TEST: u32 = u32::from_be_bytes(*b"TEST");
 const ZZZZ: u32 = u32::from_be_bytes(*b"ZZZZ");
 
@@ -72,6 +73,16 @@ pub fn run() {
     check(rc == E_OK && mch == 0xFFFF_FFFF, "Getcookie(_MCH, &v) = E_OK, v = 0xFFFFFFFF");
     kprintln!("[cookie]   _MCH: value form x0 = {:#018x}, pointer form rc = {}, v = {:#010x}",
         ssystem(S_GETCOOKIE, MCH, 0) as u64, rc, mch);
+
+    // `_SND` (ADR-012 amendment 2026-11-12, TASK/SND05): `0x14` exactly when
+    // a sound backend initialised (the PWM jack on the Pi 4), else absent —
+    // the sixth seeded-or-driver tag only with a backend.
+    let snd = ssystem(S_GETCOOKIE, SND, 0);
+    if tos_api::xbios::sound::available() {
+        check(snd == 0x14, "Getcookie(_SND) = 0x14 (sound backend up)");
+    } else {
+        check(snd == EERROR, "Getcookie(_SND) = EERROR (no sound backend)");
+    }
 
     // D-073: `tag == 0` returns the jar CAPACITY (32), not the occupied
     // count (which is 5 here) — the fix's headline behaviour change.

@@ -239,6 +239,7 @@ pub enum Via {
     Xbtimer,
     /// A VDI `vex_*` call.
     Vex,
+    #[doc = "`Setinterrupt` (XBIOS 0x87): the DMA sound frame-end interrupt (TASK/SND05)."] Setinterrupt,
 }
 
 impl fmt::Display for Via {
@@ -251,6 +252,7 @@ impl fmt::Display for Via {
             Via::Mfpint => "Mfpint",
             Via::Xbtimer => "Xbtimer",
             Via::Vex => "the VDI",
+            Via::Setinterrupt => "Setinterrupt",
         })
     }
 }

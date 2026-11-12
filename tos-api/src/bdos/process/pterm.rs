@@ -329,6 +329,9 @@ unsafe fn terminate_inner(reserve: bool, follow_parent: bool) -> Result<PtermRes
         super::hooks::check_page0(slot_idx);
     }
     super::hooks::on_terminate(slot_idx, reserve);
+    // DMA sound: a byte order this process set for 16-bit samples goes back
+    // to big-endian (`docs/api/xbios/_dmasound-group.md` §9.3.1, Q-N4b).
+    crate::xbios::sound::on_terminate(slot_idx);
 
     // AES resource lists: drop the dying process's entries (A39, R6). EmuTOS
     // needs no such step — its resource state is the three words in the

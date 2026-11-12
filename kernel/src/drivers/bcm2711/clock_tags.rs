@@ -1,6 +1,7 @@
-//! Pure encoding/decoding of the firmware's ARM-clock property tags (FS08
+//! Pure encoding/decoding of the firmware's clock property tags (FS08
 //! part 3): "Get max clock rate", "Get clock rate measured" and "Set clock
-//! rate".
+//! rate"; "Set clock state" for the PWM clock of the sound backend
+//! (TASK/SND05, `docs/hardware/pwm-audio.md` §12.2).
 //!
 //! Word arithmetic only, no register access and no kernel dependency, so the
 //! host test suite (`tools/xtask`, which includes this file by path) can run
@@ -30,6 +31,53 @@ pub const PROPTAG_GET_CLOCK_RATE_MEASURED: u32 = 0x0003_0047;
 /// `PROPTAG_SET_CLOCK_RATE` — request `(clock id, rate in Hz, skip setting
 /// turbo)`, answers `(clock id, rate in Hz)`.
 pub const PROPTAG_SET_CLOCK_RATE: u32 = 0x0003_8002;
+
+/// `PROPTAG_SET_CLOCK_STATE` — request `(clock id, state)`, answers
+/// `(clock id, state)`; state bit 0 = on, bit 1 = "clock does not exist"
+/// (wiki section "Set clock state", tag `0x00038001`, request and response
+/// length 8).
+pub const PROPTAG_SET_CLOCK_STATE: u32 = 0x0003_8001;
+/// "Set clock state" bit 0: on.
+pub const CLOCK_STATE_ON: u32 = 1 << 0;
+/// "Set clock state" bit 1 in a response: the clock does not exist.
+pub const CLOCK_STATE_MISSING: u32 = 1 << 1;
+/// Clock id `PWM` (wiki "Clocks" list: `0x00000000a: PWM`).
+pub const CLOCK_ID_PWM: u32 = 0x0000_000A;
+
+// Word indices into a "Set clock state" message.
+/// Tag code word of a "Set clock state" message.
+pub const SS_CODE: usize = 4;
+/// Value word 1 of a "Set clock state" message: the state.
+pub const SS_STATE: usize = 6;
+const SS_ENDTAG: usize = 7;
+/// Message length in words (a multiple of four: 16-byte units).
+pub const SET_CLOCK_STATE_WORDS: usize = (SS_ENDTAG + 1 + 3) & !3;
+
+/// The complete property message for "Set clock state" of `clock_id`, on or
+/// off. The value buffer is 8 bytes, the request carries 8.
+pub fn encode_set_clock_state(clock_id: u32, on: bool) -> [u32; SET_CLOCK_STATE_WORDS] {
+    let mut b = [0u32; SET_CLOCK_STATE_WORDS];
+    b[0] = (SET_CLOCK_STATE_WORDS * 4) as u32;
+    b[1] = 0; // request code
+    b[SC_TAG] = PROPTAG_SET_CLOCK_STATE;
+    b[SC_LEN] = 8; // value buffer size, bytes
+    b[SS_CODE] = 8; // request, 8 parameter bytes
+    b[SC_ID] = clock_id;
+    b[SS_STATE] = if on { CLOCK_STATE_ON } else { 0 };
+    b[SS_ENDTAG] = 0;
+    b
+}
+
+/// Decode a "Set clock state" reply: the state word, or `None` unless the
+/// tag was answered with its 8 value bytes and the clock exists (bit 1
+/// clear).
+pub fn state_reply(code: u32, state: u32) -> Option<u32> {
+    if code & TAG_RESPONSE == 0 || (code & !TAG_RESPONSE) < 8 || state & CLOCK_STATE_MISSING != 0 {
+        None
+    } else {
+        Some(state)
+    }
+}
 
 /// Bit 31 of a tag's code word: set in a response, clear in a request
 /// (`docs/hardware/mailbox-framebuffer.md` §2).
@@ -152,6 +200,24 @@ mod tests {
         assert_eq!(rate_reply(TAG_RESPONSE | 4, 1_500_000_000), None);
         // Rate 0: the clock does not exist.
         assert_eq!(rate_reply(TAG_RESPONSE | 8, 0), None);
+    }
+
+    #[test]
+    fn set_clock_state_message_layout() {
+        let b = encode_set_clock_state(CLOCK_ID_PWM, true);
+        assert_eq!(SET_CLOCK_STATE_WORDS, 8);
+        assert_eq!(b, [32, 0, 0x0003_8001, 8, 8, 0x0a, 1, 0]);
+        assert_eq!(encode_set_clock_state(CLOCK_ID_PWM, false)[SS_STATE], 0);
+    }
+
+    #[test]
+    fn state_reply_needs_response_bit_length_and_an_existing_clock() {
+        // The real Pi's answer to "on" (H1): state 1.
+        assert_eq!(state_reply(TAG_RESPONSE | 8, 1), Some(1));
+        assert_eq!(state_reply(TAG_RESPONSE | 8, 0), Some(0));
+        assert_eq!(state_reply(8, 1), None, "unanswered");
+        assert_eq!(state_reply(TAG_RESPONSE | 4, 1), None, "too short");
+        assert_eq!(state_reply(TAG_RESPONSE | 8, CLOCK_STATE_MISSING), None, "no such clock");
     }
 
     #[test]
