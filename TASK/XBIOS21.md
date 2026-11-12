@@ -99,3 +99,9 @@ this fix leaves untouched. `setpalette --up`: XBIOS dispatch only. Mapping rows 
   partitionDisk/mount`; workers may not run those (owner rule, lead 2026-11-12), and the call was
   stopped (mkcard failed, "Volume on disk7s1 failed to mount"; trap cleanup ran). The rerun is left
   to the lead/tester.
+
+## Card builds unblocked (lead, 2026-11-12)
+
+The mkcard failure above is fixed by TASK/TOOL67.md (DONE, `954155335`):
+`cargo xtask tosdump` builds its card without a manual `diskutil` step, so
+the bios-r1 93/94 oracle rerun can run in a tester's normal flow.
