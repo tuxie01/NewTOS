@@ -1,0 +1,34 @@
+PITEST03 tester run (phase test), commit 36b3c0c59, branch pitest03. Tester agent-a18c856680aea9b24.
+Scope: SCRGRAB.NCP saves the displayed screen to C:\SCRGRAB.RAW; tools/scrgrab2png.py converts it to a PNG that equals the QMP screendump of the same moment on QEMU raspi4b.
+Machine: macOS Darwin 27.2.0 arm64, qemu-system-aarch64 from PATH. host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Clone: target-agents/agent-a18c856680aea9b24/wt (2,1G whole agent dir, removed by accept/land)
+
+Verdict: PARTIAL (functional result green, see Deviations and Open).
+
+Commands and outcomes
+1. cargo xtask worktree-setup (in clone): OK.
+2. cargo xtask build --board rpi4 / --board qemu-virt (clean commit): both OK (kernel 93 warnings, baseline). No Rust file touched by the commit; clippy and full cargo xtask test not run (scope: sdk/tools only).
+3. sdk/build.sh sdk/examples/scrgrab.c out/SCRGRAB.NCP: OK, 11792 bytes.
+4. python3 -I tools/scrgrab2png.py --self-test: "scrgrab2png self-test: OK (round trip 7x5, 9 malformed inputs rejected)".
+5. Card: tools/mkcard.sh HUNG, twice, in diskutil (first in "diskutil mount" on the pitest03 tree's older mkcard, then with main's TOOL67 mkcard.sh in "diskutil partitionDisk"; "diskutil list" itself also hung host-wide, diskarbitrationd running; I killed my own hung processes). The pitest03 branch does not contain TOOL67 (base 466e721d3); the second attempt used main's tools/mkcard.sh. Fallback used: method/mkcard-nodiskutil.sh (dd + MBR via python + mformat/mcopy, FAT16 at LBA 2048, 64 MiB, label NTCARD) with C:\NEWDESK.INF (measurements/measurement-2026-10-16-desk62/method/NEWDESK.INF) and C:\AUTO\SCRGRAB.NCP. No <image>.manifest exists for this card (mkcard/make-sd-image not completed); optional_missing: n/a (not produced).
+6. cargo-built kernel8.img (rpi4 debug) booted directly:
+   qemu-system-aarch64 -M raspi4b -no-reboot -display none -serial file:serial-rpi4.log -kernel kernel8.img -append serial=on -drive file=card-run.img,if=sd,format=raw -qmp unix:q.sock,server,nowait
+   (xtask run has no QMP option; same arguments as cmd_run_rpi4 plus -qmp.) The program was started as C:\AUTO\SCRGRAB.NCP, so no input was needed on raspi4b.
+   Serial: "[auto] running C:\AUTO\SCRGRAB.NCP", banner "SCRGRAB.NCP -- saving the screen to C:\SCRGRAB.RAW", then
+   "SCRGRAB: wrote C:\SCRGRAB.RAW 640x480 depth 32 pitch 2560 bytes 1228832", "SCRGRAB: Physbase 0x000000003C100000", then "[auto] 1 AUTO program(s) run", "[desk] desktop up (1 drives)". 0 "exception" lines. serial/rpi4-sd-scrgrab.log
+7. QMP screendump (method/qmp.py, ppm) taken after the banner line and before the "wrote" line (hold window): screendumps/qmp-during-hold.ppm 640x480.
+8. RAW copied off the card after QEMU exit (mcopy ::SCRGRAB.RAW), converted: python3 -I tools/scrgrab2png.py scrgrab.raw scrgrab.png ->
+   "scrgrab2png: 640x480 pitch 2560 sha256 4aadf0c3743496e0a194333c7c9f4e42ad397e9099b944db297f4df677a86bfb -> scrgrab.png".
+9. Pixel comparison (own python, stdlib): converted PNG (RGB8) vs QMP PPM: 0 differing pixels of 307200. Raw bytes [B,G,R,X] vs PPM: 0 differing. Zero differences, none to state (no cursor blink seen). Control: a second QMP dump after the desktop came up (qmp-after-desktop.ppm) differs in 181638 pixels, so the comparison is sensitive.
+   Visual check (Read of scrgrab-converted.png): white 640x480 screen, one black text line "SCRGRAB.NCP -- saving the screen to C:\SCRGRAB.RAW" at the top-left, nothing else. Raw holds 2 distinct colours.
+10. Boot baseline: rpi4 boot of step 6 reaches the desktop, 0 exceptions. qemu-virt: gtimeout 60 cargo xtask run --board qemu-virt --headless (rc=124 by timeout, desktop idles): "[desk] desktop up (0 drives)", 0 exception lines. serial/qemu-virt.log
+
+Saved file: C:\SCRGRAB.RAW on card-run.img; extracted copy target-agents/agent-a18c856680aea9b24/out/scrgrab.raw, 1,2M (1228832 bytes = 32 + 640*480*4), sha256 4aadf0c3743496e0a194333c7c9f4e42ad397e9099b944db297f4df677a86bfb.
+Other gitignored outputs: target-agents/agent-a18c856680aea9b24/out/card-run.img sha256 (after run) e20e2561575801d6c57e2457c7ecd0bb96ab1dd1a3b83ca59e27b4d747f425a9; target-agents/agent-a18c856680aea9b24/out/SCRGRAB.NCP sha256 29ea32ae38ae2e38e2cbb3d406f0c8be5d226cb3c74cee3028924895d49071e8; target-agents/agent-a18c856680aea9b24/wt/target/aarch64-unknown-none-softfloat/debug/kernel8.img sha256 bc7bd15b90100758566439dc92ca5a19c5698486388b382c3a7a00c903709a79. fsck_msdos not run (the guest wrote one file; the file was re-extracted and its length and header checked by the converter).
+
+Failures: none in the product.
+Drove: SDK build, converter self-test, AUTO start of the probe on raspi4b with SD, QMP screendump in the hold window, RAW extraction, conversion, pixel-exact comparison, both builds and both boots.
+Could not verify / not driven: the card through tools/mkcard.sh (host diskutil wedged; fallback card used, no manifest); only a near-blank screen was compared (text line on white), not a GEM scene or a padded pitch (QEMU pitch = width*4); qemu-virt run of the probe (no C:); clippy and full host tests (no Rust touched).
+Real-Pi4-only (2): HDMI photo vs saved image (owner); firmware pitch above width*4 on silicon.
+Out-of-scope observations: (a) host diskutil hangs (diskutil list never returned) while this run was active; the owner's disk6 card was not touched by me. (b) the pitest03 branch predates TOOL67, so tools/mkcard.sh there still mounts on the data volume.
+Open: 1 (card built without tools/mkcard.sh and without manifest; rerun with mkcard once diskutil works if the lead requires it).
