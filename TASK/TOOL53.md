@@ -32,7 +32,7 @@ check.
    `tools/xtask/src/scratch.rs` run git without clearing `GIT_DIR`, `GIT_WORK_TREE` and related variables, so a
    caller's `GIT_DIR` redirects their git calls (the TOOL52 check itself clears them). Clear them in one helper for
    every git call of xtask; a test with `GIT_DIR` set to another repository.
-5. **Card images on the data volume** (owner 2026-11-11, moved forward): `tools/mkcard.sh` and `tools/make-sd-image.sh`
+5. **Moved to TASK/TOOL67.md (owner 2026-11-12); not part of TOOL53 any more.** **Card images on the data volume** (owner 2026-11-11, moved forward): `tools/mkcard.sh` and `tools/make-sd-image.sh`
    fail when the image lies on `/Volumes/Daten` (`diskutil` refuses the mount point there; A41 retest developer,
    2026-11-11), so workers fell back to calling `diskutil` by hand and the owner had to confirm every call. Find the
    cause (mount point location, volume flags, `hdiutil attach -mountpoint` vs `-mountroot`) and make both scripts work
