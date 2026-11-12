@@ -16,7 +16,8 @@
 //! with — and [`S_NEWTOS_RESET`] (2021), the kernel entry of the OSHEADER
 //! reset entry (RST01, `docs/api/bios/_reset-warm-cold.md`) — and
 //! [`S_NEWTOS_USBSNAP`] (2022), the USB snapshot (USB01 step 2,
-//! `docs/api/usb/usb-snapshot.md`). 2000 is free: FreeMiNT's own header
+//! `docs/api/usb/usb-snapshot.md`) — and [`S_NEWTOS_SCRPITCH`] (2023), the
+//! framebuffer's bytes per line (PITEST04). 2000 is free: FreeMiNT's own header
 //! reserves 0–29, 100, `0x54f8`, 900–999 and 1000–**1999**
 //! (`references/freemint/sys/mint/ssystem.h`, the two `reserved` comments),
 //! and the highest number its dispatcher answers is the build-gated test mode
@@ -54,8 +55,8 @@ pub const S_NEWTOS_RESET: u16 = crate::bios::reset::S_NEWTOS_RESET;
 
 // SYSINFO01: the effective system settings a system-information tool shows
 // (`docs/api/gemdos/154-ssystem.md` §"System-information modes (2003–2020)").
-// Scalars 2003–2018 and 2020 share the 2000/2001 interface ([`newtos_scalar`]);
-// 2019 is a string ([`s_newtos_kversion`]).
+// Scalars 2003–2018, 2020 and 2023 (PITEST04) share the 2000/2001 interface
+// ([`newtos_scalar`]); 2019 is a string ([`s_newtos_kversion`]).
 
 /// The ARM clock the firmware measured, Hz.
 pub const S_NEWTOS_CPUMEAS: u16 = 2003;
@@ -97,6 +98,8 @@ pub const S_NEWTOS_INPUTMODE: u16 = 2020;
 /// The USB snapshot: device list, descriptors, report ring, input mute
 /// (`docs/api/usb/usb-snapshot.md`).
 pub const S_NEWTOS_USBSNAP: u16 = 2022;
+/// Bytes per scan line of the visible framebuffer, the kernel's pitch (PITEST04).
+pub const S_NEWTOS_SCRPITCH: u16 = 2023;
 /// Debug feature `sd-diag` (TASK/HW08): `arg1` = buffer, `arg2` = size in
 /// bytes: the SD report as text, its length as the result. `arg1` = 0: show or
 /// hide the report on the screen, the new state as the result (1 = shown).
@@ -140,15 +143,15 @@ pub fn ssystem(args: &TrapArgs) -> Long {
         S_NEWTOS_SDDIAG => s_newtos_sddiag(args),
         #[cfg(feature = "sd-fault")]
         S_NEWTOS_SDFAULT => s_newtos_sdfault(args),
-        mode @ (S_NEWTOS_CPUMEAS..=S_NEWTOS_SERIAL | S_NEWTOS_INPUTMODE) => {
+        mode @ (S_NEWTOS_CPUMEAS..=S_NEWTOS_SERIAL | S_NEWTOS_INPUTMODE | S_NEWTOS_SCRPITCH) => {
             newtos_scalar(args, || sysinfo_value(mode))
         }
         _ => EINVFN,
     }
 }
 
-/// The value of one scalar system-information mode (2003–2018, 2020), or `None`
-/// when this machine does not know it (`docs/api/gemdos/154-ssystem.md`
+/// The value of one scalar system-information mode (2003–2018, 2020, 2023), or
+/// `None` when this machine does not know it (`docs/api/gemdos/154-ssystem.md`
 /// §"System-information modes"). Every answer is the state the kernel runs
 /// with — read from the module that holds it, or from the host for facts that
 /// live in the kernel's drivers and boot decisions.
@@ -186,6 +189,7 @@ fn sysinfo_value(mode: u16) -> Option<Long> {
         S_NEWTOS_SCRWIDTH => host::host()?.screen().map(|s| s.width as Long),
         S_NEWTOS_SCRHEIGHT => host::host()?.screen().map(|s| s.height as Long),
         S_NEWTOS_SCRDEPTH => host::host()?.screen().map(|s| s.bpp as Long),
+        S_NEWTOS_SCRPITCH => host::host()?.screen().map(|s| s.stride_bytes as Long),
         S_NEWTOS_GPUMEM => host::host()?.gpu_memory_bytes().map(kib),
         S_NEWTOS_KEYBOARD => host::host()?.keyboard_layout().map(|k| k as Long),
         S_NEWTOS_SERIAL => host::host()?.serial_console().map(Long::from),

@@ -16,9 +16,11 @@
 //! 5. 2019 copies with FreeMiNT's `strncpy_f` rule (`len - 1` characters, NUL
 //!    always, `len <= 0` writes nothing);
 //! 6. 2020 reports the input pump (0 timer pump, 1 `input=aes`);
-//! 7. 2023 is not a mode (`EINVFN`); 2021 is the RST01 reset entry (`bios_reset.rs`),
+//! 7. 2024 is not a mode (`EINVFN`); 2021 is the RST01 reset entry (`bios_reset.rs`),
 //!    2022 the USB snapshot (`gemdos_ssystem_usbsnap.rs`) — on this host, which
-//!    keeps the `Host::usb_snapshot` default, it answers `ERROR` (no controller).
+//!    keeps the `Host::usb_snapshot` default, it answers `ERROR` (no controller);
+//! 8. 2023 (PITEST04) is the framebuffer pitch in bytes, `ScreenInfo::stride_bytes`
+//!    itself, not derived from width and depth.
 
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU8, Ordering};
 use std::sync::{Mutex, MutexGuard, Once};
@@ -46,6 +48,7 @@ const S_NEWTOS_KEYBOARD: u64 = 2017;
 const S_NEWTOS_SERIAL: u64 = 2018;
 const S_NEWTOS_KVERSION: u64 = 2019;
 const S_NEWTOS_INPUTMODE: u64 = 2020;
+const S_NEWTOS_SCRPITCH: u64 = 2023;
 
 const E_OK: i32 = 0;
 const ERROR: i32 = -1;
@@ -53,7 +56,7 @@ const EINVAL: i32 = -25;
 const EINVFN: i32 = -32;
 
 /// The scalar modes whose answer comes from the host.
-const HOST_MODES: [u64; 12] = [
+const HOST_MODES: [u64; 13] = [
     S_NEWTOS_CPUMEAS,
     S_NEWTOS_CPUPOLICY,
     S_NEWTOS_SDMODE,
@@ -66,6 +69,7 @@ const HOST_MODES: [u64; 12] = [
     S_NEWTOS_SERIAL,
     S_NEWTOS_KVERSION,
     S_NEWTOS_INPUTMODE,
+    S_NEWTOS_SCRPITCH,
 ];
 
 /// Does the stand-in host know its facts? One switch for all of them, so the
@@ -78,6 +82,10 @@ static PUMP: AtomicU8 = AtomicU8::new(InputMode::TimerPump as u8);
 
 static RIG: Mutex<()> = Mutex::new(());
 
+/// The stand-in display's pitch, bytes: padded past `1920 * 32 / 8` = 7680, so
+/// a pitch computed from width and depth would not match it.
+const PITCH: u32 = 1984 * 4;
+
 /// A board whose kernel knows every fact (`KNOWS`), or none of them.
 struct InfoHost;
 
@@ -89,12 +97,12 @@ impl Host for InfoHost {
             base: 0x10_0000,
             phys_base: 0x10_0000,
             mem_base: 0x10_0000,
-            mem_bytes: 1920 * 1080 * 4,
+            mem_bytes: PITCH * 1080,
             width: 1920,
             height: 1080,
             bpp: 32,
-            stride_bytes: 1920 * 4,
-            size_bytes: 1920 * 1080 * 4,
+            stride_bytes: PITCH,
+            size_bytes: PITCH * 1080,
         })
     }
 
@@ -178,6 +186,7 @@ fn host_facts_come_back_in_both_forms() {
     assert_eq!(both_forms(S_NEWTOS_SCRWIDTH), 1920);
     assert_eq!(both_forms(S_NEWTOS_SCRHEIGHT), 1080);
     assert_eq!(both_forms(S_NEWTOS_SCRDEPTH), 32);
+    assert_eq!(both_forms(S_NEWTOS_SCRPITCH), PITCH as i32, "the kernel's pitch, bytes");
     assert_eq!(both_forms(S_NEWTOS_GPUMEM), 76 * 1024, "VideoCore memory in KiB");
     assert_eq!(both_forms(S_NEWTOS_KEYBOARD), 1, "built-in German");
     assert_eq!(both_forms(S_NEWTOS_SERIAL), 0, "serial console off");
@@ -203,7 +212,7 @@ fn unknown_host_facts_are_error_and_write_nothing() {
 #[test]
 fn arg2_is_refused_for_every_scalar_mode_before_anything_is_read() {
     let _g = rig(true);
-    for mode in (2003..=2018u64).chain([S_NEWTOS_INPUTMODE]) {
+    for mode in (2003..=2018u64).chain([S_NEWTOS_INPUTMODE, S_NEWTOS_SCRPITCH]) {
         let mut out: i32 = 0x0BAD_F00D;
         assert_eq!(gemdos(mode, &mut out as *mut i32 as u64, 1), EINVAL, "mode {mode}: arg2 != 0");
         assert_eq!(out, 0x0BAD_F00D, "mode {mode}: nothing written");
@@ -300,14 +309,15 @@ fn input_mode_reports_the_pump_in_effect() {
 
 /// The system-information block ends at 2020; 2021 is the RST01 reset entry
 /// (`S_NEWTOS_RESET`, tested in `bios_reset.rs`), 2022 the USB snapshot
-/// (`docs/api/usb/usb-snapshot.md`, tested in `gemdos_ssystem_usbsnap.rs`), so
-/// 2023 is the first free number. A host that keeps the `usb_snapshot`
-/// default — this one — has no USB controller: a well-formed 2022 request is
-/// `ERROR` and leaves the buffer as it was.
+/// (`docs/api/usb/usb-snapshot.md`, tested in `gemdos_ssystem_usbsnap.rs`), 2023
+/// the framebuffer pitch (PITEST04, above), so 2024 is the first free number. A
+/// host that keeps the `usb_snapshot` default — this one — has no USB
+/// controller: a well-formed 2022 request is `ERROR` and leaves the buffer as it
+/// was.
 #[test]
-fn the_block_ends_at_2020_and_2023_is_the_first_free_number() {
+fn the_block_ends_at_2020_and_2024_is_the_first_free_number() {
     let _g = rig(true);
-    assert_eq!(gemdos(2023, 0, 0), EINVFN);
+    assert_eq!(gemdos(2024, 0, 0), EINVFN);
     let mut req = [0u8; 64];
     req[0..4].copy_from_slice(b"USBS");
     req[4] = 2; // layout version 2 (usb-snapshot.md §10)
