@@ -47,3 +47,34 @@ VgetSize, VgetRGB we do not need it.)
 - Cases 212-214 equal where the spec says equal, otherwise listed in the COMPATIBILITY entry; 211 and 215 ACCEPTED
   by the entry. No case equal in the full XBIOS run differs anew.
 - `cargo xtask test` green; warnings delta 0; doc-check of the edited docs 0 failures.
+
+## Spec step (researcher, 2026-11-12)
+
+Written (new): `docs/api/xbios/59-vgetmonitor.md`, `docs/api/xbios/5b-vgetsize.md`,
+`docs/api/xbios/5e-vgetrgb.md`; cross-reference `docs/api/xbios/07-setcolor.md` ("Do `Setpalette` and
+`VgetRGB` ..."). Source: `references/emutos/bios/videl.c:664` (`vmontype`), `:724` (`vgetsize`), `:862`
+(`vgetrgb`); measured cases 212-214 (falcontc: 2, 614400 for `0x1C`, return 0 plus the Falcon default
+palette; tt: function number).
+
+Facts worth the owner's attention:
+- The function-number answer NewTOS gives today is **EmuTOS's own no-Videl answer** (`videl.c:666-667`,
+  `:730-731`, `:869-870`), so it is a source-valid "no Videl" claim; the questions are only about claiming Videl.
+- `0x58` read as a mode word is `OVERSCAN|VGA|80COL`, 1bpp (a valid-looking mono word); `0x59` as a monitor type is
+  out of range 0..3.
+- No Falcon mode word can express 1920x1080 (no width field, VGA table tops at 640x480); `VgetSize(0x1C)` is
+  614400 by formula (worked in the spec).
+- `VgetRGB` limit is 16 entries in every mode except 8bpp (`videl.c:875-876`); the truecolor answer is the
+  Falcon default table at `0xFF` full scale, not derived from `Setcolor`.
+- `VsetRGB` (0x5D) is outside this ticket: `VgetRGB` is then a constant table.
+
+Owner questions (options with consequences are in the three spec files):
+1. `VgetMonitor` for HDMI: VGA 2 (recommended, equals oracle), RGB 1, mono 0, TV 3, or keep the function number.
+2. `VgetSize(mode)`: A Falcon-table formula (case 213 equal; ignores the real screen), B current screen only
+   (case 213 differs), C hybrid. If B or C: bytes of the 32-bpp `Physbase` screen (8 294 400 at 1920x1080,
+   `tos-api/src/host.rs:579@size_bytes`) or of the 16-bit VDI device pixel (4 147 200)?
+3. `VgetRGB` in truecolor: A separate Falcon table of 16 entries (recommended, equals case 214), B derived from
+   the `Setcolor` shadow, C from the VDI table, D `-1`.
+4. `VsetMode(-1)` (query only): leave unanswered (returns `0x58`, reads as a mono mode word; `Getrez` option
+   in XBIOS23 interacts), or answer the query with a fixed word (e.g. `0x1C`-class, geometry inexpressible) while
+   `VsetMode(mode != -1)` stays out. Also: publish the `_VDO` cookie (ADR-012 amendment, open with TASK/ARCH06)?
+   Programs gate the Videl calls on it (`sdk/apps/teradesk/video.c:140-160`).

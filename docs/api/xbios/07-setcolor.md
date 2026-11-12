@@ -7,7 +7,18 @@
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, the `colorNum & 0x0F` range, the `color < 0` query,
 > the return of the previous (masked) colour, the ST `0x0777` / STe `0x0FFF`
-> mask. Reference: the `palette[]` shadow and the hardware register write.
+> mask, and the boot palette a first query sees (section "Boot palette").
+> Reference: where EmuTOS keeps the value (the ST(e) palette *hardware
+> registers*, no software shadow) and the register write.
+
+> **Correction 2026-11-12 (XBIOS21 spec step).** Earlier versions of this
+> file (and `_state.md §4`) said `atari_setcolor` reads and writes a
+> `palette[]` software shadow. The source has none: `palette` in
+> `atari_setcolor` is a local pointer to the ST(e) palette *registers*
+> (`bios/screen.c:1020`, `ST_PALETTE_REGS`), and both the read
+> (`:1031`) and the write (`:1033`) go straight to them. What a first
+> `Setcolor(n,-1)` returns is therefore whatever boot wrote into those
+> registers (`initialise_ste_palette`, `bios/screen.c:64-71`).
 
 ## EmuTOS source
 
@@ -24,12 +35,15 @@
 - `bios/screen.h` — `RGB_*` colour constants; the palette-register base.
 
 **System variables / globals read:**
-- `palette[colorNum]` (the 16-entry ST/STe palette shadow).
-- the video type (to pick the `0x0777` vs `0x0FFF` mask).
+- the ST(e) palette register `ST_PALETTE_REGS[colorNum]` (`bios/screen.c:1020,1031`)
+  — hardware, not a shadow.
+- the video type (`HAS_VIDEL || HAS_TT_SHIFTER || HAS_STE_SHIFTER`, to pick
+  the `0x0FFF` vs `0x0777` mask, `bios/screen.c:1026-1029`).
 
 **System variables / globals written:**
-- `palette[colorNum]` when `color >= 0` (`bios/screen.c:1033`), and the
-  hardware palette register.
+- the ST(e) palette register `ST_PALETTE_REGS[colorNum]` when `color >= 0`
+  (`bios/screen.c:1033`), the unmasked word. Nothing else: no Falcon
+  palette register, no `ste_shadow_palette`/`falcon_shadow_palette`.
 
 **Build configuration affecting this function:**
 - `CONF_WITH_ATARI_VIDEO` — the register write; without it the shadow-only
@@ -45,8 +59,8 @@ ST/STe entries are addressable. It reads the old value masked with `0x0777`
 on a plain ST or `0x0FFF` on STe/TT/Videl (`:1027-1031`) — i.e. 3 bits per
 channel on ST, 4 bits on STe.
 
-If `color >= 0` it writes the new value into `palette[colorNum]` (and the
-hardware register); if `color < 0` it does **not** write — this is the query
+If `color >= 0` it writes the new value into the register `ST_PALETTE_REGS[colorNum]`
+(`:1033`); if `color < 0` it does **not** write — this is the query
 form, returning the current colour without changing it (`:1032-1033`). Either
 way it returns the old (masked) value.
 
@@ -55,6 +69,92 @@ channel, only 3 significant on plain ST). Real STe/TT hardware rotates each
 channel's LSB to the top bit for ST backward compatibility; EmuTOS stores and
 masks straight nibbles, so the *stored/returned* word is contract and the
 hardware nibble rotation is a driver detail.
+
+---
+
+## Boot palette — what a first `Setcolor(n,-1)` returns (XBIOS21, 2026-11-12)
+
+Read from the source this session; the two measured values are from
+`measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT` (cases bios-r1 93, 94;
+`tosdiff-EMUTOS-1a7484ab-BIOS.txt` and `...-BIOS-falcontc.txt` in
+`measurements/measurement-2026-11-12-xbios-full/runs/bios-r1/`).
+
+**Source of the values.** `screen_init` ends with
+`initialise_palette_registers(rez, boot_resolution)` (`bios/screen.c:616`; the
+non-Videl build passes `0` as mode, `:618`). That routine (`bios/screen.c:432-457`)
+first writes the 16 ST(e) registers from the constant table `dflt_palette[]`
+(`bios/screen.c:54-59`) through `initialise_ste_palette(mask)` (`:64-71`,
+`col_regs[i] = dflt_palette[i] & mask`) with `mask = 0x0FFF` if
+`HAS_VIDEL || HAS_TT_SHIFTER || HAS_STE_SHIFTER`, else `0x0777` (`:437-440`),
+then adds the Videl/TT palette (`:445-453`), then `fixup_ste_palette(rez)` (`:456`).
+
+`dflt_palette[]` (register index = `colorNum`; constants `bios/screen.h:56-71`):
+
+| n | name | word | n | name | word |
+|--:|------|-----:|--:|------|-----:|
+| 0 | `RGB_WHITE`   | `0x0FFF` | 8  | `RGB_GRAY`      | `0x0333` |
+| 1 | `RGB_RED`     | `0x0F00` | 9  | `RGB_LTRED`     | `0x0F33` |
+| 2 | `RGB_GREEN`   | `0x00F0` | 10 | `RGB_LTGREEN`   | `0x03F3` |
+| 3 | `RGB_YELLOW`  | `0x0FF0` | 11 | `RGB_LTYELLOW`  | `0x0FF3` |
+| 4 | `RGB_BLUE`    | `0x000F` | 12 | `RGB_LTBLUE`    | `0x033F` |
+| 5 | `RGB_MAGENTA` | `0x0F0F` | 13 | `RGB_LTMAGENTA` | `0x0F3F` |
+| 6 | `RGB_CYAN`    | `0x00FF` | 14 | `RGB_LTCYAN`    | `0x03FF` |
+| 7 | `RGB_LTGRAY`  | `0x0555` | 15 | `RGB_BLACK`     | `0x0000` |
+
+(Order of the initialiser, `bios/screen.c:54-59`; values `bios/screen.h:56-71`.)
+This is the **hardware-register order** (register 1 red, register 15 black),
+not the VDI pen order (`MAP_COL_ROM = { 0,15,1,2,4,6,3,5,7,8,9,10,12,14,11,13 }`,
+`vdi/vdi_col.c:28-29`: pen 1 black -> register 15).
+
+**Profile dependence.**
+- `mask`: `0x0FFF` on every profile that has Videl, TT shifter or STe shifter
+  (the oracle's `tt` and `falcontc` profiles: both rows 93/94 measured `0x0FFF`/`0x0F00`);
+  `0x0777` only on a plain ST (values would be `0x0777`, `0x0700`, ... i.e. the table
+  `& 0x0777`; inferred from `:437-440`, no oracle profile for it).
+- `fixup_ste_palette(rez)` (`bios/screen.c:76-84`): `rez == ST_MEDIUM` copies
+  register 15 to 3; `rez == ST_HIGH` copies 15 to 1 (so `Setcolor(1,-1)` would return
+  `0x0000` on a mono boot). Not triggered on the measured profiles (the TT boot
+  rez is `TT_MEDIUM`/`TT_HIGH`, `:564`; the Videl boot rez is `sshiftmod` after `vsetmode`, `:553-557`,
+  `FALCON_REZ` for the default `0x1C`-class mode).
+- Falcon/Videl: `initialise_falcon_palette(mode)` (`bios/videl.c:998-1042`) rewrites
+  the 16 ST registers (`:1037-1041`) **only if** `use_ste_palette(mode)` (`:778-792`:
+  mono monitor, any 2bpp mode, ST-compatible 4bpp). In a truecolor/8bpp mode on a
+  colour monitor it does not, so the registers keep `dflt_palette & mask`. In the
+  ST-compatible case the values change for registers 8-14 (comment `:1033-1036`:
+  "for compatibility with Atari TOS") — **not measured**; needs the oracle if a
+  NewTOS profile ever boots an ST-compatible mode. Default boot mode is
+  `FALCON_DEFAULT_BOOT` (`bios/videl.h:56`) unless NVRAM or the monitor fix-up
+  changes it (`bios/screen.c:491-545`).
+- TT shifter: `initialise_tt_palette(rez)` (`bios/screen.c:370-387`) fills the 256 TT
+  registers; it does not touch the ST(e) registers `Setcolor` reads.
+
+**Do `Setpalette` and `VgetRGB` read/write the same store?**
+- `Setpalette` and `Setcolor`: yes, the ST(e) palette registers. `Setpalette` only
+  stores a pointer in `colorptr` (`bios/screen.c:1182`); the VBL handler copies 16 words
+  to `0xFFFF8240` (`bios/vectors.S:358-383`, the `docopy` path with bit 0 of `colorptr`
+  clear). `Setcolor` writes the register directly, so a `Setcolor(n,-1)` right after
+  `Setpalette` still returns the *old* value until the next VBL has run (inferred
+  from the two code paths, not measured).
+- `VgetRGB`: **no**. It reads `ste_shadow_palette[]` (if `use_ste_palette(mode)`) or
+  `falcon_shadow_palette[]` (`bios/videl.c:862-909`) — two software tables that
+  `Setcolor`/`Setpalette` never write. After boot in the measured falcontc mode it
+  returns the Falcon default palette (`videl_dflt_palette`, `bios/videl.c:42-107`), e.g.
+  entry 1 `FRGB_RED` -> `0x00FF0000`; the 16 captured longs of case 214 match
+  (`capture[0..3] = 00 FF FF FF` = white, `[4..7] = 00 FF 00 00` = red). So **EmuTOS
+  holds up to three unrelated palettes at boot** (ST(e) registers, `falcon_shadow_palette`,
+  `ste_shadow_palette`), and only `VsetRGB` (`:806-859`) keeps the Falcon/STe *shadow*
+  coherent with the Videl registers; `Setcolor` and `Setpalette` do not touch them.
+- The VDI does not use `Setcolor` on Videl: `set_color` calls `VsetRGB`
+  (`vdi/vdi_col.c:540-545`) and `vq_color` calls `VgetRGB` (`:900-908`); in a truecolor
+  mode (`CONF_WITH_VDI_16BIT`, ADR-024) `vs_color` only writes the per-workstation software
+  palette (`set_color16`, `vdi/vdi_col.c:601-614`, called from `:648-662`) and touches no
+  XBIOS palette at all. The VDI reaches `Setcolor` only on the non-Videl STe/ST paths
+  (`:576-582`, `:920-931`).
+
+**Measured vs. read.** Measured: `Setcolor(0,-1) = 0x0FFF`, `Setcolor(1,-1) = 0x0F00`
+(tt and falcontc, cases 93/94); case 95 `Setcolor(15,-1)` is EQUAL for NewTOS's `0`
+(black, matches table entry 15). Read, not measured: entries 2-14 and the
+`0x0777` / mono / ST-compatible-Videl variants.
 
 ---
 
@@ -111,7 +211,8 @@ Mask applied to the *returned* value: `0x0777` (ST) / `0x0FFF` (STe/TT/Videl).
 
 ### Side effects on global state
 
-- `palette[colorNum] = color` when `color >= 0` (`bios/screen.c:1033`).
+- none in software; the only state is the palette register written when
+  `color >= 0` (`bios/screen.c:1033`).
 
 ### Side effects on hardware
 
@@ -167,7 +268,8 @@ not rejected.
 
 ### Requires (must be initialized / functional)
 
-- The `palette[]` shadow and (Atari) the palette registers.
+- The ST(e) palette registers, loaded at boot by `initialise_palette_registers`
+  (`bios/screen.c:432-457`, called from `screen_init` at `:616`/`:618`).
 
 ### Used by
 
@@ -177,7 +279,9 @@ not rejected.
 
 ## Related data structures
 
-- `docs/api/xbios/_state.md §4` — palette shadow + word format.
+- `docs/api/xbios/_state.md §4` — palette word format (its "palette shadow"
+  wording is corrected by this file's note above; the `palette[]` shadow does
+  not exist in EmuTOS).
 - `docs/api/xbios/06-setpalette.md` — full-block counterpart.
 
 ---
@@ -214,31 +318,47 @@ the `colorNum & 0x0F` masking are preserved.
 
 ## Pi / BCM2711 binding
 
-> Re-points the *hardware reference* (the `palette[]` shadow + the STe/TT
-> palette register write) at the emulated 16-entry CLUT over the 32 bpp
-> VideoCore framebuffer. The **contract is unchanged** — `colorNum & 0x0F`,
-> `color < 0` query, the previous masked word returned. Peripheral +
-> driver: see `docs/HARDWARE-PROFILE.md` §2/§3.1.
+> Re-points the *hardware reference* (the ST(e) palette registers) at the NewTOS
+> palette shadow and the VDI colour table. The **contract is unchanged** —
+> `colorNum & 0x0F`, `color < 0` query, the previous masked word returned — and
+> now includes the boot palette of the section above.
 
-- **What `setcolor` does today.** Index is masked `& 0x0F`; when `color >=
-  0` the entry is stored `& 0x0FFF` (STe 4-bit mask), and the previous
-  value is returned as a WORD (`tos-api/src/xbios/screen.rs:108-117`).
-  `color < 0` is the query — no write. Matches the contract's masking and
-  query rules.
-- **STe 4-bit mask (`0x0FFF`) is used, not the ST `0x0777`.** NewTOS treats
-  the profile as STe-class for the return mask (4 significant bits/gun),
-  which is consistent with an emulated CLUT that has ≥ 4-bit precision.
-- **Same disconnected-shadow caveat as `Setpalette` (Step-2).** The 16
-  entries written here live in the XBIOS ST-format shadow
-  (`screen.rs:160-168`), **not** the VDI CLUT
-  (`vdi_backend::PALETTE`) that actually colours pixels. So `Setcolor`
-  updates a value you can read back via `Setcolor(n, -1)` but does not
-  change the displayed colour. Bridging XBIOS `Setcolor` to the
-  `RasterBackend::set_color` (4→8-bit expansion into the VideoCore CLUT) is
-  the Step-2 fix — not done in this pass.
-- **4→8-bit expansion (when wired).** Each stored ST nibble maps to an
-  8-bit channel for the truecolor framebuffer, exactly the VideoCore
-  mapping the PHASE-08 note describes; the returned word stays the masked
-  ST value (contract), the 8-bit expansion is a driver detail.
-- **1080p later.** Resolution-independent; the 16-entry CLUT model is
-  unchanged by geometry.
+- **What `setcolor` does today.** The index is masked `& 0x0F`; the old word is read
+  from the 16-entry shadow `PAL` (`tos-api/src/xbios/screen.rs:388@palette`, every
+  entry initialised to `0`); when `color >= 0` the entry is stored `& 0x0FFF` and
+  pushed into the VDI colour table by `apply_to_clut`
+  (`tos-api/src/xbios/screen.rs:335@setcolor`, `:359@apply_to_clut`); the old word
+  is returned as a WORD. `color < 0` writes neither. Nothing seeds `PAL` at boot:
+  this is the defect of XBIOS21 (cases 93/94: oracle `0x0FFF`/`0x0F00`, NewTOS `0`).
+  `setpalette` (`tos-api/src/xbios/screen.rs:305@setpalette`) writes the same shadow
+  and the same table, immediately (EmuTOS defers to the next VBL).
+- **Two tables, one index space (inferred from the code, not measured).** `apply_to_clut`
+  passes the XBIOS register index straight to `RasterBackend::set_color(index, ...)`
+  as a VDI pen. NewTOS's VDI folds `MAP_COL` to the identity
+  (`tos-api/src/vdi/inquiry.rs:5@MAP_COL`, `kernel/src/vdi_backend.rs:56@VIDEL_PALETTE1`:
+  pen 0 white, pen 1 black, ... pen 15 `(667,0,667)`), whereas the EmuTOS register order
+  above has register 1 red and register 15 black. The EmuTOS VDI never mixes the two on
+  a Videl/truecolor machine (see "Do `Setpalette` and `VgetRGB` ..." above), so the
+  identity pen-from-register write in `apply_to_clut` is a NewTOS construction, not
+  EmuTOS behaviour.
+- **Proposal for the XBIOS21 owner check: which table leads at boot.**
+
+  | Option | Boot state | Consequence |
+  |--------|-----------|-------------|
+  | **A. The shadow leads (recommended)**: seed `PAL` from `dflt_palette & 0x0FFF` (table above) at boot; do **not** touch the VDI colour table. | `Setcolor(n,-1)` equals the oracle for every n (cases 93-95); the desktop/AES colours (VDI table, ADR-024 pens 0..15) are unchanged. | A program that saves with `Setcolor(n,-1)` and restores with `Setcolor(n,saved)` writes `saved` into the VDI table via `apply_to_clut` at restore time: pen `n` takes the *register-n* colour of the default table (pen 1 turns red, pen 15 turns black). On EmuTOS Falcon/truecolor the same restore changes nothing visible (the XBIOS ST registers are not the VDI palette there), so for exact visual fidelity `apply_to_clut` should be dropped for truecolor (a second owner question, below). |
+  | **B. The VDI table leads**: derive the shadow from the VDI table on every query (4-bit quantise of pen `n`). | One source of truth; a `vs_color` change shows in `Setcolor(n,-1)`. | Case 93 returns `0x0FFF` (pen 0 white) but case 94 returns black `0x0000`, not `0x0F00`: **not equal to the oracle** for n = 1..15 except 0 (pen order differs from register order), so acceptance of XBIOS21 cannot hold; also contradicts EmuTOS, where the VDI does not feed `Setcolor` on Videl. |
+  | **C. Shadow seeded and mapped**: seed `PAL` with the EmuTOS table and keep `apply_to_clut` but route register `n` to pen `REV_MAP_COL[n]` (the table `tos-api/src/vdi/escape.rs:74@REV_MAP_COL`). | Restore of a saved default palette is a visual no-op for the default look; `Setcolor(n,c)` colours the same pen as the same call on a 16-colour EmuTOS. | Needs the mapping in `setcolor`/`setpalette`; behaviour then matches an ST/STe EmuTOS, not the Falcon/truecolor profile NewTOS declared (ADR-024). |
+
+  Recommendation: **A**, plus the owner question "does an XBIOS palette write still
+  reach the VDI table in the truecolor VDI?". The source says: on the Falcon profile
+  it does not (`vdi/vdi_col.c:601-614,648-662`); dropping `apply_to_clut` would make
+  `Setcolor`/`Setpalette` shadow-only (the pre-Step-2 state `06-setpalette.md`
+  describes) — ADR-024 consequences for programs that recolour via `Setpalette`
+  (ST-style demos/games) would then show no change on screen, which is also what a
+  Falcon truecolor EmuTOS shows. Keeping `apply_to_clut` (A as stated) keeps today's
+  visible effect at the price of the pen/register order mismatch.
+- **Mask.** Return mask `0x0FFF` (STe class), as measured on both oracle profiles.
+- **Host tests asked by XBIOS21** (`TASK/XBIOS21.md` Work 3): the default word for
+  every n from the table; set-then-query returns the set word (`& 0x0FFF`); a query does
+  not change the shadow.
+- **1080p.** Geometry-independent; unchanged.

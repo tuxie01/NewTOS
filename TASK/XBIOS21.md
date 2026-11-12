@@ -31,3 +31,33 @@ Type: developer (spec check first). Owner decision 2026-11-12 ("ja ticket": yes,
 - `bios-r1` cases 93 and 94 EQUAL on tt and falcontc; no case equal in
   `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT` differs anew.
 - `cargo xtask test` green; warnings delta 0; doc-check of the edited docs 0 failures.
+
+## Spec step (researcher, 2026-11-12)
+
+Written: `docs/api/xbios/07-setcolor.md` (new section "Boot palette", Pi binding rewritten, a correction
+note). Findings, all source-cited there:
+
+- **EmuTOS has no `palette[]` shadow.** `atari_setcolor` reads and writes the ST(e) palette *registers*
+  (`references/emutos/bios/screen.c:1020,1031,1033`); the earlier spec text (and `_state.md §4`) said
+  "shadow" and is corrected in `07-setcolor.md`.
+- **Boot table:** `dflt_palette[]` (`bios/screen.c:54-59`, values `bios/screen.h:56-71`) `& 0x0FFF`
+  on every profile with Videl/TT/STe shifter, `& 0x0777` on plain ST (`bios/screen.c:437-440`), loaded by
+  `initialise_palette_registers` (`:432-457`); register 0 `0x0FFF`, 1 `0x0F00`, ..., 15 `0x0000`
+  (full table in the spec). Measured: cases 93/94 on tt and falcontc.
+- **`Setpalette`** shares the store (VBL copy of `colorptr` into the same registers,
+  `bios/vectors.S:358-383`); **`VgetRGB` does not** (it reads `falcon_shadow_palette`/`ste_shadow_palette`,
+  `bios/videl.c:862-909`); the VDI on Videl uses `VsetRGB`/`VgetRGB`, not `Setcolor`
+  (`vdi/vdi_col.c:540-545`), and in truecolor neither.
+- **Register order is not VDI pen order** (`MAP_COL_ROM`, `vdi/vdi_col.c:28-29`); NewTOS's `apply_to_clut`
+  writes register index as pen (identity `MAP_COL`).
+
+Proposal (options with consequences in the spec's Pi binding): **A** seed the shadow from the table at boot,
+do not touch the VDI table (shadow leads); B (VDI table leads) cannot equal the oracle for n = 1..15;
+C (shadow plus register-to-pen mapping).
+
+Owner questions:
+1. Shadow leads (A, recommended), VDI table leads (B) or mapped (C)?
+2. Does an XBIOS palette write (`Setcolor`/`Setpalette`) still reach the VDI colour table in the truecolor
+   VDI? EmuTOS Falcon/truecolor: no. Keeping it is today's visible effect, but a "save with `Setcolor(n,-1)`,
+   restore with `Setcolor(n,saved)`" round trip then recolours VDI pens in register order (pen 1 red).
+3. `0x0777` plain-ST mask: not applicable (NewTOS is STe-class `0x0FFF`), confirm.

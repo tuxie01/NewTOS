@@ -132,9 +132,35 @@ None.
    `sshiftmod` shadow (`bios/screen.c:1082`), which `atari_setrez` writes on
    every `Setscreen` rez change — so `Getrez` and `Setscreen` stay coherent
    without real hardware.
-2. **Videl maps to ST-compatible codes.** On Videl, `atari_getrez` collapses
-   the bit-depth to `0`/`1`/`2` (or reports `FALCON_REZ`), so Videl programs
-   can still read a familiar code.
+2. **Videl maps to ST-compatible codes — never to `FALCON_REZ`.**
+   (Corrected 2026-11-12, XBIOS23 spec step: earlier text said "or reports
+   `FALCON_REZ`"; the source never returns 3.) On Videl `atari_getrez` takes the
+   current mode word `vsetmode(-1)` (the stored `current_video_mode`, not a
+   register read-back, `bios/videl.c:619-627`) and returns
+   (`bios/screen.c:948-987`):
+
+   | Current Videl mode word | `Getrez()` | Source |
+   |-------------------------|-----------:|--------|
+   | `VIDEL_COMPAT` set, 1bpp (ST high) | 2 | `bios/screen.c:956-959` |
+   | `VIDEL_COMPAT` set, 2bpp (ST medium) | 1 | `:961-962` |
+   | `VIDEL_COMPAT` set, 4bpp (ST low) | 0 | `:964-965` |
+   | `VIDEL_COMPAT` set, any other bpp field | 0, with `KINFO("Problem - unsupported video mode")` | `:967-969` |
+   | `VIDEL_COMPAT` clear — **every** Falcon mode (1/2/4/8bpp, **truecolor**) | **2** | `:971-972` |
+
+   `FALCON_REZ` (3) exists only as the value `vsetmode` stores in `sshiftmod` for a
+   non-ST-compatible mode (`bios/videl.c:648-656`), so on Videl `Getrez()` and
+   `sshiftmod` differ for every Falcon mode (2 vs 3). The oracle's falcontc boot
+   mode is `0x1C` (VGA, 80 columns, truecolor; case 211 = `0x1C`), non-compat, hence
+   case 87 = 2 (`measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`).
+   Other hardware: TT shifter `TT_SHIFTER & 0x07` (`:976-979`), ST shifter
+   `ST_SHIFTER & 0x03` (`:981-984`), no Atari video: `sshiftmod` (`:1076-1085`).
+   What EmuTOS itself concludes from `Getrez`: the AES opens its workstation with
+   `FALCON_REZ + 2` on Videl and `Getrez() + 2` elsewhere (`aes/gemgsxif.c:159-165,180`),
+   i.e. it does **not** consult `Getrez` on a Videl machine; the desktop takes the Videl
+   mode word and falls back to `0xFF00 | Getrez()` without Videl (`desk/deskapp.c:1085-1096`);
+   `v_opnwk` switches mode only for `work_in[0]-2` equal to an ST/TT code
+   (`vdi/vdi_control.c:506-513`); `shifter_rez_changeable` is the other internal consumer
+   (`bios/screen.c:112`).
 
 ---
 
@@ -182,6 +208,11 @@ None.
 
 PHASE-08: `Getrez` reports the code matching the active framebuffer mode; the
 TT-shifter profile can return TT codes (4/6/7) for HD-friendly modes.
+
+> **Under review (TASK/XBIOS23, 2026-11-12):** the ground below (16-colour
+> framebuffer) was superseded by ADR-024 (truecolor VDI); options and the draft
+> amendment are in `TASK/XBIOS23.md`, "Draft for the owner". Until the owner decides,
+> the code still returns `TT_MEDIUM`.
 
 ### NewTOS behavior (settled — ADR-017 rev 2, 2026-07-16)
 
