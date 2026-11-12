@@ -12,7 +12,8 @@ SND03 first.
   `docs/hardware/pwm-audio.md` (its `Setbuffer` -> `SOURCE_AD` mapping is wrong: the DMA source is a CPU-converted
   staging ring of duty-cycle words; DMA-lite channels move at most 65535 bytes per control block).
 - Decisions: D-tick transport first; `Setinterrupt` recorded, never called, warning; native `SndBufPtr` layout;
-  big-endian 16-bit samples.
+  big-endian 16-bit samples by default, a switch for native little-endian samples (form settled in the spec first,
+  SND01 Q-N4).
 
 ## Work
 

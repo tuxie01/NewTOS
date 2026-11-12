@@ -497,8 +497,12 @@ to you). The lead decides the rest:
 - **Q-N3 (lead):** native `SndBufPtr` layout and 64-bit `Setbuffer` addresses as the SDK header defines them
   (`docs/COMPATIBILITY.md:1960`); a null or unwritable `Buffptr` pointer ends the program through the existing
   crash path, like every other unwritable pointer (BIOS06, `tos-api/src/uaccess.rs`).
-- **Q-N4 (lead):** big-endian 16-bit samples as on the Falcon (ported Atari programs and the SDK header expect it).
-  The PWM FIFO takes duty-cycle words, not PCM, so every sample is converted anyway; the byte swap costs nothing extra.
+- **Q-N4 (owner, revised 2026-11-12):** big-endian 16-bit samples as on the Falcon by default (sample files and
+  unchanged Atari programs work as they are), plus a NewTOS switch for native little-endian samples, so a ported
+  program that computes or mixes samples in C writes them without swapping each one. Owner: "ja" to that proposal.
+  The PWM FIFO takes duty-cycle words, not PCM, so every sample is converted anyway; either order costs the same.
+  The form of the switch (a `Setmode` bit, a `Soundcmd` mode, or an existing convention such as GSXB) is settled in
+  the spec before SND05 builds it: look for an existing convention first, invent bits only if there is none.
 - **Q-N5, Q-N6:** decided after H1 (the measured PWM clock decides the reachable rates and the cookie).
 - **Q-N7 (lead):** approved: [SND03](SND03.md) (hardware probe H1-H5), [SND04](SND04.md) (oracle cases O1-O5),
   [SND05](SND05.md) (implementation: DMA ring, PWM jack backend, XBIOS 0x80-0x8D), after SND03 and SND04.
