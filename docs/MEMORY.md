@@ -422,6 +422,29 @@ follow from `_MCH` (EmuTOS gates it on `has_nvram`): NewTOS has none and
 answers `NVMaccess` like EmuTOS without an NVRAM chip (TASK/XBIOS10.md).
 Evidence: `docs/analysis/machine-identity-adr-proposal-2026-10-28.md`.
 
+*Amendment 2026-11-12 (user decision on TASK/SND01, Q-N5; applied with TASK/SND05).* **`_SND` exists exactly when
+a sound backend has initialised** (the jack's PWM output, later HDMI); while none has, the cookie stays absent and
+XBIOS 0x80-0x8D answer their function number (`SOUND_IS_AVAILABLE` of `references/emutos/bios/dmasound.c:122-126`).
+Value: **`SND_16BIT | SND_MATRIX` = `0x00000014`**, set by the sound driver through `Setcookie` after its probe, not
+in `seed_defaults` (`tos-api/src/cookie.rs:223@seed_defaults`). EmuTOS builds the value in
+`references/emutos/bios/machine.c:409-447` (`0x01` PSG if the build has a YM2149, `0x02` with DMA sound, `0x04|0x10`
+with Falcon DMA sound, `0x08` with a DSP). Bits not set and why: `SND_PSG` (`0x01`) — no YM2149, `Dosound` and
+`Giaccess` stay plausible-zero no-ops; `SND_8BIT` (`0x02`) — programs read it as "the STe register image at
+`$FFFF8900` exists", NewTOS has none and does not emulate one (ADR-012), and such programs would fault;
+`SND_DSP` (`0x08`) — no DSP, XBIOS 0x60-0x7F answer their function numbers; `SND_EXT` (`0x20`, "Extended XBIOS
+routines (Milan, GSXB)", `sdk/libc/overlay/include/mint/falcon.h:179@SND_EXT`) — the GSXB extensions (`NSoundcmd`,
+`NSetinterrupt`, free sample rates, 24/32-bit formats) are not implemented. A program that reads `0x14` concludes:
+Falcon CODEC and connection-matrix XBIOS sound is present (`Devconnect`, `Soundcmd`, `Setmode` incl. 16-bit stereo,
+`Setbuffer`, `Buffoper`, `Buffptr`), no PSG, no DSP, no STe register image. It may attempt recording (no bit says
+"no input"): `Setbuffer(SR_RECORD, ...)` and the record bits answer `EBADRQ` (`docs/api/xbios/_dmasound-group.md`
+§9.4). `SND_16BIT` states API capability, not DAC resolution (the PWM jack resolves about 11 bit at 49 kHz,
+`docs/hardware/pwm-audio.md` §5.4, §5.5). The ADR-012 consequence "drop `_VDO`/`_SND`/`_FDC`/`_FPU`" and the
+amendment 2026-10-28 line "`_SND` ... stay absent" are superseded for a system with a sound backend; `_FDC`,
+`_VDO`, `_FPU`, `_CPU` stay as decided. `docs/COMPATIBILITY.md` row 49 (`_SND`) changes from `absent` to `0x14`
+with a sound backend, still ACCEPTED against the oracle (`0x03` / `0x1F`: no PSG, no 8-bit, no DSP); row 41 (the
+jar's tag list) gains `_SND`. The byte-order switch for 16-bit samples is not announced by the cookie (it would be
+`SND_EXT`); programs probe it by calling `Soundcmd(SET16BITFORMAT, SND_INQUIRE)`, which answers 0 on EmuTOS.
+
 ### Alternatives considered
 
 - **Map a `$5A0` (or any fixed) sysvar page so apps read+scan it**

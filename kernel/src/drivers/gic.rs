@@ -223,6 +223,11 @@ pub extern "C" fn rust_irq_handler(frame: &mut crate::arch::aarch64::exceptions:
     gic.end_of_interrupt(intid);
 
     if tick {
+        // DMA sound (TASK/SND05): refill the PWM jack's staging ring first,
+        // on every tick — not behind the frame tick's EL0 gate below
+        // (`docs/hardware/pwm-audio.md` §12.8); a no-op without a backend.
+        #[cfg(feature = "board-rpi4")]
+        crate::drivers::bcm2711::pwm_audio::tick();
         // The frame tick (TASK/V55): EmuTOS' VBL routine `vb_draw`, once per
         // frame, only when the tick interrupted a program at EL0.
         crate::vbl::irq_tick(frame.spsr);

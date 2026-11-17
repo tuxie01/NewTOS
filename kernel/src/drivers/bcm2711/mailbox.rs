@@ -502,6 +502,34 @@ pub fn set_clock_rate(clock_id: u32, rate_hz: u32, skip_setting_turbo: bool) -> 
     }
 }
 
+/// 16-byte-aligned property buffer for "Set clock state".
+#[repr(C, align(16))]
+struct SetClockStateBuf {
+    words: [u32; super::clock_tags::SET_CLOCK_STATE_WORDS],
+}
+static mut SET_CLOCK_STATE_BUF: SetClockStateBuf =
+    SetClockStateBuf { words: [0; super::clock_tags::SET_CLOCK_STATE_WORDS] };
+
+/// Ask the firmware to switch clock `clock_id` on or off ("Set clock
+/// state", `0x00038001`); returns the state it answers with (bit 0 = on),
+/// or `None` when it does not answer the tag or reports the clock missing.
+/// Boot CPU only (the sound backend's init, TASK/SND05).
+pub fn set_clock_state(clock_id: u32, on: bool) -> Option<u32> {
+    use super::clock_tags::{encode_set_clock_state, state_reply, SET_CLOCK_STATE_WORDS, SS_CODE, SS_STATE};
+    // SAFETY: boot CPU, single-threaded; exclusive use of the static buffer.
+    unsafe {
+        (*core::ptr::addr_of_mut!(SET_CLOCK_STATE_BUF)).words = encode_set_clock_state(clock_id, on);
+        let va = (&raw const SET_CLOCK_STATE_BUF) as usize;
+        let pa = crate::arch::aarch64::mmu::va_to_pa(va as u64) as u32;
+        if !call_property(va, pa, SET_CLOCK_STATE_WORDS * 4) {
+            return None;
+        }
+        let code = core::ptr::read_volatile((va + SS_CODE * 4) as *const u32);
+        let state = core::ptr::read_volatile((va + SS_STATE * 4) as *const u32);
+        state_reply(code, state)
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Command-line tag: "Get command line" (0x00050001)
 // ─────────────────────────────────────────────────────────────────────

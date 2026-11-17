@@ -346,6 +346,19 @@ pub fn resolve_kva(slot: usize, va: u64) -> Option<u64> {
     live.then(|| super::kalias(va))
 }
 
+/// The kernel alias of `[va, va + len)` if the whole range lies inside one of
+/// the two BDOS pools (or, on the host, in ordinary host memory), else `None`.
+///
+/// For kernel code that reads user memory **outside any trap**, with no
+/// fault recovery: the DMA sound converter in the 200 Hz tick reads the
+/// program's `Setbuffer` frame (TASK/SND05). Pool memory is mapped in the
+/// kernel's high half from boot on and stays mapped when a block is freed,
+/// so a read through the alias never faults; whether the block is still
+/// allocated is not asked (the Falcon's DMA reads a freed buffer too).
+pub fn pool_kva(va: u64, len: u64) -> Option<u64> {
+    (in_pool(va, len) || host_memory(va)).then(|| super::kalias(va))
+}
+
 /// On the host, an address outside both BDOS pools is ordinary host memory
 /// (see [`resolve_kva`]); on the target there is no such memory.
 #[inline]

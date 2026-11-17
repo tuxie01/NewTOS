@@ -400,6 +400,10 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
     if !drivers::timer::init() {
         kprintln!("[timer] no usable CNTFRQ_EL0 — 200 Hz system tick is OFF");
     }
+    // TASK/SND05: the PWM jack sound backend; sets `_SND` only when it comes up
+    // (QEMU: no PWM clock). Not with `snd-probe`, which drives the same pins.
+    #[cfg(all(feature = "board-rpi4", not(feature = "snd-probe")))]
+    drivers::bcm2711::pwm_audio::init();
 
     kprintln!(
         "[input] keyboard/mouse pump: {}",

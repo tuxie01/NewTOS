@@ -5,6 +5,7 @@
 //! Source: BCM2711 ARM Peripherals datasheet §1.2.4.
 
 pub mod clock_tags;
+pub mod dma;
 pub mod emmc;
 #[cfg(feature = "sd-diag")]
 pub mod emmc_diag;
@@ -15,3 +16,4 @@ pub mod framebuffer;
 pub mod mailbox;
 pub mod pl011;
 pub mod pm;
+pub mod pwm_audio;

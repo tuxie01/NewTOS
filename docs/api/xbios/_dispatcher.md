@@ -78,10 +78,15 @@ padded with `xbios_unimpl` slots to fill up to `LAST_ENTRY + 1` entries:
 | `CONF_WITH_TT_SHIFTER` (TT shifter) | `0x57` | 88 |
 | (ST baseline) | `0x40` | 65 |
 
-NewTOS target profile: **TT-shifter baseline** — `LAST_ENTRY = 0x57`, table
-entries 0x00–0x57 (88 slots). The Falcon-only ranges (0x58–0x8D) are not in
-the table; a trap with `ID > 0x57` hits the range check and returns the
-function number (§3).
+NewTOS target profile: **`LAST_ENTRY = 0x8D`**, table entries 0x00–0x8D (142
+slots), since TASK/SND05 (2026-11-17; until then the TT-shifter baseline
+`0x57`, 88 slots). The DMA sound group 0x80–0x8D has real handlers
+(`docs/api/xbios/_dmasound-group.md`); they answer their function number while
+no sound backend has initialised, as EmuTOS does without a sound chip. The
+Videl (0x58–0x5F) and DSP (0x60–0x7F) ranges are unimplemented slots inside the
+table and return their function number; a trap with `ID > 0x8D` hits the range
+check and returns the function number (§3). The two are indistinguishable from
+outside, so moving the last entry changes no answer for 0x58–0x7F.
 
 > **Profile-mixing note (re-validation finding, D-058):** `CONF_WITH_TT_SHIFTER`
 > selects the *table shape* here (opcodes 0x50–0x57 get real handlers instead
@@ -160,9 +165,10 @@ the gate is off the slot is `xbios_unimpl`.
 | 0x41–0x4F | `xbios_unimpl` | —     | filler when `LAST_ENTRY>0x40` | — |
 | 0x50–0x57 | `esetshift`…`esetsmear` | Eset*/Eget* | `CONF_WITH_TT_SHIFTER` | `bios/screen.c` |
 
-Beyond 0x57 (outside the NewTOS profile): Videl (0x58–0x5F,
-`CONF_WITH_VIDEL`), DSP (0x60–0x7F, `CONF_WITH_DSP`), DMA sound
-(0x80–0x8D, `CONF_WITH_DMASOUND`). See `bios/xbios.c:1411-1514`.
+Beyond 0x57: Videl (0x58–0x5F, `CONF_WITH_VIDEL`) and DSP (0x60–0x7F,
+`CONF_WITH_DSP`), unimplemented slots in the NewTOS profile; DMA sound
+(0x80–0x8D, `CONF_WITH_DMASOUND`), in the NewTOS profile since TASK/SND05
+(`docs/api/xbios/_dmasound-group.md` §2, §11). See `bios/xbios.c:1411-1514`.
 
 > Note: the 25 in-scope functions are the ones present with a real handler
 > in the NewTOS TT-shifter profile *and* documented as their own spec file.

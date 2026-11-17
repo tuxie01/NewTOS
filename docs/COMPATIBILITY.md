@@ -1627,13 +1627,13 @@ falcontc and disk are byte-identical, so their columns are one.
 
 | Case | Cookie | Oracle tt | Oracle falcontc = disk | NewTOS | Status | Reason |
 |---|---|---|---|---|---|---|
-| 41 | `jar:*` | 12: `_CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI` | same | 5: `NTOS _MCH _IDT _AKP EdDI` | ACCEPTED | follows from the per-cookie rows; re-measure when the seeded set changes |
+| 41 | `jar:*` | 12: `_CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI` | same | 5: `NTOS _MCH _IDT _AKP EdDI`; 6 with a sound backend (`_SND` added by the sound driver, TASK/SND05) | ACCEPTED | follows from the per-cookie rows; re-measure when the seeded set changes |
 | 44 | `_CPU` | `0x0000001E` | `0x0000001E` | absent | ACCEPTED | ADR-012 amendment 2026-10-28: no m68k CPU |
 | 45 | `_VDO` | `0x00020000` | `0x00030000` | absent | ACCEPTED | user decision 2026-10-29 (TASK/ARCH06): no Shifter/VIDEL, `_VDO` stays absent; TeraDesk's ST-branch overscan crash is a port bug (TASK/SDK07.md) |
 | 46 | `_FPU` | `0x00060000` | `0x00000000` | absent | ACCEPTED | ADR-012: no m68k FPU |
 | 47 | `_MCH` | `0x00020000` | `0x00030000` | `0xFFFFFFFF` | ACCEPTED | ADR-012 amendment 2026-10-28: `MCH_NOHARD` |
 | 48 | `_SWI` | `0x000000BF` | `0x000000BF` | absent | ACCEPTED | user decision 2026-10-29: no DIP switches (missing hardware; EmuTOS adds it only with them, `bios/machine.c:702-706`) |
-| 49 | `_SND` | `0x00000003` | `0x0000001F` | absent | ACCEPTED | ADR-012: no PSG / DMA sound |
+| 49 | `_SND` | `0x00000003` | `0x0000001F` | `0x00000014` with a sound backend (the Pi 4 jack), absent without one (QEMU) | ACCEPTED | ADR-012 amendment 2026-11-12: `SND_16BIT` + `SND_MATRIX` (`0x04` + `0x10`); no PSG, no 8-bit STe register image, no DSP, no GSXB `SND_EXT`; set by the sound driver after its probe, not seeded (TASK/SND05) |
 | 50 | `_FRB` | `0x00013350` | `0x00013350` | absent | ACCEPTED | user decision 2026-10-29: no ACSI/SCSI DMA, so no bounce buffer (`bios/machine.c:478`) |
 | 51 | `_FLK` | absent | absent | absent | EQUAL | ADR-012 amendment 2026-10-26: not set |
 | 52 | `_AKP` | `0x00000100` | `0x00000100` | `0x00000000` | ACCEPTED | user decision 2026-10-30 (TASK/COOK02.md): the oracle's low byte 0 is Hatari's default NVRAM keyboard byte (EmuTOS byte 7), not a property of the `de` ROM — measured with four Hatari NVRAM variants (`0x0100`, `0x0101`, `0x0100`, `0x0102`; `measurements/measurement-2026-10-30-cook02/RUNINFO.TXT`, `docs/analysis/cook02-country-facts-2026-10-30.md` §3); the high byte 1 is the ROM header country. NewTOS has no NVRAM and stays `0` until a machine-wide country setting exists (COOK02, parked) |
@@ -1888,14 +1888,15 @@ an owner decision).
 **XBIOS for absent Atari hardware: NVRAM, TT shifter, DSP** — owner
 decision 2026-11-12 ("the same goes for DSP, TT shifter, NVMaccess", after
 the floppy group above). The Pi has none of them, and NewTOS does not
-emulate them: no `_VDO`/`_SND` cookie (ADR-012). Each of these calls takes
+emulate them: no `_VDO` cookie and no DSP bit in `_SND` (ADR-012 and its
+amendment 2026-11-12). Each of these calls takes
 the dispatcher's catch-all arm and returns its own function number
 (`tos-api/src/xbios/mod.rs:157@other`):
 `NVMaccess` (0x2E) answers `0x2E`, which is also what EmuTOS returns on a
 machine without an NVRAM chip (`references/emutos/bios/nvram.c:161-162`,
 ADR-012, TASK/XBIOS10); the TT-shifter calls `EsetShift` ... `EsetSmear`
-(0x50-0x57) answer 0x50-0x57; the DSP calls (from 0x60) are past the last
-entry and answer their number. EmuTOS on the tt and falcontc profiles runs
+(0x50-0x57) answer 0x50-0x57; the DSP calls (0x60-0x7F) are unimplemented
+slots below the last entry 0x8D (TASK/SND05) and answer their number. EmuTOS on the tt and falcontc profiles runs
 the real NVRAM, TT-shifter and DSP code
 (`references/emutos/bios/nvram.c:155-214`, `references/emutos/bios/xbios.c:917-956`,
 `references/emutos/bios/xbios.c:1004-1062`).
@@ -1904,6 +1905,79 @@ and DSP case differs (e.g. `NVMaccess` in `tosdump/cases/bios-r1.tsv`);
 these cases count as ACCEPTED, and the three groups need no further oracle
 cases. Reopen when a port needs one of them (a new ticket and an owner
 decision).
+
+**XBIOS DMA sound 0x80-0x8D** — TASK/SND05, owner decisions TASK/SND01
+(2026-11-12: Q-N2 option D, Q-N3, Q-N4a-c, Q-N5, Q-N6) and 2026-11-17 (the
+five rules of the implementation step, "passt"). Spec
+`docs/api/xbios/_dmasound-group.md` (§9, §11); code
+`tos-api/src/xbios/sound.rs:454@dispatch`, backend
+`kernel/src/drivers/bcm2711/pwm_audio.rs:203@init`. Index of the differences
+by trigger: `docs/DEVIATIONS.md` ("XBIOS DMA sound").
+
+* **Without a sound backend** (QEMU `raspi4b`, `aarch64-virt`, a Pi whose
+  firmware reports no PWM clock) every call answers its function number and
+  `_SND` is absent — EmuTOS on a machine without a DMA sound chip
+  (`references/emutos/bios/dmasound.c:122-126`). Both oracle profiles have the
+  chip, so the inquiry cases `tosdump/cases/bios-r1.tsv:230-235@Soundcmd`
+  differ there: ACCEPTED (no sound hardware on that machine; measured
+  `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`).
+* **With a sound backend** (the Pi 4 jack, `_SND` = `0x14`, cookie row 49
+  above) the group answers as EmuTOS' **Falcon branch**; the target column is
+  the oracle's `falcontc` profile. The boot state is
+  `falcon_dmasound_init`'s (spec §5), so the inquiries `bios-r1` 230-234 are
+  expected equal to `falcontc` and differ from `tt` (STe branch, e.g.
+  `Soundcmd(6,-1)` `3` against `0`): the `tt` differences are ACCEPTED,
+  NewTOS claims the Falcon. Not measured yet: no tosdump run on a Pi with the
+  backend.
+* **`Locksnd`/`Unlocksnd`: EQUAL** (`1`/`SNDLOCKED`, `0`/`SNDNOTLOCK`). The
+  lock is advisory as in EmuTOS: no other call reads it, and it is not
+  released when the locking process terminates (EmuTOS has no such step
+  either, spec §3/0x80, §9.7).
+* **Recording** (spec §9.4): `Setbuffer(SR_RECORD, …)` and `Buffoper` with
+  `SB_REC_ENA`/`SB_REC_RPT` answer `EBADRQ` (the Falcon: `0`); the record
+  pointer of `Buffptr` reads `0`. `Settracks(·, rec)` and
+  `Soundcmd(ADCINPUT, …)` store their value and answer as on the Falcon, no
+  error (owner decision 2026-11-17).
+* **DSP connector** (spec §9.5): `Dsptristate` and `Gpio` answer `EBADRQ`
+  (the Falcon: `0`, resp. the port bits) — EmuTOS' answer without a Falcon.
+* **Frame-end interrupt** (spec §9.1, option D): `Setinterrupt` stores the
+  request and answers as on the Falcon (S1); nothing is ever raised. A
+  request with a cause records the MFP vector the frame end would use
+  (`Hook::Vector(0x4D)` for Timer A, `0x4F` for GPIP7) and warns once per
+  process (ADR-031). Programs poll `Buffoper(-1)` (bit 0 drops at the end of
+  a single-shot frame, S3) and `Buffptr` (S4, the `falcontc` model).
+* **`Buffptr`** (spec §9.2, Q-N3): the native `SndBufPtr` — `play` and
+  `record` as 64-bit values at offsets 0 and 8 of the 32-byte LP64 structure,
+  `reserve1`/`reserve2` untouched; addresses are not cut to 24 bits. An
+  unwritable `ptr` ends the caller through the crash path. `bios-r1` 235
+  compares 16 bytes and differs in layout from the oracle's two `LONG`s:
+  ACCEPTED.
+* **`Soundcmd(9, …)` is a NewTOS extension** (spec §9.3.1, Q-N4a-c): the
+  byte order of 16-bit samples. `Soundcmd(9, -1)` answers `0x05` (signed,
+  big-endian; the default) or `0x09` (little-endian) on NewTOS and `0` on
+  the oracle. `Soundcmd(9, 0x08)` stores and returns `0x09`: the signed bit
+  is always set (owner decision 2026-11-17). Latched per frame at
+  `Setbuffer`; reset to big-endian when the setting process terminates.
+  Not announced by `_SND` (that would be `SND_EXT`).
+* **Rates** (spec §9.6, Q-N6): no resampling; the PWM range is
+  `round(clk_pwm / f)` from the measured PWM clock, so the rate is the
+  nearest the PWM divider hits. The prescales invalid for the CODEC (6, 8,
+  10, 12-15) play at `25 175 000 / (256 (p + 1))` Hz, `Devconnect` `clk` 2
+  (32 MHz) counts on the same 25.175 MHz formula, `clk` 1 (external) stores
+  the prescale and leaves the rate as it is (owner decision 2026-11-17).
+* **Sample mode** (8/16 bit, mono/stereo) is latched per pass at the start of
+  the pass (owner decision 2026-11-17); the byte order per frame at
+  `Setbuffer` (Q-N4c).
+* **`Sndstatus`** answers `0` (owner decision 2026-11-17): the PWM path has
+  no CODEC status (clipping, clock error) to report. `Sndstatus(1)` zeroes
+  the attenuation and leaves playback, the interrupt request and the mode
+  registers, as EmuTOS does on the oracle (spec §3/0x8C, O4). The oracle
+  answers `0` too (Hatari keeps `codec_status` at 0, spec §9.1.6).
+* **Not applied to the output:** attenuation and gain (`Soundcmd` 0-3) are
+  stored and read back; the connection matrix (`Devconnect` routing) is not
+  modelled, DMA playback always reaches the jack; the track count and the
+  monitor track are stored, the buffer is read as one `L R` track. Rows in
+  `docs/DEVIATIONS.md`.
 
 ## EmuTOS is the reference, not the template
 

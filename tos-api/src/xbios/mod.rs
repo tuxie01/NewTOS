@@ -145,10 +145,11 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // No Atari BLiTTER on the Pi → contract status word 0x0000
         // (not the function number). See `docs/api/xbios/40-blitmode.md`.
         BLITMODE => system::blitmode(),
+        id @ sound::LOCKSND..=sound::BUFFPTR => sound::dispatch(args).unwrap_or(i64::from(id)),
         // Every other id — an in-range but unimplemented slot (e.g. Initmous
-        // 0x00, the MFP 0x1A/0x1B
-        // (Jdisint/Jenabint) and NVRAM 0x2E slots, Supexec 0x26, the TT-shifter
-        // 0x50-0x57 range) **or** an out-of-range id (> LAST_ENTRY 0x57) —
+        // 0x00, the MFP 0x1A/0x1B (Jdisint/Jenabint), NVRAM 0x2E, Supexec 0x26,
+        // TT-shifter 0x50-0x57 and DSP 0x60-0x7F slots; 0x80-0x8D, DMA sound,
+        // without a backend, `sound`, TASK/SND05) **or** an out-of-range id (> 0x8D) —
         // returns the function number itself, zero-extended. This is the
         // documented Atari-TOS behaviour for both the `xbios_unimpl` padded
         // slot and the trampoline's range check (`docs/api/xbios/_dispatcher.md
@@ -181,3 +182,8 @@ fn note_installer(args: &TrapArgs) {
         }
     }
 }
+
+/// DMA sound 0x80-0x8D (TASK/SND05): EmuTOS' Falcon branch once a sound
+/// backend has initialised, the function number before.
+/// `docs/api/xbios/_dmasound-group.md`.
+pub mod sound;

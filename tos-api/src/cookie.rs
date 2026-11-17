@@ -215,9 +215,9 @@ pub fn del(tag: u32) -> bool {
 
 /// Seed the NewTOS default cookie set at boot (replaces EmuTOS'
 /// `fill_cookie_jar`). Only the tags that are meaningful for NewTOS are
-/// present; the Atari-hardware cookies (`_VDO`/`_SND`/`_FDC`/`_FPU`/`_CPU`)
-/// are deliberately omitted (ADR-012 amendment 2026-10-28; `_VDO` is open
-/// until TASK/ARCH06's measurement is decided). `_MCH` is fixed by that
+/// present; `_VDO`/`_FDC`/`_FPU`/`_CPU` are deliberately omitted (ADR-012
+/// amendment 2026-10-28; `_VDO` open until TASK/ARCH06), `_SND` ([`SND`]) is
+/// set by the sound driver after its probe (amendment 2026-11-12). `_MCH` is fixed by that
 /// amendment ([`MCH_NOHARD`]), `EdDI` by spec decision E2 ([`EDDI_MARKER`]),
 /// `_IDT` (= the oracle's) and `_AKP` (stays 0) by user decision TASK/COOK02.
 pub fn seed_defaults(version: u32) {
@@ -248,3 +248,15 @@ pub fn seed_defaults(version: u32) {
 /// `E_OK`) tells the two apart. The same holds on FreeMiNT for any cookie
 /// whose value is `-1`.
 pub const MCH_NOHARD: u32 = 0xFFFF_FFFF;
+
+/// `_SND` — sound hardware (`references/emutos/include/cookie.h:30`
+/// `COOKIE_SND`). Not seeded: the sound driver sets it through [`set`] after
+/// its probe, and only when a sound backend has initialised (ADR-012
+/// amendment 2026-11-12, TASK/SND05); value [`SND_VALUE`].
+pub const SND: u32 = u32::from_be_bytes(*b"_SND");
+/// Value of the [`SND`] cookie: `SND_16BIT | SND_MATRIX` (`0x04 | 0x10`,
+/// `references/emutos/include/cookie.h:81-86`) — Falcon CODEC and
+/// connection-matrix XBIOS sound, no PSG (`0x01`), no STe register image
+/// (`0x02`), no DSP (`0x08`), no GSXB extensions (`0x20`). ADR-012 amendment
+/// 2026-11-12 (`docs/MEMORY.md`).
+pub const SND_VALUE: u32 = 0x0000_0014;

@@ -72,6 +72,14 @@ body copied, constants/register tables as data, every statement with
 > points at the corrected note). (3) The hardware implementation contract for the
 > developer is `docs/hardware/pwm-audio.md` §12.
 
+> **Implementation step TASK/SND05 (developer, 2026-11-17).** The group is built
+> (§11). Five rules the spec left open were decided in the code and confirmed by the
+> owner on 2026-11-17 ("passt"): recording answers (§9.4), CODEC-invalid prescales and
+> the `Devconnect` clock (§9.6), the sample-mode latch (§11), the signed bit of
+> `Soundcmd(9, …)` (§9.3.1) and the `Sndstatus` answer (§11). §1.4 and §10.4 are
+> brought up to date; the dispatcher profile is `0x8D`
+> (`docs/api/xbios/_dispatcher.md` §4).
+
 ---
 
 ## 0. The result up front
@@ -166,6 +174,10 @@ The three machine classes that follow:
 That is **bit-identical** with EmuTOS on a machine without a DMA sound chip
 (§1.3, last row). NewTOS has no conformance bug here, only an honest "not
 present" answer.
+
+**Since TASK/SND05 (2026-11-17):** 0x80–0x8D have their own arm; it gives this
+same answer while no sound backend has initialised (QEMU, `aarch64-virt`) and
+the Falcon branch once one has (§11).
 
 Two consequences to record in the ticket:
 
@@ -1202,12 +1214,23 @@ knows NewTOS asks by calling.
   NewTOS — a NewTOS extension, to be listed as such in `docs/COMPATIBILITY.md`
   when built (not an unintended difference).
 
+**Owner decision 2026-11-17 (item 1, "optionally or-ed"):** the stored value always
+carries `SND_FORMATSIGNED`; `Soundcmd(9, 0x08)` stores and returns `0x09`, and
+`Soundcmd(9, 0x04)` returns `0x05`. Listed in `docs/COMPATIBILITY.md` ("XBIOS DMA
+sound 0x80-0x8D").
+
 ### 9.4 Recording
 
 No input on the Pi: `Setbuffer(SR_RECORD, …)`, the record bits in `Buffoper`,
 `SndBufPtr.record`, `Settracks(·, rec)` and `Soundcmd(ADCINPUT)` have nothing to
 serve. EmuTOS' own answer for "no Falcon" is `EBADRQ` (`:374-375`, `:429-430`) —
 the honest, precedent-backed choice.
+
+**Owner decision 2026-11-17:** `EBADRQ` only for `Setbuffer(SR_RECORD, …)` and for
+a `Buffoper` set with `SB_REC_ENA` or `SB_REC_RPT` (the two the ADR-012 amendment
+2026-11-12 names); `SndBufPtr.record` reads `0`. `Settracks(·, rec)` and
+`Soundcmd(ADCINPUT, …)` keep the Falcon behaviour: the value is stored, read back
+by the inquiry, and answered without an error (`:424-436`, `:294-299`).
 
 ### 9.5 DSP connection
 
@@ -1225,6 +1248,13 @@ output on the Pi hits is **Track B** and expressly not in this spec
 every rate is set directly through the PWM range register, computed from the
 measured `clk_pwm`, never from the requested one (`docs/hardware/pwm-audio.md`
 §12.2).
+
+**Owner decision 2026-11-17:** the prescales "invalid for CODEC" (6, 8, 10, 12–15,
+§4.7) play at their formula rate `25 175 000 / (256 (p + 1))` Hz. `Devconnect`'s
+`clk` keeps EmuTOS' register rule (`clk & 1` → `freq_ext`, else `freq_int`,
+`:680-683`): `clk` 2 (internal 32 MHz) therefore counts on the same 25.175 MHz
+formula, `clk` 1 (external) stores the prescale in the external register, which no
+rate reads (there is no external clock), so the rate does not change.
 
 ### 9.7 `Locksnd` is advisory
 
@@ -1259,7 +1289,8 @@ planned place at 0x80–0x8D. The PSG statement itself ("no YM2149") stays corre
 `docs/api/xbios/_dispatcher.md §4` fixes NewTOS at `LAST_ENTRY = 0x57`; the Falcon
 030/TOS4 target profile and this group require `0x8D`. From outside the difference
 is not observable (§1.4), but the spec should follow once the group is built.
-**Not changed here** — another spec entry, belongs to a decision of its own.
+**Resolved with TASK/SND05 (2026-11-17):** `docs/api/xbios/_dispatcher.md` §4 names
+`LAST_ENTRY = 0x8D` for NewTOS.
 
 ### 10.5 FreeMiNT's GSXB is not usable evidence for semantics
 
@@ -1307,5 +1338,106 @@ comes from FreeMiNT in this spec and is cited there individually.
 
 ## 11. NewTOS implementation notes
 
-(Empty per protocol — filled at the implementation step. The open decisions are
-collected in §9; they are decisions, not implementation notes.)
+Filled at the implementation step (TASK/SND05, 2026-11-17). Rules are §9 and the owner
+decisions quoted there; this section says where they live and what the code adds.
+
+### 11.1 Layers
+
+* **XBIOS side** — `tos-api/src/xbios/sound.rs`: the 14 functions
+  (`tos-api/src/xbios/sound.rs:454@dispatch`), the sound state kept as EmuTOS keeps
+  its Falcon register image (only what a call reads back or playback uses), and the
+  converter. The dispatcher's arm for 0x80–0x8D sits before the catch-all
+  (`tos-api/src/xbios/mod.rs:148@LOCKSND`).
+* **Availability** — `tos-api/src/xbios/sound.rs:425@set_available`: until the
+  kernel's sound driver calls it, every call answers its function number (§1.3, last
+  row). The driver sets `_SND` = `0x14` through `cookie::set` in the same step
+  (ADR-012 amendment 2026-11-12; `tos-api/src/cookie.rs:256@SND`), never
+  `seed_defaults`.
+* **Hardware side** — the trait `tos-api/src/xbios/sound.rs:148@SoundHw` (clock,
+  ring write with cache clean, start, range change, DMA read position), implemented
+  by the PWM jack backend `kernel/src/drivers/bcm2711/pwm_audio.rs:203@init` over the
+  DMA channel driver `kernel/src/drivers/bcm2711/dma.rs:138@claim`. Register values
+  and sequence: `docs/hardware/pwm-audio.md` §12. "Set clock state" got its mailbox
+  wrapper (`kernel/src/drivers/bcm2711/mailbox.rs:517@set_clock_state`) and its
+  host-tested tag encoding (`kernel/src/drivers/bcm2711/clock_tags.rs:58@encode_set_clock_state`).
+* **Detection** — the backend comes up only when the firmware answers "Get clock rate
+  measured" for the PWM clock with a rate. QEMU's firmware model answers that tag with
+  0 bytes, and QEMU models no PWM block, so on QEMU there is no backend and the group
+  stays "not present" (`pwm_audio.rs` module notes).
+
+### 11.2 Transport (D-tick, `docs/hardware/pwm-audio.md` §12.8)
+
+* The DMA engine reads a staging ring of 2 048 duty-cycle words
+  (`tos-api/src/xbios/sound.rs:60@RING_WORDS`, `L R` interleaved, 1 024 stereo
+  slots), chained as two control blocks in a cycle, paced by PWM1's DREQ; the
+  program's buffer is never a DMA source (§9.1.4 point 1).
+* The converter runs in the 200 Hz tick, in the tick branch of the IRQ handler after
+  the EOI and before the frame tick's EL0 gate
+  (`kernel/src/drivers/gic.rs:230@pwm_audio`), so a tick that lands in EL1 still
+  refills. It reads the engine's position (`SOURCE_AD`), accounts the slots read
+  since the last tick, and converts ahead up to the whole ring minus a guard of 16
+  slots on either side (`tos-api/src/xbios/sound.rs:66@GUARD`, an inference, not
+  measured).
+* Every slot carries a record (frame, program address after its sample, start
+  generation). A state change (`Buffoper`, `Setbuffer`, `Setmode`, a rate change)
+  rewrites the ring from 16 slots ahead of the engine instead of waiting until the
+  converted audio has played out.
+* Once started the transport keeps running; an idle ring is mid-level silence (no
+  stop click, no restart per sound).
+* The converter reads the program buffer outside any trap, through the kernel alias of
+  BDOS pool memory (`tos-api/src/bdos/process/usermem.rs:358@pool_kva`); a frame
+  that does not lie wholly in a BDOS pool plays as silence at its length.
+* Conversion: signed 8-bit and 16-bit samples, the 16-bit byte order per frame
+  (§9.3.1); duty word `((s + 32768) · RNG) >> 16`
+  (`tos-api/src/xbios/sound.rs:771@duty`); mono samples go to both channels.
+
+### 11.3 Observable rules (the `falcontc` column of §9.1.6)
+
+* **S3:** `Buffoper(-1)` bit 0 drops when the engine reads the slot after the last
+  sample of a single-shot frame; loop mode keeps answering `3`.
+* **S4:** `Buffptr`'s `play` is `0` before the first start, the start address at a
+  start, the address after the last sample the engine has read while playing, `end`
+  after a single-shot frame, frozen where `Buffoper(0)` stopped it.
+* **S5:** a `Setbuffer` during a loop pass takes effect at the next pass; the running
+  pass plays to its end.
+* **S2/S6:** nothing is raised (option D); `Setinterrupt` with a cause records
+  `Hook::Vector(0x4D)` (Timer A) or `0x4F` (GPIP7) with `Via::Setinterrupt` and warns
+  once per process (ADR-031).
+* **Rates:** `RNG = round(clk_pwm / f)`, `f` from `Soundcmd(SETPRESCALE)` (STe rates
+  6 285 / 12 517 / 25 033 / 50 066 Hz, as FreeMiNT lists them, §4.7) while `freq_int`
+  is 0, else `25 175 000 / (256 (p + 1))` (§9.6).
+* **Boot state:** `falcon_dmasound_init`'s (§5), so the inquiries answer
+  `0 0 0x80 0x80 3 3 3` for `Soundcmd(0..6, -1)` as the oracle's `falcontc` profile
+  (§9.1.6 O1).
+
+### 11.4 Rules decided at this step (owner decision 2026-11-17, "passt")
+
+1. **Recording answers** (§9.4): `EBADRQ` only for `Setbuffer(SR_RECORD, …)` and the
+   `Buffoper` record bits; `Settracks(·, rec)` and `Soundcmd(ADCINPUT)` store, no
+   error.
+2. **Rates outside the CODEC table** (§9.6): prescales 6, 8, 10, 12–15 at the formula
+   rate; `Devconnect` `clk` 2 on the 25.175 MHz formula, `clk` 1 stores into the
+   external register and changes no rate.
+3. **Sample mode latch:** the sample mode (8/16 bit, mono/stereo) is latched per pass
+   at the start of the pass; a `Setmode` during a pass applies from the next one. (The
+   byte order is latched per frame at `Setbuffer`, Q-N4c.)
+4. **`Soundcmd(9, …)` signed bit** (§9.3.1): always set; `Soundcmd(9, 0x08)` stores and
+   returns `0x09`.
+5. **`Sndstatus`** answers `0`: the PWM path has no CODEC status source. A non-zero
+   `reset` zeroes the attenuation as EmuTOS does (`:759-761`); playback, the interrupt
+   request and the mode registers stay (§3/0x8C, O4).
+
+### 11.5 Not modelled (listed in `docs/DEVIATIONS.md`)
+
+Attenuation and gain are stored and read back, not applied; the connection matrix is
+not modelled (DMA playback always reaches the jack; `Devconnect` answers `1`, or `0`
+for an invalid `src`); the track count and monitor track are stored, the buffer is
+read as one `L R` track. The register image's crossbar bits and the `Gpio` port are
+not kept (no call reads them back on NewTOS: `Gpio` answers `EBADRQ`).
+
+### 11.6 Evidence
+
+Host tests: `tos-api/src/xbios/sound/tests.rs` (return values and error codes per
+function, the converter, S3–S5, rates against the measured-clock table of
+`docs/hardware/pwm-audio.md` §5.5). QEMU shows only the "not present" side. The
+audible tone and the PWM-paced DMA run are real-Pi-only (TASK/SND05).
