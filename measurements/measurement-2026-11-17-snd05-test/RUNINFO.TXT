@@ -1,0 +1,109 @@
+measurement-2026-11-17-snd05-test -- tester run for SND05 (XBIOS DMA sound 0x80-0x8D, PWM jack backend, _SND, tick refill)
+=======================================================================================================================
+Scope: commit a3d84bcd6 on branch snd05 (merge ee30dca1c of main a5a4665cb), tested in an own detached worktree, against
+the baseline main a5a4665cb (second detached worktree). QEMU only; no card, no Pi, no product edit.
+Agent: tester a0fedebf30950dc36. Machine: Ingo's Mac mini. macOS 27.0.1. Claude Code 2.1.326.
+host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every manifest).
+
+VERDICT: PASS (QEMU scope). Real-Pi items below are not testable here and do not change the verdict (handover).
+
+TREES (gitignored, under target-agents/agent-a0fedebf30950dc36/, 8.2G total du -sh after the runs)
+  wt/    detached a3d84bcd6 (+ symlinks for gitignored inputs: sdk/ldg/ldg-r133, Applications, sdk/cflib/cflib-21,
+         sdk/zview/z-tools-*, sdk/libm/libm.a, sdk/compiler-rt/{libclang_rt.builtins.a,build,compiler-rt-*.src},
+         sdk/libc/mintlib, sdk/libshare/libshare-0.1.1 -> main tree; worktree-setup does not link them)
+  base/  detached a5a4665cb, same symlinks
+  sha256 of cited gitignored outputs:
+    wt   release rpi4 kernel8.img (plain)        b4bc3a16ac03f348e2b3a8e574024a4bde3edaebdd95de12aeb237ee8771ad87  1.5M
+    base release rpi4 kernel8.img (plain)        48e5dc487e287d6fc50be7ec327b4b0eb8909d3663428564300c2e3733f1c198  1.5M
+    wt   debug qemu-virt kernel.img              b42468ab053fd4efc5360d1af7ee53cdea7b38096d3dd60ec195f83ade1dda30  1.6M
+    base debug qemu-virt kernel.img              2fcef0e32c04a2d271132a0d681f08c793504a963dde9eea1e3088d90a04ed8b  1.5M
+    wt   release rpi4 kernel8.img (features bios-arg-trace, built by cargo xtask tosdump; used by bios-r1, snprobe, SNDTONE run)
+                                                 ca4458704de3622917f8726490bf06b0b17d65c966f7ded0756d9609e65f4320
+    SNDTONE.NCP (sdk/build.sh sdk/examples/sndtone.c)  27854b9a926e1db7acd4ee0c0b979b60e1a35fcddf2e7de5af288d67910b8800  12K
+    APITEST.NCP                                  1fc5faac3a4ae9194ad529cb6b64b0d6c31b3b7dbe0b7a62f7800f031e5f290b  160K
+    PTERMCH.NCP 30fa331eb3a5a5355664a3f6c7c4c1b8c68d9e1c642281db0a18c11acb64194e; DTACHILD.NCP eaf92b088db386e6d5ef290d1517f56914b02d7b8ccfb52c693a18b964fdb9ec
+    APITEST card.img (tools/mkcard.sh)           d6c8baa971d304b3764e331f32e0a71a53d6939b1e6cf813ce4abd2b823dff76  64M
+    SNDTONE card (xt/snd/card.img, run-time boot sha in manifests/sndtone.manifest) 120fc14fb818a99004ecfbf4bf05d8a90e207bc9166ec0c680f836411953f97c
+    bios-r1 card 4ab413898ecc08b7a022e2b6ae73252609b83334739314a48343435105fdcd11 (after run 15e5a9f701751b5c5b01be5d03143b34cf0d6a33613ff3782b19a0dab327102e)
+    snprobe card cc040c8b87bfe9f53760cbf3dc2e54cb90079309a4838d115d42ca62f1c7b325 (after ca66699d11b9c3a491e7db0680bcab685c7ea3275c78cb6887c49b260712428a)
+  Images were run as APFS clones (cp -c); clones deleted by the scripts.
+
+MANIFESTS (manifests/*.manifest, copies of <image>.manifest): bios-r1, snprobe, sndtone, apitest -- all four say, verbatim:
+    optional_missing none
+
+COMMANDS, BOARD, OUTCOME
+ 1. cargo xtask build --board rpi4 (debug)             rpi4      OK; rustc warnings tos-api 64, kernel 93 (logs/build-rpi4.log)
+ 2. cargo xtask build --board qemu-virt (debug)        qemu-virt OK; tos-api 64, kernel 93 (logs/build-virt.log). Main a5a4665cb: same 64/93 per the developer's claim; clippy
+    delta measured by me below (warnings of the plain builds were not re-counted on base: only clippy).
+ 3. cargo clippy -p tos-api --lib; -p kernel --features board-rpi4; --features board-qemu-virt  in wt and in base:
+    tos-api 73 = 73, kernel 121 = 121 (rpi4), 121 = 121 (virt). Delta 0. (logs/clippy-snd05.txt, logs/clippy-main.txt)
+ 4. cargo xtask test (full, wt)                        2486 passed / 0 failed / 7 ignored (baseline in handover: 2459/0/7; +25 xbios::sound
+    tests all ok, +2 clock_tags). Summed from the "test result" lines of logs/test.log.
+ 5. sdk/gemlib/build-gemlib.sh, sdk/run-host-tests.sh (wt): 37 passed / 1 failed / 0 skipped. The failing one, rt-host (compiler-rt
+    rebuild differs from the shipped member), fails IDENTICALLY on main a5a4665cb in its worktree (base: 37/1/0, logs/sdk-tests-base.log),
+    so it is the worktree/symlink setup, not SND05. Handover baseline 38/0/0 is the main tree; I did not run in the main tree.
+    Not red because of the change; open point is only that I could not reproduce 38/0/0 inside a worktree.
+ 6. cargo xtask doc-check on docs/MEMORY.md docs/COMPATIBILITY.md docs/DEVIATIONS.md docs/api/xbios/_dmasound-group.md
+    docs/api/xbios/_dispatcher.md TASK/SND05.md docs/hardware/pwm-audio.md: 0 failures (with the gitignored inputs symlinked;
+    without them 5 "missing" failures, all on gitignored sdk/ trees / Applications/).
+ 7. cargo xtask deps --check-mapping: 1968 rows, all resolve, every class valid, every function has a row. OK.
+ 8. cargo xtask status-check --new-only: 0 rejected. OK.
+ 9. cargo xtask run --board rpi4 --headless (serial=on, ~90 s, killed): boots to "[desk] desktop up (0 drives)", 0 exceptions;
+    line "[sound] no PWM clock (firmware: set clock state Some(1), no measured rate) -- no sound backend, _SND absent"
+    (serial/rpi4-xtask-run-boot.log).
+10. cargo xtask run --board qemu-virt --headless (~60 s): "[desk] desktop up (0 drives)", no exception, no [sound] line
+    (qemu-virt builds no sound driver). serial/virt-xtask-run-boot.log.
+11. kernel selftest_cookie -- NOT wired in any boot path (rotted-selftest pattern). I wired it TEMPORARILY into my own worktree
+    (selftest_cookie::run() after fbcon::init in kernel/src/lib.rs, reverted with git checkout; never in a branch) and booted both
+    boards: "Getcookie(_SND) = EERROR (no sound backend): OK", "Cookie jar PASS (19/19)" on rpi4 and qemu-virt, desktop up after.
+    serial/rpi4-cookie-selftest-TEMPWIRED.log, serial/virt-cookie-selftest-TEMPWIRED.log. Those two binaries are not cited elsewhere.
+12. cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --features bios-arg-trace, both pinned references   rpi4 raspi4b QEMU
+    (tosdump/bios-r1/, logs/tosdump-r1.log): run complete; tosdiff vs EMUTOS-1a7484ab-BIOS (tt) 30 of 147 differ, vs -BIOS-falcontc
+    35 of 147; input check biostrace-check PASS (147 calls, 0 rows differ). Versus the SND04 NewTOS run (measurement-2026-11-12-snd04,
+    32 / 37): the only changes are cases 93, 94 (Setcolor(0|1,-1), now EXACT; XBIOS21 from main, not SND05). Rows 230-235
+    (Soundcmd 0,-1 / 1,-1 / 6,-1, Buffoper(-1), Sndstatus(0), Buffptr) still DIFF on both references: NewTOS answers its function
+    number 0x82, 0x82, 0x82, 0x88, 0x8C, 0x8D -- exactly the SND04 result; named in docs/COMPATIBILITY.md "XBIOS DMA sound 0x80-0x8D"
+    (no-backend answer) per the commit; I did not re-audit that text beyond doc-check.
+13. tosdump/probes/run-snprobe.sh newtos on the same kernel (tosdump/snprobe/): all 41 group calls answer their function number
+    0x80..0x8D, Buffptr buffer untouched (play=11111111 ...), "B-F skipped: Locksnd answers its function number". SNPROBE.LOG is
+    byte-identical (diff, line cut 200) to measurements/measurement-2026-11-12-snd04/newtos/snprobe/SNPROBE.LOG.
+14. sdk/build.sh sdk/examples/sndtone.c -> SNDTONE.NCP (project build, 0 warnings with -Wall -Wextra); tools/mkcard.sh card with
+    NEWDESK.INF "#R 02 / #Z 01 C:\SNDTONE.NCP@"; QEMU raspi4b: serial/sndtone-serial.txt: "SNDTONE.NCP -- 440 Hz on the jack ...",
+    "Locksnd() = 0x80: no sound backend ... nothing to play.", "'C:\SNDTONE.NCP' exited with rc=1", then "desktop up (1 drives)".
+    This equals the documented no-backend result (exit code 1). (That kernel was the bios-arg-trace build, hence the [biostrace] line.)
+15. APITEST via #Z (method/run-qmp.sh, tools/mkcard.sh card), plain release rpi4 kernel, memprot on / off / strict:
+    TOTAL 111 / 0 / 5 in all three modes (serial/api-{on,off,strict}.log), 0 exceptions. Same APITEST binary on the plain release
+    kernel of main a5a4665cb: TOTAL 111 / 0 / 5, result lines identical after address normalisation (0 differing;
+    serial/apibase-on.log). STATUS.md's 109/0/5 is older than the current APITEST (111 total on base too); counts equal base.
+16. Tick-path riders (frame tick, input pump, cursor blink, pointer): QMP screendumps, viewed with Read:
+    rpi4 desktop (screendumps/desk-rpi4-new-a.png): menu bar Desk/File/View/Options, green desktop, TRASH and PRINTER icons, pointer.
+    qemu-virt (desk-virt-new-a.png then -b.png after 20 QMP relative usb-mouse events of (+8,+5)): pointer moved from about
+    (960,547) to (1121,647) = +160,+100, as injected, i.e. the pump/pointer still runs under the changed 200 Hz tick branch.
+    Pixels of rpi4 new = base, virt a = base a, virt b = base b, APITEST shot new = base (sha256 equal, see screendumps/).
+    No text cursor is shown on the desktop, so a cursor blink was NOT separately observed (only that the frames equal base).
+
+DROVE vs COULD NOT VERIFY (QEMU)
+  Drove: everything above. Could not drive: the ring refill / 200 Hz-tick converter with a backend (QEMU raspi4b has no PWM clock:
+  no backend), the Falcon branch of 0x80-0x8D with a backend (cases beyond the no-backend answer), the bios-r1/snprobe equality
+  with a backend (expected, not measured).
+
+REAL-PI-4-ONLY (not testable in QEMU; owner gate, per the handover they do not make this PARTIAL)
+  1. Boot line "[sound] PWM jack backend: clk_pwm measured ... Hz, DMA channel 5, ring 2048 words ..., _SND = 0x14".
+  2. Audible 440 Hz tone, channel assignment (both / left / right) on SNDTONE.NCP; all lines without MISMATCH; no STALLED.
+  3. PWM-paced DMA transfer (no run has exercised one), measured clock, ring refill under load (underruns audible as clicks).
+  4. _SND = 0x14 in the jar on silicon; bios-r1 230-234 and snprobe with the backend.
+  5. Cache coherence of the DMA ring, QUIRK-001, HDMI/USB-HID are real-HW matters in general.
+
+REPRODUCING (nothing failed): worktree git worktree add --detach <dir> a3d84bcd6; cargo xtask worktree-setup;
+  cargo xtask build --board rpi4; cargo xtask test; cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out <dir> --scratch <dir>
+  --features bios-arg-trace --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN;
+  tosdump/probes/run-snprobe.sh newtos <out> <kernel8.img>; method/run-qmp.sh for APITEST and the screendumps.
+
+OUT-OF-SCOPE OBSERVATIONS
+  - cargo xtask worktree-setup does not link several gitignored inputs (see TREES); doc-check and sdk/run-host-tests.sh in a fresh
+    worktree need them by hand; rt-host then fails the same on main and on the commit.
+  - selftest_cookie.rs (and its _SND check) is wired into no boot path, so the "kernel selftest incl. selftest_cookie" needs a
+    temporary wire-in to be observable.
+  - The first cargo xtask run in a worktree needs `cargo xtask build-programs --board <b>` before a plain cargo clippy -p kernel.
+  - cargo xtask build --board qemu-virt leaves no kernel.img (only run does); two boards share the debug dir (known footgun).
+  - handover says SDK baseline 38/0/0; the developer's receipt says 33/0/5 in its worktree; mine 37/1/0 (see 5).

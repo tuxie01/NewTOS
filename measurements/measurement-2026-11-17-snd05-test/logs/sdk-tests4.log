@@ -1,0 +1,78 @@
+host: arm64 Darwin; cc: Apple clang version 21.0.0 (clang-2100.4.1.1)
+
+PASS  obspec_bits
+PASS  evnt_timer_words
+PASS  wind_set_addrin
+PASS  intin_long_words
+PASS  ptr_word_count
+PASS  aesglobal_fields
+PASS  setjmp-host
+PASS  cmdargs-host
+PASS  gmp-host
+PASS  spawn-host
+PASS  system-host
+PASS  quickstat-host
+PASS  fstat-host
+PASS  stat-host
+PASS  waith-host
+PASS  malloc-host
+PASS  sysinfo-host
+PASS  lp64-limits
+PASS  iorec-layout
+PASS  bconmap-layout
+PASS  sysvars-layout
+PASS  libc-link
+      1  newtos-cc -lm: RT.NCP linked (129632 bytes), undefined symbols: 0
+      FAIL: rebuild of lib/builtins/absvdi2.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/absvsi2.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/absvti2.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/addvdi3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/addvsi3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/addvti3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/mulvdi3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/mulvsi3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/mulvti3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/negvdi2.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/negvsi2.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/negvti2.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/subvdi3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/subvsi3.c differs from the shipped member (not only in .comment)
+      FAIL: rebuild of lib/builtins/subvti3.c differs from the shipped member (not only in .comment)
+      2  rebuild parity: 256 of 407 shipped members byte-identical, 136 identical but for the compiler identification (.comment), 15 differ
+         host clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+         shipped members built by: Apple clang version 21.0.0 (clang-2100.3.34.2) (151 members)
+         shipped members built by: Apple clang version 21.0.0 (clang-2100.4.1.1) (256 members)
+         counter-check: one byte of .text in lib_builtins_multf3.o inverted -> differ (expected: differ)
+      3  -ffixed-x18 rebuild: 0 x18 instructions expected, found 0; test program linked with host.ld
+      loaded /var/folders/hc/ytj75fjd5tv21kkkvjfxl84m0000gn/T//rt-host.dKKbcl/RT-x18.elf: 131072 bytes at 0x100604000, 113 relative relocations, rt_table at +0x1c240
+      T  binary128 +: 200000 random pairs, 0 mismatches
+      T  binary128 -: 200000 random pairs, 0 mismatches
+      T  binary128 *: 200000 random pairs, 0 mismatches
+      T  binary128 /: 200000 random pairs, 0 mismatches
+      T  binary128 exact patterns (1/3, 1+2^-112, ties to even) and FPCR rounding modes checked
+      C  binary128 comparisons: 200000 pairs (incl. NaN, +-0, equal), 0 mismatches
+      V  conversions float/double/int64/uint64/int32 <-> binary128: 200000 rounds, 0 mismatches
+      X  __muldc3/__divdc3/__mulsc3/__divsc3 + clang's lowering vs host complex * /: 100000 operand sets, 0 mismatches
+      X  Annex G infinities, __multc3, __powitf2, long double a*b+c checked
+      M  remainder, remainderf, fdim, fdimf bit-exact vs system libm and host OpenLibm, nexttowardf vs system libm: 200000 pairs, 0 mismatches
+      M  powf: 200000 pairs, 0 differ from host OpenLibm, worst 1 ulp from the system libm (0 beyond 1 ulp)
+      M  casin cacos casinh cacosh catanh (+f), cpowf bit-exact vs host OpenLibm: 50289 arguments (incl. 289 special pairs), 0 mismatches
+      rt-host: 1950316 checks, 0 failed
+FAIL  rt-host (rc=1)
+PASS  ldbl-host
+PASS  cookie-host
+PASS  inline-rsh-host
+PASS  c2p-host
+PASS  td-cookie-host
+PASS  td-nohard-host
+PASS  hypview-ref-host
+PASS  hypview-win-host
+PASS  hypview-prepare-host
+PASS  sysacc-cmdline-host
+PASS  custom-font-host
+PASS  zview-color-host
+PASS  libtest-host
+PASS  libshare-host
+PASS  newtos-cc-host
+
+host tests: 37 passed, 1 failed, 0 skipped
