@@ -261,3 +261,22 @@ decides them; no behaviour change.
 
 Written into `docs/api/xbios/_dmasound-group.md` (§9.3.1, §9.4, §9.6, §11.4), `docs/COMPATIBILITY.md` ("XBIOS DMA
 sound 0x80-0x8D") and `docs/DEVIATIONS.md` ("XBIOS DMA sound").
+
+## Real-Pi run (owner, 2026-11-18)
+
+Card: the tester's release kernel of the SND05 run (sha256 `b4bc3a16…71ad87`, as recorded in
+`measurements/measurement-2026-11-17-snd05-test/RUNINFO.TXT`) as `kernel8.img`, `SNDTONE.NCP` (sha256
+`27854b9a…0b8800`) in `C:\PITEST`, copied by the lead on the owner's word; `CMDLINE.TXT` empty, so no serial line.
+
+Started from the console with `run sndtone.ncp`. Owner's photo of the screen and the owner's statements:
+
+- Every line equals its expected value: `Locksnd() = 1`, `Soundcmd(9, -1) = 5`, `Setmode(STEREO16) = 0`,
+  `Devconnect(0, 8, 0, 1, 1) = 1`; in each of the three passes (both, LEFT only, RIGHT only) `Setbuffer = 0`,
+  `Buffoper(1) = 0`, `Buffoper(-1)` after the pass `= 0`, `Buffptr` play offset `= 393360`, record `= 0`;
+  `Unlocksnd() = 0`; "SNDTONE: done". No MISMATCH line, no STALLED line.
+- The tone was audible and clean in all three passes, no clicks or dropouts.
+- Channel assignment correct: both, left only, right only.
+- Pitch: not measured. Owner: cannot judge it, "by feeling" it fits.
+
+Not seen in this run: the boot line of the backend (no serial line), `_SND` in the jar, `bios-r1` 230-235 and the
+SND04 snprobe on the Pi.
