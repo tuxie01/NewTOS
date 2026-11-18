@@ -1,0 +1,1 @@
+shot:p0;mv:-940,-535;wait:1;shot:m1;mv:940,535;click;wait:1;shot:p1;mv:-940,-535;mv:10,22;click;shot:d1;mv:930,681;shot:d2;click;wait:1;shot:d3;mv:0,-168;click;wait:1;shot:p2

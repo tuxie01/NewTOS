@@ -1,0 +1,101 @@
+RB1
+NewTOS booting on qemu-virt
+Phase 02 reached.
+[mm] DTB at 0x0000000048000000
+[mm] firmware: no VideoCore mailbox on this board — device tree decides
+[mm] device tree: /memory first bank: 0x0000000040000000 + 285212672 bytes (272 MiB)
+[mm] memory map:
+[mm]   DRAM  : 0x0000000040000000..0x0000000051000000 (285212672 bytes) — source: device tree
+[mm]   kernel: 0x0000000040080000..0x00000000403af000 (3338240 bytes)
+[mm]   ST-RAM: 0x0000000040400000..0x0000000040e00000 (10485760 bytes)
+[mm]   TT-RAM: 0x0000000041000000..0x0000000050017000 (251752448 bytes)
+[mm]   OSrsvd: 0x0000000050017000..0x0000000051000000 (16683008 bytes)
+[mm]     heap: 0x0000000050017000..0x0000000050817000 (8388608 bytes)
+[mm]     fb  : 0x0000000050817000..0x0000000051000000 (8294400 bytes)
+[mm]   MMIO 00: 0x0000000008000000..0x0000000008010000
+[mm]   MMIO 01: 0x0000000008010000..0x0000000008020000
+[mm]   MMIO 02: 0x0000000009000000..0x0000000009001000
+[mm]   MMIO 03: 0x0000000010000000..0x000000003eff0000
+[mm] MMU reinstalled (high-half via TTBR1, TTBR0 deferred to Phase 06).
+[mm] frames ST-RAM: total=2560 used=0 free=2560 (10485760 B free)
+[mm] frames TT-RAM: total=61463 used=0 free=61463 (251752448 B free)
+[mm] alloc ST-RAM frame -> 0x0000000040400000
+[mm] alloc TT-RAM frame -> 0x0000000041000000
+[mm] heap after init: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[mm] heap smoke OK
+[mm] heap after smoke: total=8388608 used=0 free=8388608 largest=8388608 blocks=1
+[fb] ramfb up: 1920x1080
+[mm] MEM05 per-process block limit: 8192 allocated blocks (default)
+[mm] MEM05 MD supply: 117 MDs static, grows by 117 MDs per 4096-byte page from the kernel heap; page budget 512 pages (2048 KiB) for MDs + block records + snapshot + F_KEEP flags
+[mm] memory protection ON: table arena 0x41000000+1422 tables
+[mm] BDOS pools: ST-RAM 0x40400000+10485760 TT-RAM 0x4158e000+245927936
+[mm] user address space: pools mapped VA = PA (124 shared L3 tables, 4-KiB pages, rights per process)
+[mm] BDOS ST-RAM after init: total=10485760 free=10485760 used=0 largest_free=10485760 (free_mds=1 alloc_mds=0)
+[mm] BDOS TT-RAM after init: total=245927936 free=245927936 used=0 largest_free=245927936 (free_mds=1 alloc_mds=0)
+[mm] MEM05 after init: MDs in_use=2 capacity=117 (+0 pages); pages held=0/512 (md=0 recs=0 snap=0 kept=0) peak=0 refused budget=0 heap=0; records=0 snapshot_cap=0 snapshot_short=0; heap used=0 free=8388608 largest=8388608
+[clock] no RTC: clock starts at the build date 2026-11-18 00:00:00 (Gettime 0x5d720000, os_dosdate 0x5d72)
+[input] keyboard/mouse pump: AES waits and console reads; pointer motion also from the 200 Hz tick while a program runs (input=aes switches that off)
+[bcache] FS09 block read cache: none (no block device on this board)
+[usb] PCIe ECAM at 0x4010000000 (size 0x10000000)
+[usb] no xHCI controller found on the PCIe bus
+[v66] === V66 tester selftest: screen planes 16 ===
+[v66] PROBE v_opnvwk work_out 000: 077f 0437 0000 0116 0116 0003 0007 0000 0006 0008 0001 0018 000c 0100 000a 0001
+[v66] PROBE v_opnvwk work_out 016: 0002 0003 0004 0005 0006 0007 0008 0009 000a 0003 0000 0003 0003 0003 0000 0003
+[v66] PROBE v_opnvwk work_out 032: 0000 0003 0002 0001 0001 0001 0000 0000 0002 0001 0001 0001 0002 0000 0000 0000
+[v66] PROBE vq_extnd1 000: 0004 0001 001f 0000 0010 0000 0032 0001 0001 0004 0002 0001 0000 0000 0400 ffff
+[v66] PROBE vq_extnd1 016: 0001 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE vq_extnd1 032: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE vq_extnd0 000: 077f 0437 0000 0116 0116 0003 0007 0000 0006 0008 0001 0018 000c 0100 000a 0001
+[v66] PROBE vq_extnd0 016: 0002 0003 0004 0005 0006 0007 0008 0009 000a 0003 0000 0003 0003 0003 0000 0003
+[v66] PROBE vq_extnd0 032: 0000 0003 0002 0001 0001 0001 0000 0000 0002 0001 0001 0001 0002 0000 0000 0000
+[v66] PROBE scrninfo contrl[2]=0 contrl[4]=272 ptsout_untouched=true intout[273..]_untouched=true
+[v66] PROBE scrninfo 000: 0002 0002 0010 0000 8000 0000 0000 0000 0005 0005 0005 0000 0001 0000 0002 0000
+[v66] PROBE scrninfo 016: 000b 000c 000d 000e 000f ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 032: 0006 0007 0008 0009 000a ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 048: 0000 0001 0002 0003 0004 ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 064: ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 080: 0005 ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 096: ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 112: ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff ffff
+[v66] PROBE scrninfo 128: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 144: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 160: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 176: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 192: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 208: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 224: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 240: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 256: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+[v66] PROBE scrninfo 272: 0000
+[v66] PROBE subop1 intin0=1 contrl[4]=45 intout[4]=16
+[v66] PROBE EdDI cookie Some(1)
+[v66] CHK S0 contrl[4]==272 contrl[2]==0 OK (0x110)
+[v66] CHK S0 ptsout untouched, intout[273..] untouched OK (0x0)
+[v66] CHK S0 intout[128..273] all zero OK (0x0)
+[v66] CHK S1 T0=2 T1=2 OK (0x2)
+[v66] CHK S1 T2==planes OK (0x10)
+[v66] CHK S1 T2==vq_extnd1 INTOUT4 OK (0x10)
+[v66] CHK S1 T2==work_out? (INQ_TAB[4] via ext1 only) OK (0x0)
+[v66] CHK S1 vq_extnd1 INTOUT5 (LUT)==0 OK (0x0)
+[v66] CHK S1 work_out[13]==256 ncol and ext0[13] OK (0x100)
+[v66] CHK S1 work_out[35]==1 OK (0x1)
+[v66] CHK S1 work_out[39]==0 OK (0x0)
+[v66] CHK S1 EdDI cookie present OK (0x0)
+[v66] PROBE S2 table@16 count 5 word[8]=5
+[v66] PROBE S2 table@32 count 5 word[9]=5
+[v66] PROBE S2 table@48 count 5 word[10]=5
+[v66] PROBE S2 table@64 count 0 word[11]=0
+[v66] PROBE S2 table@80 count 1 word[12]=1
+[v66] PROBE S2 table@96 count 0 word[13]=0
+[v66] CHK S2 counts match, entries are leading OK (0x0)
+[v66] CHK S3 tables partition 0..planes, disjoint OK (0x0)
+[v66] CHK S5 colour count == 1<<(r+g+b) OK (0x8000)
+[v66] PROBE S5 count 0x00008000 bits 15
+[v66] CHK S4 gun bits ascending by 1 OK (0x0)
+[v66] === done: checks 16 fails 0 (16 setting: probes + structural) ===
+[v66] V66 SELFTEST PASS
+[proc] stand-in PDs: initial_basepage 0x401f5000, AES PD 0x401f5100, accdesk 0x401f5300, EmuCON 0x401f5400 (read-only to all)
+[aes] gsx_malloc: screen buffer pa=0x4158e000 len=4147200 (kernel-owned, WF_SCREEN)
+[shell] sh_ldapp: starting desktop NEWDESK (D.s_cmd NEWDESK), sh_nextapp=3, sh_isgem=1
+[launch] EL0: slot 0 entry 0x41986000
+[desk] desktop up (0 drives)

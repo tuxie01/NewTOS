@@ -1,0 +1,14 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/xtask deps --check-mapping`
+docs/analysis/deps/mapping.tsv: 1982 rows, all resolve, every class is valid; every bios/, bdos/, vdi/, aes/ function has a row
+status-check: report [fix-commit-not-closed] TASK/PROC08.md is PARKED and 4 fix/feat commit(s) name it
+status-check: 743 checked, 0 rejected, 7 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+status-check: 656 of 656 Migrated lines match their owner-approved batch row (TOOL58)
+docs/api/vdi/eddi-vq_scrninfo-32.md:21: sdk/gemlib/gemlib-0.44.0/n_vq_scrninfo.c: missing
+docs/api/vdi/eddi-vq_scrninfo-32.md:26: sdk/gemlib/gemlib-0.44.0/n_vq_scrninfo.c:70-80: missing
+docs/api/vdi/eddi-vq_scrninfo-32.md:30: sdk/gemlib/gemlib-0.44.0/n_vq_scrninfo.c:101-241: missing
+docs/api/vdi/eddi-vq_scrninfo-32.md:102: sdk/gemlib/gemlib-0.44.0/n_vq_scrninfo.c:78-80: missing
+docs/api/vdi/eddi-vq_scrninfo-32.md:108: Applications/z-tools/zview/zvdi/vdi.c:38-41: missing
+docs/api/vdi/eddi-vq_scrninfo-32.md:246: Applications/z-tools/zview/zvdi/vdi.c:28-41,164-175: missing
+doc-check: 6 files, 841 path cites and 123 ADR cites checked, 12 failures, 0 skipped (reference tree missing); 127 anchored line cites, 40 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+xtask: doc-check: 12 failures (see above)

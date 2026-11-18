@@ -1,0 +1,13 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ab6a60009402c9c41/scratch/cards/doom.img
+image_sha256 b8d379e2477ce7a646b6f2a2bc31ab46c89176ee033387cf7cbf7918d7514741
+size_mib 64
+created 2026-11-18T18:21:11Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132 790816 C:\DOOM\DOOM.NAP
+file 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771 4196020 C:\DOOM\DOOM1.WAD
+file 5e4d56e7831af6e93635c1a84f25a924e620cda793ed9b75aac18e2465419149 399 C:\NEWDESK.INF

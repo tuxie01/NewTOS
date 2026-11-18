@@ -1,0 +1,111 @@
+measurement-2026-11-18-v66-test -- tester run for TASK/V66 at developer commit 47199372e (branch v66, descends from main 445eb69fa; compared with main 445eb69fa)
+=====================================================================================================================================
+
+SCOPE  vq_scrninfo / EdDI answer at vdiplanes=32 (ADR-038 point 8, spec docs/api/vdi/eddi-vq_scrninfo-32.md) plus the standing 16-plane baseline. Tester (Sonnet), phase test.
+       Nothing in the product was edited. No card, no Pi. All runs are QEMU (raspi4b and virt).
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2,
+         host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the three card manifests).
+TREES  own detached worktrees /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ab6a60009402c9c41/wt (47199372e) and .../base (main 445eb69fa); cargo xtask worktree-setup in each.
+       Release kernels by "cargo xtask build --board <b> --release" (no CARGO_TARGET_DIR), objcopy'd to .../kern/<tree>-<board>.img.
+       Agent dir at the end (du -sh): 9.4G (wt 6.4G, base 2.7G, runs 28M). Kept until the accept step.
+
+VERDICT  PASS on QEMU: every mechanism the scope needs ran on its board. Real-Pi4-only items are listed below and not claimed.
+
+TEMPORARY HARNESS CHANGES (my own trees only, never committed, all listed)
+  (a) wt: tools/xtask/src/tosdump.rs reads env V62_APPEND as the QEMU -append string (default "serial=on"); method/tester-xtask-append.patch; applied for the table runs only, reverted afterwards (git status clean).
+  (b) wt and base: kernel/src/selftest_v66.rs (method/selftest_v66.rs, written for this run) plus a two-line wiring in kernel/src/lib.rs (mod + call before set_bootflags_from_shiftbits) by
+      method/build-selftest.sh into kern/{wt,base}-st-{rpi4,virt}.img. It calls the VDI only through svc #2 (the trap dispatcher); the EdDI cookie is read with tos_api::cookie::get (kernel-side, not through a trap).
+      The wiring was reverted in both trees (git status clean) after the selftest kernels were built; the clean kernels (kern/*-rpi4.img, *-virt.img without "st") were built before the wiring existed.
+      A first version of the selftest had a harness bug (a PTSOUT-untouched check read PTSOUT after a later call); fixed, the 12 runs below are the fixed build; the first MAIN runs were repeated.
+  (c) none in the product, in docs/, TASK/ or tools/ of the main tree.
+
+COMMANDS (board / outcome)
+ 1  BUILD + LINT (method/lint-rel.sh -> lint.sh; checks/lint-wt/summary.txt, checks/lint-base/summary.txt): cargo xtask build --board qemu-virt and --board rpi4 in both trees exit 0, build warnings 159/159
+      on both boards and both trees; clippy kernel 121 + tos-api 73 on both boards and both trees (exit 0); desktop/newdesk clippy exit 0 per board; clippy tos-api --tests: the same per-test warning set
+      (sorted lines compared: SAMESET; the new test file vdi_v66_scrninfo32 adds no warning). DELTA 0. Release builds of both trees and boards exit 0.
+ 2  HOST TESTS cargo xtask test (wt, full; checks/host-test-results.txt = the "test result" lines): exit 0, 2554 passed / 0 failed / 7 ignored (sum of the "test result" lines), 0 SKIPPED. Handover figure 2554/0/7
+      reproduced. Baseline on main 2544/0/7 (handover) => +10 (vdi_v66_scrninfo32.rs; the rewritten V62 test is one test for one). emutos_resolves_at_the_pin ran and is ok.
+      The host test vq_scrninfo_follows_the_setting_and_falls_through_for_other_depths (planes 16 and 32 answer 272 words, 1/4/8/24 fall through to INQ_TAB) is in the run: the fall-through counts cannot be set
+      by boot argument (vdiplanes accepts 16 and 32 only; 24 and invalid values boot as 16, see item 5), so the host test is the only cover for them.
+ 3  cargo xtask deps --check-mapping: 1982 rows, all resolve, every class valid. status-check: 743 checked, 0 rejected, 7 reported (pre-existing, PROC08 etc.) (checks/doc-status-mapping-checks.txt).
+      doc-check of TASK/V66.md, its receipt, docs/COMPATIBILITY.md, docs/api/vdi/workstation/100-v_opnvwk.md, 102-vq_extnd.md in wt: 6 failures, all "missing" paths into gitignored extracted sdk trees
+      (sdk/gemlib/..., sdk/cflib/..., sdk/zview/...) that worktree-setup does not link; the same 6 failures on main (base tree), so 0 new. (The spec file eddi-vq_scrninfo-32.md is not in the developer's diff.)
+ 4  JUDGED THE TEST DIFF (git diff 445eb69fa..47199372e -- tos-api/tests): only vdi_v62_planes_setting.rs changed (+ the new vdi_v66_scrninfo32.rs); vdi_eddi_scrninfo.rs (the 16-plane word-for-word table) is untouched.
+      In the rewritten V62 test the 16-plane expectation (CONTRL[4]==272, INTOUT[2]==16) is kept and the loop now asserts CONTRL[2]==0 and no write past INTOUT[272] at 16 as well; the 32-plane expectation changed
+      from INQ_TAB/45 words (V62 interim by design) to the 273-word answer; the fall-through assertions moved to planes 1, 4, 8, 24. No 16-plane expectation was weakened or changed.
+ 5  BOOT + SCREENDUMP, release kernels, headless, QMP screendump, both boards, 7 configs each (method/boots.sh, run-qmp.sh; checks/boots.out; serial/{rpi4,virt}-*.log; screendumps/{rpi4,virt}-*-a.png): main, default,
+      vdiplanes=16, =32, =24, "vdiplanes=" (empty), =x. rpi4 on the plain card (tools/mkcard.sh, plain.img.manifest), -append "serial=on [arg]"; virt: -M virt. All 14: "desktop up", 0 EXC/PANIC.
+      Screendump sha256 prefixes: rpi4 a3bd102e7f28 for main, default, v16, v24, empty, x; rpi4 vdiplanes=32 29b2d392daee (the V64 desktop-green pixel difference, same hash as the V65 run; viewed (Read) next to main: the same
+      desktop); virt 6985da3b3c38 for ALL 7. => at default and 16 the boot screens equal main, byte for byte.
+ 6  VDI + RASTER + AES TOSDUMP TABLES on QEMU raspi4b (method/run-tables-vdi.sh, tables-vdi.sh, run-aes.sh; checks/tables-run.txt, table-body-compare.txt, report-compare.txt): 9 VDI/raster tables + aes-r1,
+      4 configs: main (--tree base, stock), default (wt), v16 (wt, vdiplanes=16), v32 (wt, vdiplanes=32; informational).
+      DEFAULT AND v16 AGAINST MAIN: the "X of Y cases differ" lines are identical to main's in all 10 tables (vdi-all 13/182 and 0/182, vdi-v18-t3 1/2, vdi-a131-palette 32/48 and 0/48, vdi-raster 1/59,
+        vdi-v18-t2-raster 6/26, aes-r1 95/95 all configs); the tosdiff report texts of all 22 reports x 2 configs (44 comparisons, paths stripped and the build-id of the header line stripped) are identical
+        (checks/report-compare.txt: 44 compared, 0 differing); BIN bytes: only the 3 differing header bytes (dumper build id = commit hash), 0 bytes past the 32-byte header, in every table incl. aes-r1.
+        => no verdict changed. (No tosdump case calls vq_scrninfo; the selftest of item 8 covers it.)
+      v32 vs main (informational; the counts equal those of the V65 run, no new difference from V66): vdi-all 6, vdi-v18 11, vdi-v18-t2 5, vdi-a131-palette 23, vdi-raster 24, vdi-v18-raster 1, vdi-v18-t2-raster 16; vdi-raster-screen at v32:
+        the dumper's own guard refuses (table declares 16 planes), no RASTER.BIN, as in V63-V65; aes-r1 v32 ap_planes 32, others 16. All tables completed at 32 with 0 EXC/PANIC.
+ 7  APITEST (sdk/apps/apitest/build-apitest.sh + sdk/build.sh sdk/examples/ptermch.c into scratch, card by tools/mkcard.sh with apitest.inf #Z autorun, apitest.img.manifest), raspi4b, checks/apitest.out:
+      main, default, vdiplanes=16, vdiplanes=32: TOTAL 110 / 0 / 6 in all four (serial/api-*.log), the baseline. Console screendump after the summary: sha256 prefix f79b85387b0e identical for all four.
+ 8  vq_scrninfo THROUGH THE REAL TRAP (selftest_v66; method/st-run.sh; serial/st-*.log; checks via grep "[v66]"). v_opnvwk, vq_extnd modes 0/1, vq_scrninfo (opcode 102, CONTRL[5]=1, INTIN[0]=2) as svc #2 calls.
+      The whole 273-word answer is printed (PROBE scrninfo lines) plus INTOUT[272] and the poison check beyond it.
+      16 SETTING AGAINST MAIN (default and vdiplanes=16, raspi4b and virt, 4 pairs): the [v66] output of kern/wt-st-* and kern/base-st-* (56 lines each: v_opnvwk work_out, vq_extnd 0 and 1, all 273 vq_scrninfo words,
+        gate negatives, cookie, structural checks) is IDENTICAL line by line (diff empty in all 4 pairs); default == v16. 16 CHK, 0 FAIL on both sides.
+      32 SETTING (wt, raspi4b and virt): 22 CHK, 0 FAIL, "V66 SELFTEST PASS", 0 EXC/PANIC (serial/st-rpi4-v32.log, st-virt-v32.log). The checks, with values in the log:
+        T32  all 273 words equal an independently written copy of the spec table (section 2): [0..15] = 2 2 32 0x0100 0 0 0 0 8 8 8 0 0 8 1 0; R [16..23]=16..23; G [32..39]=8..15; B [48..55]=0..7; [96..103]=24..31;
+             all other [16..127] = -1; [128..272] = 0; CONTRL[4]=272, CONTRL[2]=0, PTSOUT untouched, INTOUT[273..] untouched.
+        S1   T[0]=2, T[1]=2, T[2]=32 = vq_extnd(1) INTOUT[4] = planes; vq_extnd INTOUT[5] (LUT) = 0; work_out[13] = 256 (v_opnvwk and vq_extnd 0); work_out[35] = 1; work_out[39] = 0; EdDI cookie = 1 (tos_api::cookie::get).
+        S2   counts of entries != -1 per table 8,8,8,0,0,8 equal T[8..13], entries are leading.   S3 the six sets are disjoint and their union is exactly {0..31}.
+        S4   gun bits ascend by 1.   S5 colour count (T[3]<<16|T[4]) = 0x01000000 = 1<<(8+8+8).   (S2, S3, S4, S5 also hold at 16, asserted there too.)
+        S6   32 (r,g,b) triples (black, white, three single-gun maxima, three mixed, one triple per table bit): pixel built from the RETURNED tables, written through a 32-plane memory form with vro_cpyfm S_ONLY and read
+             with v_get_pixel: equal to p & 0x00FFFFFF in all 32, and again with the X byte 0x5A set in the memory word (masked on read): 0 mismatches.
+        S7   the same triples as pens (vs_color with c=(q*1000+127)/255, vr_recfl), v_get_pixel and a screen->memory vro_cpyfm give p & mask: 0 mismatches.
+      NEGATIVE CONTROL: the same selftest built into main at vdiplanes=32 (serial/st-*-v32-MAIN.log): 22 CHK, 16 FAIL (main answers INQ_TAB at 32: no table) -- the checks can fail.
+      Not covered by a boot: plane counts 1, 4, 8, 24 fall through to vq_extnd (cannot be set by boot argument): host test only (item 2).
+ 9  A PROGRAM THAT READS THE ANSWER: DOOM.NAP (sdk/apps/doom/build/DOOM.NAP, built 31 Oct, sha256 below; DOOM1.WAD shareware) from C:\DOOM by #Z autorun, raspi4b (640x480), card by tools/mkcard.sh (doom.img.manifest),
+      screendump 60 s after boot (screendumps/doom-default-a.png, doom-v32-a.png, both viewed with Read). Serial (serial/doom-default.log, doom-v32.log):
+        default: "DOOM: EdDI: format 2, clut 2, 16 planes, bits r/g/b 5/5/5, bit order 0x2" / "EdDI check: 256 of 256 test colours exact" / "GEM platform up -- 640x480, 16 planes ... route EdDI" / "picture 640x480 ... VERIFIED via EdDI+scale+vro_cpyfm"
+        vdiplanes=32: "DOOM: EdDI: format 2, clut 2, 32 planes, bits r/g/b 8/8/8, bit order 0x1" / "EdDI check: 256 of 256 test colours exact, largest step off r/g/b 0/0/0" / "GEM platform up -- 640x480, 32 planes ... route EdDI" / "VERIFIED".
+        Screens seen: the DOOM shareware demo, status bar with ammo/health/armour and face, textured corridor, colours plausible (green walls, brown floor), no garbage, no stripes; the two frames differ only in the demo's
+        moment (different view). 0 EXC/PANIC in both. DOOM drew correct colours at 32 from the returned tables (its own 256-colour round-trip check passed). HighWire and zView were not run: no built binary is in
+        sdk/apps (highwire has sources only) and one real reader of the answer is enough for this item. Colour fidelity of icons/AES at 32 is V67 and not judged.
+ 10 CARD INTEGRITY: apitest card clone booted with vdiplanes=32 to TOTAL, killed, FAT partition dd'ed out (63 + 130977 sectors), fsck_msdos -n clean (checks/fsck-v32.txt, "4 files, 65164 KiB free", fsck exit 0).
+      0 EXC/PANIC in every serial log of this run (grep over serial/*.log: see commands in checks/boots.out, apitest.out).
+
+DROVE: both board builds, clippy delta (0), full host tests (2554/0/7), mapping/status/doc-check, 14 boots + screendumps (viewed) incl. invalid arguments, 9 VDI/raster tables + aes-r1 x 4 configs against the pinned
+  references with report-by-report comparison against main, APITEST x4 at 110/0/6, a kernel-side trap selftest: the whole vq_scrninfo answer at 16 (identical to main, both boards, default and v16) and at 32 (spec table
+  word for word, S1-S7 from the returned words, consistency table items, with a failing negative control on main), DOOM reading the answer at default and 32, fsck after a 32-plane boot.
+COULD NOT VERIFY / NOT DONE: plane counts that fall through (host test only); HighWire and zView (no built binaries); DOOM at 32 interactively (no input on raspi4b); the consistency-table rows for VsetMode(-1)/VgetSize
+  (V68's, not in this scope); EdDI cookie read through a GEMDOS trap (read with the cookie API in the kernel).
+REAL-PI4-ONLY (never claimed here): cmdline.txt vdiplanes path through the VideoCore mailbox, HDMI mode and the real framebuffer at 32, QUIRK-001 TTBR0 wedge, cache coherence of the framebuffer, USB-HID interactive use,
+  real monitor/EDID, DOOM speed at 32 on silicon.
+REPRODUCING COMMANDS (no FAIL): host: cargo xtask test; selftest: method/build-selftest.sh <tree> <name> then qemu-system-aarch64 -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -display none -no-reboot
+  -kernel kern/wt-st-virt.img -append vdiplanes=32 -serial file:<log>  (rpi4: -M raspi4b -append "serial=on vdiplanes=32"; method/st-run.sh); boot: method/boots.sh; tables: method/tables-vdi.sh; DOOM: method/run-qmp.sh rpi4 <kernel> <doom.img> doom-v32 "serial=on vdiplanes=32" ZZZNOMATCH 0 0 with TMO=60.
+
+NOTES (no action)
+ - The EdDI answer at 32 reports [14] = 1 and [5..7] = 0 (spec readings 1, 2): DOOM reads the bit tables and passes its own check with them.
+ - The first tables chain started was the old full chain (XBIOS/BIOS included); it was killed after 5 tables and its results discarded (not cited); tables-vdi.sh is what ran.
+
+OUT-OF-SCOPE OBSERVATIONS
+ - cargo xtask build still fails with CARGO_TARGET_DIR set (known): builds ran without it.
+ - doc-check in a fresh worktree reports "missing" for cites into gitignored extracted sdk dirs (sdk/gemlib, sdk/cflib, sdk/zview) that worktree-setup does not link; the same on main, so not a change of this ticket.
+
+IMAGE MANIFESTS (copies in this directory; optional_missing lines verbatim): plain.img.manifest "optional_missing none"; apitest.img.manifest "optional_missing none"; doom.img.manifest "optional_missing none".
+  host_clang in each: Apple clang version 21.0.0 (clang-2100.4.1.1). Calls: method/mkcard-calls.txt.
+
+GITIGNORED OUTPUTS CITED (path under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ab6a60009402c9c41/, size, sha256):
+  kern/wt-rpi4.img        1612048 B  c441af433c301964539f1e7ac7ad3fb693a48099ddeac379051f7001e6d0129f
+  kern/wt-virt.img        1517152 B  88c3e557cad8d77d22120ac0abce7132cfed62845ac901f46ac02d52d65513c7
+  kern/base-rpi4.img      1612048 B  1b57afd124a0b9e394c137d1d2f2192ec141c2a52ea2ebd6655afb90be5cd5ff
+  kern/base-virt.img      1517152 B  6c5e0d484fcddd1d8338a0b7a7703cbf645bafcfeee05c94d3e5ec392b4d18af
+  kern/wt-st-rpi4.img     1628432 B  507974be3ff76dc71e240f1326215030774619e2959c93cf3fc74eb05b4a3b92   (selftest build, temporary)
+  kern/wt-st-virt.img     1533536 B  0393a47bca3cc840712fc27f5be2f4d575995479efed4d54fdbcc78db07f9205   (selftest build, temporary)
+  kern/base-st-rpi4.img   1628432 B  76199ad0c36e65c55932697eb9decf91bb9031c996d89150983662e506e76702   (selftest build on main, temporary)
+  kern/base-st-virt.img   1533536 B  b0bfe859864aaa2b7c5752a87cca020f315722fd33b5661d05b6a842b27d0fc6   (selftest build on main, temporary)
+  scratch/APITEST.NCP     161040 B   bed2f824854cd2ba52a38f9b9e5db56bbe89b75fbab7233162c860673f8e094c
+  scratch/PTERMCH.NCP     6328 B     30fa331eb3a5a5355664a3f6c7c4c1b8c68d9e1c642281db0a18c11acb64194e
+  scratch/cards/plain.img (64 MiB)  244198e58e2509d07d593a02444044d2daf15531289aab9b75ae898736e8f266
+  scratch/cards/apitest.img (64 MiB) b97f1e48ca8328bdbde5f31ed72ec8726288369ccc487150a564eb62ac4514d3
+  scratch/cards/doom.img  (64 MiB)  b8d379e2477ce7a646b6f2a2bc31ab46c89176ee033387cf7cbf7918d7514741
+  sdk/apps/doom/build/DOOM.NAP (main tree, gitignored, 790816 B) 86abca15e09202d8538afb8504f4835fdda2ecc5f33f74f5852570832e1df132; Applications/doom-wad/doom1.wad 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771
+  runs/<cfg>/<table>/ (tosdump outputs, BIN files compared in checks/*): 28M.

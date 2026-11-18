@@ -1,0 +1,12 @@
+aes-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=98 (past 32B header: 95) tosdiff_reports=DIFF;
+vdi-a131-palette: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=51 (past 32B header: 48) tosdiff_reports=DIFF;
+vdi-all: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=9 (past 32B header: 6) tosdiff_reports=DIFF;
+sed: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ab6a60009402c9c41/runs/v32/vdi-raster-screen/tosdiff-EMUTOS-1a7484ab-RASTER-screen-falcontc.txt: No such file or directory
+sed: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ab6a60009402c9c41/runs/v32/vdi-raster-screen/tosdiff-validate.txt: No such file or directory
+vdi-raster-screen: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=NOBIN (past 32B header: NOBIN) tosdiff_reports=DIFF;
+vdi-raster: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=4638 (past 32B header: 4635) tosdiff_reports=DIFF;
+vdi-v18-raster: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=267 (past 32B header: 264) tosdiff_reports=DIFF;
+vdi-v18-t2-raster: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=4662 (past 32B header: 4659) tosdiff_reports=DIFF;
+vdi-v18-t2: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=9 (past 32B header: 6) tosdiff_reports=DIFF;
+vdi-v18-t3: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+vdi-v18: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=19 (past 32B header: 16) tosdiff_reports=DIFF;

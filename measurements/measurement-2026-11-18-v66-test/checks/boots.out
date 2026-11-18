@@ -1,0 +1,28 @@
+shotA {'return': {}}
+run rpi4-main: 56 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-default: 56 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-v16: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-v32: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-v24: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-vempty: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-vx: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-main: 69 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-default: 69 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-v16: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-v32: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-v24: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-vempty: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-vx: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0

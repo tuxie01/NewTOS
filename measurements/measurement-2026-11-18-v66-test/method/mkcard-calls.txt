@@ -1,0 +1,2 @@
+mkcard: tools/mkcard.sh <img> method/plain.inf ; tools/mkcard.sh <img> method/apitest.inf APITEST.NCP=<f> PTERMCH.NCP=<f>
+tools/mkcard.sh <img> method/doom.inf DOOM/DOOM.NAP=sdk/apps/doom/build/DOOM.NAP DOOM/DOOM1.WAD=Applications/doom-wad/doom1.wad
