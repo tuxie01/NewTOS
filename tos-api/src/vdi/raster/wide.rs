@@ -19,14 +19,15 @@
 //! 32; 9..31 — a 16-plane form included, owner choice O5 — are a silent no-op
 //! before anything is bound ([`refused_at_depth`]). The plane cap, the
 //! `bb_save` stamp and the save-buffer size follow one depth source,
-//! [`device_mem_planes`] (the stop of TASK/V62). The colour-icon form stays
-//! 16-bit until TASK/V67 and is expanded per pixel at the blit
-//! ([`MemPx::fetch_row`]). At 16 planes nothing here applies (ADR-038 point 11).
+//! [`device_mem_planes`] (the stop of TASK/V62). The colour-icon device form
+//! follows the same depth (TASK/V67): the AES loader stores and sizes it by
+//! [`device_form_pixel_bytes`], the blit stamps it by [`device_mem_planes`].
+//! At 16 planes nothing here applies (ADR-038 point 11).
 
 use alloc::alloc::{alloc_zeroed, dealloc, Layout};
 
 use super::super::backend::{RasterBackend, VDI_PLANES_WIDE};
-use super::{Mfdb, CHUNKY_PLANES, PALETTE_PLANES_MAX, ROW_CHUNK};
+use super::{Mfdb, CHUNKY_PLANES, PALETTE_PLANES_MAX};
 
 /// The plane count of a 32-plane device memory form (ADR-038 point 5).
 pub(super) const WIDE_PLANES: i16 = VDI_PLANES_WIDE as i16;
@@ -44,6 +45,22 @@ pub(super) fn device_mem_planes(backend: &dyn RasterBackend) -> i16 {
         WIDE_PLANES
     } else {
         CHUNKY_PLANES
+    }
+}
+
+/// Bytes per pixel of the chunky device memory form at the device depth
+/// `planes` (the backend's [`RasterBackend::planes`]): 4 at the 32-plane
+/// setting, 2 (the 16-bit form) otherwise — the same rule as
+/// [`device_mem_planes`]. The AES colour-icon loader sizes and stores its
+/// device form by it and `draw_icon` resolves its span by it (TASK/V67,
+/// `_raster.md` 32-plane setting, colour icons I1, I6, I9), so the buffer,
+/// the stores and the blit's read cannot disagree.
+#[inline]
+pub fn device_form_pixel_bytes(planes: u16) -> usize {
+    if planes == VDI_PLANES_WIDE {
+        4
+    } else {
+        2
     }
 }
 
@@ -179,25 +196,15 @@ impl MemPx for u32 {
     fn off_screen(_backend: &dyn RasterBackend) -> u32 {
         0
     }
-    /// A 32-plane form's pixels as they are. A **16-bit** form read for a
-    /// 32-bit screen walk is the colour-icon form at the 32-plane setting
-    /// (`blit_device_mem`, reading 4 of TASK/V65): each 16-bit pixel is
-    /// expanded to its device pixel ([`RasterBackend::rgb565_to_device`]), so
-    /// the op runs against the raw 32-bit screen word.
+    /// A 32-plane form's pixels as they are. Every walk that reads `u32`
+    /// pixels picks the width from the source form's own plane count
+    /// (`at_px!(src.nplanes)`), the colour-icon blit included since TASK/V67,
+    /// so the form is always a 32-plane one here.
     #[inline]
-    unsafe fn fetch_row(backend: &dyn RasterBackend, src: &Mfdb, col: i32, row: i32, out: &mut [u32]) {
-        if src.nplanes == WIDE_PLANES {
-            // SAFETY: the caller's contract.
-            unsafe { src.read_row(col, row, out) };
-            return;
-        }
-        let mut words = [0u16; ROW_CHUNK];
-        let words = &mut words[..out.len()];
-        // SAFETY: the caller's contract; `words` is a stack buffer.
-        unsafe { src.read_row(col, row, words) };
-        for (o, &w) in out.iter_mut().zip(words.iter()) {
-            *o = backend.rgb565_to_device(w);
-        }
+    unsafe fn fetch_row(_backend: &dyn RasterBackend, src: &Mfdb, col: i32, row: i32, out: &mut [u32]) {
+        debug_assert_eq!(src.nplanes, WIDE_PLANES, "a u32 walk reads a 32-plane form");
+        // SAFETY: the caller's contract.
+        unsafe { src.read_row(col, row, out) }
     }
 }
 

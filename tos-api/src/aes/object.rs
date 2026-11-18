@@ -3967,10 +3967,10 @@ fn draw_icon(
                     );
                 }
             }
-            // The device-form image is `stride * 16` pixels of 2 bytes per
-            // row, `rect.h` rows — resolved as one span through the owner's
-            // mapping for an owned tree (A97), skipped if unmapped.
-            let img_bytes = (stride as u64) * 16 * 2 * rect.h.max(0) as u64;
+            // The image: `rect.h` rows of `stride * 16` pixels of 2 bytes (4 at 32 planes, V67),
+            // one span through the owner's mapping for an owned tree (A97), skipped if unmapped.
+            let px = crate::vdi::device_form_pixel_bytes(backend.planes()) as u64;
+            let img_bytes = (stride as u64) * 16 * px * rect.h.max(0) as u64;
             if let Some(pdata) = (pdata != 0).then(|| t.ua_span(pdata, img_bytes)).flatten() {
                 // SAFETY: GEM contract — the loader's `fix_cicons` left
                 // `ib_wicon × ib_hicon` device-form pixels behind `col_data`
@@ -3978,7 +3978,7 @@ fn draw_icon(
                 unsafe {
                     crate::vdi::blit_device_mem(
                         backend,
-                        pdata as *const u16,
+                        pdata as *const u8,
                         Rect { x: rect.x, y: rect.y, w: (stride as i16) * 16, h: rect.h },
                         S_AND_D,
                         clip,

@@ -3026,9 +3026,11 @@ pub(super) fn fix_chpos(raw: i16, cell: i16, is_width: bool, gl_width: i16) -> i
 // `col_data` (and `sel_data`, in the second half of the same buffer) at it,
 // and stamps `num_planes = gl_nplanes`, `next_res = NULL`.
 //
-// NewTOS has one device form: the 16-bit RGB565-chunky memory MFDB
-// (`vdi/raster.rs` module docs, `CHUNKY_PLANES`) — the Falcon truecolor form
-// EmuTOS's own `transform_cicon` produces when `planes > 8` (`:359-395`):
+// NewTOS's device form is the chunky memory MFDB of the setting's depth: 16-bit
+// RGB565 pixels at 16 planes (`vdi/raster.rs`, `CHUNKY_PLANES`), the 32-bit
+// pixel `0x00RRGGBB` at 32 (TASK/V67, `_raster.md` 32-plane colour icons I1-I9;
+// `crate::vdi::device_form_pixel_bytes`). The pixel is the one EmuTOS's own
+// `transform_cicon` produces when `planes > 8` (`:359-395`), widened at 32:
 // `vr_trnfm` to chunky words with plane `p` at bit `15 - p` (our
 // `vr_trnfm16` does the same, `raster.rs`), the top byte reversed into an
 // index `n` 0..=255, and `n` resolved through the physical workstation's
@@ -3052,16 +3054,19 @@ pub(super) fn fix_chpos(raw: i16, cell: i16, is_width: bool, gl_width: i16) -> i
 /// `best_match` compares against (`gl_nplanes` = `INQ_TAB[4]`,
 /// `gemgraf.c:395`), the pen count that shapes EmuTOS's `MAP_COL`
 /// (`vdi_col.c:736-747`), and the physical workstation's pseudo-palette
-/// (`phys_work.ext->palette`, one RGB565 word per pen — NewTOS keeps it
-/// indexed by VDI pen, see [`CiconDevice::rev_map_col`]).
+/// (`phys_work.ext->palette`, one entry per pen: the RGB565 word, or the pen
+/// pixel `0x00RRGGBB` at 32 planes — NewTOS keeps it indexed by VDI pen, see
+/// [`CiconDevice::rev_map_col`]).
 #[derive(Clone, Copy)]
 pub(crate) struct CiconDevice {
     /// `gl_nplanes`.
     pub planes: i16,
     /// `DEV_TAB[13]`, EmuTOS `numcolors`.
     pub num_colors: u16,
-    /// The pseudo-palette, indexed by VDI pen.
-    pub palette: [u16; 256],
+    /// The pseudo-palette, indexed by VDI pen, in the form of the device
+    /// pixel ([`CiconDevice::pixel_bytes`]): the 16-bit word in the low half,
+    /// or the 32-bit pixel.
+    pub palette: [u32; 256],
 }
 
 impl CiconDevice {
@@ -3072,17 +3077,28 @@ impl CiconDevice {
     /// table is what the physical workstation holds in EmuTOS. Without a
     /// backend (a hostless test) the fallback is the one `appl_init`
     /// reports for `ap_planes`: 4 planes, 16 pens, an all-black palette.
+    /// At 32 planes a pen is packed to its pen pixel (`pack_color32`, V64 P3)
+    /// instead of the 5-bit word (TASK/V67, `_raster.md` colour icons I2).
     pub fn live() -> CiconDevice {
         let mut dev = CiconDevice { planes: 4, num_colors: 16, palette: [0; 256] };
         if let Some(r) = crate::host::host().and_then(|h| h.raster()) {
             dev.planes = r.planes() as i16;
             dev.num_colors = r.num_colors();
+            let wide = dev.pixel_bytes() == 4;
             for (pen, slot) in dev.palette.iter_mut().enumerate().take(255) {
                 let (red, green, blue) = r.query_color(pen as u16);
-                *slot = crate::vdi::pack_color16([red as i16, green as i16, blue as i16]);
+                let rgb = [red as i16, green as i16, blue as i16];
+                *slot = if wide { crate::vdi::pack_color32(rgb) } else { u32::from(crate::vdi::pack_color16(rgb)) };
             }
         }
         dev
+    }
+
+    /// Bytes per device-form pixel at this device's depth: 4 at the 32-plane
+    /// setting, 2 otherwise — the rule the blit stamps the form by
+    /// ([`crate::vdi::device_form_pixel_bytes`], `_raster.md` colour icons I1, I6).
+    pub fn pixel_bytes(&self) -> usize {
+        crate::vdi::device_form_pixel_bytes(self.planes.max(0) as u16)
     }
 
     /// EmuTOS's `REV_MAP_COL` — hardware colour register → VDI pen
@@ -3146,9 +3162,10 @@ struct CiconBuf {
 ///   (`vr_trnfm16`), and the reversal in `transform_cicon` (`:359-390`)
 ///   reads planes 0..=7 back as the index `n`; planes 8.. are dropped;
 /// * `n` is a hardware register: `phys_work.ext->palette[n]` is
-///   `palette[rev_map_col[n]]` here ([`CiconDevice::rev_map_col`]).
+///   `palette[rev_map_col[n]]` here ([`CiconDevice::rev_map_col`]), the
+///   16-bit word or, at 32 planes, the pen pixel (I2, I3).
 #[inline]
-fn cicon_pixel(index: u32, mask: bool, src_planes: u32, dev_planes: u32, rev: &[u8; 256], palette: &[u16; 256]) -> u16 {
+fn cicon_pixel(index: u32, mask: bool, src_planes: u32, dev_planes: u32, rev: &[u8; 256], palette: &[u32; 256]) -> u32 {
     let n = if src_planes < dev_planes {
         let all_src = (1u32 << src_planes) - 1;
         let all_dev = if dev_planes >= 32 { u32::MAX } else { (1u32 << dev_planes) - 1 };
@@ -3175,13 +3192,14 @@ struct CiconXform<'a> {
 /// Transform one standard-form image (`src_planes` plane-sequential planes of
 /// `words` WORDs each, then its one-plane `mask`) of a `wd`-word-wide,
 /// `h`-row icon into `wd * 16 × h` device-form pixels at `dst`
-/// ([`cicon_pixel`] per pixel).
+/// ([`cicon_pixel`] per pixel), each [`CiconDevice::pixel_bytes`] wide: a
+/// `u16` word, or the `u32` pixel at 32 planes.
 ///
 /// # Safety
 /// `src` must address `words * src_planes` readable WORDs and `mask` `words`
 /// readable WORDs (both checked against the blob by
 /// [`cicon_tables_are_sound`]); `dst` must address `wd * 16 * h` writable
-/// `u16`s. None of the three need alignment.
+/// pixels of `xf.dev.pixel_bytes()` bytes. None of the three need alignment.
 unsafe fn transform_cicon(
     src: *const u8,
     mask: *const u8,
@@ -3189,10 +3207,11 @@ unsafe fn transform_cicon(
     wd: usize,
     h: usize,
     xf: &CiconXform,
-    dst: *mut u16,
+    dst: *mut u8,
 ) {
     let words = wd * h;
     let dev_planes = xf.dev.planes.max(0) as u32;
+    let wide = xf.dev.pixel_bytes() == 4;
     for row in 0..h {
         for col in 0..wd * 16 {
             let word = row * wd + col / 16;
@@ -3207,8 +3226,15 @@ unsafe fn transform_cicon(
             // SAFETY: `word < words`.
             let m = unsafe { rd16(mask.add(word * 2)) } & bit != 0;
             let px = cicon_pixel(index, m, src_planes, dev_planes, &xf.rev, &xf.dev.palette);
-            // SAFETY: `row * wd * 16 + col < wd * 16 * h`.
-            unsafe { dst.add(row * wd * 16 + col).write_unaligned(px) };
+            let at = row * wd * 16 + col;
+            // SAFETY: `at < wd * 16 * h` pixels of the width `dst` was sized for.
+            unsafe {
+                if wide {
+                    dst.add(at * 4).cast::<u32>().write_unaligned(px);
+                } else {
+                    dst.add(at * 2).cast::<u16>().write_unaligned(px as u16);
+                }
+            }
         }
     }
 }
@@ -3309,8 +3335,9 @@ unsafe fn fix_cicons(
     };
     // Per block: the record, the chosen variant, and the icon's geometry in
     // words per row / rows — `w/16` and `h`, EmuTOS's `data_size =
-    // w/8 * gl_nplanes * h` bytes being `wd * 16 * h` 16-bit pixels for the
-    // 16-plane device form (`:417`).
+    // w/8 * gl_nplanes * h` bytes being `wd * 16 * h` pixels of `px` bytes:
+    // 2 for the 16-plane device form, 4 for the 32-plane one (`:421`, I6).
+    let px = dev.pixel_bytes();
     let block = |i: usize| -> (*mut u8, Option<(*mut u8, u64)>, usize, usize) {
         // SAFETY: record `i` of the bounded CICONBLK array.
         let rec = unsafe { access_base.add(h.off_cib as usize + i * cib) };
@@ -3327,7 +3354,7 @@ unsafe fn fix_cicons(
     for i in 0..h.n_cib as usize {
         let (_, chosen, wd, rows) = block(i);
         if let Some((rec, _)) = chosen {
-            let bytes = wd * 16 * rows * 2;
+            let bytes = wd * 16 * rows * px;
             // SAFETY: `sel_data` is the third pointer field.
             let sel = unsafe { rd_ptr(rec.add(3 * ps), abi) } != 0;
             need += if sel { 2 * bytes } else { bytes };
@@ -3354,7 +3381,7 @@ unsafe fn fix_cicons(
         let field = |k: usize| unsafe { rd_ptr(cic.add(k * ps), abi) };
         let to_access = |va: u64| unsafe { access_base.add(va.wrapping_sub(target_base) as usize) as *const u8 };
         let (col_data, col_mask, sel_data, sel_mask) = (field(1), field(2), field(3), field(4));
-        let bytes = wd * 16 * rows * 2;
+        let bytes = wd * 16 * rows * px;
         // SAFETY: the rasters were bounds-checked against the blob; the
         // destination is inside the `need`-byte buffer.
         unsafe {
@@ -3365,7 +3392,7 @@ unsafe fn fix_cicons(
                 wd,
                 rows,
                 &xf,
-                (buf_access as usize + cursor) as *mut u16,
+                (buf_access as usize + cursor) as *mut u8,
             );
             wr_ptr(cic.add(ps), abi, buf_target + cursor as u64);
         }
@@ -3380,7 +3407,7 @@ unsafe fn fix_cicons(
                     wd,
                     rows,
                     &xf,
-                    (buf_access as usize + cursor) as *mut u16,
+                    (buf_access as usize + cursor) as *mut u8,
                 );
                 wr_ptr(cic.add(3 * ps), abi, buf_target + cursor as u64);
             }
@@ -3414,8 +3441,8 @@ unsafe fn kernel_cicon_free(buf: CiconBuf) {
     }
 }
 
-/// Alignment of a kernel-heap device-form buffer (`u16` pixels; 8 keeps the
-/// layout trivially valid for any pixel width).
+/// Alignment of a kernel-heap device-form buffer (`u16` or `u32` pixels; 8
+/// keeps the layout trivially valid for either pixel width).
 const CICON_BUF_ALIGN: usize = 8;
 
 /// The device-form buffer of the in-place kernel path ([`relocate_and_register`]):
@@ -4633,23 +4660,45 @@ mod cicon_tests {
     /// A device whose palette makes every pen recognisable: pen `n` ↦
     /// `0x0100 + n` (bit 5 clear, as `set_color16` guarantees).
     fn device(planes: i16, num_colors: u16) -> CiconDevice {
-        let mut palette = [0u16; 256];
+        let mut palette = [0u32; 256];
         for (n, p) in palette.iter_mut().enumerate() {
-            *p = 0x0100 | (n as u16 & 0x00DF) | ((n as u16 & 0x20) << 8);
+            *p = u32::from(0x0100 | (n as u16 & 0x00DF) | ((n as u16 & 0x20) << 8));
         }
         CiconDevice { planes, num_colors, palette }
     }
 
+    /// The 32-plane device of TASK/V67: 32 planes, 256 pens, and a palette
+    /// whose every entry is a recognisable 32-bit pixel `0x00RRGGBB` with all
+    /// three guns non-zero and different from each other (no 16-bit word
+    /// could hold it): pen `n` ↦ R = `n ^ 0x5A`, G = `255 - n`, B = `n | 1`.
+    fn device32() -> CiconDevice {
+        let mut palette = [0u32; 256];
+        for (n, p) in palette.iter_mut().enumerate() {
+            let n = n as u32;
+            *p = ((n ^ 0x5A) << 16) | ((255 - n) << 8) | (n | 1);
+        }
+        CiconDevice { planes: 32, num_colors: 256, palette }
+    }
+
     /// The colour EmuTOS ends up with for hardware index `n` on `dev`.
-    fn colour_of(dev: &CiconDevice, n: usize) -> u16 {
+    fn colour_of(dev: &CiconDevice, n: usize) -> u32 {
         dev.palette[dev.rev_map_col()[n] as usize]
     }
 
-    /// The relocated blob and its device-form buffer (or none).
+    /// Bytes written past the end of the device-form buffer are caught here:
+    /// the test buffer carries this many canary bytes behind what
+    /// `fix_cicons` asked for.
+    const CANARY_BYTES: usize = 64;
+    const CANARY: u8 = 0xA5;
+
+    /// The relocated blob and its device-form buffer (or none): the bytes
+    /// `fix_cicons` asked for, then [`CANARY_BYTES`] of [`CANARY`].
     struct Loaded2 {
         blob: super::tests::Blob,
-        buf: Vec<u16>,
+        buf: Vec<u8>,
         result: CiconBuf,
+        /// Bytes per device-form pixel of the device the blob was loaded for.
+        px_bytes: usize,
     }
 
     /// Relocate the fixture onto `APP_VA` at LP64 width, run `fix_cicons`
@@ -4663,15 +4712,23 @@ mod cicon_tests {
         // through `relocate_and_register_core`; to vary the device, drive the
         // two halves the core runs, in its order.
         assert!(unsafe { relocate_blob_core(p, len, APP_VA) }, "the fixture must relocate");
-        let mut buf: Vec<u16> = Vec::new();
+        let mut buf: Vec<u8> = Vec::new();
         let mut alloc = |bytes: usize| -> Option<(u64, u64)> {
             let cap = cap?;
             assert!(bytes <= cap, "asked for {bytes} bytes, the test offers {cap}");
-            buf = vec![0u16; bytes / 2];
+            buf = vec![0u8; bytes];
+            buf.extend(std::iter::repeat_n(CANARY, CANARY_BYTES));
             Some((buf.as_mut_ptr() as u64, BUF_VA))
         };
         let result = unsafe { fix_cicons(p, APP_VA, Abi::Lp64, &mut || dev, &mut alloc) };
-        Loaded2 { blob, buf, result }
+        if !buf.is_empty() {
+            assert!(
+                buf[buf.len() - CANARY_BYTES..].iter().all(|&b| b == CANARY),
+                "fix_cicons wrote past the {} bytes it asked for",
+                buf.len() - CANARY_BYTES
+            );
+        }
+        Loaded2 { blob, buf, result, px_bytes: dev.pixel_bytes() }
     }
 
     fn mainlist(l: &Loaded2, block: usize) -> u64 {
@@ -4683,10 +4740,17 @@ mod cicon_tests {
     fn cicon_field(l: &Loaded2, i: usize, k: usize) -> u64 {
         get64(l.blob.bytes(), OFF_CIC + i * CICON_SIZE + k * 8)
     }
-    /// Device-form pixel `(c, r)` of the image at buffer offset `off`.
-    fn px(l: &Loaded2, off: u64, c: usize, r: usize) -> u16 {
-        let base = (off - BUF_VA) as usize / 2;
-        l.buf[base + r * W as usize + c]
+    /// Device-form pixel `(c, r)` of the image at buffer offset `off`, read at
+    /// the width of the device the blob was loaded for (the 16-bit word, or
+    /// the 32-bit pixel at 32 planes).
+    fn px(l: &Loaded2, off: u64, c: usize, r: usize) -> u32 {
+        let at = (off - BUF_VA) as usize + (r * W as usize + c) * l.px_bytes;
+        let b = &l.buf[at..at + l.px_bytes];
+        if l.px_bytes == 4 {
+            u32::from_le_bytes(b.try_into().unwrap())
+        } else {
+            u32::from(u16::from_le_bytes(b.try_into().unwrap()))
+        }
     }
 
     /// `best_match`, exact branch: on a 4-plane device block 0's 4-plane
@@ -4860,9 +4924,9 @@ mod cicon_tests {
         let mut blob = super::tests::Blob::new(&blob());
         let len = blob.len;
         let p = blob.as_mut_ptr();
-        let mut buf: Vec<u16> = Vec::new();
+        let mut buf: Vec<u8> = Vec::new();
         let mut alloc = |bytes: usize| -> Option<(u64, u64)> {
-            buf = vec![0u16; bytes / 2];
+            buf = vec![0u8; bytes];
             Some((buf.as_mut_ptr() as u64, BUF_VA))
         };
         let desc = unsafe { relocate_and_register_core(p, len, APP_VA, Abi::Lp64, &mut alloc) }
@@ -4917,6 +4981,89 @@ mod cicon_tests {
         // And the unmodified fixture holds up.
         let mut ok = super::tests::Blob::new(&blob());
         assert!(unsafe { header_is_sound(ok.as_mut_ptr(), ok.len, Abi::Lp64) });
+    }
+
+    /// TASK/V67, `_raster.md` 32-plane colour icons I5, I6: at 32 planes
+    /// `best_match` takes the same variants as at 16 (B, 4 planes, and C, 8
+    /// planes; no variant is exact), every image is `wd * 16 * h` pixels of 4
+    /// bytes, so the one buffer is exactly twice the 16-plane one, the
+    /// SELECTED image follows its colour image at the 32-plane image size and
+    /// the next icon follows both, `num_planes` is stamped 32, and nothing is
+    /// written past the buffer (the canary of [`load`]).
+    #[test]
+    fn at_32_planes_the_buffer_is_twice_the_16_plane_one_and_nothing_is_written_past_it() {
+        let l16 = load(device(16, 256), Some(1 << 16));
+        let l32 = load(device32(), Some(1 << 16));
+        let img16 = (W as usize) * (H as usize) * 2;
+        let img32 = (W as usize) * (H as usize) * 4;
+        // B with its SELECTED image, C without one: three images.
+        assert_eq!(l16.result.len, 3 * img16, "16 planes: three 16-bit images");
+        assert_eq!(l32.result.len, 3 * img32, "32 planes: three 32-bit images");
+        assert_eq!(l32.result.len, 2 * l16.result.len, "every term doubles (I6)");
+        assert_eq!(l32.buf.len(), l32.result.len + CANARY_BYTES, "fix_cicons asked for exactly `need`");
+        assert_eq!(mainlist(&l32, 0), cicon_va(1), "block 0: B, as at 16 (I5)");
+        assert_eq!(mainlist(&l32, 1), cicon_va(2), "block 1: C, as at 16 (I5)");
+        assert_eq!(cicon_field(&l32, 1, 1), BUF_VA, "B col_data");
+        assert_eq!(cicon_field(&l32, 1, 3), BUF_VA + img32 as u64, "B sel_data = col_data + B");
+        assert_eq!(cicon_field(&l32, 2, 1), BUF_VA + 2 * img32 as u64, "C col_data behind B's two images");
+        assert_eq!(cicon_field(&l32, 2, 3), 0, "C has no SELECTED image");
+        assert_eq!(get16(l32.blob.bytes(), OFF_CIC + CICON_SIZE), 32, "num_planes stamped 32 (`:470`)");
+        assert_eq!(get16(l32.blob.bytes(), OFF_CIC + 2 * CICON_SIZE), 32);
+        assert_eq!(cicon_field(&l32, 1, 2), APP_VA + R_B_MASK as u64, "col_mask stays the file's (I7)");
+        // The last image ends exactly at the end of the buffer: its last
+        // pixel is written, the byte after it is the first canary byte.
+        let last = BUF_VA + 2 * img32 as u64;
+        assert_eq!(px(&l32, last, W as usize - 1, H as usize - 1), colour_of(&device32(), 255));
+    }
+
+    /// TASK/V67, I2-I4: at 32 planes each pixel is the palette's 32-bit entry
+    /// of `REV_MAP_COL[n]`, with the index `n` and the expansion exactly as at
+    /// 16 planes (`expand_cicondata` with 32 destination planes: the same
+    /// low 8 planes). The 16-plane run of the same blob gives the same index
+    /// at every pixel.
+    #[test]
+    fn at_32_planes_each_pixel_is_the_32_bit_palette_entry_of_its_index() {
+        let dev = device32();
+        let l = load(dev, Some(1 << 16));
+        let l16 = load(device(16, 256), Some(1 << 16));
+        let d16 = device(16, 256);
+        let rev = dev.rev_map_col();
+        // The pen that the 16-bit word names in `device()` is recoverable:
+        // the 16-plane fixture palette is injective on pens.
+        let pen16 = |word: u32| (0..256).find(|&p| d16.palette[p] == word).expect("a fixture pen");
+        for (cic, imgs) in [(1usize, &[1usize, 3][..]), (2, &[1][..])] {
+            for &k in imgs {
+                let (o32, o16) = (cicon_field(&l, cic, k), cicon_field(&l16, cic, k));
+                for r in 0..H as usize {
+                    for c in 0..W as usize {
+                        let got = px(&l, o32, c, r);
+                        let pen = pen16(px(&l16, o16, c, r));
+                        assert_eq!(got, dev.palette[pen], "cicon {cic} field {k} ({c},{r}): same pen as at 16");
+                        assert_eq!(got >> 24, 0, "X = 0");
+                    }
+                }
+            }
+        }
+        // The two ends of the expansion, as at 16: index 15 of B's SELECTED
+        // image → register 255 → pen 1; outside the mask → register 0 → pen 0.
+        let sel = cicon_field(&l, 1, 3);
+        assert_eq!(rev[255], 1);
+        assert_eq!(px(&l, sel, 0, 0), dev.palette[1]);
+        assert_eq!(px(&l, sel, 0, 12), dev.palette[0]);
+        // C: 8 planes all set under a full mask → index 255 everywhere.
+        let c1 = cicon_field(&l, 2, 1);
+        assert_eq!(px(&l, c1, 5, 5), colour_of(&dev, 255));
+    }
+
+    /// I11: without a raster backend the live device is the 16-bit one of
+    /// `appl_init`'s fallback, so the stored form stays 16-bit.
+    #[test]
+    fn without_a_backend_the_live_device_keeps_the_16_bit_form() {
+        let dev = CiconDevice::live();
+        assert_eq!(dev.planes, 4);
+        assert_eq!(dev.pixel_bytes(), 2);
+        assert_eq!(device32().pixel_bytes(), 4);
+        assert_eq!(device(16, 256).pixel_bytes(), 2);
     }
 
     /// `REV_MAP_COL` as `init_colors` builds it (`vdi_col.c:736-747`), for

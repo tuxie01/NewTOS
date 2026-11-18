@@ -408,14 +408,18 @@ ultrasatan_setdt	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, M
 write_ds1307	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 ascii_out	bios/conout.c	tos-api/src/vdi/escape.rs	ascii_out	mapped	-
 blank_out	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	mapped	-
-blank_out16	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	mapped	the 16-bit path is part of blank_out
+blank_out16	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	mapped	the 16-bit path is part of blank_out; the rows are blank_rows
+blank_out16	bios/conout.c	tos-api/src/vdi/escape.rs	blank_rows	mapped	the rectangle in the background colour, runs of up to 64 pixels: 16-bit words through the row seam, raw 32-bit pen pixels through write_device_rect at vdiplanes=32 (_vt52-32plane.md C1, C5; V67)
 cell_addr	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 cell_xfer	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	mapped	-
-cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	mapped	the 16-bit path is part of cell_xfer; the colour word comes from Con::word, at 32 planes the physical pen pixel projected to its top 5 bits per gun until the cell writer is widened (V64; V67)
+cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	mapped	the 16-bit path is part of cell_xfer; the rows are cell_rows, the colours Con::word
+cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	cell_rows	mapped	v_cel_ht rows of 8 pixels, fg where the glyph bit is set, else bg (:137-180): 16-bit words through the row seam, raw 32-bit words through write_device_rect at vdiplanes=32 (_vt52-32plane.md C1; V67)
+cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	word	mapped	phys_work.ext->palette[fg] or falcon_default_palette[fg & 0xf] (:162-170); at vdiplanes=32 the pen pixel 0x00RRGGBB, before any workstation the default word expanded by gun replication (_vt52-32plane.md C2, C3; V67)
 char_addr	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 invert_cell	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 move_cursor	bios/conout.c	tos-api/src/vdi/escape.rs	move_cursor	mapped	-
-neg_cell	bios/conout.c	tos-api/src/vdi/escape.rs	neg_cell	mapped	-
+neg_cell	bios/conout.c	tos-api/src/vdi/escape.rs	neg_cell	mapped	the rows are neg_rows
+neg_cell	bios/conout.c	tos-api/src/vdi/escape.rs	neg_rows	mapped	read, complement, write every word of the cell (:305-313): the 16-bit words, all 32 bits of the raw store words at vdiplanes=32; twice is the identity (_vt52-32plane.md C4; V67)
 next_cell	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 scroll_down	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_down	mapped	-
 scroll_up	bios/conout.c	tos-api/src/vdi/escape.rs	scroll_up	mapped	-
@@ -1184,6 +1188,7 @@ gr_crack	aes/gemgraf.c	tos-api/src/aes/object.rs	gr_crack	mapped	border/text/pat
 gr_gblt	aes/gemgraf.c	tos-api/src/aes/object.rs	blit_plane_kernel	mapped	MD_TRANS mono blit of mask/data in fg (backend.blit_mono); blit_plane resolves the owner's mapping first
 gr_gblt	aes/gemgraf.c	tos-api/src/aes/object.rs	blit_plane	mapped	the owner-mapped variant used for the icon mask and data
 gr_colourblit	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	the colour-icon image blit; blit_device_mem is called with S_AND_D unconditionally, EmuTOS uses S_OR_D and S_AND_D only above 8 planes (gemgraf.c:662-667)
+gr_colourblit	aes/gemgraf.c	tos-api/src/vdi/raster.rs	blit_device_mem	mapped	the source MFDB with fd_nplanes = num_planes (:648-651): stamped at the setting's depth by device_mem_planes, 16 or 32 at vdiplanes=32, S_AND_D on the raw 32-bit words there (_raster.md colour icons I8; V67)
 dither_mask	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	the 0x5555/0xAAAA row dither of the mask for a selected colour icon without sel_data, then the BLACK MD_TRANS blit
 gr_gicon	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	mono and colour icon; the WHITEBAK-with-white-background skip of mask and label background is applied only on the colour arm, not on the mono arm (gemgraf.c:735-748)
 gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_signed_border	mapped	th>0 inner rings, th<0 |th|+1 rings ending on the rect edge (gemgraf.c:813-832)
@@ -1430,9 +1435,9 @@ vdi_vrt_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	opcode
 vr_trnfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm16	mapped	-
 vr_trnfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	vr_trnfm32	mapped	the same with 32 for 16 at vdiplanes=32: 32 planes, plane p holds bit 31 - p, planesize * 64 bytes, scratch in place, fd_stand not written (:190-256; ADR-038 point 6; V65)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	screen_to_mem	mapped	screen to memory, 16-bit words; raw 32-bit store words (X included) into a 32-plane form at vdiplanes=32 (V65)
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memory to screen, 16-bit words; raw 32-bit words from a 32-plane form, and the 16-bit colour-icon form expanded per pixel, at vdiplanes=32 (V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memory to screen, 16-bit words; raw 32-bit words from a 32-plane form at vdiplanes=32 (V65), the colour-icon form included (V67)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	read_screen_row	mapped	the screen side of a copy as pixel words: the 16-bit screen words, or the raw 32-bit store words through read_device_rect at vdiplanes=32 (V65)
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	fetch_row	mapped	the source run of a memory form; the 16-bit colour-icon form expanded to device pixels for the 32-bit screen walk at vdiplanes=32 (V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	fetch_row	mapped	the source run of a memory form at the width of its own plane count; a u32 walk reads a 32-plane form only, the colour-icon form included since V67 (the V65 16-to-32 expansion is gone)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words, row fd_wdwidth * fd_nplanes WORDs; walk backwards (last row, last pixel first) iff the source start pointer lies below the destination start (:989-1002), as EmuTOS (V28); 32-bit pixels between two 32-plane forms at vdiplanes=32 (V65)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	chunky_reverse	mapped	the direction test src < dst on the two start pointers form + y * width + x (:986-995; V28)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word, bitwise on all 32 bits of a 32-plane form (V65)
@@ -1459,6 +1464,7 @@ query_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter regist
 set_color	vdi/vdi_col.c	kernel/src/vdi_backend.rs	set_color	mapped	palette write of the device (non-truecolor path of vdi_vs_color); no VIDEL/TT/ST register write exists; truecolor vs_color never reaches it; the active entry at the setting's depth (pen_entry, V64)
 set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	set_color16	mapped	pseudo-palette entry; MAP_COL folded to identity
 set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	set_color32	mapped	at 32 planes: the pen pixel 0x00RRGGBB, 8 bits per gun, X = 0; MAP_COL folded to identity (ADR-038 point 4, V64)
+set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	pack_color32	mapped	the pen pixel of set_color32 for a caller outside the VDI: the AES colour-icon loader's palette at vdiplanes=32 (V67)
 set_color16	vdi/vdi_col.c	kernel/src/vdi_backend.rs	pen_entry	mapped	the kernel's active-palette entry for the device default and set_color at the setting's depth: pack555 at 16 planes, pack888 at 32 (V64)
 set_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter register write; the Pi has no TT shifter
 vdi_vq_color	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	opcode 26
@@ -1826,9 +1832,11 @@ get_addr	aes/gemrslib.c	tos-api/src/aes/resource.rs	get_addr	mapped	type/index -
 fixup_colour_icons	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	CICON data/mask/next_res pointers (:185-217) are relocated from offsets in the native blob (NRSC >= v11); tools/mkrsc.py lays the data out, the loader rebases it (ILP32 twin relocate_blob_core_ilp32)
 fixup_all_ciconblks	aes/gemrslib.c	tos-api/src/aes/resource.rs	relocate_blob_core	mapped	CICONBLK table + monoblk pointers (:226-256), same relocation as fixup_colour_icons
 best_match	aes/gemrslib.c	tos-api/src/aes/resource.rs	best_match	mapped	exact planes else deepest shallower variant, none deeper (:267-282)
-expand_cicondata	aes/gemrslib.c	tos-api/src/aes/resource.rs	cicon_pixel	mapped	S->D plane expansion and mask AND (:296-340) is done per pixel while building the 16-bit device form in cicon_pixel, no separate expansion buffer
-transform_cicon	aes/gemrslib.c	tos-api/src/aes/resource.rs	transform_cicon	mapped	standard -> device form (:348-396); NewTOS has one device form (RGB565 chunky) and maps the VDI index through the palette (rev_map_col), as the planes > 8 branch of EmuTOS
-transform_all_cicons	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	per CICONBLK best_match, expand, transform into one buffer, mainlist/col_data/sel_data patched, num_planes stamped (:403-477); NewTOS sums the buffer size first and allocates once
+expand_cicondata	aes/gemrslib.c	tos-api/src/aes/resource.rs	cicon_pixel	mapped	S->D plane expansion and mask AND (:296-340) is done per pixel while building the device form in cicon_pixel, no separate expansion buffer; with 32 destination planes at vdiplanes=32, the same low 8 planes (_raster.md colour icons I4; V67)
+transform_cicon	aes/gemrslib.c	tos-api/src/aes/resource.rs	transform_cicon	mapped	standard -> device form (:348-396) of the setting's depth: 16-bit RGB565 words, the 32-bit pen pixel at vdiplanes=32 (_raster.md colour icons I2, I8; V67); maps the VDI index through the palette (rev_map_col), as the planes > 8 branch of EmuTOS
+transform_cicon	aes/gemrslib.c	tos-api/src/aes/resource.rs	live	mapped	phys_work.ext->palette[n] (:392), read once at load: the device's requested colours packed as init_wk seeds them, pack_color16 at 16 planes, pack_color32 at vdiplanes=32 (_raster.md colour icons I2, I10; V67)
+transform_all_cicons	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	per CICONBLK best_match, expand, transform into one buffer, mainlist/col_data/sel_data patched, num_planes stamped (:403-477); NewTOS sums the buffer size first and allocates once; data_size = wd * 16 * h pixels of 2 bytes, 4 at vdiplanes=32 (_raster.md colour icons I6; V67)
+transform_all_cicons	aes/gemrslib.c	tos-api/src/vdi/raster/wide.rs	device_form_pixel_bytes	mapped	the bytes per pixel of data_size = w/8 * gl_nplanes * h (:421): 2, or 4 at vdiplanes=32; the loader's buffer, its stores and draw_icon's span read it (_raster.md colour icons I1, I6, I9; V67)
 get_ciconblkptr	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	locating the CICONBLK table: EmuTOS reads the extension array behind rsh_rssize (:484-508), NewTOS reads off_cib/n_cib from the NRSC header (no standalone function)
 free_cicon_buffers	aes/gemrslib.c	tos-api/src/aes/resource.rs	rsrc_free	mapped	frees the device-form icon buffers (:515-536), rc -1 on a failed free; NewTOS frees via cicon_raw / kernel_cicon_free inside rsrc_free
 fix_cicons	aes/gemrslib.c	tos-api/src/aes/resource.rs	fix_cicons	mapped	pointer fixup + transform for all CICONBLKs (:549-573)

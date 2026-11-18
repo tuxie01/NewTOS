@@ -439,10 +439,11 @@ fn v_get_pixel_answers_the_wide_pixel_at_32_planes() {
 /// The VT52 console reads its colours from the physical workstation's pens
 /// (`conout.c:162-166`; foreground register 15 = pen 255, background
 /// register 0 = pen 0, `tos-api/src/vdi/escape.rs` `REV_MAP_COL`). At 16
-/// planes that is the 16-bit word as before; at 32 the pen's pixel, which
-/// the 16-bit cell writer (widened in TASK/V67) receives as its top 5 bits
-/// per gun. With the request `(17, 0, 0)` the two differ: 5-bit red 1 at 16,
-/// 0 at 32 (`q(17) = 4`).
+/// planes that is the 16-bit word as before; at 32 the pen's pixel, written
+/// as it is by the 32-bit cell writer (TASK/V67, `docs/api/bios/_vt52-32plane.md`
+/// C1, C2; until V67 the 16-bit writer took its top 5 bits per gun). With the
+/// request `(17, 0, 0)` the two differ: 5-bit red 1 at 16, 8-bit red 4 at 32
+/// (`q(17) = 4`).
 #[test]
 fn the_vt52_console_takes_its_colours_from_the_pen_table() {
     for planes in [16u16, 32] {
@@ -455,7 +456,7 @@ fn the_vt52_console_takes_its_colours_from_the_pen_table() {
         tos_api::vdi::alpha_conout(scr, b'W');
         let after = scr.snapshot();
         let (fg, bg) = if planes == 32 {
-            (word_to_device(device_to_word(pixel32([17, 0, 0]))), word_to_device(device_to_word(pixel32([1000, 1000, 1000]))))
+            (pixel32([17, 0, 0]), pixel32([1000, 1000, 1000]))
         } else {
             (word_to_device(word16([17, 0, 0])), word_to_device(word16([1000, 1000, 1000])))
         };

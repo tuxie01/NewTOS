@@ -287,6 +287,10 @@ impl VwkExt {
 pub fn pack_color16(rgb: [i16; 3]) -> u16 {
     VwkExt::pack_color16(rgb)
 }
+/// [`VwkExt::pack_color32`], the same for the 32-plane setting (TASK/V67).
+pub fn pack_color32(rgb: [i16; 3]) -> u32 {
+    VwkExt::pack_color32(rgb)
+}
 
 /// Static handle table. Mirrors the `MdArenaCell` idiom: an
 /// `UnsafeCell` array accessed only from the single-CPU, IRQ-off trap

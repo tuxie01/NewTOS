@@ -357,7 +357,7 @@ c. **`G_BUTTON`'s interior colour is independent of (b) and is set entirely
 > `FL3DBAK` button is a 3D object (`CONF_WITH_3D_OBJECTS` background flag)
 > that nonetheless stays hollow white. See `_discrepancies.md` D-103.
 
-> **Ergänzung bei der Umsetzung (A133): text writing mode of the TEDINFO
+> **Addition during implementation (A133): text writing mode of the TEDINFO
 > family.** Item 3 named the colour word but not the mode its text is
 > written in. `tmode` starts as `MD_REPLACE` (`gemoblib.c:554`) and is
 > overwritten by the crack of `te_color` (`:568`; bit 7 set → `MD_REPLACE`,
@@ -481,8 +481,10 @@ c. **`G_BUTTON`'s interior colour is independent of (b) and is set entirely
 > `fgcol`/`bgcol` unless `WHITEBAK` + white (`WHITEBAK` is honoured on the
 > colour path only; the mono path never checked it, unchanged), the image
 > through `vdi::blit_device_mem` (a Memory→Screen `vro_cpyfm` with
-> `S_AND_D` — NewTOS's one device form is the truecolor RGB565 one, so the
-> `num_planes > 8` mode choice of `gemgraf.c:664-667` is always the AND
+> `S_AND_D` — NewTOS's device form is the truecolor chunky one of the setting's
+> depth, 16-bit RGB565 at 16 planes and the 32-bit pixel `0x00RRGGBB` at 32
+> (TASK/V67, `docs/api/vdi/raster/_raster.md` 32-plane colour icons I1-I9), so
+> the `num_planes > 8` mode choice of `gemgraf.c:664-667` is always the AND
 > arm), the `dither_mask` darkening for a SELECTED variant without
 > `sel_data`, then character and label. `None` keeps the mono path
 > byte-for-byte. Pixel tests: `tos-api/tests/aes_cicon_draw.rs`. The

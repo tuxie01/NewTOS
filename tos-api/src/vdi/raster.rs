@@ -72,6 +72,7 @@ use crate::bdos::process::Abi;
 #[macro_use]
 mod wide;
 use wide::{device_mem_planes, refused_at_depth, save_form, MemPx, WIDE_PLANES};
+pub use wide::device_form_pixel_bytes;
 
 /// The `S_ONLY` logic op (`INTIN[0] = 3`, `D' = S`), the op of `bb_save`/`bb_restore` (`gemgsxif.c` `bb_set`).
 const OP_REPLACE: u8 = 3;
@@ -79,9 +80,9 @@ const OP_REPLACE: u8 = 3;
 /// The plane count of the NewTOS **16-bit** device memory form (`fd_nplanes`)
 /// — **16**, the Falcon truecolor depth (`v_planes`, `bios/videl.c:320-341`):
 /// the `device_mem` stamp and the `vro_cpyfm`/`vrt_cpyfm` plane cap at the
-/// default setting ([`device_mem_planes`]: 32 at `vdiplanes=32`, V65), and at
-/// every setting the colour-icon form of [`blit_device_mem`] (16-bit until
-/// TASK/V67). The gate is EmuTOS' `vdi_raster.c:963,1360` (AUD-V5-004).
+/// default setting ([`device_mem_planes`]: 32 at `vdiplanes=32`, V65), the
+/// colour-icon form of [`blit_device_mem`] included (32-bit at 32 planes
+/// since TASK/V67). The gate is EmuTOS' `vdi_raster.c:963,1360` (AUD-V5-004).
 const CHUNKY_PLANES: i16 = 16;
 
 /// The largest plane count EmuTOS still handles on its **palette** BitBlt
@@ -1355,23 +1356,24 @@ pub unsafe fn bb_restore(
 
 /// AES `gr_colourblit` (`aes/gemgraf.c:642-671`): the Memory→Screen
 /// `vro_cpyfm` of a colour icon's **device-form** image — a `dst.w × dst.h`
-/// buffer of 16-bit RGB565 pixels at `mem` (the memory-MFDB wireformat,
-/// rows `(dst.w + 15) / 16` words wide) — onto the screen at `(dst.x,
+/// buffer of device-form pixels at `mem` (the memory-MFDB wireformat, rows
+/// `(dst.w + 15) / 16 * 16` pixels wide) — onto the screen at `(dst.x,
 /// dst.y)` with logic op `op` (`S_AND_D` = 1 on the truecolor path,
 /// `gemgraf.c:664-667`), clipped to `clip`. EmuTOS builds the source MFDB
 /// with `gsx_fix(&gl_src, pdata, w/8, h)` (`fd_wdwidth = w/16`) and the
 /// screen as destination; this is [`vro_cpyfm`]'s memory→screen arm for
-/// exactly that pair. No cursor bracket here (`ob_draw` holds one). The icon
-/// form is 16-bit at every setting ([`CHUNKY_PLANES`], until TASK/V67); at
-/// `vdiplanes=32` each pixel is expanded to its device pixel and the op runs
-/// on the raw 32-bit screen words ([`MemPx::fetch_row`], reading 4 of V65).
+/// exactly that pair. No cursor bracket here (`ob_draw` holds one). The form
+/// is stamped at the setting's depth ([`device_mem_planes`], TASK/V67): 16-bit
+/// RGB565 pixels at 16 planes, the raw 32-bit pixels `0x00RRGGBB` at 32, the
+/// op on the raw 32-bit screen words.
 ///
 /// # Safety
-/// `mem` must address `((dst.w + 15) / 16) * 16 * dst.h` readable `u16`s
-/// (no alignment required) that stay valid for the call.
-pub unsafe fn blit_device_mem(backend: &dyn RasterBackend, mem: *const u16, dst: Rect, op: u8, clip: ClipRect) {
-    let src = Mfdb::device_mem(mem as u64, dst.w, dst.h, CHUNKY_PLANES);
-    at_px!(backend.planes() as i16, T => mem_to_screen::<T>(backend, &src, Rect { x: 0, y: 0, w: dst.w, h: dst.h }, dst.x, dst.y, op, clip));
+/// `mem` must address `((dst.w + 15) / 16) * 16 * dst.h` readable pixels of
+/// [`device_form_pixel_bytes`]`(backend.planes())` bytes each (no alignment
+/// required) that stay valid for the call.
+pub unsafe fn blit_device_mem(backend: &dyn RasterBackend, mem: *const u8, dst: Rect, op: u8, clip: ClipRect) {
+    let src = Mfdb::device_mem(mem as u64, dst.w, dst.h, device_mem_planes(backend));
+    at_px!(src.nplanes, T => mem_to_screen::<T>(backend, &src, Rect { x: 0, y: 0, w: dst.w, h: dst.h }, dst.x, dst.y, op, clip));
 }
 
 /// Truecolor `vr_trnfm` branch — a faithful port of EmuTOS `vr_trnfm16`

@@ -24,7 +24,8 @@
 //! - §6: the `v_get_pixel` answer shape at both settings.
 //! - §7: `bb_save_words` and the `device_mem` stamp from one depth source,
 //!   sizes pinned, no write past the buffer, `bb_save`/`bb_restore` exact; the
-//!   colour-icon blit keeps its 16-bit form and reads only it.
+//!   colour-icon blit reads its 32-bit form at 32 and its 16-bit form at 16,
+//!   and only it (TASK/V67 replaced V65's 16-bit form at 32).
 //!
 //! The backend is the kernel's `VdiScreen` over a host store, shared with the
 //! V63/V64 tests (`vdi_planes32_common`).
@@ -703,29 +704,65 @@ fn bb_save_at_32_stays_inside_bb_save_words_and_restores_exactly() {
     }
 }
 
-/// The colour-icon blit keeps its 16-bit form at 32 (reading 4): each 16-bit
-/// icon pixel is expanded to its device pixel and `S_AND_D` runs against the
-/// raw 32-bit screen word, row stride `((w + 15) / 16) * 16` 16-bit pixels.
-/// The icon buffer is exactly that long; a 32-plane stride would read past it
-/// into the trailing words, which would turn the result black.
+/// The colour-icon blit reads the 32-plane device form at 32 (TASK/V67,
+/// `_raster.md` 32-plane colour icons I8, I9; it replaces V65's
+/// `the_colour_icon_blit_reads_its_16_bit_form_at_32`): the form is stamped at
+/// the setting's depth, row stride `((w + 15) / 16) * 16` 32-bit pixels, and
+/// `S_AND_D` runs on the raw 32-bit words, X included, with no per-pixel
+/// expansion. The icon buffer is exactly that long, followed by zero words a
+/// read past it would AND into the screen; the pixel right of the icon stays.
 #[test]
-fn the_colour_icon_blit_reads_its_16_bit_form_at_32() {
+fn the_colour_icon_blit_reads_its_32_bit_form_at_32() {
     let _g = setting(32);
     let _ws = Ws::open();
     let b: &dyn RasterBackend = screen();
+    assert_eq!(tos_api::vdi::device_form_pixel_bytes(b.planes()), 4);
     let (w, h) = (24i16, 4i16); // stride 32 pixels
     let n = 32 * h as usize;
-    let mut rng = Rng(0x65_B000);
-    let mut icon: Vec<u16> = (0..n).map(|_| rng.next() as u16 ).collect();
-    icon.extend(std::iter::repeat_n(0u16, 4 * n)); // would AND the screen to 0
-    noise_screen(0x65_B100);
+    let mut rng = Rng(0x67_B000);
+    let mut icon: Vec<u32> = (0..n).map(|_| rng.u32()).collect();
+    icon.extend(std::iter::repeat_n(0u32, n)); // would AND the screen to 0
+    noise_screen(0x67_B100);
+    let before = screen().snapshot();
+    let raw0 = |x: usize, y: usize| before[y * W as usize + x];
+    // SAFETY: `icon` holds `((w + 15) / 16) * 16 * h` u32s (and more).
+    unsafe {
+        tos_api::vdi::blit_device_mem(b, icon.as_ptr().cast(), Rect { x: 50, y: 60, w, h }, S_AND_D, ClipRect::full(W, H))
+    };
+    for y in 0..h as usize {
+        for x in 0..w as usize {
+            let want = raw0(50 + x, 60 + y) & icon[y * 32 + x];
+            assert_eq!(screen().raw(50 + x as i16, 60 + y as i16), want, "({x},{y})");
+        }
+    }
+    assert_eq!(screen().raw(50 + w, 60), raw0(50 + w as usize, 60));
+    assert_eq!(screen().raw(50, 60 + h), raw0(50, 60 + h as usize), "the row below the icon stays");
+}
+
+/// At 16 planes the colour-icon blit reads the 16-bit form as before V67:
+/// the 16-bit word of each pixel, ANDed with the 16-bit screen word through
+/// the GUI07 row seam, stride `((w + 15) / 16) * 16` words.
+#[test]
+fn the_colour_icon_blit_reads_its_16_bit_form_at_16() {
+    let _g = setting(16);
+    let _ws = Ws::open();
+    let b: &dyn RasterBackend = screen();
+    assert_eq!(tos_api::vdi::device_form_pixel_bytes(b.planes()), 2);
+    let (w, h) = (24i16, 4i16); // stride 32 pixels
+    let n = 32 * h as usize;
+    let mut rng = Rng(0x67_C000);
+    let mut icon: Vec<u16> = (0..n).map(|_| rng.next() as u16).collect();
+    icon.extend(std::iter::repeat_n(0u16, n));
+    noise_screen(0x67_C100);
     let before = screen().snapshot();
     let raw0 = |x: usize, y: usize| before[y * W as usize + x];
     // SAFETY: `icon` holds `((w + 15) / 16) * 16 * h` u16s (and more).
-    unsafe { tos_api::vdi::blit_device_mem(b, icon.as_ptr(), Rect { x: 50, y: 60, w, h }, S_AND_D, ClipRect::full(W, H)) };
+    unsafe {
+        tos_api::vdi::blit_device_mem(b, icon.as_ptr().cast(), Rect { x: 50, y: 60, w, h }, S_AND_D, ClipRect::full(W, H))
+    };
     for y in 0..h as usize {
         for x in 0..w as usize {
-            let want = raw0(50 + x, 60 + y) & word_to_device(icon[y * 32 + x]);
+            let want = word_to_device(device_to_word(raw0(50 + x, 60 + y)) & icon[y * 32 + x]);
             assert_eq!(screen().raw(50 + x as i16, 60 + y as i16), want, "({x},{y})");
         }
     }

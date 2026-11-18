@@ -23,7 +23,10 @@
 //! the cursor is the cell's bitwise complement (`neg_cell`). Colours are
 //! hardware registers (`v_col_fg`/`v_col_bg`, 0..15) resolved through the
 //! physical workstation's pseudo-palette, or `falcon_default_palette` while
-//! no workstation has been opened (decision D1).
+//! no workstation has been opened (decision D1). At the 32-plane setting a
+//! row is eight raw 32-bit store words through the raw rectangle seam, the
+//! colours are pen pixels, and the cursor complements all 32 bits
+//! (`docs/api/bios/_vt52-32plane.md` C1-C7, TASK/V67; [`CellPx`]).
 //!
 //! **Deliberate deviations** (`docs/COMPATIBILITY.md`, CON04): the
 //! reverse-video border cell of `ESC K`/`ESC o`/`ESC d`/`ESC J` (Q3), the
@@ -227,21 +230,32 @@ fn hz_200() -> u32 {
 impl Con<'_> {
     // ── colours and cells ────────────────────────────────────────────────
 
-    /// The 16-bit screen word of hardware register `reg` (D1): the physical
-    /// workstation's pseudo-palette once it has been opened
-    /// (`phys_work.ext->palette[reg]`, `conout.c:162-166`), else
-    /// `falcon_default_palette` (`:169-170`); the pen entry through [`pen_word`].
-    fn word(&self, b: &dyn RasterBackend, reg: u8) -> u16 {
+    /// The screen colour of hardware register `reg` (D1) in the form of the
+    /// setting's cell pixel ([`CellPx`]): the physical workstation's
+    /// pseudo-palette once it has been opened (`phys_work.ext->palette[reg]`,
+    /// `conout.c:162-166`), else `falcon_default_palette` (`:169-170`). At 16
+    /// planes the 16-bit word ([`pen_word`]); at 32 the pen pixel `0x00RRGGBB`
+    /// (`_vt52-32plane.md` C2), or the default word expanded by gun
+    /// replication (`rgb565_to_device`, C3: the pixel the 16-plane screen
+    /// shows for that word).
+    fn word(&self, b: &dyn RasterBackend, reg: u8) -> u32 {
         let reg = reg & 0x0f;
+        let wide = b.planes() == VDI_PLANES_WIDE;
         // SAFETY: single trap path, as for the rest of the VDI state.
         let phys_open = unsafe { vwk::resolve(vwk::PHYS_HANDLE) }.is_some();
         if phys_open {
             // SAFETY: as above.
             if let Some(ext) = unsafe { vwk::ext(vwk::PHYS_HANDLE) } {
-                return pen_word(b, ext.palette[REV_MAP_COL[reg as usize] as usize]);
+                let entry = ext.palette[REV_MAP_COL[reg as usize] as usize];
+                return if wide { entry } else { u32::from(pen_word(entry)) };
             }
         }
-        FALCON_DEFAULT_PALETTE[reg as usize]
+        let word = FALCON_DEFAULT_PALETTE[reg as usize];
+        if wide {
+            b.rgb565_to_device(word)
+        } else {
+            u32::from(word)
+        }
     }
 
     fn flush_cells(&self, x0: i16, y0: i16, x1: i16, y1: i16) {
@@ -260,34 +274,23 @@ impl Con<'_> {
         if self.st.stat & M_REVID != 0 {
             core::mem::swap(&mut fg, &mut bg);
         }
-        let glyph = font::glyph_rows(con_font(b).id, ch as u16);
-        let (cw, chh) = cell(b);
-        let (px, py) = (x * cw, y * chh);
-        for (row, &bits) in glyph.iter().enumerate() {
-            let mut line = [bg; 8];
-            for (i, w) in line.iter_mut().enumerate() {
-                if bits & (0x80 >> i) != 0 {
-                    *w = fg;
-                }
-            }
-            b.write_row_rgb565(px, py + row as i16, &line);
+        if b.planes() == VDI_PLANES_WIDE {
+            cell_rows::<u32>(b, x, y, ch, fg, bg);
+        } else {
+            cell_rows::<u16>(b, x, y, ch, fg, bg);
         }
         self.flush_cells(x, y, x, y);
     }
 
     /// `neg_cell` (`conout.c:297-331`): complement every screen word of the
-    /// cell — the cursor. A second call restores the cell.
+    /// cell — the cursor. A second call restores the cell. At 32 planes all
+    /// 32 bits of each raw store word (`_vt52-32plane.md` C4).
     fn neg_cell(&self, x: i16, y: i16) {
         let Some(b) = self.b else { return };
-        let (cw, ch) = cell(b);
-        let (px, py) = (x * cw, y * ch);
-        for row in 0..ch {
-            let mut line = [0u16; 8];
-            b.read_row_rgb565(px, py + row, &mut line);
-            for w in line.iter_mut() {
-                *w = !*w;
-            }
-            b.write_row_rgb565(px, py + row, &line);
+        if b.planes() == VDI_PLANES_WIDE {
+            neg_rows::<u32>(b, x, y);
+        } else {
+            neg_rows::<u16>(b, x, y);
         }
         self.flush_cells(x, y, x, y);
     }
@@ -300,17 +303,11 @@ impl Con<'_> {
         if x0 > x1 || y0 > y1 {
             return;
         }
-        let word = self.word(b, self.st.bg);
-        let line = [word; 64];
-        let (cw, ch) = cell(b);
-        let (px0, px1) = (x0 * cw, (x1 + 1) * cw);
-        for py in (y0 * ch)..((y1 + 1) * ch) {
-            let mut x = px0;
-            while x < px1 {
-                let n = ((px1 - x) as usize).min(line.len());
-                b.write_row_rgb565(x, py, &line[..n]);
-                x += n as i16;
-            }
+        let colour = self.word(b, self.st.bg);
+        if b.planes() == VDI_PLANES_WIDE {
+            blank_rows::<u32>(b, x0, y0, x1, y1, colour);
+        } else {
+            blank_rows::<u16>(b, x0, y0, x1, y1, colour);
         }
         self.flush_cells(x0, y0, x1, y1);
     }
@@ -877,14 +874,95 @@ pub fn cursor_cell() -> (i16, i16) {
     (c.st.cx, c.st.cy)
 }
 
-/// The console's 16-bit colour word of a pen-table entry (`Con::word`): at 16
-/// planes the entry is that word; at 32 it is the pen's pixel `0x00RRGGBB`
-/// (TASK/V64), and until the cell writer is widened (TASK/V67) the 16-bit row
-/// seam takes its top 5 bits per gun.
-fn pen_word(b: &dyn RasterBackend, pen: u32) -> u16 {
-    if b.planes() == VDI_PLANES_WIDE {
-        b.device_to_rgb565(pen)
-    } else {
-        pen as u16
+/// The console's 16-bit colour word of a pen-table entry at 16 planes
+/// (`Con::word`): the entry is that word, in the low half. At 32 planes the
+/// entry is the pen pixel and is used as it is (TASK/V67).
+fn pen_word(pen: u32) -> u16 {
+    pen as u16
+}
+
+/// A console cell pixel of the setting's width (`_vt52-32plane.md` C1): the
+/// 16-bit screen word through the backend's row seam at 16 planes (`u16`, the
+/// path of EmuTOS' `TRUECOLOR_MODE`), the raw 32-bit store word `0xXXRRGGBB`
+/// through the raw rectangle seam at 32 (`u32`, ADR-038 point 11). Neither
+/// seam flushes; the callers flush per cell or rectangle (C7).
+trait CellPx: Copy + core::ops::Not<Output = Self> {
+    /// A colour of `Con::word` in this width (at 16 planes its low half).
+    fn of(colour: u32) -> Self;
+    /// The run `(x .. x + out.len(), y)`.
+    fn read(b: &dyn RasterBackend, x: i16, y: i16, out: &mut [Self]);
+    /// Store a run from `(x, y)`; positions off the screen are dropped.
+    fn write(b: &dyn RasterBackend, x: i16, y: i16, src: &[Self]);
+}
+
+impl CellPx for u16 {
+    fn of(colour: u32) -> u16 {
+        colour as u16
+    }
+    fn read(b: &dyn RasterBackend, x: i16, y: i16, out: &mut [u16]) {
+        b.read_row_rgb565(x, y, out);
+    }
+    fn write(b: &dyn RasterBackend, x: i16, y: i16, src: &[u16]) {
+        b.write_row_rgb565(x, y, src);
+    }
+}
+
+impl CellPx for u32 {
+    fn of(colour: u32) -> u32 {
+        colour
+    }
+    fn read(b: &dyn RasterBackend, x: i16, y: i16, out: &mut [u32]) {
+        b.read_device_rect(x, y, out.len() as u16, 1, out);
+    }
+    fn write(b: &dyn RasterBackend, x: i16, y: i16, src: &[u32]) {
+        b.write_device_rect(x, y, src.len() as u16, 1, src);
+    }
+}
+
+/// The rows of `cell_xfer` (`conout.c:137-180`): per glyph row of `ch`, the
+/// cell's 8 pixels in `fg` where the glyph bit is set, else `bg`.
+fn cell_rows<T: CellPx>(b: &dyn RasterBackend, x: i16, y: i16, ch: u8, fg: u32, bg: u32) {
+    let (fg, bg) = (T::of(fg), T::of(bg));
+    let glyph = font::glyph_rows(con_font(b).id, ch as u16);
+    let (cw, chh) = cell(b);
+    let (px, py) = (x * cw, y * chh);
+    for (row, &bits) in glyph.iter().enumerate() {
+        let mut line = [bg; 8];
+        for (i, w) in line.iter_mut().enumerate() {
+            if bits & (0x80 >> i) != 0 {
+                *w = fg;
+            }
+        }
+        T::write(b, px, py + row as i16, &line);
+    }
+}
+
+/// The rows of `neg_cell` (`conout.c:305-313`): read, complement, write.
+fn neg_rows<T: CellPx>(b: &dyn RasterBackend, x: i16, y: i16) {
+    let (cw, ch) = cell(b);
+    let (px, py) = (x * cw, y * ch);
+    for row in 0..ch {
+        let mut line = [T::of(0); 8];
+        T::read(b, px, py + row, &mut line);
+        for w in line.iter_mut() {
+            *w = !*w;
+        }
+        T::write(b, px, py + row, &line);
+    }
+}
+
+/// The rows of `blank_out` (`blank_out16`, `conout.c:542-575`): the cell
+/// rectangle `(x0,y0)..=(x1,y1)` in `colour`, in runs of at most 64 pixels.
+fn blank_rows<T: CellPx>(b: &dyn RasterBackend, x0: i16, y0: i16, x1: i16, y1: i16, colour: u32) {
+    let line = [T::of(colour); 64];
+    let (cw, ch) = cell(b);
+    let (px0, px1) = (x0 * cw, (x1 + 1) * cw);
+    for py in (y0 * ch)..((y1 + 1) * ch) {
+        let mut x = px0;
+        while x < px1 {
+            let n = ((px1 - x) as usize).min(line.len());
+            T::write(b, x, py, &line[..n]);
+            x += n as i16;
+        }
     }
 }
