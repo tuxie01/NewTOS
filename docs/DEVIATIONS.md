@@ -38,6 +38,8 @@ Rules:
 | `v_opnwk` with `work_in[0]` = mode + 2 | no mode switch, `work_out` = running geometry | `Setscreen`/`VsetMode` to that mode | measured (`vdi-v18-t3.tsv` 13) | sanctioned, ADR-017 Rev. 2 and `docs/COMPATIBILITY.md` (`v_opnwk` with a video-mode request, [SPEC04](../TASK/SPEC04.md)) |
 | `v_contourfill` whose seed queue never runs empty (smallest: 5x3 clip, dots at (3,1) and (1,2), seed (0,2), fill up to the boundary) | fill ends after 16 spans per screen pixel; what is drawn stays | loops for ever with IRQs masked, the machine stops | measured (oracle: EmuTOS does not return in 30000 VBL; NewTOS with the brake returns, QEMU ~3 s at 640x480) | sanctioned, `docs/COMPATIBILITY.md` ([V38](../TASK/V38.md)) |
 
+| A program writes the screen memory `Physbase`/`Logbase` returns directly (no VDI), or sizes a buffer from `vq_extnd` `intout[4]` and `VgetSize` | the VDI reports 16 planes (`kernel/src/vdi_backend.rs:44@PLANES`) while the memory is a linear 32-bpp XRGB8888 store (`kernel/src/drivers/bcm2711/framebuffer.rs:34@DEPTH_BPP`, `sdk/examples/physbase.c:19-25@XRGB8888`); `VgetSize` counts 32-bpp bytes | Falcon truecolor profile: the screen memory is 16-bit words, `VgetSize` = `width * 2 * height` (`references/emutos/bios/videl.c:756`) | read (source only; no run compares the memory layout; `VgetSize` is measured, row below) | [V61](../TASK/V61.md) (32-plane VDI by a boot setting, owner decision 2026-11-18, option C); ADR-024 point 3 calls the store internal |
+
 ## XBIOS, keyboard, system variables
 
 | Trigger | NewTOS | EmuTOS | Basis | Status |
