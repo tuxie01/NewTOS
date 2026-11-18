@@ -1,0 +1,37 @@
+vdi-all default: 182 cases, differ from main: 0
+vdi-all v16: 182 cases, differ from main: 0
+vdi-all v32: 182 cases, differ from main: 6
+   case idx 5 [102 vq_extnd 1 clipping and extended info] main: i=4,1,31,0,16,0,50,1,1,4,2,1,0,0,1024,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  v32: i=4,1,31,0,32,0,50,1,1,4,2,1,0,0,1024,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+   case idx 23 [105 v_get_pixel background pixel after v_clrwk] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 117 [105 v_get_pixel top left corner] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 118 [105 v_get_pixel bottom right corner] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 169 [102 vq_extnd 1 after vs_clip on] main: i=4,1,31,0,16,0,50,1,1,4,2,1,0,0,1024,-1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  v32: i=4,1,31,0,32,0,50,1,1,4,2,1,0,0,1024,-1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+   case idx 170 [102 vq_extnd 1 after vs_clip off] main: i=4,1,31,0,16,0,50,1,1,4,2,1,0,0,1024,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0  v32: i=4,1,31,0,32,0,50,1,1,4,2,1,0,0,1024,-1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+vdi-v18 default: 19 cases, differ from main: 0
+vdi-v18 v16: 19 cases, differ from main: 0
+vdi-v18 v32: 19 cases, differ from main: 4
+   case idx 4 [105 K1 the shared vertex (20,40): EmuTOS XORs it twice] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 5 [105 K1 (20,19), one pixel past the upward vertical segment] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 8 [105 K2 clipped segment: (32,32)] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 13 [105 K11 (121,90): EmuTOS has quit before drawing] main: i=0,FFFF p=  v32: i=0,FFDF p=
+vdi-v18-t2 default: 32 cases, differ from main: 0
+vdi-v18-t2 v16: 32 cases, differ from main: 0
+vdi-v18-t2 v32: 32 cases, differ from main: 4
+   case idx 21 [105 rider control: clip on, (8,102)] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 23 [105 rider control: clip on, (0,97)] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 28 [105 K16 chup 1800 (310,236)] main: i=0,FFFF p=  v32: i=0,FFDF p=
+   case idx 29 [105 K16 chup 2700 (321,236)] main: i=0,FFFF p=  v32: i=0,FFDF p=
+vdi-v18-t3 default: 2 cases, differ from main: 0
+vdi-v18-t3 v16: 2 cases, differ from main: 0
+vdi-v18-t3 v32: 2 cases, differ from main: 0
+vdi-a131-palette default: 48 cases, differ from main: 0
+vdi-a131-palette v16: 48 cases, differ from main: 0
+vdi-a131-palette v32: 48 cases, differ from main: 8
+   case idx 17 [26 vq_color pen 8 realised] main: i=8,742,742,742 p=  v32: i=8,733,733,733 p=
+   case idx 19 [26 vq_color pen 9 realised] main: i=9,548,548,548 p=  v32: i=9,533,533,533 p=
+   case idx 21 [26 vq_color pen 10 realised] main: i=10,677,0,0 p=  v32: i=10,667,0,0 p=
+   case idx 23 [26 vq_color pen 11 realised] main: i=11,0,677,0 p=  v32: i=11,0,667,0 p=
+   case idx 25 [26 vq_color pen 12 realised] main: i=12,0,0,677 p=  v32: i=12,0,0,667 p=
+   case idx 27 [26 vq_color pen 13 realised] main: i=13,0,677,677 p=  v32: i=13,0,667,667 p=
+   case idx 29 [26 vq_color pen 14 realised] main: i=14,677,677,0 p=  v32: i=14,667,667,0 p=
+   case idx 31 [26 vq_color pen 15 realised] main: i=15,677,0,677 p=  v32: i=15,667,0,667 p=

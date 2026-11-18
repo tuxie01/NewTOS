@@ -1,0 +1,4 @@
+    Checking tos-types v0.7.2 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-af3fb0887100d947d/base/tos-types)
+    Checking newtos-gem v0.1.0 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-af3fb0887100d947d/base/programs/newtos-gem)
+    Checking desktop v0.1.0 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-af3fb0887100d947d/base/programs/desktop)
+    Finished `release` profile [optimized] target(s) in 0.75s

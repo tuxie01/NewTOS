@@ -1,0 +1,2 @@
+64 vq_color cases after vs_color (request range incl. out of range): v16 equals 5-bit rule and v32 equals 8-bit rule (flag1 = (q*1000+127)/255, q=(c*255+500)/1000 clamped; flag0 = raw request): mismatches 0
+default palette, all 256 pens: flag0 request equal at 16 and 32; flag1 at 32 = 8-bit rule, at 16 = 5-bit rule; mismatches 7; max |top5(q8)-q5| over the 256 default pens' guns: 0

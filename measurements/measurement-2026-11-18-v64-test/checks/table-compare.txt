@@ -1,0 +1,17 @@
+aes-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=98 (past 32B header: 95) tosdiff_reports=DIFF;
+bios-r1: default: bytes_differ=6 (past 32B header: 3) tosdiff_reports=DIFF; v16: bytes_differ=6 (past 32B header: 3) tosdiff_reports=DIFF; v32: bytes_differ=6 (past 32B header: 3) tosdiff_reports=DIFF;
+super-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+vdi-a131-palette: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=18 (past 32B header: 15) tosdiff_reports=DIFF;
+vdi-all: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=9 (past 32B header: 6) tosdiff_reports=DIFF;
+vdi-raster-screen: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=NOBIN (past 32B header: NOBIN) tosdiff_reports=DIFF;
+vdi-raster: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+vdi-v18-raster: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+vdi-v18-t2-raster: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+vdi-v18-t2: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=7 (past 32B header: 4) tosdiff_reports=DIFF;
+vdi-v18-t3: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+vdi-v18: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=7 (past 32B header: 4) tosdiff_reports=DIFF;
+xbios-bconmap-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+xbios-chardev-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+xbios-flush-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;
+xbios-ptr-r1: default: bytes_differ=4 (past 32B header: 1) tosdiff_reports=DIFF; v16: bytes_differ=4 (past 32B header: 1) tosdiff_reports=DIFF; v32: bytes_differ=4 (past 32B header: 1) tosdiff_reports=DIFF;
+xbios-system-r1: default: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v16: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF; v32: bytes_differ=3 (past 32B header: 0) tosdiff_reports=DIFF;

@@ -1,0 +1,24 @@
+pens main exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+pens d exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+pens v16 exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+pens v32 exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill main exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill d exit 0
+tosdump: run       ended normally after 21 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill v16 exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill v32 exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)

@@ -1,0 +1,224 @@
+# tmp-v64-fill2.tsv -- tester temporary table (V64 run, never committed): boundary-fill controls
+# opcode	sub	intin	ptsin	comment
++23	0	1	-	solid
++17	0	1	-	vsl 1 black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame black
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black, red
+105	0	-	150,150	C1 default pens line frame, probe 150,150
++23	0	1	-	solid
++17	0	1	-	vsl 1 black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame black
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black, red
+105	0	-	110,110	C1 default pens line frame, probe 110,110
++23	0	1	-	solid
++17	0	1	-	vsl 1 black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame black
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black, red
+105	0	-	99,150	C1 default pens line frame, probe 99,150
++23	0	1	-	solid
++17	0	1	-	vsl 1 black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame black
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black, red
+105	0	-	50,50	C1 default pens line frame, probe 50,50
++23	0	1	-	solid
++17	0	1	-	vsl 1 black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame black
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black, red
+105	0	-	100,150	C1 default pens line frame, probe 100,150
++23	0	1	-	solid
++17	0	1	-	vsl 1 black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame black
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black, red
+105	0	-	201,150	C1 default pens line frame, probe 201,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	3	-	vsf 3
++103	0	4	150,150	boundary fill: boundary pen 4, fill pen 3
+105	0	-	150,150	C2 test pens strip ring, probe 150,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	3	-	vsf 3
++103	0	4	150,150	boundary fill: boundary pen 4, fill pen 3
+105	0	-	110,110	C2 test pens strip ring, probe 110,110
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	3	-	vsf 3
++103	0	4	150,150	boundary fill: boundary pen 4, fill pen 3
+105	0	-	99,150	C2 test pens strip ring, probe 99,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	3	-	vsf 3
++103	0	4	150,150	boundary fill: boundary pen 4, fill pen 3
+105	0	-	50,50	C2 test pens strip ring, probe 50,50
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	3	-	vsf 3
++103	0	4	150,150	boundary fill: boundary pen 4, fill pen 3
+105	0	-	100,150	C2 test pens strip ring, probe 100,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	3	-	vsf 3
++103	0	4	150,150	boundary fill: boundary pen 4, fill pen 3
+105	0	-	201,150	C2 test pens strip ring, probe 201,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	4	150,150	boundary fill: boundary pen 4, fill red
+105	0	-	150,150	C3 test pens strip ring, red fill, probe 150,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	4	150,150	boundary fill: boundary pen 4, fill red
+105	0	-	110,110	C3 test pens strip ring, red fill, probe 110,110
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	4	150,150	boundary fill: boundary pen 4, fill red
+105	0	-	99,150	C3 test pens strip ring, red fill, probe 99,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	4	150,150	boundary fill: boundary pen 4, fill red
+105	0	-	50,50	C3 test pens strip ring, red fill, probe 50,50
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	4	150,150	boundary fill: boundary pen 4, fill red
+105	0	-	100,150	C3 test pens strip ring, red fill, probe 100,150
++14	0	3,17,0,0	-	pen3 (17,0,0)
++14	0	4,25,0,0	-	pen4 (25,0,0)
++23	0	1	-	solid
++25	0	4	-	vsf 4
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	4	150,150	boundary fill: boundary pen 4, fill red
+105	0	-	201,150	C3 test pens strip ring, red fill, probe 201,150
++23	0	1	-	solid
++25	0	1	-	vsf 1
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black strip ring, red
+105	0	-	150,150	C4 default pens strip ring, probe 150,150
++23	0	1	-	solid
++25	0	1	-	vsf 1
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black strip ring, red
+105	0	-	110,110	C4 default pens strip ring, probe 110,110
++23	0	1	-	solid
++25	0	1	-	vsf 1
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black strip ring, red
+105	0	-	99,150	C4 default pens strip ring, probe 99,150
++23	0	1	-	solid
++25	0	1	-	vsf 1
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black strip ring, red
+105	0	-	50,50	C4 default pens strip ring, probe 50,50
++23	0	1	-	solid
++25	0	1	-	vsf 1
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black strip ring, red
+105	0	-	100,150	C4 default pens strip ring, probe 100,150
++23	0	1	-	solid
++25	0	1	-	vsf 1
++114	0	-	100,100,200,103	strip
++114	0	-	100,197,200,200	strip
++114	0	-	100,100,103,200	strip
++114	0	-	197,100,200,200	strip
++25	0	2	-	vsf red
++103	0	1	150,150	boundary fill black strip ring, red
+105	0	-	201,150	C4 default pens strip ring, probe 201,150

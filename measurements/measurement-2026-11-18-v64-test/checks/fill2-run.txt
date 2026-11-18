@@ -1,0 +1,12 @@
+fill2 main exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill2 d exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill2 v16 exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+fill2 v32 exit 0
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)

@@ -1,0 +1,25 @@
+case  main | default | v16 | v32   comment   (i=intout p=ptsout)
+   0 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C1 default pens line frame, probe 150,150
+   1 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C1 default pens line frame, probe 110,110
+   2 ..* i=0,FFFF p= | i=0,FFFF p= | i=0,FFFF p= | i=0,FFDF p=   C1 default pens line frame, probe 99,150
+   3 ..* i=0,FFFF p= | i=0,FFFF p= | i=0,FFFF p= | i=0,FFDF p=   C1 default pens line frame, probe 50,50
+   4 ... i=0,0000 p= | i=0,0000 p= | i=0,0000 p= | i=0,0000 p=   C1 default pens line frame, probe 100,150
+   5 ..* i=0,FFFF p= | i=0,FFFF p= | i=0,FFFF p= | i=0,FFDF p=   C1 default pens line frame, probe 201,150
+   6 ..* i=0,0800 p= | i=0,0800 p= | i=0,0800 p= | i=0,0000 p=   C2 test pens strip ring, probe 150,150
+   7 ..* i=0,0800 p= | i=0,0800 p= | i=0,0800 p= | i=0,0000 p=   C2 test pens strip ring, probe 110,110
+   8 ..* i=0,0800 p= | i=0,0800 p= | i=0,0800 p= | i=0,0000 p=   C2 test pens strip ring, probe 99,150
+   9 ..* i=0,0800 p= | i=0,0800 p= | i=0,0800 p= | i=0,0000 p=   C2 test pens strip ring, probe 50,50
+  10 ..* i=0,0800 p= | i=0,0800 p= | i=0,0800 p= | i=0,0000 p=   C2 test pens strip ring, probe 100,150
+  11 ..* i=0,0800 p= | i=0,0800 p= | i=0,0800 p= | i=0,0000 p=   C2 test pens strip ring, probe 201,150
+  12 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C3 test pens strip ring, red fill, probe 150,150
+  13 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C3 test pens strip ring, red fill, probe 110,110
+  14 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C3 test pens strip ring, red fill, probe 99,150
+  15 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C3 test pens strip ring, red fill, probe 50,50
+  16 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C3 test pens strip ring, red fill, probe 100,150
+  17 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C3 test pens strip ring, red fill, probe 201,150
+  18 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C4 default pens strip ring, probe 150,150
+  19 ... i=0,F800 p= | i=0,F800 p= | i=0,F800 p= | i=0,F800 p=   C4 default pens strip ring, probe 110,110
+  20 ..* i=0,FFFF p= | i=0,FFFF p= | i=0,FFFF p= | i=0,FFDF p=   C4 default pens strip ring, probe 99,150
+  21 ..* i=0,FFFF p= | i=0,FFFF p= | i=0,FFFF p= | i=0,FFDF p=   C4 default pens strip ring, probe 50,50
+  22 ... i=0,0000 p= | i=0,0000 p= | i=0,0000 p= | i=0,0000 p=   C4 default pens strip ring, probe 100,150
+  23 ..* i=0,FFFF p= | i=0,FFFF p= | i=0,FFFF p= | i=0,FFDF p=   C4 default pens strip ring, probe 201,150

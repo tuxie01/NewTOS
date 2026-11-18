@@ -1,0 +1,398 @@
+# tmp-v64-pens.tsv -- tester temporary table (V64 run, never committed)
+# opcode	sub	intin	ptsin	comment
++14	0	3,0,0,0	-	vs_color pen3 ccc c=0
+26	0	3,0	-	vq_color pen3 flag0 ccc c=0
++14	0	3,0,0,0	-	vs_color pen3 ccc c=0
+26	0	3,1	-	vq_color pen3 flag1 ccc c=0
++14	0	3,0,0,0	-	vs_color pen3 c00 c=0
+26	0	3,0	-	vq_color pen3 flag0 c00 c=0
++14	0	3,0,0,0	-	vs_color pen3 c00 c=0
+26	0	3,1	-	vq_color pen3 flag1 c00 c=0
++14	0	3,1,1,1	-	vs_color pen3 ccc c=1
+26	0	3,0	-	vq_color pen3 flag0 ccc c=1
++14	0	3,1,1,1	-	vs_color pen3 ccc c=1
+26	0	3,1	-	vq_color pen3 flag1 ccc c=1
++14	0	3,1,0,0	-	vs_color pen3 c00 c=1
+26	0	3,0	-	vq_color pen3 flag0 c00 c=1
++14	0	3,1,0,0	-	vs_color pen3 c00 c=1
+26	0	3,1	-	vq_color pen3 flag1 c00 c=1
++14	0	3,2,2,2	-	vs_color pen3 ccc c=2
+26	0	3,0	-	vq_color pen3 flag0 ccc c=2
++14	0	3,2,2,2	-	vs_color pen3 ccc c=2
+26	0	3,1	-	vq_color pen3 flag1 ccc c=2
++14	0	3,2,0,0	-	vs_color pen3 c00 c=2
+26	0	3,0	-	vq_color pen3 flag0 c00 c=2
++14	0	3,2,0,0	-	vs_color pen3 c00 c=2
+26	0	3,1	-	vq_color pen3 flag1 c00 c=2
++14	0	3,17,17,17	-	vs_color pen3 ccc c=17
+26	0	3,0	-	vq_color pen3 flag0 ccc c=17
++14	0	3,17,17,17	-	vs_color pen3 ccc c=17
+26	0	3,1	-	vq_color pen3 flag1 ccc c=17
++14	0	3,17,0,0	-	vs_color pen3 c00 c=17
+26	0	3,0	-	vq_color pen3 flag0 c00 c=17
++14	0	3,17,0,0	-	vs_color pen3 c00 c=17
+26	0	3,1	-	vq_color pen3 flag1 c00 c=17
++14	0	3,25,25,25	-	vs_color pen3 ccc c=25
+26	0	3,0	-	vq_color pen3 flag0 ccc c=25
++14	0	3,25,25,25	-	vs_color pen3 ccc c=25
+26	0	3,1	-	vq_color pen3 flag1 ccc c=25
++14	0	3,25,0,0	-	vs_color pen3 c00 c=25
+26	0	3,0	-	vq_color pen3 flag0 c00 c=25
++14	0	3,25,0,0	-	vs_color pen3 c00 c=25
+26	0	3,1	-	vq_color pen3 flag1 c00 c=25
++14	0	3,67,67,67	-	vs_color pen3 ccc c=67
+26	0	3,0	-	vq_color pen3 flag0 ccc c=67
++14	0	3,67,67,67	-	vs_color pen3 ccc c=67
+26	0	3,1	-	vq_color pen3 flag1 ccc c=67
++14	0	3,67,0,0	-	vs_color pen3 c00 c=67
+26	0	3,0	-	vq_color pen3 flag0 c00 c=67
++14	0	3,67,0,0	-	vs_color pen3 c00 c=67
+26	0	3,1	-	vq_color pen3 flag1 c00 c=67
++14	0	3,133,133,133	-	vs_color pen3 ccc c=133
+26	0	3,0	-	vq_color pen3 flag0 ccc c=133
++14	0	3,133,133,133	-	vs_color pen3 ccc c=133
+26	0	3,1	-	vq_color pen3 flag1 ccc c=133
++14	0	3,133,0,0	-	vs_color pen3 c00 c=133
+26	0	3,0	-	vq_color pen3 flag0 c00 c=133
++14	0	3,133,0,0	-	vs_color pen3 c00 c=133
+26	0	3,1	-	vq_color pen3 flag1 c00 c=133
++14	0	3,500,500,500	-	vs_color pen3 ccc c=500
+26	0	3,0	-	vq_color pen3 flag0 ccc c=500
++14	0	3,500,500,500	-	vs_color pen3 ccc c=500
+26	0	3,1	-	vq_color pen3 flag1 ccc c=500
++14	0	3,500,0,0	-	vs_color pen3 c00 c=500
+26	0	3,0	-	vq_color pen3 flag0 c00 c=500
++14	0	3,500,0,0	-	vs_color pen3 c00 c=500
+26	0	3,1	-	vq_color pen3 flag1 c00 c=500
++14	0	3,999,999,999	-	vs_color pen3 ccc c=999
+26	0	3,0	-	vq_color pen3 flag0 ccc c=999
++14	0	3,999,999,999	-	vs_color pen3 ccc c=999
+26	0	3,1	-	vq_color pen3 flag1 ccc c=999
++14	0	3,999,0,0	-	vs_color pen3 c00 c=999
+26	0	3,0	-	vq_color pen3 flag0 c00 c=999
++14	0	3,999,0,0	-	vs_color pen3 c00 c=999
+26	0	3,1	-	vq_color pen3 flag1 c00 c=999
++14	0	3,1000,1000,1000	-	vs_color pen3 ccc c=1000
+26	0	3,0	-	vq_color pen3 flag0 ccc c=1000
++14	0	3,1000,1000,1000	-	vs_color pen3 ccc c=1000
+26	0	3,1	-	vq_color pen3 flag1 ccc c=1000
++14	0	3,1000,0,0	-	vs_color pen3 c00 c=1000
+26	0	3,0	-	vq_color pen3 flag0 c00 c=1000
++14	0	3,1000,0,0	-	vs_color pen3 c00 c=1000
+26	0	3,1	-	vq_color pen3 flag1 c00 c=1000
++14	0	3,-1,-1,-1	-	vs_color pen3 ccc c=-1
+26	0	3,0	-	vq_color pen3 flag0 ccc c=-1
++14	0	3,-1,-1,-1	-	vs_color pen3 ccc c=-1
+26	0	3,1	-	vq_color pen3 flag1 ccc c=-1
++14	0	3,-1,0,0	-	vs_color pen3 c00 c=-1
+26	0	3,0	-	vq_color pen3 flag0 c00 c=-1
++14	0	3,-1,0,0	-	vs_color pen3 c00 c=-1
+26	0	3,1	-	vq_color pen3 flag1 c00 c=-1
++14	0	3,-50,-50,-50	-	vs_color pen3 ccc c=-50
+26	0	3,0	-	vq_color pen3 flag0 ccc c=-50
++14	0	3,-50,-50,-50	-	vs_color pen3 ccc c=-50
+26	0	3,1	-	vq_color pen3 flag1 ccc c=-50
++14	0	3,-50,0,0	-	vs_color pen3 c00 c=-50
+26	0	3,0	-	vq_color pen3 flag0 c00 c=-50
++14	0	3,-50,0,0	-	vs_color pen3 c00 c=-50
+26	0	3,1	-	vq_color pen3 flag1 c00 c=-50
++14	0	3,1001,1001,1001	-	vs_color pen3 ccc c=1001
+26	0	3,0	-	vq_color pen3 flag0 ccc c=1001
++14	0	3,1001,1001,1001	-	vs_color pen3 ccc c=1001
+26	0	3,1	-	vq_color pen3 flag1 ccc c=1001
++14	0	3,1001,0,0	-	vs_color pen3 c00 c=1001
+26	0	3,0	-	vq_color pen3 flag0 c00 c=1001
++14	0	3,1001,0,0	-	vs_color pen3 c00 c=1001
+26	0	3,1	-	vq_color pen3 flag1 c00 c=1001
++14	0	3,1500,1500,1500	-	vs_color pen3 ccc c=1500
+26	0	3,0	-	vq_color pen3 flag0 ccc c=1500
++14	0	3,1500,1500,1500	-	vs_color pen3 ccc c=1500
+26	0	3,1	-	vq_color pen3 flag1 ccc c=1500
++14	0	3,1500,0,0	-	vs_color pen3 c00 c=1500
+26	0	3,0	-	vq_color pen3 flag0 c00 c=1500
++14	0	3,1500,0,0	-	vs_color pen3 c00 c=1500
+26	0	3,1	-	vq_color pen3 flag1 c00 c=1500
++14	0	3,32767,32767,32767	-	vs_color pen3 ccc c=32767
+26	0	3,0	-	vq_color pen3 flag0 ccc c=32767
++14	0	3,32767,32767,32767	-	vs_color pen3 ccc c=32767
+26	0	3,1	-	vq_color pen3 flag1 ccc c=32767
++14	0	3,32767,0,0	-	vs_color pen3 c00 c=32767
+26	0	3,0	-	vq_color pen3 flag0 c00 c=32767
++14	0	3,32767,0,0	-	vs_color pen3 c00 c=32767
+26	0	3,1	-	vq_color pen3 flag1 c00 c=32767
++14	0	3,-32768,-32768,-32768	-	vs_color pen3 ccc c=-32768
+26	0	3,0	-	vq_color pen3 flag0 ccc c=-32768
++14	0	3,-32768,-32768,-32768	-	vs_color pen3 ccc c=-32768
+26	0	3,1	-	vq_color pen3 flag1 ccc c=-32768
++14	0	3,-32768,0,0	-	vs_color pen3 c00 c=-32768
+26	0	3,0	-	vq_color pen3 flag0 c00 c=-32768
++14	0	3,-32768,0,0	-	vs_color pen3 c00 c=-32768
+26	0	3,1	-	vq_color pen3 flag1 c00 c=-32768
++14	0	-1,500,500,500	-	vs_color pen -1
+26	0	-1,0	-	vq_color pen -1 flag0
++14	0	-1,500,500,500	-	vs_color pen -1
+26	0	-1,1	-	vq_color pen -1 flag1
++14	0	256,500,500,500	-	vs_color pen 256
+26	0	256,0	-	vq_color pen 256 flag0
++14	0	256,500,500,500	-	vs_color pen 256
+26	0	256,1	-	vq_color pen 256 flag1
++14	0	257,500,500,500	-	vs_color pen 257
+26	0	257,0	-	vq_color pen 257 flag0
++14	0	257,500,500,500	-	vs_color pen 257
+26	0	257,1	-	vq_color pen 257 flag1
++14	0	32767,500,500,500	-	vs_color pen 32767
+26	0	32767,0	-	vq_color pen 32767 flag0
++14	0	32767,500,500,500	-	vs_color pen 32767
+26	0	32767,1	-	vq_color pen 32767 flag1
++14	0	-32768,500,500,500	-	vs_color pen -32768
+26	0	-32768,0	-	vq_color pen -32768 flag0
++14	0	-32768,500,500,500	-	vs_color pen -32768
+26	0	-32768,1	-	vq_color pen -32768 flag1
+26	0	0,0	-	default vq_color pen 0 flag0
+26	0	0,1	-	default vq_color pen 0 flag1
+26	0	1,0	-	default vq_color pen 1 flag0
+26	0	1,1	-	default vq_color pen 1 flag1
+26	0	2,0	-	default vq_color pen 2 flag0
+26	0	2,1	-	default vq_color pen 2 flag1
+26	0	3,0	-	default vq_color pen 3 flag0
+26	0	3,1	-	default vq_color pen 3 flag1
+26	0	4,0	-	default vq_color pen 4 flag0
+26	0	4,1	-	default vq_color pen 4 flag1
+26	0	5,0	-	default vq_color pen 5 flag0
+26	0	5,1	-	default vq_color pen 5 flag1
+26	0	6,0	-	default vq_color pen 6 flag0
+26	0	6,1	-	default vq_color pen 6 flag1
+26	0	7,0	-	default vq_color pen 7 flag0
+26	0	7,1	-	default vq_color pen 7 flag1
+26	0	8,0	-	default vq_color pen 8 flag0
+26	0	8,1	-	default vq_color pen 8 flag1
+26	0	9,0	-	default vq_color pen 9 flag0
+26	0	9,1	-	default vq_color pen 9 flag1
+26	0	10,0	-	default vq_color pen 10 flag0
+26	0	10,1	-	default vq_color pen 10 flag1
+26	0	11,0	-	default vq_color pen 11 flag0
+26	0	11,1	-	default vq_color pen 11 flag1
+26	0	12,0	-	default vq_color pen 12 flag0
+26	0	12,1	-	default vq_color pen 12 flag1
+26	0	13,0	-	default vq_color pen 13 flag0
+26	0	13,1	-	default vq_color pen 13 flag1
+26	0	14,0	-	default vq_color pen 14 flag0
+26	0	14,1	-	default vq_color pen 14 flag1
+26	0	15,0	-	default vq_color pen 15 flag0
+26	0	15,1	-	default vq_color pen 15 flag1
+26	0	16,0	-	default vq_color pen 16 flag0
+26	0	16,1	-	default vq_color pen 16 flag1
+26	0	17,0	-	default vq_color pen 17 flag0
+26	0	17,1	-	default vq_color pen 17 flag1
+26	0	25,0	-	default vq_color pen 25 flag0
+26	0	25,1	-	default vq_color pen 25 flag1
+26	0	100,0	-	default vq_color pen 100 flag0
+26	0	100,1	-	default vq_color pen 100 flag1
+26	0	128,0	-	default vq_color pen 128 flag0
+26	0	128,1	-	default vq_color pen 128 flag1
+26	0	200,0	-	default vq_color pen 200 flag0
+26	0	200,1	-	default vq_color pen 200 flag1
+26	0	254,0	-	default vq_color pen 254 flag0
+26	0	254,1	-	default vq_color pen 254 flag1
+26	0	255,0	-	default vq_color pen 255 flag0
+26	0	255,1	-	default vq_color pen 255 flag1
++14	0	3,0,0,0	-	vs_color pen3 r c=0
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=0
++14	0	3,0,0,0	-	vs_color pen3 g c=0
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=0
++14	0	3,0,0,0	-	vs_color pen3 b c=0
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=0
++14	0	3,0,0,0	-	vs_color pen3 w c=0
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=0
++14	0	3,1,0,0	-	vs_color pen3 r c=1
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=1
++14	0	3,0,1,0	-	vs_color pen3 g c=1
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=1
++14	0	3,0,0,1	-	vs_color pen3 b c=1
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=1
++14	0	3,1,1,1	-	vs_color pen3 w c=1
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=1
++14	0	3,2,0,0	-	vs_color pen3 r c=2
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=2
++14	0	3,0,2,0	-	vs_color pen3 g c=2
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=2
++14	0	3,0,0,2	-	vs_color pen3 b c=2
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=2
++14	0	3,2,2,2	-	vs_color pen3 w c=2
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=2
++14	0	3,17,0,0	-	vs_color pen3 r c=17
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=17
++14	0	3,0,17,0	-	vs_color pen3 g c=17
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=17
++14	0	3,0,0,17	-	vs_color pen3 b c=17
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=17
++14	0	3,17,17,17	-	vs_color pen3 w c=17
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=17
++14	0	3,25,0,0	-	vs_color pen3 r c=25
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=25
++14	0	3,0,25,0	-	vs_color pen3 g c=25
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=25
++14	0	3,0,0,25	-	vs_color pen3 b c=25
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=25
++14	0	3,25,25,25	-	vs_color pen3 w c=25
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=25
++14	0	3,67,0,0	-	vs_color pen3 r c=67
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=67
++14	0	3,0,67,0	-	vs_color pen3 g c=67
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=67
++14	0	3,0,0,67	-	vs_color pen3 b c=67
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=67
++14	0	3,67,67,67	-	vs_color pen3 w c=67
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=67
++14	0	3,133,0,0	-	vs_color pen3 r c=133
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=133
++14	0	3,0,133,0	-	vs_color pen3 g c=133
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=133
++14	0	3,0,0,133	-	vs_color pen3 b c=133
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=133
++14	0	3,133,133,133	-	vs_color pen3 w c=133
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=133
++14	0	3,500,0,0	-	vs_color pen3 r c=500
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=500
++14	0	3,0,500,0	-	vs_color pen3 g c=500
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=500
++14	0	3,0,0,500	-	vs_color pen3 b c=500
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=500
++14	0	3,500,500,500	-	vs_color pen3 w c=500
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=500
++14	0	3,999,0,0	-	vs_color pen3 r c=999
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=999
++14	0	3,0,999,0	-	vs_color pen3 g c=999
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=999
++14	0	3,0,0,999	-	vs_color pen3 b c=999
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=999
++14	0	3,999,999,999	-	vs_color pen3 w c=999
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=999
++14	0	3,1000,0,0	-	vs_color pen3 r c=1000
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 r c=1000
++14	0	3,0,1000,0	-	vs_color pen3 g c=1000
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 g c=1000
++14	0	3,0,0,1000	-	vs_color pen3 b c=1000
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 b c=1000
++14	0	3,1000,1000,1000	-	vs_color pen3 w c=1000
++25	0	3	-	vsf_color 3
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	pixel inside pen3 w c=1000
