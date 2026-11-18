@@ -68,7 +68,9 @@ Tick each line; every line points at the section that explains it.
       with 8-byte slots → [05 B2](05-abi-pitfalls.md#b2-the-cookie-jar-at-5a0)
 - [ ] Numeric `_MCH`/`_VDO` comparisons checked. NewTOS reports
       `_MCH = 0xFFFFFFFF` ("no Atari hardware", ADR-012 amendment
-      2026-10-28). The pointer form of `Getcookie()` zero-extends as a side
+      2026-10-28) and `_VDO = 0x00030000` (`vdo >> 16` is 3, Falcon: a
+      video description only, the Videl registers do not exist; ADR-012
+      amendment 2026-11-18). The pointer form of `Getcookie()` zero-extends as a side
       effect, so a port that compares the **untruncated 64-bit** value sees a
       large positive number and takes the TT/Falcon path (`mch >= 2`); a port
       that masks or narrows to 16 bit sees `-1`. No ported program compares

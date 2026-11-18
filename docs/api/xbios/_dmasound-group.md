@@ -169,7 +169,7 @@ The three machine classes that follow:
 
 ### 1.4 What NewTOS does today — and why that is already conformant
 
-`tos-api/src/xbios/mod.rs:157@other`: every id without an arm — so also
+`tos-api/src/xbios/mod.rs:162@other`: every id without an arm — so also
 0x80…0x8D — falls to `other => other as i64`, i.e. returns the function number.
 That is **bit-identical** with EmuTOS on a machine without a DMA sound chip
 (§1.3, last row). NewTOS has no conformance bug here, only an honest "not
@@ -838,7 +838,7 @@ instead of filling the gap.**
   call nothing, and answer the oracle's `d0` (`tos-api/src/xbios/mod.rs:140@MFPINT`,
   `tos-api/src/xbios/mfp.rs:69@mfpint`, `:79@xbtimer`). `Jdisint`/`Jenabint`
   (0x1A/0x1B) are not wired and answer their function number
-  (`tos-api/src/xbios/mod.rs:157@other`). ADR-031's table lists all four as "not
+  (`tos-api/src/xbios/mod.rs:162@other`). ADR-031's table lists all four as "not
   served, warning" (`docs/MEMORY.md`, ADR-031 table row "trap and CPU vectors via
   `Setexc` (< 0x100), `Mfpint`, `Xbtimer`, `Jdisint`, `Jenabint`").
 * An EL0 upcall mechanism exists (ADR-029): `post_upcall(slot, desc)` stores a
@@ -1351,7 +1351,7 @@ decisions quoted there; this section says where they live and what the code adds
 * **Availability** — `tos-api/src/xbios/sound.rs:425@set_available`: until the
   kernel's sound driver calls it, every call answers its function number (§1.3, last
   row). The driver sets `_SND` = `0x14` through `cookie::set` in the same step
-  (ADR-012 amendment 2026-11-12; `tos-api/src/cookie.rs:256@SND`), never
+  (ADR-012 amendment 2026-11-12; `tos-api/src/cookie.rs:272@SND`), never
   `seed_defaults`.
 * **Hardware side** — the trait `tos-api/src/xbios/sound.rs:148@SoundHw` (clock,
   ring write with cache clean, start, range change, DMA read position), implemented

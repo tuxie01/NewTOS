@@ -146,9 +146,13 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         // (not the function number). See `docs/api/xbios/40-blitmode.md`.
         BLITMODE => system::blitmode(),
         id @ sound::LOCKSND..=sound::BUFFPTR => sound::dispatch(args).unwrap_or(i64::from(id)),
+        VSETMODE => screen::vsetmode(args).unwrap_or(i64::from(VSETMODE)),
+        VGETMONITOR => screen::vgetmonitor(),
+        VGETSIZE => screen::vgetsize().unwrap_or(i64::from(VGETSIZE)),
+        VGETRGB => screen::vgetrgb(args),
         // Every other id — an in-range but unimplemented slot (e.g. Initmous
         // 0x00, the MFP 0x1A/0x1B (Jdisint/Jenabint), NVRAM 0x2E, Supexec 0x26,
-        // TT-shifter 0x50-0x57 and DSP 0x60-0x7F slots; 0x80-0x8D, DMA sound,
+        // TT-shifter 0x50-0x57, Videl 0x5A/0x5C/0x5D/0x5F, DSP 0x60-0x7F; 0x80-0x8D, DMA sound,
         // without a backend, `sound`, TASK/SND05) **or** an out-of-range id (> 0x8D) —
         // returns the function number itself, zero-extended. This is the
         // documented Atari-TOS behaviour for both the `xbios_unimpl` padded
@@ -165,6 +169,16 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
 const INITMOUS: u16 = 0x00;
 const MFPINT: u16 = 0x0D;
 const XBTIMER: u16 = 0x1F;
+
+// Falcon video queries (TASK/XBIOS22): the description of the Pi screen
+// (`screen`). `VsetMode` answers only its query form (-1) and `VgetSize` only
+// with a framebuffer up; otherwise their arm gives the function number, as
+// the catch-all does for Vsetsync (0x5A), VsetMask (0x5C), VsetRGB (0x5D) and
+// Vfixmode (0x5F): no mode switch (ADR-017).
+const VSETMODE: u16 = 0x58;
+const VGETMONITOR: u16 = 0x59;
+const VGETSIZE: u16 = 0x5B;
+const VGETRGB: u16 = 0x5E;
 
 /// `Initmous` installs a hook NewTOS never calls (ADR-031 rule 5, "in the
 /// call itself"): warn once per process. The call itself stays what it was —

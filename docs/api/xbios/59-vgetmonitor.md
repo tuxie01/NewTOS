@@ -58,8 +58,8 @@
 
 ## Edge cases discovered in source
 
-1. The "function number" return is **EmuTOS's own no-Videl answer**, so today's NewTOS catch-all
-   (`tos-api/src/xbios/mod.rs:157@other`) is indistinguishable from "this machine has no Videl";
+1. The "function number" return is **EmuTOS's own no-Videl answer**, so NewTOS's catch-all before
+   TASK/XBIOS22 (`tos-api/src/xbios/mod.rs:162@other`) was indistinguishable from "this machine has no Videl";
    it is a valid, source-cited answer on that profile, not an error.
 2. A program that gets `0x59` = 89 from `VgetMonitor` sees a value outside 0..3. Programs that
    gate on the `_VDO` cookie never call it; NewTOS omits `_VDO` on purpose
@@ -102,4 +102,7 @@ reach `VsetMode(-1)` (`58-vsetmode.md`) and `VgetMonitor` and read 2 / `0x1C`.
 
 ## Open points
 
-- None for the value (decided: 2). Edge case 2 stays as history until the cookie is published.
+- None for the value (decided: 2). The cookie is published (`_VDO` = `0x00030000`, ADR-012 amendment
+  2026-11-18, `tos-api/src/cookie.rs:266@VDO_FALCON`); edge case 2 is history. Implemented in
+  `tos-api/src/xbios/screen.rs:448@vgetmonitor`, independent of a framebuffer; host tests
+  `tos-api/tests/xbios22_falcon_video.rs`.

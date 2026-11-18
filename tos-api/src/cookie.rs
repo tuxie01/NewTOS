@@ -215,10 +215,10 @@ pub fn del(tag: u32) -> bool {
 
 /// Seed the NewTOS default cookie set at boot (replaces EmuTOS'
 /// `fill_cookie_jar`). Only the tags that are meaningful for NewTOS are
-/// present; `_VDO`/`_FDC`/`_FPU`/`_CPU` are deliberately omitted (ADR-012
-/// amendment 2026-10-28; `_VDO` open until TASK/ARCH06), `_SND` ([`SND`]) is
-/// set by the sound driver after its probe (amendment 2026-11-12). `_MCH` is fixed by that
-/// amendment ([`MCH_NOHARD`]), `EdDI` by spec decision E2 ([`EDDI_MARKER`]),
+/// present; `_FDC`/`_FPU`/`_CPU` are deliberately omitted (ADR-012 amendment
+/// 2026-10-28), `_SND` ([`SND`]) is set by the sound driver after its probe
+/// (amendment 2026-11-12). `_MCH` ([`MCH_NOHARD`], amendment 2026-10-28), `_VDO` ([`VDO_FALCON`],
+/// amendment 2026-11-18), `EdDI` by spec decision E2 ([`EDDI_MARKER`]),
 /// `_IDT` (= the oracle's) and `_AKP` (stays 0) by user decision TASK/COOK02.
 pub fn seed_defaults(version: u32) {
     set(NTOS, version); // NewTOS identity + version
@@ -226,6 +226,7 @@ pub fn seed_defaults(version: u32) {
     set(IDT, 0x0000_112E); // '.' sep, DD-MM-YY, 24 h = oracle; NEWDESK's date sep (COOK02)
     set(AKP, 0x0000_0000); // keyboard language: US
     set(EDDI, EDDI_MARKER); // VDI answers vq_scrninfo; marker, no dispatcher (E2)
+    set(VDO, VDO_FALCON); // Falcon video description (XBIOS22), not Videl hardware
 }
 
 /// Value of the [`MCH`] cookie: EmuTOS' `MCH_NOHARD`, "no ST-compatible
@@ -248,6 +249,21 @@ pub fn seed_defaults(version: u32) {
 /// `E_OK`) tells the two apart. The same holds on FreeMiNT for any cookie
 /// whose value is `-1`.
 pub const MCH_NOHARD: u32 = 0xFFFF_FFFF;
+
+/// `_VDO` — video hardware (`references/emutos/include/cookie.h:27`
+/// `COOKIE_VDO`).
+pub const VDO: u32 = u32::from_be_bytes(*b"_VDO");
+/// Value of the [`VDO`] cookie: EmuTOS' `VDO_FALCON`
+/// (`references/emutos/include/cookie.h:67`), what `setvalue_vdo` sets when a
+/// Videl is present (`references/emutos/bios/machine.c:363-367`). ADR-012
+/// amendment 2026-11-18 (owner decision 2026-11-12, TASK/XBIOS22): NewTOS
+/// answers the Falcon calls that describe the screen (`VsetMode(-1)`,
+/// `VgetMonitor`, `VgetSize`, `VgetRGB`, [`crate::xbios::screen`]), and a
+/// program that gates them on `_VDO` (TeraDesk `video.c`) must reach them.
+/// It claims a Falcon *video description*, not Falcon hardware: a mode switch
+/// and the other Videl calls answer their function number (ADR-017), and
+/// `_MCH` stays [`MCH_NOHARD`].
+pub const VDO_FALCON: u32 = 0x0003_0000;
 
 /// `_SND` — sound hardware (`references/emutos/include/cookie.h:30`
 /// `COOKIE_SND`). Not seeded: the sound driver sets it through [`set`] after

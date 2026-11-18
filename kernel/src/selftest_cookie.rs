@@ -61,7 +61,7 @@ pub fn run() {
     check(ssystem(0xFFFF, 0, 0) == E_OK, "Ssystem(-1, 0, 0) = E_OK (probe)");
     check(ssystem(0xFFFF, NTOS, 0xDEAD) == E_OK, "Ssystem(-1, .., ..) = E_OK (args ignored)");
 
-    // Seeded set: NTOS, _MCH, _IDT, _AKP, EdDI (5 cookies).
+    // Seeded set: NTOS, _MCH, _IDT, _AKP, EdDI, _VDO (6 cookies).
     check(ssystem(S_GETCOOKIE, NTOS, 0) == 0x0000_0100, "Getcookie(NTOS) = version 0x100");
     // `_MCH` = 0xFFFFFFFF (`tos_api::cookie::MCH_NOHARD`, ADR-012 amendment
     // 2026-10-28). The value form answers it as -1 in x0 (sign-extended),
@@ -74,9 +74,14 @@ pub fn run() {
     kprintln!("[cookie]   _MCH: value form x0 = {:#018x}, pointer form rc = {}, v = {:#010x}",
         ssystem(S_GETCOOKIE, MCH, 0) as u64, rc, mch);
 
+    // `_VDO` = `VDO_FALCON` 0x00030000 (ADR-012 amendment 2026-11-18,
+    // TASK/XBIOS22): a Falcon video description, seeded at boot.
+    const VDO: u32 = u32::from_be_bytes(*b"_VDO");
+    check(ssystem(S_GETCOOKIE, VDO, 0) == 0x0003_0000, "Getcookie(_VDO) = 0x00030000 (VDO_FALCON)");
+
     // `_SND` (ADR-012 amendment 2026-11-12, TASK/SND05): `0x14` exactly when
     // a sound backend initialised (the PWM jack on the Pi 4), else absent —
-    // the sixth seeded-or-driver tag only with a backend.
+    // the seventh seeded-or-driver tag only with a backend.
     let snd = ssystem(S_GETCOOKIE, SND, 0);
     if tos_api::xbios::sound::available() {
         check(snd == 0x14, "Getcookie(_SND) = 0x14 (sound backend up)");
@@ -85,7 +90,7 @@ pub fn run() {
     }
 
     // D-073: `tag == 0` returns the jar CAPACITY (32), not the occupied
-    // count (which is 5 here) — the fix's headline behaviour change.
+    // count (6 here, 7 with `_SND`) — the fix's headline behaviour change.
     check(ssystem(S_GETCOOKIE, 0, 0) == JAR_CAP, "Getcookie(0) = capacity 32 (not count)");
 
     // Get-miss → EERROR (-1); unchanged, must stay distinct from EINVAL.

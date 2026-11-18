@@ -445,6 +445,20 @@ with a sound backend, still ACCEPTED against the oracle (`0x03` / `0x1F`: no PSG
 jar's tag list) gains `_SND`. The byte-order switch for 16-bit samples is not announced by the cookie (it would be
 `SND_EXT`); programs probe it by calling `Soundcmd(SET16BITFORMAT, SND_INQUIRE)`, which answers 0 on EmuTOS.
 
+*Amendment 2026-11-18 (owner decision 2026-11-12, "_VDO-Cookie ja", and 2026-11-18; applied with TASK/XBIOS22).*
+**`_VDO` is published** with the value `0x00030000` (`VDO_FALCON`, `references/emutos/include/cookie.h:67`; EmuTOS
+sets it when the Videl is present, `references/emutos/bios/machine.c:363-367`), seeded in `seed_defaults`
+(`tos-api/src/cookie.rs:223@seed_defaults`, `VDO_FALCON`). Reason: NewTOS answers the Falcon video calls that
+describe the screen (`VsetMode(-1)`, `VgetMonitor`, `VgetSize`, `VgetRGB`, TASK/XBIOS22) and is the Falcon030/TOS4
+profile (ADR-024); a program that gates those calls on `_VDO` (TeraDesk, `video.c`) must reach them. It claims a
+Falcon *video description*, not Falcon hardware: `VsetMode(mode != -1)`, `Vfixmode` and the other Videl calls stay
+unimplemented (ADR-017), `_SND`/`_FDC`/`_CPU`/`_FPU` stay as decided above, `_MCH` stays `0xFFFFFFFF`. This
+replaces the 2026-10-28 amendment's "`_VDO` is decided after measuring" and the 2026-10-29 "stays absent" decision
+(TASK/ARCH06.md). The owner's 2026-11-18 answer makes the value count as decided only after the tester measured
+TeraDesk's Falcon branch with it (the `vid-vdo` scenario of `measurements/measurement-2026-10-29-arch06/method/`);
+a wrong dialog state or an alert there sends the value back to the owner. `docs/COMPATIBILITY.md` row 45 (`_VDO`)
+is then EQUAL on `falcontc` and still differs from `tt` (`0x00020000`); row 41 (the jar's tag list) gains `_VDO`.
+
 ### Alternatives considered
 
 - **Map a `$5A0` (or any fixed) sysvar page so apps read+scan it**

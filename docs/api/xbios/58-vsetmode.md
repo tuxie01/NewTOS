@@ -48,7 +48,8 @@ The oracle's `0x1C` is not `FALCON_DEFAULT_BOOT` fixed for a VGA monitor (that i
 ## NewTOS answer — draft for the owner (no decision taken on the exact word)
 
 Owner 2026-11-12 (`TASK/XBIOS22.md`): `VsetMode(-1)` answers a fixed word; `VsetMode(mode != -1)` stays out
-(keeps the function number `0x58`, the catch-all arm `tos-api/src/xbios/mod.rs:157@other`).
+(keeps the function number `0x58`; since the implementation the dispatcher's `VSETMODE` arm,
+`tos-api/src/xbios/mod.rs:149@VSETMODE`, answers it for every `mode != -1`).
 
 **Proposed word: `0x001C`** (VGA, 80 columns, 16-bit truecolor; no VERTICAL, COMPAT, OVERSCAN, PAL).
 
@@ -92,3 +93,11 @@ that feeds the answer back through the Videl fix-up gets the same word.
 - Out of scope: EmuTOS's own AES calls `VsetMode(-1)` unconditionally to fill `ws_pts0` / `intout[45]`
   (`aes/gemgsxif.c:184`) and the desktop reads it for its Falcon dialog (`desk/deskrez.c:159`); whether
   NewTOS's VDI `v_opnwk` should return the same word in `intout[45]` is not checked here.
+
+## Owner decision 2026-11-18 and implementation
+
+Owner 2026-11-18 (`TASK/XBIOS22.md`): option A, `VsetMode(-1)` answers `0x001C`; every `VsetMode(mode != -1)`
+keeps the function number. Implemented in `tos-api/src/xbios/screen.rs:439@vsetmode` (`FALCON_MODE_WORD`), the
+function number in the dispatcher (`tos-api/src/xbios/mod.rs:149@VSETMODE`); the answer does not depend on a
+framebuffer being up. Sanctioned deviation for `mode != -1` and `Vfixmode`: `docs/COMPATIBILITY.md`
+("XBIOS Falcon video"). Host tests `tos-api/tests/xbios22_falcon_video.rs`.

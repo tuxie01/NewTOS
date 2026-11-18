@@ -48,7 +48,7 @@ hardware detection and `cookie_add`s the results. Tags (`cookie.h`):
 | Tag (ASCII) | Hex | Meaning | NewTOS relevance |
 |-------------|-----|---------|------------------|
 | `_CPU` | `0x5F435055` | m68k CPU type (0/10/20/30/40/60) | n/a (AArch64) — re-purpose or omit |
-| `_VDO` | `0x5F56444F` | video shifter revision (ST/STe/TT/Falcon) | **meaningless** (no Shifter) |
+| `_VDO` | `0x5F56444F` | video shifter revision (ST/STe/TT/Falcon) | `0x00030000` = `VDO_FALCON`: a Falcon video description for the Falcon calls NewTOS answers, not Videl hardware (ADR-012 amendment 2026-11-18, TASK/XBIOS22) |
 | `_FPU` | `0x5F465055` | m68k FPU type | **meaningless** |
 | `_MCH` | `0x5F4D4348` | machine type | kept, fixed to `MCH_NOHARD` = `0xFFFFFFFF` ("no Atari hardware", ADR-012 amendment 2026-10-28) |
 | `_SND` | `0x5F534E44` | sound feature bitmap (PSG/DMA/DSP) | **meaningless** (no PSG) |
@@ -138,9 +138,11 @@ probing:
 | `_AKP` | `0x00000000` | keyboard/language: US | `tos-api/src/cookie.rs:227@AKP` |
 | `EdDI` | `0x00000001` | the VDI answers `vq_scrninfo`; the value is a **non-callable marker**, not a dispatcher address (E2 of [`../vdi/eddi-vq_scrninfo.md`](../vdi/eddi-vq_scrninfo.md); deviation from TOS/EmuTOS, `docs/COMPATIBILITY.md`) | `cookie.rs` `EDDI_MARKER` (2026-10-02) |
 
-Deliberately **absent** (no matching Pi hardware, `tos-api/src/cookie.rs:216-222@seed_defaults`): `_VDO`
-(no Shifter; its decision waits for the TeraDesk measurement of TASK/ARCH06),
-`_SND` (no PSG/DMA sound), `_FDC` (no floppy controller), `_FPU` and `_CPU`
+`_VDO` = **`0x00030000`** (`VDO_FALCON`, `references/emutos/include/cookie.h:67`; ADR-012 amendment
+2026-11-18, TASK/XBIOS22): NewTOS answers `VsetMode(-1)`, `VgetMonitor`, `VgetSize` and `VgetRGB` for the Pi
+screen, and programs gate those calls on `_VDO` (TeraDesk `video.c`); no Videl hardware is claimed
+(`tos-api/src/cookie.rs:266@VDO_FALCON`). Deliberately **absent** (no matching Pi hardware,
+`tos-api/src/cookie.rs:216-222@seed_defaults`): `_SND` (no PSG/DMA sound; set by the sound driver when a backend is up), `_FDC` (no floppy controller), `_FPU` and `_CPU`
 (no m68k FPU/CPU; both stay absent per the ADR-012 amendment 2026-10-28). A
 program scanning for these correctly finds them missing and falls back.
 
@@ -148,7 +150,7 @@ program scanning for these correctly finds them missing and falls back.
 |-----------------|------------------|
 | `_MCH` = ST/STe/TT/Falcon id from bus/Shifter probe | `_MCH` fixed: `0xFFFFFFFF` = `MCH_NOHARD` (ADR-012 amendment 2026-10-28; the earlier `0x00050000` was the ARAnyM id) |
 | `_CPU`/`_FPU` = m68k CPU/FPU type | **omitted** (AArch64) — see decision below |
-| `_VDO`/`_SND`/`_FDC` from hardware detect | **omitted** (hardware absent) |
+| `_VDO`/`_SND`/`_FDC` from hardware detect | `_VDO` fixed `0x00030000` (Falcon video description, XBIOS22); `_SND` set by the sound driver with a backend; `_FDC` **omitted** (hardware absent) |
 | `_AKP` from the IKBD layout | `_AKP` = `0` (US), matches the loaded keymap default (§3.3) |
 
 ### Access mechanism (the critical part) — kernel-owned, no `$5A0`, no `Supexec`

@@ -1,10 +1,10 @@
-//! XBIOS screen group (Phase 10): `Physbase` / `Logbase` / `Getrez` /
-//! `Setscreen` / `Setpalette` / `Setcolor`. Mirrors the API surface of
+//! XBIOS screen group (Phase 10): `Physbase` / `Logbase` / `Getrez` / `Setscreen` /
+//! `Setpalette` / `Setcolor`, and the Falcon video queries (XBIOS22). Mirrors the API surface of
 //! EmuTOS `bios/screen.c` on top of the host framebuffer
 //! ([`crate::host::ScreenInfo`]).
 //!
 //! Spec: `docs/api/xbios/{02-physbase,03-logbase,04-getrez,05-setscreen,
-//! 06-setpalette,07-setcolor}.md`.
+//! 06-setpalette,07-setcolor,58-vsetmode,59-vgetmonitor,5b-vgetsize,5e-vgetrgb}.md`.
 //!
 //! The logical and physical screen bases are **not** software shadows: they
 //! live where EmuTOS keeps them — the logical one in the display's own
@@ -401,4 +401,131 @@ fn palette() -> &'static mut [u16; 16] {
     static PAL: Pal = Pal(UnsafeCell::new(DFLT_PALETTE));
     // SAFETY: single trap path; never concurrently borrowed.
     unsafe { &mut *PAL.0.get() }
+}
+
+// ── Falcon video description of the Pi screen (TASK/XBIOS22) ─────────────
+//
+// NewTOS answers the Falcon (Videl) calls that *describe* the screen —
+// `VsetMode(-1)`, `VgetMonitor`, `VgetSize`, `VgetRGB` — and publishes `_VDO`
+// = `VDO_FALCON` so programs that gate on the cookie reach them (ADR-012
+// amendment 2026-11-18). It claims a Falcon video description, not Videl
+// hardware: a mode switch (`VsetMode(mode != -1)`, `Vfixmode`) would need
+// `config.txt` (ADR-017) and keeps answering its function number in the
+// dispatcher. Owner decisions 2026-11-12 and 2026-11-18, `TASK/XBIOS22.md`;
+// `docs/COMPATIBILITY.md` ("XBIOS Falcon video").
+
+/// The Falcon mode word NewTOS reports as its current mode:
+/// `VIDEL_VGA | VIDEL_80COL | VIDEL_TRUECOLOR` = `0x10 | 0x08 | 0x04`
+/// (`references/emutos/include/biosdefs.h:146-158`). VERTICAL, COMPAT,
+/// OVERSCAN and PAL are clear. It is the oracle's own word (bios-r1 case 211,
+/// `falcontc`), agrees with [`vgetmonitor`] (VGA), with a 16-bit truecolor
+/// VDI device pixel (ADR-024) and with "not ST-compatible" (COMPAT clear).
+/// The geometry it names (640 columns) is inexpressible for the real screen:
+/// no Falcon word has a width field; programs take it from VDI or `Physbase`.
+/// Spec `docs/api/xbios/58-vsetmode.md`.
+pub const FALCON_MODE_WORD: u16 = 0x001C;
+
+/// `MON_VGA` (`references/emutos/include/biosdefs.h:136-139`): the monitor
+/// type NewTOS reports for the HDMI screen. Spec
+/// `docs/api/xbios/59-vgetmonitor.md` (owner decision option A).
+const MON_VGA: i64 = 2;
+
+/// `VsetMode` (0x58), the query form only: `VsetMode(-1)` returns
+/// [`FALCON_MODE_WORD`] (EmuTOS returns its stored `current_video_mode`,
+/// `references/emutos/bios/videl.c:627-628`). Every other argument would set
+/// a mode; that is not implemented (owner decision 2026-11-12: no run-time
+/// mode switch, ADR-017) and yields `None`, which the dispatcher answers with
+/// the function number. `x0` = `mode` (WORD).
+pub fn vsetmode(args: &TrapArgs) -> Option<i64> {
+    (args.arg_i16(0) == -1).then_some(i64::from(FALCON_MODE_WORD))
+}
+
+/// `VgetMonitor` (0x59) — the monitor type: always [`MON_VGA`] (2). EmuTOS
+/// reads the monitor-sense bits (`references/emutos/bios/videl.c:664-670`);
+/// the Pi has no sense lines and its HDMI screen is a progressive digital
+/// mode, closest to VGA (owner decision 2026-11-12, equal to bios-r1 case
+/// 212 on `falcontc`). No error path.
+pub fn vgetmonitor() -> i64 {
+    MON_VGA
+}
+
+/// `VgetSize` (0x5B) — bytes of one screen. `x0` = `mode` (WORD), **not
+/// read**: by owner decision 2026-11-12 (option B) the answer is always the
+/// size of the *current* screen, whatever mode word is asked about, because
+/// no Falcon word can describe the real screen (`58-vsetmode.md`). The
+/// count is the 32-bpp screen as `Physbase` shows it, stride padding
+/// included — [`host::ScreenInfo::size_bytes`] (owner decision 2026-11-18,
+/// option B1). EmuTOS computes it from the Falcon mode tables
+/// (`references/emutos/bios/videl.c:724-757`); bios-r1 case 213 therefore
+/// differs (`docs/COMPATIBILITY.md`).
+///
+/// Before a framebuffer is up there is no screen to measure: `None`, which
+/// the dispatcher answers with the function number `0x5B` — EmuTOS' own
+/// "no Videl" answer (`references/emutos/bios/videl.c:730-731`; owner
+/// decision 2026-11-18, item 4). Spec `docs/api/xbios/5b-vgetsize.md`.
+pub fn vgetsize() -> Option<i64> {
+    let info = host::host().and_then(|h| h.screen())?;
+    // A LONG result, sign-extended into x0 (docs/COMPATIBILITY.md, "LONG
+    // results in x0").
+    Some(i64::from(info.size_bytes as Long))
+}
+
+/// `VgetRGB` limit: 256 entries only when the current mode word is 8bpp,
+/// otherwise 16 (`references/emutos/bios/videl.c:875-876`). The word NewTOS
+/// reports is truecolor ([`FALCON_MODE_WORD`]), so it is always 16.
+const VGETRGB_LIMIT: i32 = 16;
+
+/// The Falcon palette `VgetRGB` reads: the first 16 entries of EmuTOS'
+/// `videl_dflt_palette[]` (`references/emutos/bios/videl.c:42-46`, values
+/// `FRGB_*` in `references/emutos/bios/videl.h:27-42`, stored there as
+/// `R,G,0,B` bytes), written here in the `0x00RRGGBB` form `vgetrgb` returns
+/// for a non-ST palette mode (`references/emutos/bios/videl.c:899-907`).
+/// Measured: the 64 bytes of bios-r1 case 214 on `falcontc`
+/// (`measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`).
+///
+/// A table of its own, as in EmuTOS: neither `Setcolor`/`Setpalette` (the
+/// ST(e) shadow, [`palette`]) nor the VDI writes it (owner decision
+/// 2026-11-12, option A). Constant, because `VsetRGB` (0x5D) is not
+/// implemented. Spec `docs/api/xbios/5e-vgetrgb.md`.
+const FALCON_PALETTE: [u32; 16] = [
+    0x00FF_FFFF, // FRGB_WHITE
+    0x00FF_0000, // FRGB_RED
+    0x0000_FF00, // FRGB_GREEN
+    0x00FF_FF00, // FRGB_YELLOW
+    0x0000_00FF, // FRGB_BLUE
+    0x00FF_00FF, // FRGB_MAGENTA
+    0x0000_FFFF, // FRGB_CYAN
+    0x00BB_BBBB, // FRGB_LTGRAY
+    0x0088_8888, // FRGB_GRAY
+    0x00AA_0000, // FRGB_LTRED
+    0x0000_AA00, // FRGB_LTGREEN
+    0x00AA_AA00, // FRGB_LTYELLOW
+    0x0000_00AA, // FRGB_LTBLUE
+    0x00AA_00AA, // FRGB_LTMAGENTA
+    0x0000_AAAA, // FRGB_LTCYAN
+    0x0000_0000, // FRGB_BLACK
+];
+
+/// `VgetRGB` (0x5E) — read `count` palette entries from `index` into `rgb`
+/// as `0x00RRGGBB` longwords (native order). `x0` = `index` (WORD), `x1` =
+/// `count` (WORD), `x2` = `rgb` (pointer into the caller's space).
+///
+/// Returns `0`; `-1` ("generic error") when `index < 0`, `count <= 0` or
+/// `index + count > 16`, with the buffer untouched
+/// (`references/emutos/bios/videl.c:872-879`). A buffer the caller cannot
+/// write ends the call through the user-access fault path (ARCH03 3a).
+pub fn vgetrgb(args: &TrapArgs) -> i64 {
+    let index = i32::from(args.arg_i16(0));
+    let count = i32::from(args.arg_i16(1));
+    let rgb = args.arg_u64(2);
+    if index < 0 || count <= 0 || index + count > VGETRGB_LIMIT {
+        return -1;
+    }
+    let entries = &FALCON_PALETTE[index as usize..(index + count) as usize];
+    for (i, &value) in entries.iter().enumerate() {
+        if args.space.put_u32(rgb + 4 * i as u64, value).is_err() {
+            return i64::from(crate::uaccess::FAULTED);
+        }
+    }
+    0
 }

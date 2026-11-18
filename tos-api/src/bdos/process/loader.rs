@@ -1335,7 +1335,7 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
 /// last written slot is always the classic `{0, COOKIE_JAR_SLOTS}` terminator,
 /// so an application's linear scan still stops inside the window instead of
 /// running off its end. Truncation cannot happen with the boot-seeded set
-/// (5 cookies); it needs 11 further `Ssystem(S_SETCOOKIE)` calls.
+/// (6 cookies, 7 with `_SND`); it needs 9 (8) further `Ssystem(S_SETCOOKIE)` calls.
 ///
 /// The terminator's `value` is the **mirror's** slot capacity, not the kernel
 /// jar's: EmuTOS' terminator word describes the array the reader is scanning

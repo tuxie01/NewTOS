@@ -1,6 +1,6 @@
 # XBIOS22 — Falcon video queries: `VgetMonitor`, `VgetSize`, `VgetRGB` answer for the Pi screen
 
-Status: OPEN (2026-11-12) | Priority: P2
+Status: IMPLEMENTED (2026-11-18) | Priority: P2 | Commit: self | Missing: tester run of bios-r1 211-215 and jar-r1 41/45 on the branch kernel, TeraDesk Falcon-branch vid-vdo scenario (decides the _VDO value), real-Pi check
 
 Type: research (spec), then developer. Owner decision 2026-11-12, from the full XBIOS run
 `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`.
@@ -21,7 +21,7 @@ VgetSize, VgetRGB we do not need it.)
 - `tosdump/cases/bios-r1.tsv` cases 211-215 differ (falcontc; 215 also tt): oracle `VsetMode(-1)` 0x1C,
   `VgetMonitor` 2, `VgetSize(0x1C)` 614400, `VgetRGB(0,16,…)` 0 plus the palette, `Vfixmode(0x1C)` 0x1C (tt -32);
   NewTOS answers the function number and leaves the buffer untouched (catch-all arm,
-  `tos-api/src/xbios/mod.rs:157@other`).
+  `tos-api/src/xbios/mod.rs:162@other`).
 - EmuTOS: `references/emutos/bios/videl.c:664` (`vmontype`), `:724` (`vgetsize`), `:862` (`vgetrgb`).
 - The screen is a native 32-bpp framebuffer with a Falcon RGB565 VDI device pixel (ADR-024), geometry from
   `config.txt` (ADR-017).
@@ -195,7 +195,7 @@ expecting 4 (`TASK/XBIOS23.md`); (2) rewrite of the "NewTOS behavior (settled �
 `docs/api/xbios/04-getrez.md` and removal of its round-trip criterion (the coherence note is in that file);
 (3) ADR-017 Revision 3 text from `TASK/XBIOS23.md` applied in the implementing commit, where it should also name
 the `VsetMode(-1)` word once the owner fixes it; (4) the dispatcher arms for 0x58 (query only), 0x59, 0x5B, 0x5E
-next to the catch-all (`tos-api/src/xbios/mod.rs:157@other`), tests per function (documented value, documented
+next to the catch-all (`tos-api/src/xbios/mod.rs:162@other`), tests per function (documented value, documented
 error; the error arm is "no error path" for 0x59 and `VgetSize`, `-1` for `VgetRGB`, see the spec files).
 Still open for XBIOS22 before code: the exact `VsetMode` word (a), B1/B2 (b), the `_VDO` value (c), and the
 `VgetSize`-before-framebuffer value. Nothing is missing from XBIOS23 itself.

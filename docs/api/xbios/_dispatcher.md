@@ -83,8 +83,10 @@ slots), since TASK/SND05 (2026-11-17; until then the TT-shifter baseline
 `0x57`, 88 slots). The DMA sound group 0x80–0x8D has real handlers
 (`docs/api/xbios/_dmasound-group.md`); they answer their function number while
 no sound backend has initialised, as EmuTOS does without a sound chip. The
-Videl (0x58–0x5F) and DSP (0x60–0x7F) ranges are unimplemented slots inside the
-table and return their function number; a trap with `ID > 0x8D` hits the range
+DSP range (0x60–0x7F) and the Videl slots 0x5A, 0x5C, 0x5D, 0x5F are unimplemented slots inside the
+table and return their function number; of the Videl range, `VsetMode(-1)`, `VgetMonitor`, `VgetSize` and
+`VgetRGB` (0x58, 0x59, 0x5B, 0x5E) describe the Pi screen since TASK/XBIOS22 (`58-vsetmode.md`,
+`59-vgetmonitor.md`, `5b-vgetsize.md`, `5e-vgetrgb.md`; `VsetMode` with a mode answers 0x58); a trap with `ID > 0x8D` hits the range
 check and returns the function number (§3). The two are indistinguishable from
 outside, so moving the last entry changes no answer for 0x58–0x7F.
 
@@ -165,7 +167,8 @@ the gate is off the slot is `xbios_unimpl`.
 | 0x41–0x4F | `xbios_unimpl` | —     | filler when `LAST_ENTRY>0x40` | — |
 | 0x50–0x57 | `esetshift`…`esetsmear` | Eset*/Eget* | `CONF_WITH_TT_SHIFTER` | `bios/screen.c` |
 
-Beyond 0x57: Videl (0x58–0x5F, `CONF_WITH_VIDEL`) and DSP (0x60–0x7F,
+Beyond 0x57: Videl (0x58–0x5F, `CONF_WITH_VIDEL`; the four screen queries 0x58 (query form), 0x59, 0x5B,
+0x5E answered since TASK/XBIOS22, the rest unimplemented) and DSP (0x60–0x7F,
 `CONF_WITH_DSP`), unimplemented slots in the NewTOS profile; DMA sound
 (0x80–0x8D, `CONF_WITH_DMASOUND`), in the NewTOS profile since TASK/SND05
 (`docs/api/xbios/_dmasound-group.md` §2, §11). See `bios/xbios.c:1411-1514`.

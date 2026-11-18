@@ -421,8 +421,10 @@ programs through the FreeMiNT `Ssystem` cookie subfunctions (ADR-012), **not**
 via `$5A0` + `Supexec` (both blocked on NewTOS).
 
 Atari cookies NewTOS deliberately does **not** advertise (no matching
-hardware): `_VDO` (video shifter), `_SND` (PSG/DMA sound), `_FDC`, `_FLK`,
-`_CPU`/`_FPU`, `_SWI` (`cookie.rs:139-140`).
+hardware): `_SND` (PSG/DMA sound; set by the sound driver with a backend), `_FDC`, `_FLK`,
+`_CPU`/`_FPU`, `_SWI` (`tos-api/src/cookie.rs:216-222@seed_defaults`). `_VDO` is advertised as `0x00030000`
+(`VDO_FALCON`): a Falcon video description for the Falcon screen queries NewTOS answers, not Videl
+hardware (ADR-012 amendment 2026-11-18, TASK/XBIOS22).
 
 - **`_CPU` — recommend keep omitted** (decision, not TBV): the cookie carries an
   m68k CPU number (0/10/20/…/60); advertising any m68k value on AArch64 would

@@ -1621,15 +1621,15 @@ oracle" below, TASK/TOOL18.md).
 **Cookie jar vs. the oracle** — measured 2026-10-29 on the pinned ROM,
 table `tosdump/cases/jar-r1.tsv`, references `EMUTOS-1a7484ab-BIOS-jar` (tt),
 `-BIOS-jar-falcontc`, `-BIOS-jar-disk`
-(`measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`). NewTOS seeds five
+(`measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`). NewTOS seeds six
 cookies (`tos-api/src/cookie.rs:223@seed_defaults`); the oracle's jar has twelve.
 falcontc and disk are byte-identical, so their columns are one.
 
 | Case | Cookie | Oracle tt | Oracle falcontc = disk | NewTOS | Status | Reason |
 |---|---|---|---|---|---|---|
-| 41 | `jar:*` | 12: `_CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI` | same | 5: `NTOS _MCH _IDT _AKP EdDI`; 6 with a sound backend (`_SND` added by the sound driver, TASK/SND05) | ACCEPTED | follows from the per-cookie rows; re-measure when the seeded set changes |
+| 41 | `jar:*` | 12: `_CPU _VDO _FPU _MCH _SWI _SND _FRB _AKP _IDT _FDC XHDI SCSI` | same | 6: `NTOS _MCH _IDT _AKP EdDI _VDO`; 7 with a sound backend (`_SND` added by the sound driver, TASK/SND05) | ACCEPTED | follows from the per-cookie rows; re-measure when the seeded set changes |
 | 44 | `_CPU` | `0x0000001E` | `0x0000001E` | absent | ACCEPTED | ADR-012 amendment 2026-10-28: no m68k CPU |
-| 45 | `_VDO` | `0x00020000` | `0x00030000` | absent | ACCEPTED | user decision 2026-10-29 (TASK/ARCH06): no Shifter/VIDEL, `_VDO` stays absent; TeraDesk's ST-branch overscan crash is a port bug (TASK/SDK07.md) |
+| 45 | `_VDO` | `0x00020000` | `0x00030000` | `0x00030000` | EQUAL (falcontc), ACCEPTED (tt) | ADR-012 amendment 2026-11-18 (TASK/XBIOS22): `VDO_FALCON`, a Falcon video description for the Falcon calls NewTOS answers ("XBIOS Falcon video" below), not Videl hardware; replaces the user decision 2026-10-29 (TASK/ARCH06) "stays absent"; not measured on NewTOS yet |
 | 46 | `_FPU` | `0x00060000` | `0x00000000` | absent | ACCEPTED | ADR-012: no m68k FPU |
 | 47 | `_MCH` | `0x00020000` | `0x00030000` | `0xFFFFFFFF` | ACCEPTED | ADR-012 amendment 2026-10-28: `MCH_NOHARD` |
 | 48 | `_SWI` | `0x000000BF` | `0x000000BF` | absent | ACCEPTED | user decision 2026-10-29: no DIP switches (missing hardware; EmuTOS adds it only with them, `bios/machine.c:702-706`) |
@@ -1888,10 +1888,10 @@ an owner decision).
 **XBIOS for absent Atari hardware: NVRAM, TT shifter, DSP** — owner
 decision 2026-11-12 ("the same goes for DSP, TT shifter, NVMaccess", after
 the floppy group above). The Pi has none of them, and NewTOS does not
-emulate them: no `_VDO` cookie and no DSP bit in `_SND` (ADR-012 and its
-amendment 2026-11-12). Each of these calls takes
+emulate them: no DSP bit in `_SND` (ADR-012 and its amendment 2026-11-12;
+`_VDO` announces a Falcon video description only, "XBIOS Falcon video" below). Each of these calls takes
 the dispatcher's catch-all arm and returns its own function number
-(`tos-api/src/xbios/mod.rs:157@other`):
+(`tos-api/src/xbios/mod.rs:162@other`):
 `NVMaccess` (0x2E) answers `0x2E`, which is also what EmuTOS returns on a
 machine without an NVRAM chip (`references/emutos/bios/nvram.c:161-162`,
 ADR-012, TASK/XBIOS10); the TT-shifter calls `EsetShift` ... `EsetSmear`
@@ -1905,6 +1905,38 @@ and DSP case differs (e.g. `NVMaccess` in `tosdump/cases/bios-r1.tsv`);
 these cases count as ACCEPTED, and the three groups need no further oracle
 cases. Reopen when a port needs one of them (a new ticket and an owner
 decision).
+
+**XBIOS Falcon video: `VsetMode(-1)`, `VgetMonitor`, `VgetSize`, `VgetRGB` describe the Pi screen;
+`VsetMode(mode)` and `Vfixmode` do not switch modes** — owner decisions 2026-11-12 and 2026-11-18
+([XBIOS22](../TASK/XBIOS22.md)); ADR-017 (no run-time mode switch: the mode is `config.txt`'s), ADR-012
+amendment 2026-11-18 (`_VDO` = `VDO_FALCON`). Specs `docs/api/xbios/58-vsetmode.md`,
+`docs/api/xbios/59-vgetmonitor.md`, `docs/api/xbios/5b-vgetsize.md`, `docs/api/xbios/5e-vgetrgb.md`; code
+`tos-api/src/xbios/screen.rs:439@vsetmode`, `:448@vgetmonitor`, `:466@vgetsize`, `:517@vgetrgb`.
+NewTOS claims a Falcon *video description*: `VsetMode(-1)` answers `0x001C` (`VGA|80COL|TRUECOLOR`, case 211
+EQUAL on `falcontc`), `VgetMonitor` 2 (`MON_VGA`, case 212 EQUAL), `VgetRGB` the 16-entry Falcon default table
+(case 214 EQUAL), with `-1` for a bad range as EmuTOS (`references/emutos/bios/videl.c:872-879`). Against the `tt`
+profile (no Videl, function numbers) these cases differ: ACCEPTED, NewTOS claims the Falcon.
+
+* **`VsetMode(mode != -1)` and `Vfixmode` (0x5F) answer their function number** (`0x58`, `0x5F`), the dispatcher's
+  catch-all (`tos-api/src/xbios/mod.rs:162@other`). EmuTOS fixes the word up for the monitor, programs the Videl
+  and returns the old mode (`references/emutos/bios/videl.c:619-659,917-956`). A switch would need `config.txt`
+  (ADR-017). **Observable difference:** case 215 `Vfixmode(0x1C)` answers `0x5F` against the oracle's `0x1C`
+  (falcontc; tt `-32`): ACCEPTED. A program that sets a mode gets `0x58` back (not the old word), the screen
+  stays as it was, and the next `VsetMode(-1)` still answers `0x001C`. TeraDesk changes the mode through
+  `shel_write(SHW_RESCHNG, mode, 1)` (`sdk/overlays/teradesk/video.c:407-408@shel_write`), not through `VsetMode`:
+  NewTOS records the request and restarts the AES but never switches (`tos-api/src/aes/shell.rs:484-492@SHW_RESCHNG`),
+  so TeraDesk offers Falcon modes it cannot honour and, after the restart, reads `0x001C` again.
+* **`VgetSize(mode)` answers the size of the current screen, whatever `mode` says** (option B1): one 32-bpp
+  screen as `Physbase` shows it, stride padding included (`ScreenInfo::size_bytes`, 8 294 400 bytes at
+  1920x1080, 1 228 800 at the QEMU 640x480); before a framebuffer is up the function number `0x5B`. EmuTOS
+  computes the bytes of the named Falcon mode from its Videl tables (`references/emutos/bios/videl.c:724-757`).
+  **Observable difference:** case 213 `VgetSize(0x1C)` answers the screen size against the oracle's `614400`
+  (falcontc): ACCEPTED, no Falcon mode word can describe the real screen. A program that sizes a buffer for a
+  Falcon mode it intends to set gets the (larger) current-screen size.
+* **Not covered:** `Vsetsync` (0x5A), `VsetMask` (0x5C), `VsetRGB` (0x5D) answer their function number (outside
+  the owner's scope); without `VsetRGB` the `VgetRGB` table is constant. `VgetMonitor`, `VsetMode(-1)` and
+  `VgetRGB` answer the same with or without a framebuffer. Index of the differences by trigger:
+  `docs/DEVIATIONS.md` ("XBIOS, keyboard, system variables").
 
 **XBIOS DMA sound 0x80-0x8D** — TASK/SND05, owner decisions TASK/SND01
 (2026-11-12: Q-N2 option D, Q-N3, Q-N4a-c, Q-N5, Q-N6) and 2026-11-17 (the

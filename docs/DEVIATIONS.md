@@ -44,6 +44,9 @@ Rules:
 |---|---|---|---|---|
 | Alt+Help | ordinary key, `dumpflg` unchanged | `dumpflg++` | read | [KEYS05](../TASK/KEYS05.md) (P4) |
 | A child process reads `dumpflg` (`$4EE`) set by its parent | child starts with -1: the cell is per process (page 0) | one global cell | read | [KEYS05](../TASK/KEYS05.md) |
+| `VsetMode(mode)` with `mode != -1`, `Vfixmode(mode)` | the function number (`0x58`, `0x5F`); no mode switch, `VsetMode(-1)` stays `0x001C` | Falcon: the word fixed up for the monitor, the Videl programmed, the old word returned | measured (`bios-r1` 215, `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`) | sanctioned, ADR-017 and `docs/COMPATIBILITY.md` ("XBIOS Falcon video", [XBIOS22](../TASK/XBIOS22.md)) |
+| `VgetSize(mode)` | bytes of the current 32-bpp screen for every `mode` (`0x5B` before a framebuffer is up) | Falcon: bytes of the named Falcon mode (`VgetSize(0x1C)` 614400) | measured (`bios-r1` 213, same run) | sanctioned, `docs/COMPATIBILITY.md` ("XBIOS Falcon video", [XBIOS22](../TASK/XBIOS22.md)) |
+| A program that reads `_VDO` = `0x00030000` (Falcon) and then accesses the Videl registers (`$FFFF82xx`) directly | bus error, the program ends (no Videl) | Falcon: the registers | read | ADR-012 amendment 2026-11-18 ([XBIOS22](../TASK/XBIOS22.md)); no in-repo program does it |
 
 ## XBIOS DMA sound (0x80-0x8D)
 
