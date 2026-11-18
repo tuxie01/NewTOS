@@ -279,32 +279,37 @@ fn inq_tab_lookup_table_keeps_the_emutos_rule_for_other_depths() {
 
 // ── the EdDI gate, §4 ────────────────────────────────────────────────────
 
-/// Between V62 and V66 the EdDI gate is not widened (TASK/V62.md, spec gate
-/// point 1): at 32 planes `vq_scrninfo` (`CONTRL[5] == 1`, `INTIN[0] == 2`)
-/// is answered as plain `vq_extnd` mode 2, i.e. `INQ_TAB` with 45 words; at
-/// 16 the 273-word table stays.
+/// Since V66 the EdDI gate follows the setting (ADR-038 point 8,
+/// `docs/api/vdi/eddi-vq_scrninfo-32.md` §7): at 16 and at 32 planes
+/// `vq_scrninfo` (`CONTRL[5] == 1`, `INTIN[0] == 2`) answers the 273-word
+/// table of its depth; a plane count that is neither — only a test double has
+/// one — falls through to plain `vq_extnd` mode 2, i.e. `INQ_TAB` with 45
+/// words (spec §5). The table words themselves are pinned in
+/// `vdi_eddi_scrninfo.rs` (16) and `vdi_v66_scrninfo32.rs` (32).
 #[test]
-fn vq_scrninfo_at_32_planes_falls_through_to_vq_extnd() {
-    {
-        let _g = setting(32);
+fn vq_scrninfo_follows_the_setting_and_falls_through_for_other_depths() {
+    for planes in [16u16, 32] {
+        let _g = setting(planes);
         let (_, _, virt, _) = open_pair();
         let mut eddi = Vpb::new();
-        assert_eq!(eddi.vq_extnd(1, 2, virt), 1, "d0");
-        let mut plain = Vpb::new();
-        plain.vq_extnd(0, 1, virt);
-        assert_eq!(eddi.contrl[4], 45, "CONTRL[4]: the INQ_TAB answer, not 272");
-        assert_eq!(eddi.intout[..], plain.intout[..], "INTOUT = vq_extnd mode 1");
-        assert_eq!(eddi.ptsout[..], plain.ptsout[..], "PTSOUT = vq_extnd mode 1");
-        assert_eq!(eddi.intout[4], 32);
+        assert_eq!(eddi.vq_extnd(1, 2, virt), 0, "{planes}: d0");
+        assert_eq!(eddi.contrl[4], 272, "{planes} planes: the vq_scrninfo answer");
+        assert_eq!(eddi.contrl[2], 0, "{planes} planes: CONTRL[2]");
+        assert_eq!(eddi.intout[2], planes as i16, "{planes} planes: vq_scrninfo [2] bits per pixel");
+        assert!(eddi.intout[273..].iter().all(|&w| w == POISON), "{planes}: written past INTOUT[272]");
         close(virt);
     }
-    {
-        let _g = setting(16);
+    for planes in [1u16, 4, 8, 24] {
+        let _g = setting(planes);
         let (_, _, virt, _) = open_pair();
         let mut eddi = Vpb::new();
-        eddi.vq_extnd(1, 2, virt);
-        assert_eq!(eddi.contrl[4], 272, "16 planes: the vq_scrninfo answer");
-        assert_eq!(eddi.intout[2], 16, "16 planes: vq_scrninfo [2] bits per pixel");
+        assert_eq!(eddi.vq_extnd(1, 2, virt), 1, "{planes}: d0");
+        let mut plain = Vpb::new();
+        plain.vq_extnd(0, 1, virt);
+        assert_eq!(eddi.contrl[4], 45, "{planes}: CONTRL[4]: the INQ_TAB answer, not 272");
+        assert_eq!(eddi.intout[..], plain.intout[..], "{planes}: INTOUT = vq_extnd mode 1");
+        assert_eq!(eddi.ptsout[..], plain.ptsout[..], "{planes}: PTSOUT = vq_extnd mode 1");
+        assert_eq!(eddi.intout[4], planes as i16);
         close(virt);
     }
 }

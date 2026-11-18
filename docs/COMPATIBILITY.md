@@ -608,9 +608,30 @@ EmuTOS, each observable:
    (Enhancer leaves `CONTRL[2]/[4]` untouched; NewTOS writes 0 / 272) —
    `measurements/measurement-2026-10-02-eddi/`. The genlock bit is reported
    but programs are to leave it 0 (E9).
+5. **At the 32-plane setting (`vdiplanes=32`) the answer is NewTOS's own**
+   (ADR-038 point 8, TASK/V66; spec `docs/api/vdi/eddi-vq_scrninfo-32.md`).
+   No real EdDI at 32 planes was available to measure and EmuTOS has none, so
+   every value is NewTOS contract, not a measured equality:
+
+   | Word | 16 planes | 32 planes |
+   |---|---|---|
+   | `[2]` planes | 16 | 32 (equals `vq_extnd(1)` `INTOUT[4]`) |
+   | `[3]:[4]` colours | `0:0x8000` (32768) | `0x0100:0` (16 777 216) |
+   | `[5..7]` line width, address | 0 | 0 (no accessible screen; a 64-bit address does not fit two words) |
+   | `[8..10]` bits per gun | 5/5/5 | 8/8/8 |
+   | `[11]`/`[12]`/`[13]` alpha / genlock / unused | 0 / 1 / 0 | 0 / 0 / 8 (the X byte of `0xXXRRGGBB`) |
+   | `[14]` bit order | `0x02` (Falcon) | `0x01` (usual; bits counted on the native `u32`, not `0x81`) |
+   | red / green / blue bits | 11..15 / 6..10 / 0..4 | 16..23 / 8..15 / 0..7 |
+   | genlock / unused bits | `[80] = 5` / none | none / `[96..103] = 24..31` |
+
+   A pixel a program builds from these tables, written into a 32-plane memory
+   form and copied with `vro_cpyfm`, reads back through `v_get_pixel` equal to
+   its R, G, B bits; a bit the table lists as unused is dropped on every read.
+   The cookie and the call form are the same at both depths.
 
 Implementation `tos-api/src/vdi/eddi.rs`; tests
-`tos-api/tests/vdi_eddi_scrninfo.rs`. `v_opnbm`/`v_clsbm`/`v_open_bm`/
+`tos-api/tests/vdi_eddi_scrninfo.rs` (16 planes) and
+`tos-api/tests/vdi_v66_scrninfo32.rs` (both depths). `v_opnbm`/`v_clsbm`/`v_open_bm`/
 `v_resize_bm` are **not** provided (E1).
 
 **A raster copy into or out of a memory form stops at the form's `fd_h`

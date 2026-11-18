@@ -1595,6 +1595,7 @@ vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clswk	mapped	opco
 vdi_v_clswk	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	close_all_virtual	mapped	Mfree of vwk_ptr[2..]
 vdi_v_clrwk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	v_clrwk	mapped	opcode 3; truecolor fills 0xffff words, else pen 0 through RasterBackend (EmuTOS memset 0xff / 0x00 over v_lin_wr*V_REZ_VT bytes)
 vdi_vq_extnd	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	opcode 102; EdDI vq_scrninfo rides on 102 in eddi.rs
+vdi_vq_extnd	vdi/vdi_control.c	tos-api/src/vdi/eddi.rs	vq_scrninfo	mapped	opcode 102 with CONTRL[5] == 1 and INTIN[0] == 2 (is_scrninfo): the EdDI answer, no EmuTOS counterpart (EmuTOS has no EdDI and ignores CONTRL[5]); the table of the device depth, 16 or 32 planes, other depths fall through to vq_extnd (ADR-038 point 8, V66)
 screen	vdi/vdi_main.c	tos-api/src/vdi/mod.rs	screen	mapped	VDI entry; NewTOS dispatch is one match, not jmptb1/jmptb2; does not mirror CUR_FONT/WRT_MODE/CLIP/CUR_WORK into line-A variables
 dis_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	dis_cur	mapped	hide count 1 -> 0 draws the cursor (drawn before the count reaches 0) and drops a pending frame redraw (draw_flag = 0, V55), otherwise decrements, floor 0
 hide_cur	vdi/vdi_mouse.c	tos-api/src/vdi/mouse.rs	v_hide_c	mapped	HIDE_CNT++ first, then erase on 0 -> 1 and drop a pending frame redraw (draw_flag = 0, V55); also mouse::hide for kernel callers

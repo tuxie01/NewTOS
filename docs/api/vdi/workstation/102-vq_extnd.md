@@ -189,6 +189,12 @@ deviation in `docs/COMPATIBILITY.md` (E8): a program that issues this exact
 call **without** checking the cookie got `INQ_TAB` (EmuTOS), and gets the
 EdDI table on NewTOS.
 
+The table is the one of the device depth: the 16-plane table above at the default
+setting, the 32-plane table of
+[`../eddi-vq_scrninfo-32.md`](../eddi-vq_scrninfo-32.md) §2 at `vdiplanes=32` (ADR-038
+point 8, V66; tests `tos-api/tests/vdi_v66_scrninfo32.rs`). A plane count other than 16
+and 32 has no table and keeps the `vq_extnd` answer.
+
 ---
 
 ## Pi / BCM2711 binding
@@ -302,8 +308,9 @@ truecolor depth (16 and 32)".
 
 ### Open points
 
-- **Needs a decision:** `vq_scrninfo` (`CONTRL[5] == 1`, `INTIN[0] == 2`) between V62
-  and V66 at 32 planes; see "The EdDI gate" in `100-v_opnvwk.md`.
+- **Closed by V66:** `vq_scrninfo` (`CONTRL[5] == 1`, `INTIN[0] == 2`) at 32 planes
+  answered `INQ_TAB` between V62 and V66; since V66 it answers the 32-plane table
+  (`../eddi-vq_scrninfo-32.md` §2); see "The EdDI gate" in `100-v_opnvwk.md`.
 - Inferred: that every other `INQ_TAB` word is independent of the depth (no source
   read says otherwise: `INQ_TAB_ROM` is patched only at `[4]`, `[5]`, `[19]`,
   `tos-api/src/vdi/workstation.rs:325@inq`).

@@ -561,13 +561,13 @@ Today the constant 16 is held in three independent places (ADR-038 Context;
 `docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1). V62 makes **one** of them follow
 the setting, the backend `planes()`, and the `vq_extnd` gate (§3). The other two follow
 with later slices (TASK/V62.md, "Slice cut corrected"): `CHUNKY_PLANES` with V65, the EdDI
-constant and gate with V66 (§4):
+constant and gate with V66 (§4; both landed):
 
 | Place | Today | At the setting |
 |---|---|---|
 | kernel raster backend `RasterBackend::planes()` (`kernel/src/vdi_backend.rs:44@PLANES`, trait method `kernel/src/vdi_backend.rs:465@planes`) | `PLANES = 16` | 16 or 32 [C: ADR-038 point 3] |
 | `tos-api` raster, `CHUNKY_PLANES` (`tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES`): the stamp of `device_mem` (`:213@CHUNKY_PLANES`) and the plane cap of `vro_cpyfm`/`vrt_cpyfm` (`:560@CHUNKY_PLANES`, `:821@CHUNKY_PLANES`) | 16 | **V62: stays 16 at both settings. V65: follows the setting's depth** (ADR-038 point 5: "the cap is raised to the setting's depth"; EmuTOS rule generalised: `plane_ct <= 16`, `references/emutos/vdi/vdi_raster.c:963`, under `CONF_WITH_VDI_16BIT`, on in the default config `references/emutos/include/config.h:62-63`) [C]. **Reason (verified in code):** a memory MFDB's row is `fd_wdwidth * fd_nplanes` WORDs (`mem_stride_px`, `tos-api/src/vdi/raster.rs:231@mem_stride_px`), and `device_mem` builds the AES save-buffer MFDB with `nplanes = CHUNKY_PLANES` (`tos-api/src/vdi/raster.rs:213@CHUNKY_PLANES`, used by `bb_save`/`bb_restore`/`blit_device_mem`, `:1324@bb_save`, `:1340@bb_restore`, `:1369@blit_device_mem`). The buffers are sized `bb_save_words(w, h) = mem_wdwidth(w) * 8 * h` `u32` words, i.e. `wdwidth * 16` 16-bit words per row (`tos-api/src/vdi/raster.rs:1296@bb_save_words`; `gsx_mcalc`, `tos-api/src/aes/gsxif.rs:354-359@bb_save_words`). Stamping 32 doubles the row stride over those 16-bit buffers; V65 changes the buffers to 32-bit together with the cap (ADR-038 points 5 and 10) **[I: derived from the lines read, not run]** |
-| EdDI, `DEVICE_PLANES` (`tos-api/src/vdi/eddi.rs:52@DEVICE_PLANES`) and its gate (`tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`) | 16 | see §4 |
+| EdDI, `DEVICE_PLANES` (`tos-api/src/vdi/eddi.rs:53@DEVICE_PLANES`) and its gate (`tos-api/src/vdi/eddi.rs:81@is_scrninfo`) | 16 | **V66: 16 and 32**, each with its own table (§4) |
 
 V63-V67 own the drawing, MFDB, pen and AES changes that follow; what V62 does to
 a 32-plane boot is limited to the answers of §3 and the backend constant
@@ -597,15 +597,16 @@ no separate workstation-open value set.
 
 ### 4. The EdDI gate (`vq_extnd` with `CONTRL[5] == 1`, `INTIN[0] == 2`)
 
-The gate (`tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`) answers the 273-word table
-only when `backend.planes() == DEVICE_PLANES` (16) and otherwise lets the call fall
-through to plain `vq_extnd` (mode `INTIN[0] != 0`, so `INQ_TAB`) **[C]**. ADR-038
-point 8 gives the 32-plane table (values there); it belongs to V66 (`TASK/V66.md`
-scope), and so do the EdDI constant `DEVICE_PLANES` and its gate. **V62 does not widen the
-gate** (TASK/V62.md, "Spec gate ... and the slice boundary", point 1). So after V62 and
-before V66 a `vdiplanes=32` boot **answers the EdDI call with `INQ_TAB`** (the existing
-fall-through; `INQ_TAB[4] = 32`, §3); V62's receipt states it. The 32-plane gate and constant
-follow the setting with V66. At 16 planes the table and the gate are unchanged.
+The gate (`tos-api/src/vdi/eddi.rs:81@is_scrninfo`) answers the 273-word table when
+`backend.planes()` is 16 or 32 (`VDI_PLANES_WIDE`), each depth with its own table, and
+otherwise lets the call fall through to plain `vq_extnd` (mode `INTIN[0] != 0`, so
+`INQ_TAB`) **[C]**. The 32-plane table is ADR-038 point 8, specified in
+[`../eddi-vq_scrninfo-32.md`](../eddi-vq_scrninfo-32.md) §2 and implemented by V66
+(`TASK/V66.md`); at 16 planes the table and the gate are unchanged (ADR-038 point 11).
+Between V62 and V66 a `vdiplanes=32` boot answered the EdDI call with `INQ_TAB` (V62 did
+not widen the gate, TASK/V62.md, "Spec gate ... and the slice boundary", point 1); since
+V66 it answers the 32-plane table. A plane count other than 16 and 32 has no table
+(`eddi-vq_scrninfo-32.md` §5); no NewTOS boot has one, only host test doubles.
 
 ### 5. What V62 does not decide
 
@@ -618,11 +619,12 @@ XBIOS words (V68) follow their own slices.
 - **Inferred:** the exact `numeric_setting` call for `vdiplanes=` (prefix, `max`) and
   that every `Given(n)` other than 16/32 is treated as invalid (§1); no line of
   ADR-038 spells the mapping out.
-- **Settled (TASK/V62.md, "Spec gate ... and the slice boundary"):** a 32-plane boot
-  before V66 answers `vq_scrninfo` with the `INQ_TAB` fall-through; the gate and the EdDI
-  constant follow the setting with V66, not V62 (§2, §4).
+- **Closed by V66 (TASK/V66.md):** the interim of TASK/V62.md ("Spec gate ... and the
+  slice boundary"), a 32-plane boot answering `vq_scrninfo` with the `INQ_TAB`
+  fall-through, ended with V66: the gate and the table follow the setting (§2, §4).
 - **Not traced:** the order inside `kernel/src/lib.rs` between reading the boot
   arguments and the first `planes()` use (§1).
 - The text of the invalid-value boot line is not fixed by any source (§1).
 - Out of scope: `docs/api/vdi/eddi-vq_scrninfo.md` is German (CLAUDE.md language
-  rule); translated when it is next edited (V66).
+  rule); V66 did not edit it (TASK/V66.md), so its translation and a pointer to
+  `eddi-vq_scrninfo-32.md` stay open, no ticket yet.

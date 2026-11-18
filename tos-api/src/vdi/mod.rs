@@ -518,7 +518,7 @@ fn screen(pb: &Vdipb) -> i16 {
             if let Some(vwk) = unsafe { vwk::resolve(handle) } {
                 let ncol = backend.num_colors();
                 match opcode {
-                    102 if scrninfo => eddi::vq_scrninfo(pb),
+                    102 if scrninfo => eddi::vq_scrninfo(pb, backend),
                     102 => workstation::vq_extnd(pb, vwk, backend),
                     14 => attributes::vs_color(pb, vwk, ncol, backend),
                     15 => attributes::vsl_type(pb, vwk),
