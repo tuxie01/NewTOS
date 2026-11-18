@@ -1,6 +1,6 @@
 # SND05 — Sound: DMA ring, PWM jack backend and XBIOS 0x80-0x8D
 
-Status: IMPLEMENTED (2026-11-17) | Priority: P2 | Commit: self | Missing: real-Pi run (audible 440 Hz tone at the jack, both/left/right, PWM-paced DMA), bios-r1 230-235 and SND04 snprobe on a Pi with the backend, tester acceptance
+Status: DONE (2026-11-18) | Priority: P2 | Commit: 06d157815 | Receipt: SND05-STATUS-DONE.MD
 
 Type: developer. From [SND01](SND01.md), decisions 2026-11-12. Starts after [SND03](SND03.md) (measured clock,
 FIFO, cache, channels) and [SND04](SND04.md) (oracle semantics); Q-N5 (`_SND`) and Q-N6 (rates) are decided from
