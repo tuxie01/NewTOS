@@ -1018,6 +1018,9 @@ impl RasterBackend for VdiScreen {
         }
         Self::clean(fb, cx0, cy0, cx1, cy1);
     }
+    fn pel_to_device32(&self, pel: Pel) -> u32 {
+        Self::pel_to_rgb(pel) // the pen's pixel, a 32-plane memory form's (TASK/V65)
+    }
 }
 
 /// The 16-entry BitBlt logic-op table, `D' = op(S, D)` on the packed pixel
@@ -1155,8 +1158,8 @@ fn pen_entry(r: u16, g: u16, b: u16) -> u32 {
 
 /// The 16-bit memory-MFDB word of an [`ACTIVE_PALETTE`] entry
 /// ([`RasterBackend::pel_to_device16`]): the word itself at 16 planes; at 32
-/// the pen pixel's top 5 bits per gun, until TASK/V65 gives the memory MFDB
-/// its 32-bit form.
+/// the pen pixel's top 5 bits per gun (a 32-plane memory form takes the pen's
+/// pixel, [`RasterBackend::pel_to_device32`], TASK/V65).
 fn pen_word16(entry: u32) -> u16 {
     if PLANES.load(Ordering::Relaxed) == crate::bootargs::VDI_PLANES_WIDE {
         device_to_word(entry)

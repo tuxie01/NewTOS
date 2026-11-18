@@ -582,7 +582,7 @@ fn bb_save_does_not_capture_the_cursor() {
     mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
-    let words = bb_save_words(SAVE_W, SAVE_H);
+    let words = bb_save_words(b, SAVE_W, SAVE_H);
     let mut buf = vec![0u32; words];
     // SAFETY: `buf` holds `bb_save_words(SAVE_W, SAVE_H)` u32 words.
     unsafe { bb_save(b, buf.as_mut_ptr(), SAVE_X, SAVE_Y, SAVE_W, SAVE_H) };
@@ -643,7 +643,7 @@ fn bb_save_bb_restore_round_trip_leaves_no_ghost() {
     mouse::set_locator_pos(CUR_X, CUR_Y);
     cursor_show(b);
 
-    let words = bb_save_words(SAVE_W, SAVE_H);
+    let words = bb_save_words(b, SAVE_W, SAVE_H);
     let mut buf = vec![0u32; words];
     // SAFETY: `buf` holds `bb_save_words(SAVE_W, SAVE_H)` u32 words.
     unsafe { bb_save(b, buf.as_mut_ptr(), SAVE_X, SAVE_Y, SAVE_W, SAVE_H) };

@@ -1189,7 +1189,7 @@ gr_gicon	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_icon	mapped	mono and colou
 gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_signed_border	mapped	th>0 inner rings, th<0 |th|+1 rings ending on the rect edge (gemgraf.c:813-832)
 gr_box	aes/gemgraf.c	tos-api/src/aes/object.rs	draw_border	mapped	the ring strips themselves; the OUTLINED and SHADOW boxes of just_draw call it directly
 gr_box	aes/gemgraf.c	tos-api/src/aes/window.rs	rect_outline	mapped	the 1px border of a window frame gadget (just_draw's box arm, th = 1) as four fill_rect strips; sets LSTLIN TRUE as gsx_box's v_pline does (V40)
-gsx_mcalc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_mcalc	mapped	size of the menu/alert screen buffer: NewTOS = bb_save_words of the whole screen *4; EmuTOS = MENU_BUFFER_SIZE*gl_wchar*gl_hchar*gl_nplanes/8 (gemgsxif.c:98-105)
+gsx_mcalc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_mcalc	mapped	size of the menu/alert screen buffer: NewTOS = bb_save_words of the whole screen *4 (twice at vdiplanes=32, V65); EmuTOS = MENU_BUFFER_SIZE*gl_wchar*gl_hchar*gl_nplanes/8 (gemgsxif.c:98-105)
 gsx_malloc	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_malloc	mapped	one page-rounded MX_PREFTTRAM block before the first process, kept for the boot; EmuTOS dos_alloc_anyram
 gsx_mfree	aes/gemgsxif.c	-	-	unmapped	no counterpart: the buffer is never freed (kept for the whole boot, gsxif.rs gsx_malloc)
 gsx_mret	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_mret	mapped	kva/pa/len of the buffer (gl_tmp.fd_addr, gl_mlen)
@@ -1208,6 +1208,7 @@ gsx_init	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_init	mapped	gsx_wsopen + gs
 gsx_graphic	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	gsx_graphic	mapped	v_exit_cur (contrl[5]=2) / v_enter_cur (3) on a change of gl_graphic; setmb/resetmb half missing (see gsx_resetmb)
 bb_set	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	bb_save	mapped	save half: VDI bb_save into the screen buffer (height cut to the buffer, CLIPPED counter instead of KINFO) or a heap/pool copy; the 16-pixel word alignment is vdi::bb_save's
 bb_set	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	restore	mapped	restore half: Saved::restore via vdi::bb_restore
+bb_set	aes/gemgsxif.c	tos-api/src/vdi/raster/wide.rs	save_form	mapped	gl_tmp as a device form with fd_nplanes = gl_nplanes: the bb_save buffer form at the setting depth (16, or 32 at vdiplanes=32), the one source of its stamp and its size (V65)
 bb_save	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	bb_save	mapped	bb_set(TRUE, r)
 bb_restore	aes/gemgsxif.c	tos-api/src/aes/gsxif.rs	restore	mapped	bb_set(FALSE, r): Saved::restore
 gsx_tick	aes/gemgsxif.c	tos-api/src/aes/input.rs	now_tick	mapped	only the tick length: the host clock in gl_ticktime (20 ms) periods; no vex_timv tick routine is installed
@@ -1328,7 +1329,7 @@ search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the r
 st_fl_ptr	vdi/vdi_fill.c	tos-api/src/vdi/fill_patterns.rs	select	mapped	pattern/mask choice; NewTOS derives it at draw time from fill_style/fill_index instead of caching patptr/patmsk in the Vwk
 vdi_v_contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	opcode 103
 vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0); any vertex count, 0 or negative draws nothing (with fill_per the 1-point perimeter still clears LSTLIN unless clip is on and PTSIN[1] misses the band; V40); count capped to MAX_VERTICES by dispatch_in (V23); of >= MAX_VERTICES the first 1024 closed cleanly where EmuTOS overruns local_ptsin (docs/COMPATIBILITY.md, V22)
-vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105; at 32 planes INTOUT[1] is the top 5 bits per gun of the masked 24-bit pixel until V65 widens the answer (V64)
+vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105; at 32 planes INTOUT[0] / INTOUT[1] are the high / low word of the masked 24-bit pixel (ADR-038 point 7; V65)
 vdi_vqf_attributes	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	vqf_attributes	mapped	opcode 37
 vdi_vr_recfl	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	vr_recfl	mapped	opcode 114
 vdi_vsf_color	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_color	mapped	opcode 25; MAP_COL folded to identity
@@ -1413,28 +1414,35 @@ hwblit_raster	vdi/vdi_raster.c	-	-	design:hardware:blitter	Atari BLiTTER BitBlt 
 linea_blit	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2909	ADR-030: no Line-A emulation; Line-A function 0xE: no NewTOS counterpart
 linea_raster	vdi/vdi_raster.c	-	-	design:ADR-030@docs/MEMORY.md:2909	ADR-030: no Line-A emulation; Line-A function 7: no NewTOS counterpart
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	effective_planes	mapped	plane count of source and destination and the plane_ct <= 16 gate
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	device_mem_planes	mapped	the plane_ct <= 16 cap (:962-966) raised to the setting depth, 16 or 32 at vdiplanes=32 (ADR-038 point 5); the one depth source of the cap, the bb_save stamp and bb_save_words (V65)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	refused_at_depth	mapped	no EmuTOS rule above 16 planes: at vdiplanes=32 a memory form of 9..31 planes is refused before any bind, 16 included (owner choice O5; V65)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	px_bytes	mapped	sizeof(WORD) of the chunky form (:986-987), 4 bytes a pixel for a 32-plane form (ADR-038 point 5; V65)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	read	mapped	MFDB reading (Mfdb::read, caller ABI) replaces the MFDB field access
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	planar_hull	mapped	s_nxln/d_nxln = fd_wdwidth * fd_nplanes * 2 of a memory form below nine planes (:922-923,937-938; V19): group g of row y = linear group y * fd_wdwidth + g, fd_w unread; the block hull clipped to the fd_h rows, what is bound (V26)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	of	mapped	PlanarForm::of: the interleaved form below nine planes, s_nxwd = fd_nplanes * 2, s_nxpl = 2 (:919-940,959-960; V19)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_span_px	mapped	the fd_h rows of a chunky memory form, row d_nxln / 2 = fd_wdwidth * fd_nplanes WORDs (:919-923,933-938; V28), fd_w and fd_h unread by EmuTOS; NewTOS limits only to the fd_h rows of the form (V26)
-setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_stride_px	mapped	s_nxln / 2 = d_nxln / 2 = fd_wdwidth * fd_nplanes WORDs, the row of a chunky memory form of 9..16 planes (:922-923,937-938; V28)
+setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_stride_px	mapped	s_nxln / 2 = d_nxln / 2 = fd_wdwidth * fd_nplanes WORDs, the row of a chunky memory form of 9..16 planes (:922-923,937-938; V28); a 32-plane form at vdiplanes=32 has a row of fd_wdwidth * 16 32-bit pixels, s_nxln / 4 (ADR-038 point 5; V65)
 setup_info	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	chunky_hull	mapped	the pixels a block can touch, first to last, clipped to the fd_h rows; what bind_block binds (V26)
 setup_pattern	vdi/vdi_raster.c	-	-	design:source:docs/api/vdi/raster/_raster.md	fills p_nxpl/p_nxln/p_mask only; cpy_raster has set p_addr = NULL (:1345), so no blit reads them and PAT_FLAG is a strip (D-082); NewTOS strips it in vro_cpyfm (op = INTIN[0] & 0x0F) and has nothing to set up (V19)
 vdi_vr_trnfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm	mapped	opcode 110, planar and truecolor branches
 vdi_vro_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vro_cpyfm	mapped	opcode 109
 vdi_vrt_cpyfm	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vrt_cpyfm	mapped	opcode 121
 vr_trnfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	vr_trnfm16	mapped	-
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	screen_to_mem	mapped	screen to memory, 16-bit words
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memory to screen, 16-bit words
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words, row fd_wdwidth * fd_nplanes WORDs; walk backwards (last row, last pixel first) iff the source start pointer lies below the destination start (:989-1002), as EmuTOS (V28)
+vr_trnfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	vr_trnfm32	mapped	the same with 32 for 16 at vdiplanes=32: 32 planes, plane p holds bit 31 - p, planesize * 64 bytes, scratch in place, fd_stand not written (:190-256; ADR-038 point 6; V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	screen_to_mem	mapped	screen to memory, 16-bit words; raw 32-bit store words (X included) into a 32-plane form at vdiplanes=32 (V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_screen	mapped	memory to screen, 16-bit words; raw 32-bit words from a 32-plane form, and the 16-bit colour-icon form expanded per pixel, at vdiplanes=32 (V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	read_screen_row	mapped	the screen side of a copy as pixel words: the 16-bit screen words, or the raw 32-bit store words through read_device_rect at vdiplanes=32 (V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster/wide.rs	fetch_row	mapped	the source run of a memory form; the 16-bit colour-icon form expanded to device pixels for the 32-bit screen walk at vdiplanes=32 (V65)
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_to_mem	mapped	memory to memory, 16-bit words, row fd_wdwidth * fd_nplanes WORDs; walk backwards (last row, last pixel first) iff the source start pointer lies below the destination start (:989-1002), as EmuTOS (V28); 32-bit pixels between two 32-plane forms at vdiplanes=32 (V65)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	chunky_reverse	mapped	the direction test src < dst on the two start pointers form + y * width + x (:986-995; V28)
-vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word
+vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	raster_op	mapped	the 16 logic ops on the pixel word, bitwise on all 32 bits of a 32-plane form (V65)
 vro_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	copy_rect	mapped	screen to screen
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	row_cols	mapped	the columns of one row inside the form: start y * d_nxln / 2 (:986-990), any column, wrapping into other rows (V26)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	one pixel at y * src_width + x (:989) for any x, 0 outside the fd_h rows (V26)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	one pixel at y * dst_width + x (:990) for any x, dropped outside the fd_h rows (V26)
 vro_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mem_index	mapped	the pixel address y * width + x of :989-990, None outside the fd_h rows (V26)
-vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mono_to_mem	mapped	mono source expanded into a 16-bit memory MFDB
+vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	mono_to_mem	mapped	mono source expanded into a 16-bit memory MFDB, or a 32-plane one at vdiplanes=32 with the pens 32-bit pixels (V65)
+vrt_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	pel_to_device32	mapped	fgcol = palette[fg_col] (:1234-1236) as the pen 32-bit pixel 0x00RRGGBB for a 32-plane memory form (V65)
 vrt_cpyfm16	vdi/vdi_raster.c	kernel/src/vdi_backend.rs	blit_mono	mapped	mono source expanded onto the screen
 vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	put_mem	mapped	the destination pixel at y * dst_width + x (:1249-1250) for any x, dropped outside the fd_h rows (V26)
 vrt_cpyfm16	vdi/vdi_raster.c	tos-api/src/vdi/raster.rs	get_mem	mapped	MD_XOR reads the destination pixel (*q = ~*q), 0 outside the fd_h rows (V26)
@@ -1796,6 +1804,7 @@ clamp_height	aes/gemmnext.c	tos-api/src/aes/menu.rs	clamp_height	mapped	menu hei
 mnext_init	aes/gemmnext.c	tos-api/src/aes/menu.rs	mnext_init	mapped	INIT_*_VALUE into settings (:103-110); static initializer plus mnext_init on restart
 clamp_ypos	aes/gemmnext.c	tos-api/src/aes/menu.rs	clamp_ypos	mapped	hchar-step clamp onto the screen and below the bar (:115-129); NewTOS uses backend.height() and gl_hbox(), EmuTOS gl_rscreen.g_h and gl_rfull.g_y
 popup_blit	aes/gemmnext.c	tos-api/src/aes/gsxif.rs	popup_blit_save	mapped	save/restore of the screen under a pop-up or submenu into a fresh block per opening (:136-215); rectangle from menu.rs sr_rect; restore is Saved::restore
+popup_blit	aes/gemmnext.c	tos-api/src/vdi/raster.rs	bb_save_words	mapped	bufsize = ((w + 15) / 16) * 2 * h * gl_nplanes (:157) over 4, at the setting depth from the bb_save stamp (16, or 32 at vdiplanes=32; V65)
 setup_moblk	aes/gemmnext.c	-	-	unmapped	no counterpart: builds the MOBLK for handle_popup's ev_multi(MU_M1|MU_BUTTON); NewTOS popup_shown polls mouse_position and child_at each pump; no ADR
 mn_popup	aes/gemmnext.c	tos-api/src/aes/menu.rs	mn_popup	mapped	BEG_MCTRL, wait button up, position + clamp, save, track, restore, wait button up, END_MCTRL (:304-356)
 find_submenu_from_obtype	aes/gemmnext.c	tos-api/src/aes/menu.rs	smib_find_parent	mapped	EmuTOS indexes gl_submenu by the (ob_type>>8)-128 index stored in the item (:361-374); NewTOS looks the SMIB up by (parent_tree, parent_item), the index is still written into ob_type by submenu_mark

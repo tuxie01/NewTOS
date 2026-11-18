@@ -90,9 +90,11 @@ fn long_at(pb: &Pb, word: usize) -> u32 {
     u32::from_ne_bytes([bytes[0][0], bytes[0][1], bytes[1][0], bytes[1][1]])
 }
 
-/// `gsx_mcalc` at NewTOS' size for this harness's 640×480 workstation.
+/// `gsx_mcalc` at NewTOS' size for this harness's 640×480 workstation (its
+/// installed raster backend, after [`context`]).
 fn expected_len() -> u32 {
-    (tos_api::vdi::bb_save_words(SCREEN_W as i16, SCREEN_H as i16) * 4) as u32
+    let raster = tos_api::host::host().and_then(|h| h.raster()).expect("context() installs the harness backend");
+    (tos_api::vdi::bb_save_words(raster, SCREEN_W as i16, SCREEN_H as i16) * 4) as u32
 }
 
 /// The three handles the measurement asks WF_SCREEN with: the desktop window

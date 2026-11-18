@@ -134,8 +134,8 @@ pub trait RasterBackend: Sync {
     /// framebuffer pixels. The screen-destination path resolves the same PEL
     /// to a device pixel internally (`blit_mono`); this exposes the packed
     /// 16-bit form the off-screen memory buffer needs. `pel` is a `u8`, so it
-    /// always indexes the 256-entry active palette in bounds. At 32 planes, until
-    /// TASK/V65 gives the memory MFDB its 32-bit form: the pen pixel's top 5 bits per gun.
+    /// always indexes the 256-entry active palette in bounds. At 32 planes the pen pixel's top
+    /// 5 bits per gun; a 32-plane memory form takes [`pel_to_device32`](Self::pel_to_device32).
     fn pel_to_device16(&self, pel: Pel) -> u16;
 
     /// Convert a **raw device pixel word** (as returned by
@@ -532,6 +532,22 @@ pub trait RasterBackend: Sync {
                 }
             }
         }
+    }
+
+    /// Resolve a PEL to the **32-bit memory-MFDB pixel** of a 32-plane form
+    /// (`fd_nplanes = 32`, ADR-038 point 5, TASK/V65) through the
+    /// [active pseudo-palette](Self::set_active_palette): the pen's device pixel
+    /// `0x00RRGGBB`, X = 0 — what `vrt_cpyfm` writes into a 32-plane memory
+    /// destination, where EmuTOS' `vrt_cpyfm16` writes `palette[fg_col]` as a
+    /// WORD (`vdi_raster.c:1234-1236`; `_raster.md` 32-plane setting §4).
+    ///
+    /// The default is the 16-plane rule, the pen word expanded to its device
+    /// pixel (a pen word has no `OVERLAY_BIT`, so X = 0): exact for a backend
+    /// whose pens are 5-bit words. A backend that reports [`VDI_PLANES_WIDE`]
+    /// has 8 bits per gun and **must override** it (the kernel's does).
+    fn pel_to_device32(&self, pel: Pel) -> u32 {
+        debug_assert!(self.planes() != VDI_PLANES_WIDE, "a 32-plane backend overrides pel_to_device32");
+        self.rgb565_to_device(self.pel_to_device16(pel))
     }
 }
 

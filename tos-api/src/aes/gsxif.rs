@@ -353,10 +353,10 @@ fn dim(v: u16) -> i16 {
 /// `gsx_mcalc` (`gemgsxif.c:98-104`), at NewTOS' size: the bytes one
 /// `bb_save` of the **whole screen** needs — `stride16(W) * H * 2`, i.e.
 /// [`crate::vdi::bb_save_words`]`(W, H) * 4` (640×480 → 614 400,
-/// 1920×1080 → 4 147 200). Every rectangle either user saves is clamped to
-/// the screen, so nothing can exceed it.
+/// 1920×1080 → 4 147 200; twice that at `vdiplanes=32`, ADR-038 point 10, V65).
+/// Every rectangle either user saves is clamped to the screen, so nothing can exceed it.
 pub fn gsx_mcalc(backend: &dyn RasterBackend) -> usize {
-    crate::vdi::bb_save_words(dim(backend.width()), dim(backend.height())) * 4
+    crate::vdi::bb_save_words(backend, dim(backend.width()), dim(backend.height())) * 4
 }
 
 /// `gsx_malloc` (`gemgsxif.c:108-114`): take the buffer from the GEMDOS pool
@@ -532,7 +532,7 @@ pub fn bb_save(backend: &dyn RasterBackend, x: i16, y: i16, w: i16, h: i16) -> O
     let mut h = h;
     let backing = match gsx_mret() {
         Some(buf) => {
-            let need = crate::vdi::bb_save_words(w, h) * 4;
+            let need = crate::vdi::bb_save_words(backend, w, h) * 4;
             if need > buf.len {
                 // `bb_set`: "adjust height to fit buffer: this will leave
                 // droppings!" (`gemgsxif.c:334-337`).
@@ -548,7 +548,7 @@ pub fn bb_save(backend: &dyn RasterBackend, x: i16, y: i16, w: i16, h: i16) -> O
             Backing::Screen
         }
         None => {
-            let words = crate::vdi::bb_save_words(w, h);
+            let words = crate::vdi::bb_save_words(backend, w, h);
             let mut v = alloc::vec![0u32; words];
             // SAFETY: `v` holds `bb_save_words(w, h)` `u32` words.
             unsafe { crate::vdi::bb_save(backend, v.as_mut_ptr(), x, y, w, h) };
@@ -584,13 +584,13 @@ pub fn popup_blit_save(backend: &dyn RasterBackend, x: i16, y: i16, w: i16, h: i
         return None;
     }
     if !crate::bdos::mem::init::is_initialised() {
-        let words = crate::vdi::bb_save_words(w, h);
+        let words = crate::vdi::bb_save_words(backend, w, h);
         let mut v = alloc::vec![0u32; words];
         // SAFETY: `v` holds `bb_save_words(w, h)` `u32` words.
         unsafe { crate::vdi::bb_save(backend, v.as_mut_ptr(), x, y, w, h) };
         return Some(Saved { x, y, w, h, backing: Backing::Heap(v) });
     }
-    let bytes = crate::vdi::bb_save_words(w, h) * 4;
+    let bytes = crate::vdi::bb_save_words(backend, w, h) * 4;
     if bytes == 0 || bytes > Long::MAX as usize {
         return None;
     }

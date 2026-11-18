@@ -19,8 +19,10 @@
 //!   it stops at a pen that differs only in the low 3 bits of one gun (the
 //!   spec's test pens `(17,0,0)` and `(25,0,0)`, TASK/V64 acceptance), and the
 //!   `OVERLAY_BIT` mask of 16 planes does not run (a blue bit at 32).
-//! - F5: `v_get_pixel` keeps the interim answer of V63, now projected from
-//!   the 24-bit pixel.
+//! - F5: `v_get_pixel` kept the interim answer of V63 until V65; since V65 it
+//!   answers the high and the low word of the 24-bit pixel at 32 planes
+//!   (ADR-038 point 7), so the two test pens read apart; the 16-plane answer
+//!   is unchanged.
 //!
 //! The backend is the kernel's `VdiScreen` over a host store, shared with
 //! the V63 tests (`vdi_planes32_common`).
@@ -239,8 +241,9 @@ fn vs_color_changes_only_the_calling_workstation_at_32_planes() {
 /// For every request of every gun the 32-plane pen pixel, projected to the
 /// top 5 bits of each gun, is within one 5-bit step of the 16-plane pen
 /// (P9, ADR-038 point 13 (ii)); the bound 1 is reached (`c = 17`).
-/// `v_get_pixel` at 32 planes answers that projection (F5, the interim of
-/// V63 until V65).
+/// `v_get_pixel` at 32 planes answers the pen pixel itself as its high and
+/// low word (ADR-038 point 7, V65; until V65 the projection, F5), at 16 the
+/// 16-bit word.
 #[test]
 fn pens_at_16_and_32_planes_agree_within_one_5_bit_step() {
     let mut at = [Vec::new(), Vec::new()];
@@ -252,8 +255,13 @@ fn pens_at_16_and_32_planes_agree_within_one_5_bit_step() {
                 ws.vs_color(PEN, gun(g, c));
                 let px = ws.drawn(PEN, 60, 60);
                 let (i0, w) = ws.v_get_pixel(60, 60);
-                assert_eq!(i0, 0, "{planes}: INTOUT[0]");
-                assert_eq!(w, device_to_word(px), "{planes}: v_get_pixel of gun {g}, {c}");
+                if planes == 32 {
+                    assert_eq!(i0, (px >> 16) as i16, "{planes}: INTOUT[0]");
+                    assert_eq!(w, px as u16, "{planes}: v_get_pixel of gun {g}, {c}");
+                } else {
+                    assert_eq!(i0, 0, "{planes}: INTOUT[0]");
+                    assert_eq!(w, device_to_word(px), "{planes}: v_get_pixel of gun {g}, {c}");
+                }
                 at[k].push(px);
             }
         }
@@ -402,12 +410,13 @@ fn the_overlay_bit_mask_does_not_run_at_32_planes() {
     }
 }
 
-/// `v_get_pixel` at 32 planes keeps V63's interim answer (F5): `INTOUT[0] =
-/// 0`, `INTOUT[1] =` the top 5 bits per gun of the masked 24-bit pixel, so
-/// the two test pens answer one word (`0x0000`, red 4 and 6 are below 8),
-/// although the flood fill tells them apart; at 16 both answer `0x0800`.
+/// `v_get_pixel` at 32 planes answers the high and the low word of the
+/// masked 24-bit pixel (ADR-038 point 7, V65, which replaced V63's interim
+/// projection F5), so the two test pens read apart as the flood fill tells
+/// them apart: `{4, 0}` and `{6, 0}` (`q(17) = 4`, `q(25) = 6`); at 16 both
+/// answer `{0, 0x0800}`.
 #[test]
-fn v_get_pixel_keeps_the_interim_answer_at_32_planes() {
+fn v_get_pixel_answers_the_wide_pixel_at_32_planes() {
     for planes in [32u16, 16] {
         let _g = setting(planes);
         let mut ws = Ws::open();
@@ -416,11 +425,11 @@ fn v_get_pixel_keeps_the_interim_answer_at_32_planes() {
         ws.drawn(RING_PEN, 80, 80);
         ws.drawn(INSIDE_PEN, 81, 80);
         screen().put_device_pixel(82, 80, 0xA500_0000 | screen().raw(81, 80));
-        let want = if planes == 32 { 0x0000 } else { 0x0800 };
-        assert_eq!(ws.v_get_pixel(80, 80), (0, want), "{planes}: ring pen");
-        assert_eq!(ws.v_get_pixel(81, 80), (0, want), "{planes}: inside pen");
+        let (ring, inside) = if planes == 32 { ((4, 0), (6, 0)) } else { ((0, 0x0800), (0, 0x0800)) };
+        assert_eq!(ws.v_get_pixel(80, 80), ring, "{planes}: ring pen");
+        assert_eq!(ws.v_get_pixel(81, 80), inside, "{planes}: inside pen");
         if planes == 32 {
-            assert_eq!(ws.v_get_pixel(82, 80), (0, want), "32: X noise is masked");
+            assert_eq!(ws.v_get_pixel(82, 80), inside, "32: X noise is masked");
         }
     }
 }

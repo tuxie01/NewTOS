@@ -1,4 +1,4 @@
-//! Shared fixture of the tests at the 32-plane setting (TASK/V63, TASK/V64):
+//! Shared fixture of the tests at the 32-plane setting (TASK/V63-V65):
 //! the kernel's `VdiScreen` over a host store, a test host, a VDI parameter
 //! block and a virtual workstation, with `planes()` settable so each test runs
 //! both settings.
@@ -8,8 +8,9 @@
 //! here by path (`kernel/src/raster_kernel.rs`, `raster_line.rs`,
 //! `raster_expand.rs`, `raster_copy.rs`, as the `raster_kernel_*` tests do)
 //! and the backend methods call them exactly as `kernel/src/vdi_backend.rs`
-//! does; the device-pixel conversions (`word_to_device`, `device_to_word`,
-//! `pen_pixel`, `pel_to_rgb`, `pel_to_device16`, `xor_pixel`,
+//! does (`read_device_rect`/`write_device_rect` through `raster_copy`, TASK/V65);
+//! the device-pixel conversions (`word_to_device`, `device_to_word`,
+//! `pen_pixel`, `pel_to_rgb`, `pel_to_device16`, `pel_to_device32`, `xor_pixel`,
 //! `clear_screen_word`, `read_pixel`) are transcribed expression for
 //! expression. **Keep the transcription in sync with
 //! `kernel/src/vdi_backend.rs`** — the tests are only as faithful as the copy.
@@ -52,8 +53,8 @@ pub const OVERLAY_BIT: u16 = 0x0020;
 /// The white pen's pixel in V63: pen 0 of the default palette, 5-bit 31
 /// replicated to `0xFF` per gun (`_raster.md` §3, first bullet).
 pub const WHITE_PIXEL: u32 = 0x00FF_FFFF;
-/// `v_get_pixel`'s interim 16-bit word of the white pen (`0xFFDF`, the
-/// pen-0 word, `_color-pixel-input.md` "Interim answer until V65").
+/// The 16-bit word of the white pen (`0xFFDF`, the pen-0 word): `v_get_pixel`'s
+/// answer at 16 planes (and its interim answer at 32 until V65).
 pub const WHITE_WORD: u16 = 0xFFDF;
 /// The cleared word at 16 planes, `memset(0xff)` (`vdi/vdi_control.c:610-618`).
 pub const CLEARED_WORD_16: u16 = 0xFFFF;
@@ -266,6 +267,10 @@ impl RasterBackend for Screen {
             entry as u16
         }
     }
+    /// `VdiScreen::pel_to_device32` (TASK/V65): `pel_to_rgb`, the pen's device pixel.
+    fn pel_to_device32(&self, pel: Pel) -> u32 {
+        self.pel_to_rgb(pel)
+    }
     fn device_to_rgb565(&self, argb: u32) -> u16 {
         device_to_word(argb)
     }
@@ -401,6 +406,20 @@ impl RasterBackend for Screen {
         if x >= 0 && y >= 0 && (x as u16) < W && (y as u16) < H {
             self.px.lock().unwrap()[y as usize * STRIDE as usize + x as usize] = argb;
         }
+    }
+    /// `VdiScreen::read_device_rect`: `raster_copy::read_rect` over the store.
+    fn read_device_rect(&self, x: i16, y: i16, w: u16, h: u16, out: &mut [u32]) {
+        // SAFETY: the store holds `H` rows of `STRIDE >= W` pixels; `out` is not the store.
+        self.with_surface(|s, _| unsafe {
+            raster_copy::read_rect(s, W as i32, H as i32, x as i32, y as i32, w as usize, h as usize, out)
+        });
+    }
+    /// `VdiScreen::write_device_rect`: `raster_copy::write_rect` onto the store.
+    fn write_device_rect(&self, x: i16, y: i16, w: u16, h: u16, src: &[u32]) {
+        // SAFETY: as in `read_device_rect`.
+        self.with_surface(|s, _| unsafe {
+            raster_copy::write_rect(s, W as i32, H as i32, x as i32, y as i32, w as usize, h as usize, src)
+        });
     }
     fn flush_rect(&self, _x0: i16, _y0: i16, _x1: i16, _y1: i16) {}
 }

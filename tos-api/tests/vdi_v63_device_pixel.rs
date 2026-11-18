@@ -26,13 +26,13 @@
 //! (`_raster.md` P3), so the pen scene at 32 planes is the 16-plane one
 //! within one 5-bit step per gun (P9), no longer equal to it.
 //!
-//! Until V65 `vro_cpyfm`/`vrt_cpyfm` refuse a 32-plane screen
+//! Until V65 `vro_cpyfm`/`vrt_cpyfm` refused a 32-plane screen
 //! (`CHUNKY_PLANES`, `_raster.md` §4), so R4 for the sixteen operations is
-//! pinned on the kernel's `raster_op` and `copy_rect` directly. Until V65
-//! `v_get_pixel` keeps its 16-bit answer shape (`_color-pixel-input.md`,
-//! "Interim answer until V65", not a contract): the tests compare it with
-//! the answer for the same pixel with X = 0 rather than with a constant,
-//! except the cleared screen, whose value the spec states (`0xFFDF`).
+//! pinned on the kernel's `raster_op` and `copy_rect` directly (the memory
+//! forms of V65 are pinned in `vdi_v65_memory_forms.rs`). Since V65
+//! `v_get_pixel` at 32 planes answers the high and the low word of the masked
+//! pixel (`_color-pixel-input.md`, "the wide `v_get_pixel` answer"), which
+//! replaced the interim 16-bit answer the V63 tests first pinned.
 //!
 //! Ticket: `TASK/V63.md`.
 
@@ -128,9 +128,10 @@ fn fills_lines_and_text_draw_the_pen_pixel_with_x_zero() {
 // ── R3, R5: a cleared screen reads as the white pen ──────────────────────
 
 /// At 32 planes `v_clrwk` shows white and reads as the pixel of the white
-/// pen through `v_get_pixel` (R3, R5; interim answer `0, 0xFFDF`), equal to
-/// a pen-0 pixel. At 16 planes the answer stays EmuTOS's `0xFFFF`, one
-/// `OVERLAY_BIT` apart from pen 0 (R6, `vdi/vdi_fill.c:671-681`).
+/// pen through `v_get_pixel` (R3, R5; the wide answer of V65, `0x00FF,
+/// 0xFFFF`, replaced V63's interim `0, 0xFFDF`), equal to a pen-0 pixel.
+/// At 16 planes the answer stays EmuTOS's `0xFFFF`, one `OVERLAY_BIT` apart
+/// from pen 0 (R6, `vdi/vdi_fill.c:671-681`).
 #[test]
 fn a_cleared_screen_reads_as_the_white_pen_at_32_planes() {
     for planes in [32u16, 16] {
@@ -145,7 +146,8 @@ fn a_cleared_screen_reads_as_the_white_pen_at_32_planes() {
         ws.vr_recfl(100, 100, 109, 109);
         assert_eq!(word_to_device(scr.pel_to_device16(0)), WHITE_PIXEL, "pen 0 is the white pen");
         let pen0 = ws.v_get_pixel(105, 105);
-        assert_eq!(pen0, (0, WHITE_WORD), "{planes} planes: v_get_pixel of a pen-0 pixel");
+        let want = if planes == 32 { ((WHITE_PIXEL >> 16) as i16, WHITE_PIXEL as u16) } else { (0, WHITE_WORD) };
+        assert_eq!(pen0, want, "{planes} planes: v_get_pixel of a pen-0 pixel");
         for (x, y) in [(0, 0), (5, 5), (W as i16 - 1, H as i16 - 1)] {
             let cleared = ws.v_get_pixel(x, y);
             if planes == 32 {
@@ -161,7 +163,8 @@ fn a_cleared_screen_reads_as_the_white_pen_at_32_planes() {
 // ── R5: every read ignores X ─────────────────────────────────────────────
 
 /// `v_get_pixel` at 32 planes answers for `X | colour` what it answers for
-/// the colour with X = 0, for every X (R5). At 16 planes the top bit of X
+/// the colour with X = 0, for every X (R5): the high and the low word of the
+/// colour (V65). At 16 planes the top bit of X
 /// still comes back as `OVERLAY_BIT` (R6, the unmasked read).
 #[test]
 fn v_get_pixel_ignores_the_x_byte_at_32_planes() {
@@ -174,7 +177,8 @@ fn v_get_pixel_ignores_the_x_byte_at_32_planes() {
         for &c in &colours {
             scr.put_device_pixel(10, 10, c);
             let plain = ws.v_get_pixel(10, 10);
-            assert_eq!(plain, (0, device_to_word(c)), "{planes} planes: v_get_pixel of 0x{c:08X}");
+            let want = if planes == 32 { ((c >> 16) as i16, c as u16) } else { (0, device_to_word(c)) };
+            assert_eq!(plain, want, "{planes} planes: v_get_pixel of 0x{c:08X}");
             for &x in &xs {
                 scr.put_device_pixel(10, 10, x << 24 | c);
                 let got = ws.v_get_pixel(10, 10);

@@ -746,7 +746,7 @@ fn bb_save_clips_the_height_to_the_buffer_and_writes_nothing_past_it() {
     const W: i16 = 64;
     const ROWS: i16 = 10;
     const ASK: i16 = 100;
-    let len = tos_api::vdi::bb_save_words(W, ROWS) * 4;
+    let len = tos_api::vdi::bb_save_words(b, W, ROWS) * 4;
     let mut toy = vec![0xA5u8; len + 4096];
     // SAFETY: `toy` outlives the case; `_restore` puts the real fixture back.
     unsafe { tos_api::aes::gsxif::install_screen_buffer(toy.as_mut_ptr(), FIXTURE_PA, len) };
@@ -755,7 +755,7 @@ fn bb_save_clips_the_height_to_the_buffer_and_writes_nothing_past_it() {
     let saved = tos_api::aes::gsxif::bb_save(b, 16, 40, W, ASK).expect("a clipped save still saves");
     let (x, y, w, hh) = saved.rect();
     assert_eq!((x, y, w), (16, 40, W));
-    let need = tos_api::vdi::bb_save_words(W, ASK) * 4;
+    let need = tos_api::vdi::bb_save_words(b, W, ASK) * 4;
     assert_eq!(
         hh as usize,
         len * ASK as usize / need,

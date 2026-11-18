@@ -151,7 +151,7 @@ pub fn vq_color(pb: &Vdipb, vwk: &Vwk, ncol: u16, backend: &dyn RasterBackend) {
 /// `vdi_defs.h:22`) — the same predicate as `vs_color`/`vq_color`, here
 /// `backend.planes() > 8`:
 ///
-/// - **Truecolor** (our Falcon profile, `planes == 16`): `pixelread` returns
+/// - **Truecolor** (`planes == 16`; at 32 planes widened, see the code): `pixelread` returns
 ///   the raw 16-bit screen word (`vdi_fill.c:677-681`) and the reply is
 ///   `INTOUT[0] = 0`, `INTOUT[1] = pel` (`vdi_fill.c:1104-1110`) — a 16-bit
 ///   RGB colour, **not** a pen index, and there is no `REV_MAP_COL` lookup
@@ -196,11 +196,11 @@ pub fn v_get_pixel(pb: &Vdipb, backend: &dyn RasterBackend) {
     // `v_contourfill` uses (`super::contour::pixelread`).
     let pel = super::contour::pixelread(backend, x, y);
     if backend.planes() > 8 {
-        // TRUECOLOR_MODE: the 16-bit screen word, cast to a WORD. At 32 planes,
-        // until TASK/V65, the top 5 bits per gun of the masked 24-bit pixel (F5).
-        let word = if backend.planes() == VDI_PLANES_WIDE { backend.device_to_rgb565(pel) } else { pel as u16 };
-        pb.set_intout(0, 0);
-        pb.set_intout(1, word as i16);
+        // TRUECOLOR_MODE: `INTOUT[0]` the high, `INTOUT[1]` the low word of the pixel (ADR-038 point 7):
+        // at 16 planes the 16-bit word, high word 0; at 32 the masked `0x00RRGGBB` (`{0x00RR, 0xGGBB}`, V65).
+        let high = if backend.planes() == VDI_PLANES_WIDE { (pel >> 16) as u16 } else { 0 };
+        pb.set_intout(0, high as i16);
+        pb.set_intout(1, pel as u16 as i16);
         return;
     }
 

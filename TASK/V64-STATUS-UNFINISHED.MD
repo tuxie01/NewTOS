@@ -20,7 +20,7 @@ point 4, V64)" (rules P1-P9, the change-set table §3, flood fill F1-F5 §4), wi
   `:458@pack_color32` (P3, clamps to 0..1000), `:468@set_color32`, `:475@actual32`, and the depth dispatchers
   `:483@set_color` / `:494@actual` (`planes == 32` → 8-bit, else 5-bit; R6's gate).
 - **Trait** `tos-api/src/vdi/backend.rs:126@set_active_palette` takes `&[u32; 256]` (slice cut point 1); new constant
-  `tos-api/src/vdi/backend.rs:720@VDI_PLANES_WIDE` (= 32). The dispatcher call site (`tos-api/src/vdi/mod.rs`
+  `tos-api/src/vdi/backend.rs:736@VDI_PLANES_WIDE` (= 32). The dispatcher call site (`tos-api/src/vdi/mod.rs`
   `set_active_palette(&ext.palette)`) is unchanged code. `pel_to_device16`'s doc names the 32-plane interim.
 - **`vs_color`** `tos-api/src/vdi/attributes.rs:511@set_color`: the clamped copy goes through `VwkExt::set_color`
   (P1-P3); raw `req_col` store and index check unchanged.
