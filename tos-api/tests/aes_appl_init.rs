@@ -39,7 +39,7 @@ impl RasterBackend for Profile {
     fn query_color(&self, i: u16) -> (u16, u16, u16) {
         panic!("unexpected palette read")
     }
-    fn set_active_palette(&self, p: &[u16; 256]) {
+    fn set_active_palette(&self, p: &[u32; 256]) {
         panic!("unexpected palette switch")
     }
     fn pel_to_device16(&self, p: Pel) -> u16 {

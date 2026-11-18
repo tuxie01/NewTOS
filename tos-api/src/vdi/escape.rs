@@ -33,7 +33,7 @@
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use super::backend::{ClipRect, RasterBackend, Rect};
+use super::backend::{ClipRect, RasterBackend, Rect, VDI_PLANES_WIDE};
 use super::{font, mouse, vwk, Vdipb};
 
 // ── v_stat_0 (EmuTOS `bios/conout.h:17-30`) ─────────────────────────────
@@ -230,15 +230,15 @@ impl Con<'_> {
     /// The 16-bit screen word of hardware register `reg` (D1): the physical
     /// workstation's pseudo-palette once it has been opened
     /// (`phys_work.ext->palette[reg]`, `conout.c:162-166`), else
-    /// `falcon_default_palette` (`:169-170`).
-    fn word(&self, reg: u8) -> u16 {
+    /// `falcon_default_palette` (`:169-170`); the pen entry through [`pen_word`].
+    fn word(&self, b: &dyn RasterBackend, reg: u8) -> u16 {
         let reg = reg & 0x0f;
         // SAFETY: single trap path, as for the rest of the VDI state.
         let phys_open = unsafe { vwk::resolve(vwk::PHYS_HANDLE) }.is_some();
         if phys_open {
             // SAFETY: as above.
             if let Some(ext) = unsafe { vwk::ext(vwk::PHYS_HANDLE) } {
-                return ext.palette[REV_MAP_COL[reg as usize] as usize];
+                return pen_word(b, ext.palette[REV_MAP_COL[reg as usize] as usize]);
             }
         }
         FALCON_DEFAULT_PALETTE[reg as usize]
@@ -256,7 +256,7 @@ impl Con<'_> {
     /// (`:150-156,221-228`); the whole cell is replaced.
     fn cell_xfer(&self, x: i16, y: i16, ch: u8) {
         let Some(b) = self.b else { return };
-        let (mut fg, mut bg) = (self.word(self.st.fg), self.word(self.st.bg));
+        let (mut fg, mut bg) = (self.word(b, self.st.fg), self.word(b, self.st.bg));
         if self.st.stat & M_REVID != 0 {
             core::mem::swap(&mut fg, &mut bg);
         }
@@ -300,7 +300,7 @@ impl Con<'_> {
         if x0 > x1 || y0 > y1 {
             return;
         }
-        let word = self.word(self.st.bg);
+        let word = self.word(b, self.st.bg);
         let line = [word; 64];
         let (cw, ch) = cell(b);
         let (px0, px1) = (x0 * cw, (x1 + 1) * cw);
@@ -875,4 +875,16 @@ pub fn v_escape(pb: &Vdipb, backend: &dyn RasterBackend) {
 pub fn cursor_cell() -> (i16, i16) {
     let c = lock(None);
     (c.st.cx, c.st.cy)
+}
+
+/// The console's 16-bit colour word of a pen-table entry (`Con::word`): at 16
+/// planes the entry is that word; at 32 it is the pen's pixel `0x00RRGGBB`
+/// (TASK/V64), and until the cell writer is widened (TASK/V67) the 16-bit row
+/// seam takes its top 5 bits per gun.
+fn pen_word(b: &dyn RasterBackend, pen: u32) -> u16 {
+    if b.planes() == VDI_PLANES_WIDE {
+        b.device_to_rgb565(pen)
+    } else {
+        pen as u16
+    }
 }

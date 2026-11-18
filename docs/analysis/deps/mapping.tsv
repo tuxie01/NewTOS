@@ -411,7 +411,7 @@ blank_out	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	mapped	-
 blank_out16	bios/conout.c	tos-api/src/vdi/escape.rs	blank_out	mapped	the 16-bit path is part of blank_out
 cell_addr	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 cell_xfer	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	mapped	-
-cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	mapped	the 16-bit path is part of cell_xfer
+cell_xfer16	bios/conout.c	tos-api/src/vdi/escape.rs	cell_xfer	mapped	the 16-bit path is part of cell_xfer; the colour word comes from Con::word, at 32 planes the physical pen pixel projected to its top 5 bits per gun until the cell writer is widened (V64; V67)
 char_addr	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 invert_cell	bios/conout.c	-	-	unmapped	VT52 cell helper: no NewTOS counterpart function found (the VT52 console is tos-api/src/vdi/escape.rs)
 move_cursor	bios/conout.c	tos-api/src/vdi/escape.rs	move_cursor	mapped	-
@@ -1311,12 +1311,12 @@ contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	fill_from	mapped	the check
 contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	run	mapped	the seed-queue main loop: next-row search, left/right leak-back, circular take from qptr, span draw (V21); NewTOS adds the emergency brake before each take (V38, docs/COMPATIBILITY.md)
 crunch_queue	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	crunch_queue	mapped	Flood::crunch_queue, qtop lowered over trailing holes (V21)
 end_pts	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts: run of one colour, fillable verdict; palette branch reads indices through pixelread (V21)
-end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts, truecolor: 16-bit screen words with OVERLAY_BIT masked on the screen side
+end_pts16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	Flood::end_pts, truecolor: 16-bit screen words with OVERLAY_BIT masked on the screen side; at 32 planes the masked 24-bit pixel, compared as it is without the OVERLAY_BIT mask (ADR-038 point 4, V64)
 get_color	vdi/vdi_fill.c	-	-	design:ADR-024@docs/MEMORY.md:2241	composes a pixel colour from the bit-planes (planar path); NewTOS has no bit-planes (ADR-024); the palette branch of contour.rs uses RasterBackend::read_pixel instead
 get_pix	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2909	ADR-030: no Line-A emulation; linea pixel read: no NewTOS counterpart
 get_seed	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	get_seed	mapped	Flood::get_seed: collision removal + draw, first hole, QSIZE overflow ends the fill (V21)
 no_abort	vdi/vdi_fill.c	-	-	design:ADR-030@docs/MEMORY.md:2909	ADR-030: no Line-A emulation; default of the Line-A SEEDABORT variable: no NewTOS counterpart
-pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill, no bounds check: truecolor device_to_rgb565(get_device_pixel_wrapped), palette read_pixel at the wrapped point; outside the logical screen 0, EmuTOS reads memory unchecked (V24, COMPATIBILITY); at 32 planes the X byte of the store word is masked off first (ADR-038 point 4, V63)
+pixelread	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	pixelread	mapped	the one screen read of v_get_pixel and v_contourfill, no bounds check: truecolor device_to_rgb565(get_device_pixel_wrapped), palette read_pixel at the wrapped point; outside the logical screen 0, EmuTOS reads memory unchecked (V24, COMPATIBILITY); at 32 planes the store word with its X byte masked off, the 24-bit pixel returned as a u32 (ADR-038 point 4, V63, V64)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	fill_polygon	mapped	the interior fill incl. the y-extent clip of polygon; no minimum vertex count (1 vertex fills nothing, 2 a dotted stroke; V22); returns false when the y-extent misses the clip band: the callers then skip the perimeter (and its LSTLIN) as polygon returns early when vwk->clip (V40)
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polyline	mapped	the closed perimeter (LN_MASK 0xffff, fill colour) when fill_per; drawn by v_fillarea, gdp curve/rbox and the wide-line helper
 polygon	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	polygon	mapped	polygon under the wide-line attribute environment (solid pattern, line colour, perimeter on)
@@ -1328,7 +1328,7 @@ search_to_right16	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	end_pts	mapped	the r
 st_fl_ptr	vdi/vdi_fill.c	tos-api/src/vdi/fill_patterns.rs	select	mapped	pattern/mask choice; NewTOS derives it at draw time from fill_style/fill_index instead of caching patptr/patmsk in the Vwk
 vdi_v_contourfill	vdi/vdi_fill.c	tos-api/src/vdi/contour.rs	v_contourfill	mapped	opcode 103
 vdi_v_fillarea	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	v_fillarea	mapped	opcode 9 (HAVE_BEZIER is 0); any vertex count, 0 or negative draws nothing (with fill_per the 1-point perimeter still clears LSTLIN unless clip is on and PTSIN[1] misses the band; V40); count capped to MAX_VERTICES by dispatch_in (V23); of >= MAX_VERTICES the first 1024 closed cleanly where EmuTOS overruns local_ptsin (docs/COMPATIBILITY.md, V22)
-vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105
+vdi_v_get_pixel	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	v_get_pixel	mapped	opcode 105; at 32 planes INTOUT[1] is the top 5 bits per gun of the masked 24-bit pixel until V65 widens the answer (V64)
 vdi_vqf_attributes	vdi/vdi_fill.c	tos-api/src/vdi/inquiry.rs	vqf_attributes	mapped	opcode 37
 vdi_vr_recfl	vdi/vdi_fill.c	tos-api/src/vdi/primitives.rs	vr_recfl	mapped	opcode 114
 vdi_vsf_color	vdi/vdi_fill.c	tos-api/src/vdi/attributes.rs	vsf_color	mapped	opcode 25; MAP_COL folded to identity
@@ -1442,24 +1442,28 @@ normal_blit	vdi/vdi_tblit.S	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	th
 adjust_mono_values	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST/STE monochrome DAC fudge factors (palette path, v_planes == 1); the Pi has no ST shifter
 adjust_tt_colnum	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter palette bank handling; the Pi has no TT shifter
 fivebits2vdi	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	fivebits2vdi	mapped	5-bit gun back to 0..1000
+fivebits2vdi	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	eightbits2vdi	mapped	at 32 planes: 8-bit gun back to 0..1000, (q*1000+127)/255, the rule with 255 for 31 (ADR-038 point 4, V64)
 get_tt_hyper_mono	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter hyper-mono palette entries; the Pi has no TT shifter
-init_colors	vdi/vdi_col.c	kernel/src/vdi_backend.rs	ensure_palette_init	mapped	device default palette (REQ_COL and active palette) seeded from the VIDEL palettes; the ST/TT palettes are not built, MAP_COL is folded to identity for the palette (its table only in raster.rs map_col, V28)
-init_colors	vdi/vdi_col.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	per-workstation req_col and pseudo-palette seeded for pens 0..254 (EmuTOS does this in vdi_control.c init_wk, not in init_colors)
+init_colors	vdi/vdi_col.c	kernel/src/vdi_backend.rs	ensure_palette_init	mapped	device default palette (REQ_COL and active palette) seeded from the VIDEL palettes; the ST/TT palettes are not built, MAP_COL is folded to identity for the palette (its table only in raster.rs map_col, V28); the active entries at the setting's depth, 5-bit words at 16 planes, 8-bit pixels at 32 (V64)
+init_colors	vdi/vdi_col.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	per-workstation req_col and pseudo-palette seeded for pens 0..254 (EmuTOS does this in vdi_control.c init_wk, not in init_colors); at 32 planes the pens by the 8-bit rule (VwkExt::set_color, V64)
 init_colors	vdi/vdi_col.c	tos-api/src/vdi/raster.rs	map_col	mapped	the MAP_COL table (:736-742, EXTENDED_PALETTE): the planar vrt_cpyfm writes the hardware register bits (cpy_raster :1390-1395; V28)
 query_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter register read-back; the Pi has no TT shifter
-set_color	vdi/vdi_col.c	kernel/src/vdi_backend.rs	set_color	mapped	palette write of the device (non-truecolor path of vdi_vs_color); no VIDEL/TT/ST register write exists; truecolor vs_color never reaches it
+set_color	vdi/vdi_col.c	kernel/src/vdi_backend.rs	set_color	mapped	palette write of the device (non-truecolor path of vdi_vs_color); no VIDEL/TT/ST register write exists; truecolor vs_color never reaches it; the active entry at the setting's depth (pen_entry, V64)
 set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	set_color16	mapped	pseudo-palette entry; MAP_COL folded to identity
+set_color16	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	set_color32	mapped	at 32 planes: the pen pixel 0x00RRGGBB, 8 bits per gun, X = 0; MAP_COL folded to identity (ADR-038 point 4, V64)
+set_color16	vdi/vdi_col.c	kernel/src/vdi_backend.rs	pen_entry	mapped	the kernel's active-palette entry for the device default and set_color at the setting's depth: pack555 at 16 planes, pack888 at 32 (V64)
 set_tt_color	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter register write; the Pi has no TT shifter
 vdi_vq_color	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	opcode 26
 vdi_vs_color	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	opcode 14
 vdi2fivebits	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	vdi2fivebits	mapped	0..1000 to 5-bit gun
+vdi2fivebits	vdi/vdi_col.c	tos-api/src/vdi/vwk.rs	vdi2eightbits	mapped	at 32 planes: 0..1000 to 8-bit gun, (c*255+500)/1000, the rule with 255 for 31 (ADR-038 point 4, V64)
 vdi2st	vdi/vdi_col.c	-	-	design:hardware:video-shifter	ST shifter 3-bit gun conversion; the Pi has no ST shifter
 vdi2ste	vdi/vdi_col.c	-	-	design:hardware:video-shifter	STE shifter 4-bit gun conversion; the Pi has no STE shifter
 vdi2tt	vdi/vdi_col.c	-	-	design:hardware:video-shifter	TT shifter 4-bit gun conversion; the Pi has no TT shifter
 vdi2videl	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for VsetRGB; NewTOS truecolor programs no VIDEL register
 videl2vdi	vdi/vdi_col.c	-	-	design:hardware:videl	VIDEL 8-bit gun conversion for VgetRGB; NewTOS truecolor reads no VIDEL register
-vq_color16	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	truecolor branch of vq_color (flag 0 raw req_col, else 5-bit pseudo-palette)
-vs_color16	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	truecolor branch of vs_color (raw req_col, clamped pseudo-palette)
+vq_color16	vdi/vdi_col.c	tos-api/src/vdi/inquiry.rs	vq_color	mapped	truecolor branch of vq_color (flag 0 raw req_col, else the realised value: 5-bit pseudo-palette at 16 planes, 8-bit pen pixel at 32, VwkExt::actual, V64)
+vs_color16	vdi/vdi_col.c	tos-api/src/vdi/attributes.rs	vs_color	mapped	truecolor branch of vs_color (raw req_col, clamped pen: the 5-bit word at 16 planes, the 8-bit pixel at 32, VwkExt::set_color, V64)
 char_resize	vdi/vdi_textblit.c	tos-api/src/vdi/text.rs	resize	mapped	DDA size; 0xFFFF returns size*2; XDDA is read, not moved (V31)
 check_clip	vdi/vdi_textblit.c	kernel/src/vdi_backend.rs	draw_glyph_sized	mapped	early-out whole-cell clip decision; NewTOS intersects the cell with the clip box and the screen per pixel instead; ClipRect::OFF (no CLIP) takes the unclipped walk (V30)
 check_clip	vdi/vdi_textblit.c	tos-api/src/vdi/primitives.rs	line_clip	mapped	the CLIP test: with vs_clip(0) the text path hands ClipRect::OFF to the glyph blit and the underline, nothing is cut (V30)

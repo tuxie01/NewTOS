@@ -121,7 +121,7 @@ impl RasterBackend for Profile {
     fn query_color(&self, i: u16) -> (u16, u16, u16) {
         panic!("unexpected palette read")
     }
-    fn set_active_palette(&self, _p: &[u16; 256]) {
+    fn set_active_palette(&self, _p: &[u32; 256]) {
         // Every VDI call on an open workstation selects its pseudo-palette
         // (`tos-api/src/vdi/mod.rs`); the AES's own `gsx_init` set-up calls
         // (`gemgraf.c:405-422`) are such calls. Nothing is drawn with it.

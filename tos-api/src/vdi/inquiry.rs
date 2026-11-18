@@ -8,7 +8,7 @@
 //! under `TRUECOLOR_MODE` (see [`vs_color`](super::attributes::vs_color)
 //! and [`VwkExt`](super::vwk::VwkExt)).
 
-use super::backend::RasterBackend;
+use super::backend::{RasterBackend, VDI_PLANES_WIDE};
 use super::font;
 use super::req_col;
 use super::text;
@@ -111,7 +111,7 @@ pub fn vq_color(pb: &Vdipb, vwk: &Vwk, ncol: u16, backend: &dyn RasterBackend) {
             let rgb = if flag == 0 {
                 ext.req_col[colnum] // last-requested (raw)
             } else {
-                ext.actual16(colnum) // current 5-bit-quantised value
+                ext.actual(backend.planes(), colnum) // realised: 5-bit at 16, 8-bit at 32 (P5)
             };
             pb.set_intout(1, rgb[0]);
             pb.set_intout(2, rgb[1]);
@@ -196,9 +196,11 @@ pub fn v_get_pixel(pb: &Vdipb, backend: &dyn RasterBackend) {
     // `v_contourfill` uses (`super::contour::pixelread`).
     let pel = super::contour::pixelread(backend, x, y);
     if backend.planes() > 8 {
-        // TRUECOLOR_MODE: the 16-bit screen word, cast to a WORD.
+        // TRUECOLOR_MODE: the 16-bit screen word, cast to a WORD. At 32 planes,
+        // until TASK/V65, the top 5 bits per gun of the masked 24-bit pixel (F5).
+        let word = if backend.planes() == VDI_PLANES_WIDE { backend.device_to_rgb565(pel) } else { pel as u16 };
         pb.set_intout(0, 0);
-        pb.set_intout(1, pel as i16);
+        pb.set_intout(1, word as i16);
         return;
     }
 

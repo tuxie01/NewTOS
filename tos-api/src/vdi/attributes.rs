@@ -505,9 +505,10 @@ pub fn vs_color(pb: &Vdipb, vwk: &Vwk, ncol: u16, backend: &dyn RasterBackend) {
             let colnum = idx as usize;
             // Raw, unclamped request (EmuTOS `req_col[colnum][i] = *intin`).
             ext.req_col[colnum] = [r, g, b];
-            // Clamp only the copy that builds the pseudo-palette.
+            // Clamp only the copy that builds the pen: the 5-bit word at 16
+            // planes, the pixel `0x00RRGGBB` at 32 (ADR-038 point 4, P1-P3).
             let clamp = |v: i16| v.clamp(0, 1000);
-            ext.set_color16(colnum, [clamp(r), clamp(g), clamp(b)]);
+            ext.set_color(backend.planes(), colnum, [clamp(r), clamp(g), clamp(b)]);
         }
         return;
     }

@@ -1517,7 +1517,7 @@ mod tests {
         fn query_color(&self, _: u16) -> (u16, u16, u16) {
             (0, 0, 0)
         }
-        fn set_active_palette(&self, _: &[u16; 256]) {}
+        fn set_active_palette(&self, _: &[u32; 256]) {}
         fn pel_to_device16(&self, _: Pel) -> u16 {
             0
         }

@@ -262,7 +262,7 @@ fn init_wk(vwk: &mut Vwk, pb: &Vdipb, backend: &dyn RasterBackend) {
             // EmuTOS. The default req_col is already in 0..1000 range.
             for l in 0..255usize {
                 let rgb = ext.req_col[l];
-                ext.set_color16(l, rgb);
+                ext.set_color(planes, l, rgb); // 5-bit at 16 planes, 8-bit at 32 (P6)
             }
         }
     }

@@ -119,7 +119,7 @@ impl RasterBackend for PenBackend {
     fn query_color(&self, _index: u16) -> (u16, u16, u16) {
         (0, 0, 0)
     }
-    fn set_active_palette(&self, _palette: &[u16; 256]) {}
+    fn set_active_palette(&self, _palette: &[u32; 256]) {}
     fn pel_to_device16(&self, pel: Pel) -> u16 {
         pel as u16
     }

@@ -132,18 +132,18 @@ const VIDEL_PALETTE2: [(u16, u16, u16); 240] = [
 
 /// The **active** VDI pseudo-palette the draw path resolves each PEL
 /// through at the write point (EmuTOS `CUR_WORK->ext->palette`,
-/// `vdi_line.c:459-460`). One 16-bit value per pen, laid out
-/// `RRRRRGGGGG0BBBBB` (RGB555 packed into a 565 slot, green LSB / bit 5
-/// always 0 — EmuTOS `set_color16`, `vdi_col.c:601-614`). The VDI
+/// `vdi_line.c:459-460`). One value per pen in the form of [`PLANES`]: at 16 the
+/// word `RRRRRGGGGG0BBBBB` (bit 5 always 0 — EmuTOS `set_color16`,
+/// `vdi_col.c:601-614`), at 32 the pixel `0x00RRGGBB` ([`pen_entry`], V64). The VDI
 /// dispatcher points this at the drawing workstation's own per-`Vwk`
 /// pseudo-palette before every colour-sensitive op via
 /// [`RasterBackend::set_active_palette`]; its lazily-seeded default is the
-/// 5-bit quantisation of the device default (`videl_palette1` /
+/// quantisation of the device default (`videl_palette1` /
 /// `videl_palette2`), identical to what a fresh workstation seeds, so an
 /// in-kernel draw before any op resolves the same colours. Accessed only
-/// from the single trap path; `AtomicU16` keeps it `Sync` without `unsafe`.
-static ACTIVE_PALETTE: [AtomicU16; NUM_COLORS as usize] =
-    [const { AtomicU16::new(0) }; NUM_COLORS as usize];
+/// from the single trap path; `AtomicU32` keeps it `Sync` without `unsafe`.
+static ACTIVE_PALETTE: [AtomicU32; NUM_COLORS as usize] =
+    [const { AtomicU32::new(0) }; NUM_COLORS as usize];
 
 /// The device-global requested RGB (0..=1000) per pen, packed
 /// `r<<20 | g<<10 | b`, returned by `vq_color` and used to seed each
@@ -240,7 +240,7 @@ fn ensure_palette_init() {
     let seed = |i: usize, r: u16, g: u16, b: u16| {
         let req = (r as u32) << 20 | (g as u32) << 10 | b as u32;
         REQ_COL[i].store(req, Ordering::Relaxed);
-        ACTIVE_PALETTE[i].store(pack555(r, g, b), Ordering::Relaxed);
+        ACTIVE_PALETTE[i].store(pen_entry(r, g, b), Ordering::Relaxed);
     };
     for (i, &(r, g, b)) in VIDEL_PALETTE1.iter().enumerate() {
         seed(i, r, g, b);
@@ -283,10 +283,10 @@ impl VdiScreen {
         ensure_palette_init();
         // Resolve the PEL through the *active* workstation pseudo-palette at
         // the write point (EmuTOS `CUR_WORK->ext->palette`,
-        // `vdi_line.c:459-460`), expanding the 5-bit guns to 8 bits. `pel` is
-        // a `u8`, so it always indexes the 256-entry array in bounds. A pen
-        // word never has `OVERLAY_BIT` set, so a drawn pixel has X = 0x00.
-        word_to_device(ACTIVE_PALETTE[pel as usize].load(Ordering::Relaxed))
+        // `vdi_line.c:459-460`), 5-bit guns expanded at 16 planes, the 8-bit
+        // pixel as it is at 32. `pel` is a `u8`, so it always indexes the
+        // 256-entry array in bounds. A drawn pixel has X = 0x00 at both depths.
+        pen_pixel(ACTIVE_PALETTE[pel as usize].load(Ordering::Relaxed))
     }
 
     /// Clean the cache lines covering the inclusive pixel rectangle
@@ -475,11 +475,11 @@ impl RasterBackend for VdiScreen {
         let req = (r as u32) << 20 | (g as u32) << 10 | b as u32;
         REQ_COL[index as usize].store(req, Ordering::Relaxed);
         // Program the active pseudo-palette (XBIOS `Setcolor` / the
-        // non-truecolor CLUT path), 5-bit-quantised like the Falcon DAC. The
+        // non-truecolor CLUT path) at the setting's depth ([`pen_entry`]). The
         // VDI truecolor draw path resets the active palette per-op from the
         // drawing workstation's own table, so this is the immediate colour a
         // non-VDI palette write (XBIOS) leaves until the next VDI op.
-        ACTIVE_PALETTE[index as usize].store(pack555(r, g, b), Ordering::Relaxed);
+        ACTIVE_PALETTE[index as usize].store(pen_entry(r, g, b), Ordering::Relaxed);
     }
 
     fn query_color(&self, index: u16) -> (u16, u16, u16) {
@@ -491,7 +491,7 @@ impl RasterBackend for VdiScreen {
         (((req >> 20) & 0x3FF) as u16, ((req >> 10) & 0x3FF) as u16, (req & 0x3FF) as u16)
     }
 
-    fn set_active_palette(&self, palette: &[u16; 256]) {
+    fn set_active_palette(&self, palette: &[u32; 256]) {
         ensure_palette_init();
         for (slot, &p) in ACTIVE_PALETTE.iter().zip(palette.iter()) {
             slot.store(p, Ordering::Relaxed);
@@ -501,10 +501,10 @@ impl RasterBackend for VdiScreen {
     fn pel_to_device16(&self, pel: Pel) -> u16 {
         ensure_palette_init();
         // The active per-workstation pseudo-palette holds one RGB555-in-565
-        // word per pen (EmuTOS `CUR_WORK->ext->palette`); `vrt_cpyfm16` writes
-        // exactly this word into a memory destination (`vdi_raster.c:1234`).
+        // word per pen at 16 planes (EmuTOS `CUR_WORK->ext->palette`); `vrt_cpyfm16`
+        // writes exactly this word into a memory destination (`vdi_raster.c:1234`).
         // `pel` is a `u8`, so it always indexes the 256-entry array in bounds.
-        ACTIVE_PALETTE[pel as usize].load(Ordering::Relaxed)
+        pen_word16(ACTIVE_PALETTE[pel as usize].load(Ordering::Relaxed))
     }
 
     fn device_to_rgb565(&self, argb: u32) -> u16 {
@@ -546,7 +546,7 @@ impl RasterBackend for VdiScreen {
         let mut best = 0u8;
         let mut best_d = u32::MAX;
         for (i, entry) in ACTIVE_PALETTE.iter().enumerate() {
-            let d = rgb_dist(packed, word_to_device(entry.load(Ordering::Relaxed)) & 0x00FF_FFFF);
+            let d = rgb_dist(packed, pen_pixel(entry.load(Ordering::Relaxed)) & 0x00FF_FFFF);
             if d < best_d {
                 best_d = d;
                 best = i as u8;
@@ -1127,4 +1127,51 @@ pub fn set_planes(planes: u16) {
         planes == crate::bootargs::VDI_PLANES_DEFAULT || planes == crate::bootargs::VDI_PLANES_WIDE
     );
     PLANES.store(planes, Ordering::Relaxed);
+}
+
+/// Quantise a VDI colour component (0..=1000, caller-clamped) to 8 bits
+/// (0..255): `(c * 255 + 500) / 1000`, the [`vdi2fivebits`] rule with 255
+/// for 31 (ADR-038 point 4; `_raster.md` P2). The 32-plane setting only.
+const fn vdi2eightbits(col: u16) -> u32 {
+    (col as u32 * 255 + 500) / 1000
+}
+
+/// The 32-plane pen pixel of three VDI colour components (0..=1000):
+/// `0x00RRGGBB`, X = 0 (`_raster.md` P3), as the workstation's
+/// `VwkExt::pack_color32` builds it (`tos-api/src/vdi/vwk.rs`).
+const fn pack888(r: u16, g: u16, b: u16) -> u32 {
+    (vdi2eightbits(r) << 16) | (vdi2eightbits(g) << 8) | vdi2eightbits(b)
+}
+
+/// The [`ACTIVE_PALETTE`] entry of three VDI colour components (0..=1000)
+/// at the setting's depth: [`pack888`] at 32 planes, [`pack555`] at 16.
+fn pen_entry(r: u16, g: u16, b: u16) -> u32 {
+    if PLANES.load(Ordering::Relaxed) == crate::bootargs::VDI_PLANES_WIDE {
+        pack888(r, g, b)
+    } else {
+        u32::from(pack555(r, g, b))
+    }
+}
+
+/// The 16-bit memory-MFDB word of an [`ACTIVE_PALETTE`] entry
+/// ([`RasterBackend::pel_to_device16`]): the word itself at 16 planes; at 32
+/// the pen pixel's top 5 bits per gun, until TASK/V65 gives the memory MFDB
+/// its 32-bit form.
+fn pen_word16(entry: u32) -> u16 {
+    if PLANES.load(Ordering::Relaxed) == crate::bootargs::VDI_PLANES_WIDE {
+        device_to_word(entry)
+    } else {
+        entry as u16
+    }
+}
+
+/// The device pixel of an [`ACTIVE_PALETTE`] entry: at 32 planes the entry
+/// itself, the pen's `0x00RRGGBB` (V64); at 16 the word expanded by
+/// [`word_to_device`] (X = 0, a pen word never has `OVERLAY_BIT`).
+fn pen_pixel(entry: u32) -> u32 {
+    if PLANES.load(Ordering::Relaxed) == crate::bootargs::VDI_PLANES_WIDE {
+        entry
+    } else {
+        word_to_device(entry as u16)
+    }
 }

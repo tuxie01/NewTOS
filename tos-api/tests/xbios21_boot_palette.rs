@@ -62,7 +62,7 @@ impl RasterBackend for CountingBackend {
     fn query_color(&self, _index: u16) -> (u16, u16, u16) {
         (0, 0, 0)
     }
-    fn set_active_palette(&self, _palette: &[u16; 256]) {
+    fn set_active_palette(&self, _palette: &[u32; 256]) {
         SET_ACTIVE_PALETTE_CALLS.fetch_add(1, Ordering::SeqCst);
     }
     fn pel_to_device16(&self, _pel: Pel) -> u16 {

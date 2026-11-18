@@ -130,8 +130,8 @@ impl RasterBackend for BufBackend {
             (0, 0, 0)
         }
     }
-    fn set_active_palette(&self, palette: &[u16; 256]) {
-        *self.palette.lock().unwrap() = *palette;
+    fn set_active_palette(&self, palette: &[u32; 256]) {
+        *self.palette.lock().unwrap() = palette.map(|p| p as u16);
     }
     fn pel_to_device16(&self, pel: Pel) -> u16 {
         self.palette.lock().unwrap()[pel as usize]

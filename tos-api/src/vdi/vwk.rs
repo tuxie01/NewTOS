@@ -197,7 +197,7 @@ pub fn validate_color_index(c: i16, num_colors: u16) -> Pel {
 /// **Storage.** The plan (`truecolor-conversion-plan.md` §3.5) sanctions
 /// either embedding the arrays in [`Vwk`] or a separate cell. NewTOS keeps
 /// a static table parallel to the [`Vwk`] handle table (indexed by the same
-/// handle, see [`ext`]): this keeps the 2 KiB/handle store in
+/// handle, see [`ext`]): this keeps the 2.5 KiB/handle store in
 /// zero-initialised `.bss` instead of bloating the image `.data` with a
 /// non-zero embedded default across all 64 handles.
 ///
@@ -213,10 +213,10 @@ pub fn validate_color_index(c: i16, num_colors: u16) -> Pel {
 /// leaves `palette[255] = 0` the same way, so `vq_color(255, flag=1)` is
 /// `(0,0,0)` either way).
 pub struct VwkExt {
-    /// Pseudo-palette: one 16-bit pixel value per VDI pen, laid out
-    /// `RRRRRGGGGG0BBBBB` (5:5:5 packed into a 565 slot with the green LSB
-    /// / bit 5 always 0 — EmuTOS `vdi_defs.h:156`, `vdi_col.c:599`).
-    pub palette: [u16; 256],
+    /// One entry per VDI pen, in the form of the device depth: at 16 planes
+    /// the 16-bit word `RRRRRGGGGG0BBBBB` (bit 5 always 0, EmuTOS `vdi_defs.h:156`,
+    /// `vdi_col.c:599`); at 32 the pixel `0x00RRGGBB` (ADR-038 point 4, V64).
+    pub palette: [u32; 256],
     /// Raw requested colour per pen (VDI 0..1000, stored **unclamped** so
     /// `vq_color(flag=0)` round-trips the exact request — EmuTOS
     /// `vdi_defs.h:157` `req_col[256][3]`, `vdi_col.c:640`).
@@ -254,7 +254,7 @@ impl VwkExt {
     /// the least-significant bit of green"). Folded MAP_COL (see the struct
     /// docs): the slot index is the VDI pen itself.
     pub fn set_color16(&mut self, colnum: usize, rgb: [i16; 3]) {
-        self.palette[colnum] = Self::pack_color16(rgb);
+        self.palette[colnum] = u32::from(Self::pack_color16(rgb));
     }
 
     /// The pseudo-palette word `set_color16` stores for an `rgb` (each
@@ -271,7 +271,7 @@ impl VwkExt {
     /// "actual" branch (`vdi_col.c:832-837`): `palette[colnum]` (folded
     /// MAP_COL), then `fivebits2vdi` per gun.
     pub fn actual16(&self, colnum: usize) -> [i16; 3] {
-        let rgb = self.palette[colnum];
+        let rgb = self.palette[colnum] as u16; // the 16-plane word (low 16 bits)
         [
             Self::fivebits2vdi(rgb >> 11),
             Self::fivebits2vdi(rgb >> 6),
@@ -424,5 +424,78 @@ pub unsafe fn close_all_virtual() {
     // Index 0 is the physical workstation (handle 1); skip it.
     for slot in t.iter_mut().skip(1) {
         *slot = Vwk::EMPTY;
+    }
+}
+
+/// The pens at the 32-plane setting (ADR-038 point 4, TASK/V64;
+/// `docs/api/vdi/raster/_raster.md` § "32-plane setting: pens, and every
+/// place a pen becomes a pixel", rules P2, P3, P5). EmuTOS has no path above
+/// 16 planes (`vdi/vdi_defs.h:22`); each function is the 16-plane one above
+/// with 8 bits per gun for 5 (255 for 31). The 16-plane functions stay as
+/// they are; the caller picks one pair by the device depth
+/// ([`super::backend::RasterBackend::planes`]), as [`VwkExt::set_color`] and
+/// [`VwkExt::actual`] do.
+impl VwkExt {
+    /// Scale a VDI colour component (0..1000, pre-clamped by the caller) to
+    /// 8 bits (0..255): `(c * 255 + 500) / 1000` (P2; EmuTOS `vdi2fivebits`,
+    /// `vdi_col.c:588-591`, with 255 for 31).
+    #[inline]
+    fn vdi2eightbits(col: i16) -> u32 {
+        (col as u32 * 255 + 500) / 1000
+    }
+
+    /// Scale an 8-bit component (0..255) back to a VDI colour (0..1000):
+    /// `(q * 1000 + 127) / 255` (P5; EmuTOS `fivebits2vdi`, `vdi_col.c:804-807`,
+    /// with 255 for 31).
+    #[inline]
+    fn eightbits2vdi(col: u32) -> i16 {
+        (((col & 0xff) * 1000 + 127) / 255) as i16
+    }
+
+    /// The pen pixel for an `rgb` (each component clamped here to 0..1000):
+    /// `0x00RRGGBB`, X = 0, all 24 bits colour (P3; the 16-plane word of
+    /// `set_color16`, `vdi_col.c:601-614`, has no overlay bit either).
+    pub fn pack_color32(rgb: [i16; 3]) -> u32 {
+        let r = Self::vdi2eightbits(rgb[0].clamp(0, 1000));
+        let g = Self::vdi2eightbits(rgb[1].clamp(0, 1000));
+        let b = Self::vdi2eightbits(rgb[2].clamp(0, 1000));
+        (r << 16) | (g << 8) | b
+    }
+
+    /// Set pen `colnum`'s pixel at 32 planes from a clamped `rgb`, the
+    /// counterpart of [`set_color16`](Self::set_color16) (MAP_COL folded the
+    /// same way).
+    pub fn set_color32(&mut self, colnum: usize, rgb: [i16; 3]) {
+        self.palette[colnum] = Self::pack_color32(rgb);
+    }
+
+    /// The realised colour of pen `colnum` at 32 planes, read back from its
+    /// pixel as VDI 0..1000 triples (P5), the counterpart of
+    /// [`actual16`](Self::actual16) (`vdi_col.c:832-837`).
+    pub fn actual32(&self, colnum: usize) -> [i16; 3] {
+        let px = self.palette[colnum];
+        [Self::eightbits2vdi(px >> 16), Self::eightbits2vdi(px >> 8), Self::eightbits2vdi(px)]
+    }
+
+    /// Set pen `colnum` from a clamped `rgb` in the form of the device depth
+    /// `planes`: [`set_color32`](Self::set_color32) at 32 planes,
+    /// [`set_color16`](Self::set_color16) otherwise.
+    pub fn set_color(&mut self, planes: u16, colnum: usize, rgb: [i16; 3]) {
+        if planes == super::backend::VDI_PLANES_WIDE {
+            self.set_color32(colnum, rgb);
+        } else {
+            self.set_color16(colnum, rgb);
+        }
+    }
+
+    /// The realised colour of pen `colnum` at the device depth `planes`:
+    /// [`actual32`](Self::actual32) at 32 planes, [`actual16`](Self::actual16)
+    /// otherwise.
+    pub fn actual(&self, planes: u16, colnum: usize) -> [i16; 3] {
+        if planes == super::backend::VDI_PLANES_WIDE {
+            self.actual32(colnum)
+        } else {
+            self.actual16(colnum)
+        }
     }
 }

@@ -68,7 +68,7 @@
 
 use core::cell::UnsafeCell;
 
-use super::backend::{ClipRect, PatternFill, RasterBackend, WriteMode};
+use super::backend::{ClipRect, PatternFill, RasterBackend, WriteMode, VDI_PLANES_WIDE};
 use super::fill_patterns;
 use super::primitives::MAX_VERTS;
 use super::vwk::{self, Vwk};
@@ -158,13 +158,13 @@ static QUEUE: SeedQueue = SeedQueue(UnsafeCell::new([Segment { y: EMPTY, xleft: 
 /// 16-pixel groups). Only an index outside the logical screen's store reads
 /// 0, where EmuTOS reads foreign memory (user decision B, TASK/V24;
 /// `docs/COMPATIBILITY.md`). `v_contourfill` reads inside its search
-/// bounds only, so the run-on never reaches it. At 32 planes the X byte of
-/// the store word is unused and masked off (`0x00FF_FFFF`, ADR-038 point 4,
-/// `_raster.md` R5): `v_get_pixel`, the seed and every span probe; at 16 unmasked.
-pub(super) fn pixelread(backend: &dyn RasterBackend, x: i16, y: i16) -> u16 {
+/// bounds only, so the run-on never reaches it. At 32 planes the value is the
+/// store word with its unused X byte masked off, the 24-bit pixel `0x00RRGGBB`
+/// (ADR-038 point 4, `_raster.md` R5, F1); at 16 the 16-bit word, unmasked.
+pub(super) fn pixelread(backend: &dyn RasterBackend, x: i16, y: i16) -> u32 {
     if backend.planes() > 8 {
         let px = backend.get_device_pixel_wrapped(x, y);
-        backend.device_to_rgb565(if backend.planes() == 32 { px & 0x00FF_FFFF } else { px })
+        if backend.planes() == VDI_PLANES_WIDE { px & 0x00FF_FFFF } else { u32::from(backend.device_to_rgb565(px)) }
     } else {
         // A palette backend reports PELs per `(x, y)` only; its store is
         // taken as `width` pixels per row, which is `v_lin_wr` of a planar
@@ -172,7 +172,7 @@ pub(super) fn pixelread(backend: &dyn RasterBackend, x: i16, y: i16) -> u16 {
         let w = backend.width() as u32;
         let store = super::line::LineTarget { width: w, height: backend.height() as u32, stride: w };
         match store.index(x as i32, y as i32) {
-            Some(idx) => backend.read_pixel((idx % w as usize) as i16, (idx / w as usize) as i16) as u16,
+            Some(idx) => u32::from(backend.read_pixel((idx % w as usize) as i16, (idx / w as usize) as i16)),
             None => 0,
         }
     }
@@ -198,8 +198,9 @@ struct Flood<'a> {
     bounds: ClipRect,
     /// The workstation clip, passed to the span draw.
     clip: ClipRect,
-    truecolor: bool,
-    search_color: u16,
+    /// `OVERLAY_BIT` is masked off the screen side: truecolor at 16 planes only (F2).
+    mask_overlay: bool,
+    search_color: u32,
     seed_type: bool,
     fill: PatternFill<'a>,
     queue: &'a mut [Segment; QSIZE],
@@ -219,7 +220,7 @@ impl<'a> Flood<'a> {
         backend: &'a dyn RasterBackend,
         bounds: ClipRect,
         clip: ClipRect,
-        search_color: u16,
+        search_color: u32,
         seed_type: bool,
         fill: PatternFill<'a>,
         queue: &'a mut [Segment; QSIZE],
@@ -228,7 +229,7 @@ impl<'a> Flood<'a> {
             backend,
             bounds,
             clip,
-            truecolor: backend.planes() > 8,
+            mask_overlay: backend.planes() > 8 && backend.planes() != VDI_PLANES_WIDE,
             search_color,
             seed_type,
             fill,
@@ -249,13 +250,14 @@ impl<'a> Flood<'a> {
         self.run(sy as u16, oldxleft, oldxright)
     }
 
-    /// The colour `end_pts` compares: the screen word with `OVERLAY_BIT`
-    /// off under truecolor (`vdi_fill.c:709,733,755`), the index otherwise.
+    /// The colour `end_pts` compares: the screen word with `OVERLAY_BIT` off at
+    /// 16 planes (`vdi_fill.c:709,733,755`), the index on a palette screen; at 32
+    /// the masked 24-bit pixel as it is, where `0x20` is a bit of blue (F2).
     #[inline]
-    fn color(&self, x: i16, y: i16) -> u16 {
+    fn color(&self, x: i16, y: i16) -> u32 {
         let c = pixelread(self.backend, x, y);
-        if self.truecolor {
-            c & !OVERLAY_BIT
+        if self.mask_overlay {
+            c & !u32::from(OVERLAY_BIT)
         } else {
             c
         }
@@ -473,7 +475,8 @@ pub fn v_contourfill(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         // equals any masked screen word and the fill draws nothing. The
         // asymmetry is observable on NewTOS as on a Falcon since the kernel
         // keeps `OVERLAY_BIT` in the device pixel's X byte (VDI-OVL-001,
-        // closed by V11/V12, 2026-09-21). At 32 planes the seed read masks X (V63).
+        // closed by V11/V12, 2026-09-21). At 32 planes the seed read masks X (V63)
+        // and gives the 24-bit pixel the probes compare with (V64, F1-F3).
         (pixelread(backend, sx, sy), true)
     } else {
         // `>= numcolors` guard (silent no-op, `vdi_fill.c:976-977`).
@@ -485,7 +488,8 @@ pub fn v_contourfill(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         // workstation's pseudo-palette entry — `phys_work.ext->palette[...]`
         // (`vdi_fill.c:978-985`), the *physical* workstation's table, not the
         // calling one's. NewTOS folds `MAP_COL` to the identity
-        // (`vwk::VwkExt`), so the pen indexes the pseudo-palette directly.
+        // (`vwk::VwkExt`), so the pen indexes the pseudo-palette directly. Its
+        // entry is the 16-bit word at 16 planes and the pixel `0x00RRGGBB` at 32 (F3).
         let c = if truecolor {
             // SAFETY: single trap path, as for the rest of the VDI state.
             let phys = unsafe { vwk::ext(vwk::PHYS_HANDLE) };
@@ -494,7 +498,7 @@ pub fn v_contourfill(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
             };
             word
         } else {
-            intin0 as u16
+            intin0 as u32
         };
         (c, false) // fill region bounded by this colour
     };
@@ -584,7 +588,7 @@ mod tests {
         fn query_color(&self, _: u16) -> (u16, u16, u16) {
             (0, 0, 0)
         }
-        fn set_active_palette(&self, _: &[u16; 256]) {}
+        fn set_active_palette(&self, _: &[u32; 256]) {}
         fn pel_to_device16(&self, pel: Pel) -> u16 {
             PENS[pel as usize & 3]
         }
@@ -644,7 +648,7 @@ mod tests {
     fn flood(c: &Canvas, x: i16, y: i16, search_color: u16, seed_type: bool, fill_color: Pel, clip: ClipRect) {
         let mut queue = Box::new([Segment { y: EMPTY, xleft: 0, xright: 0 }; QSIZE]);
         let fill = PatternFill { fg: fill_color, bg: 0, pattern: &SOLID, mode: WriteMode::Replace };
-        let _ = Flood::new(c, clip, clip, search_color, seed_type, fill, &mut queue).fill_from(x, y);
+        let _ = Flood::new(c, clip, clip, u32::from(search_color), seed_type, fill, &mut queue).fill_from(x, y);
     }
 
     /// The smallest never-ending input found (TASK/V38): a 5x3 clip with

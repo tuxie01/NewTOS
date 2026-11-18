@@ -1798,7 +1798,7 @@ mod gui07_tests {
         fn query_color(&self, _i: u16) -> (u16, u16, u16) {
             (0, 0, 0)
         }
-        fn set_active_palette(&self, _p: &[u16; 256]) {}
+        fn set_active_palette(&self, _p: &[u32; 256]) {}
         fn pel_to_device16(&self, _pel: Pel) -> u16 {
             0
         }

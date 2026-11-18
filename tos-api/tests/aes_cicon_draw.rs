@@ -93,7 +93,7 @@ impl RasterBackend for Rgb565Backend {
     fn query_color(&self, _i: u16) -> (u16, u16, u16) {
         (0, 0, 0)
     }
-    fn set_active_palette(&self, _p: &[u16; 256]) {}
+    fn set_active_palette(&self, _p: &[u32; 256]) {}
     fn pel_to_device16(&self, pel: Pel) -> u16 {
         pal(pel) as u16
     }

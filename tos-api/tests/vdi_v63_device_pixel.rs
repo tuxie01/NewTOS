@@ -18,17 +18,13 @@
 //!   cleared screen reads `0xFFFF`, a seed fill on it draws nothing (EmuTOS
 //!   `vdi/vdi_fill.c:671-681,972`).
 //!
-//! **The backend is the kernel's `VdiScreen` over a host store.** The
-//! kernel crate is not host-linkable, so its draw kernels are compiled in
-//! here by path (`kernel/src/raster_kernel.rs`, `raster_line.rs`,
-//! `raster_expand.rs`, `raster_copy.rs`, as the `raster_kernel_*` tests do)
-//! and the backend methods call them exactly as `kernel/src/vdi_backend.rs`
-//! does; the device-pixel conversions (`word_to_device`, `device_to_word`,
-//! `pel_to_rgb`, `xor_pixel`, `clear_screen_word`, `read_pixel`) are
-//! transcribed expression for expression. **Keep the transcription in sync
-//! with `kernel/src/vdi_backend.rs`** — the tests are only as faithful as
-//! the copy. `planes()` answers what the test stores, as the kernel's
-//! answers the boot argument `vdiplanes` (TASK/V62).
+//! **The backend is the kernel's `VdiScreen` over a host store**, shared with
+//! the V64 tests in `vdi_planes32_common` (the kernel's draw kernels by path,
+//! the device-pixel conversions transcribed; see that module).
+//!
+//! Since V64 a pen's pixel at 32 planes has 8 bits per gun
+//! (`_raster.md` P3), so the pen scene at 32 planes is the 16-plane one
+//! within one 5-bit step per gun (P9), no longer equal to it.
 //!
 //! Until V65 `vro_cpyfm`/`vrt_cpyfm` refuse a 32-plane screen
 //! (`CHUNKY_PLANES`, `_raster.md` §4), so R4 for the sixteen operations is
@@ -43,497 +39,10 @@
 #![cfg(all(target_arch = "aarch64", any(target_os = "macos", target_os = "linux")))]
 #![allow(clippy::too_many_arguments)]
 
-#[allow(dead_code)]
-#[path = "../../kernel/src/raster_kernel.rs"]
-mod raster_kernel;
-#[allow(dead_code)]
-#[path = "../../kernel/src/raster_line.rs"]
-mod raster_line;
-#[allow(dead_code)]
-#[path = "../../kernel/src/raster_expand.rs"]
-mod raster_expand;
-#[allow(dead_code)]
-#[path = "../../kernel/src/raster_copy.rs"]
-mod raster_copy;
+mod vdi_planes32_common;
 
-use std::sync::atomic::{AtomicU16, Ordering};
-use std::sync::{Mutex, MutexGuard, OnceLock};
-
-use tos_api::bdos::process::Abi;
-use tos_api::host::Host;
-use tos_api::vdi::backend::{ClipRect, MonoSrc, PatternFill, Pel, RasterBackend, Rect, WriteMode};
-use tos_api::vdi::line::LineTarget;
-
-const W: u16 = 320;
-const H: u16 = 200;
-/// The kernel's store pitch is the framebuffer's; a wider one than the
-/// visible width is what the VideoCore may hand out.
-const STRIDE: u32 = W as u32 + 16;
-
-/// The colour bits of the 32-plane device pixel (`_raster.md` R1, R5).
-const COLOUR: u32 = 0x00FF_FFFF;
-/// `OVERLAY_BIT` of the 16-bit word, `vdi/vdi_fill.c:26`.
-const OVERLAY_BIT: u16 = 0x0020;
-/// The white pen's pixel in V63: pen 0 of the default palette, 5-bit 31
-/// replicated to `0xFF` per gun (`_raster.md` §3, first bullet).
-const WHITE_PIXEL: u32 = 0x00FF_FFFF;
-/// `v_get_pixel`'s interim 16-bit word of the white pen (`0xFFDF`, the
-/// pen-0 word, `_color-pixel-input.md` "Interim answer until V65").
-const WHITE_WORD: u16 = 0xFFDF;
-/// The cleared word at 16 planes, `memset(0xff)` (`vdi/vdi_control.c:610-618`).
-const CLEARED_WORD_16: u16 = 0xFFFF;
-
-// ── the kernel's device-pixel model, transcribed ─────────────────────────
-//
-// Keep in sync with `kernel/src/vdi_backend.rs` and `kernel/src/hal/framebuffer.rs`.
-
-/// `kernel/src/hal/framebuffer.rs:36@rgb`.
-const fn rgb(r: u8, g: u8, b: u8) -> u32 {
-    ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
-}
-
-/// `kernel/src/vdi_backend.rs:174@expand5to8`.
-const fn expand5to8(c5: u16) -> u8 {
-    ((c5 << 3) | (c5 >> 2)) as u8
-}
-
-/// `kernel/src/vdi_backend.rs:192@OVERLAY_X`.
-const OVERLAY_X: u32 = 0xFF00_0000;
-
-/// `kernel/src/vdi_backend.rs:200@word_to_device`.
-fn word_to_device(word: u16) -> u32 {
-    let x = if word & OVERLAY_BIT != 0 { OVERLAY_X } else { 0 };
-    x | rgb(expand5to8((word >> 11) & 0x1f), expand5to8((word >> 6) & 0x1f), expand5to8(word & 0x1f))
-}
-
-/// `kernel/src/vdi_backend.rs:213@device_to_word`.
-fn device_to_word(px: u32) -> u16 {
-    let r5 = ((px >> 19) & 0x1f) as u16;
-    let g5 = ((px >> 11) & 0x1f) as u16;
-    let b5 = ((px >> 3) & 0x1f) as u16;
-    let o = ((px >> 26) & OVERLAY_BIT as u32) as u16; // bit 31 → bit 5
-    (r5 << 11) | (g5 << 6) | b5 | o
-}
-
-/// `kernel/src/vdi_backend.rs:223@rgb_dist`.
-fn rgb_dist(a: u32, b: u32) -> u32 {
-    let dr = ((a >> 16) & 0xFF) as i32 - ((b >> 16) & 0xFF) as i32;
-    let dg = ((a >> 8) & 0xFF) as i32 - ((b >> 8) & 0xFF) as i32;
-    let db = (a & 0xFF) as i32 - (b & 0xFF) as i32;
-    (dr * dr + dg * dg + db * db) as u32
-}
-
-/// EmuTOS `videl_palette1` (`vdi/vdi_col.c:130-136`), the device default
-/// `query_color` answers for pens 0..15 (`kernel/src/vdi_backend.rs`,
-/// `VIDEL_PALETTE1`); a workstation seeds its pseudo-palette from it.
-#[rustfmt::skip]
-const VIDEL_PALETTE1: [(u16, u16, u16); 16] = [
-    (1000, 1000, 1000), (0, 0, 0),       (1000, 0, 0),    (0, 1000, 0),
-    (0, 0, 1000),       (0, 1000, 1000), (1000, 1000, 0), (1000, 0, 1000),
-    (733, 733, 733),    (533, 533, 533), (667, 0, 0),     (0, 667, 0),
-    (0, 0, 667),        (0, 667, 667),   (667, 667, 0),   (667, 0, 667),
-];
-
-/// The kernel's `VdiScreen` over a host store of `H` rows of [`STRIDE`]
-/// pixels, without the cache maintenance (`clean`), which writes nothing.
-struct Screen {
-    planes: AtomicU16,
-    px: Mutex<Vec<u32>>,
-    palette: Mutex<[u16; 256]>,
-    req: Mutex<[(u16, u16, u16); 256]>,
-}
-
-impl Screen {
-    /// `VdiScreen::pel_to_rgb` (`kernel/src/vdi_backend.rs:282@pel_to_rgb`).
-    fn pel_to_rgb(&self, pel: Pel) -> u32 {
-        word_to_device(self.palette.lock().unwrap()[pel as usize])
-    }
-    /// The store as the kernel kernels see it (`kernel_surface`).
-    fn with_surface<R>(&self, f: impl FnOnce(raster_kernel::Surface, *mut u32) -> R) -> R {
-        let mut px = self.px.lock().unwrap();
-        let base = px.as_mut_ptr();
-        f(raster_kernel::Surface { base, stride_px: STRIDE as usize }, base)
-    }
-    fn target() -> LineTarget {
-        LineTarget { width: W as u32, height: H as u32, stride: STRIDE }
-    }
-    /// `VdiScreen::combine_index` with `xor_pixel` (`kernel/src/vdi_backend.rs:408@xor_pixel`).
-    fn combine_index(px: &mut [u32], idx: usize, set: bool, mode: WriteMode, fg: u32, bg: u32) {
-        let Some(p) = px.get_mut(idx) else { return };
-        match mode {
-            WriteMode::Replace => *p = if set { fg } else { bg },
-            WriteMode::Transparent if set => *p = fg,
-            WriteMode::Xor if set => *p = !*p,
-            WriteMode::RevTransparent if !set => *p = fg,
-            _ => {}
-        }
-    }
-    fn raw(&self, x: i16, y: i16) -> u32 {
-        self.px.lock().unwrap()[y as usize * STRIDE as usize + x as usize]
-    }
-    /// The visible store, row by row.
-    fn snapshot(&self) -> Vec<u32> {
-        let px = self.px.lock().unwrap();
-        (0..H as usize).flat_map(|y| px[y * STRIDE as usize..y * STRIDE as usize + W as usize].to_vec()).collect()
-    }
-}
-
-/// `kernel_area` of an inclusive box.
-fn area(x0: i32, y0: i32, x1: i32, y1: i32) -> raster_kernel::Area {
-    raster_kernel::Area { x: x0 as usize, y: y0 as usize, w: (x1 - x0 + 1) as usize, h: (y1 - y0 + 1) as usize }
-}
-
-/// `rect ∩ clip ∩ screen`, the box every kernel draw method computes first.
-fn clamp(x: i16, y: i16, w: i16, h: i16, clip: ClipRect) -> Option<(i32, i32, i32, i32)> {
-    ClipRect {
-        xmn: x.max(clip.xmn),
-        ymn: y.max(clip.ymn),
-        xmx: ((x as i32 + w as i32 - 1) as i16).min(clip.xmx),
-        ymx: ((y as i32 + h as i32 - 1) as i16).min(clip.ymx),
-    }
-    .clamp_to(W, H)
-}
-
-impl RasterBackend for Screen {
-    fn width(&self) -> u16 {
-        W
-    }
-    fn height(&self) -> u16 {
-        H
-    }
-    fn num_colors(&self) -> u16 {
-        256
-    }
-    fn planes(&self) -> u16 {
-        self.planes.load(Ordering::Relaxed)
-    }
-    fn set_color(&self, index: u16, r: u16, g: u16, b: u16) {
-        if (index as usize) < 256 {
-            self.req.lock().unwrap()[index as usize] = (r, g, b);
-        }
-    }
-    fn query_color(&self, index: u16) -> (u16, u16, u16) {
-        self.req.lock().unwrap().get(index as usize).copied().unwrap_or((0, 0, 0))
-    }
-    fn set_active_palette(&self, palette: &[u16; 256]) {
-        *self.palette.lock().unwrap() = *palette;
-    }
-    fn pel_to_device16(&self, pel: Pel) -> u16 {
-        self.palette.lock().unwrap()[pel as usize]
-    }
-    fn device_to_rgb565(&self, argb: u32) -> u16 {
-        device_to_word(argb)
-    }
-    fn rgb565_to_device(&self, px: u16) -> u32 {
-        word_to_device(px)
-    }
-    /// `VdiScreen::read_pixel` (`kernel/src/vdi_backend.rs:531@read_pixel`).
-    fn read_pixel(&self, x: i16, y: i16) -> Pel {
-        if x < 0 || y < 0 || x as u16 >= W || y as u16 >= H {
-            return 0;
-        }
-        let packed = self.raw(x, y) & 0x00FF_FFFF;
-        let pal = *self.palette.lock().unwrap();
-        let mut best = 0u8;
-        let mut best_d = u32::MAX;
-        for (i, &entry) in pal.iter().enumerate() {
-            let d = rgb_dist(packed, word_to_device(entry) & 0x00FF_FFFF);
-            if d < best_d {
-                best_d = d;
-                best = i as u8;
-            }
-        }
-        best
-    }
-    /// `VdiScreen::clear_screen_word` (`kernel/src/vdi_backend.rs:558@clear_screen_word`):
-    /// `fb.clear(rgb565_to_device(word))` over the visible area.
-    fn clear_screen_word(&self, word: u16) {
-        let v = self.rgb565_to_device(word);
-        let mut px = self.px.lock().unwrap();
-        for y in 0..H as usize {
-            px[y * STRIDE as usize..y * STRIDE as usize + W as usize].fill(v);
-        }
-    }
-    fn fill_rect(&self, x: i16, y: i16, w: i16, h: i16, pel: Pel, clip: ClipRect) {
-        let Some((x0, y0, x1, y1)) = clamp(x, y, w, h, clip) else { return };
-        let color = self.pel_to_rgb(pel);
-        // SAFETY: the clamped box lies in the store.
-        self.with_surface(|s, _| unsafe { raster_kernel::fill_solid(s, area(x0, y0, x1, y1), color) });
-    }
-    fn abline(
-        &self,
-        x0: i16,
-        y0: i16,
-        x1: i16,
-        y1: i16,
-        pel: Pel,
-        mode: WriteMode,
-        clip: ClipRect,
-        mask: u16,
-        last: bool,
-    ) -> u16 {
-        let (color, bg) = (self.pel_to_rgb(pel), self.pel_to_rgb(0));
-        let target = Screen::target();
-        // SAFETY: the store holds `H * STRIDE` pixels, `raster_line::abline`'s contract.
-        self.with_surface(|_, base| unsafe {
-            raster_line::abline(base, &target, (x0, y0, x1, y1), mode, clip, mask, last, color, bg).0
-        })
-    }
-    fn fill_pattern(&self, x: i16, y: i16, w: i16, h: i16, fill: PatternFill, clip: ClipRect) {
-        if fill.pattern.is_empty() {
-            return;
-        }
-        let Some((x0, y0, x1, y1)) = clamp(x, y, w, h, clip) else { return };
-        let (fg, bg) = (self.pel_to_rgb(fill.fg), self.pel_to_rgb(fill.bg));
-        let kfill = raster_kernel::Fill { pattern: fill.pattern, mode: fill.mode, fg, bg };
-        // SAFETY: the clamped box lies in the store.
-        self.with_surface(|s, _| unsafe { raster_kernel::fill_pattern(s, area(x0, y0, x1, y1), &kfill) });
-    }
-    fn draw_glyph_sized(
-        &self,
-        x: i16,
-        y: i16,
-        glyph: &[u8],
-        cell_w: i16,
-        cell_h: i16,
-        fg: Pel,
-        mode: WriteMode,
-        clip: ClipRect,
-    ) {
-        let (fg_rgb, bg_rgb) = (self.pel_to_rgb(fg), self.pel_to_rgb(0));
-        let on_screen =
-            x >= 0 && y >= 0 && x as i32 + cell_w as i32 <= W as i32 && y as i32 + cell_h as i32 <= H as i32;
-        if clip == ClipRect::OFF && !on_screen {
-            let target = Screen::target();
-            let mut px = self.px.lock().unwrap();
-            tos_api::vdi::line::glyph_unclipped(&target, x, y, glyph, cell_w, cell_h, |idx, set| {
-                Screen::combine_index(&mut px, idx, set, mode, fg_rgb, bg_rgb);
-            });
-            return;
-        }
-        let Some(bx) = clamp(x, y, cell_w, cell_h, clip) else { return };
-        // SAFETY: the clamped box lies in the store.
-        self.with_surface(|s, _| unsafe {
-            if !raster_expand::glyph(s, x as i32, y as i32, glyph, cell_w as usize, bx, mode, fg_rgb, bg_rgb) {
-                raster_expand::glyph_reference(s, x as i32, y as i32, glyph, cell_w as usize, bx, mode, fg_rgb, bg_rgb);
-            }
-        });
-    }
-    fn blit_mono(&self, dst: Rect, src: MonoSrc, fg: Pel, bg: Pel, mode: WriteMode, clip: ClipRect) {
-        let Some(bx) = clamp(dst.x, dst.y, dst.w, dst.h, clip) else { return };
-        let (fg_rgb, bg_rgb) = (self.pel_to_rgb(fg), self.pel_to_rgb(bg));
-        // SAFETY: the clamped box lies in the store.
-        self.with_surface(|s, _| unsafe {
-            if !raster_expand::mono(s, dst.x as i32, dst.y as i32, &src, bx, mode, fg_rgb, bg_rgb) {
-                raster_expand::mono_reference(s, dst.x as i32, dst.y as i32, &src, bx, mode, fg_rgb, bg_rgb);
-            }
-        });
-    }
-    fn copy_rect(&self, src: Rect, dx: i16, dy: i16, op: u8, clip: ClipRect) {
-        if op & 0x0f == 5 {
-            return;
-        }
-        let Some(bx) = clamp(dx, dy, src.w, src.h, clip) else { return };
-        // SAFETY: the clamped box lies on the screen in the store, `W <= STRIDE`.
-        self.with_surface(|s, _| unsafe {
-            raster_copy::copy_rect(s, W as i32, H as i32, src.x as i32, src.y as i32, dx as i32, dy as i32, bx, op)
-        });
-    }
-    fn get_device_pixel(&self, x: i16, y: i16) -> u32 {
-        if x < 0 || y < 0 || x as u16 >= W || y as u16 >= H {
-            return 0;
-        }
-        self.raw(x, y)
-    }
-    /// `VdiScreen::get_device_pixel_wrapped`: the store with its own pitch.
-    fn get_device_pixel_wrapped(&self, x: i16, y: i16) -> u32 {
-        match Screen::target().index(x as i32, y as i32) {
-            Some(idx) => self.px.lock().unwrap()[idx],
-            None => 0,
-        }
-    }
-    fn put_device_pixel(&self, x: i16, y: i16, argb: u32) {
-        if x >= 0 && y >= 0 && (x as u16) < W && (y as u16) < H {
-            self.px.lock().unwrap()[y as usize * STRIDE as usize + x as usize] = argb;
-        }
-    }
-    fn flush_rect(&self, _x0: i16, _y0: i16, _x1: i16, _y1: i16) {}
-}
-
-// ── host, workstation, parameter block ───────────────────────────────────
-
-struct TestHost {
-    screen: Screen,
-}
-
-impl Host for TestHost {
-    fn console_write_byte(&self, _byte: u8) {}
-    fn raster(&self) -> Option<&dyn RasterBackend> {
-        Some(&self.screen)
-    }
-}
-
-static HOST: OnceLock<&'static TestHost> = OnceLock::new();
-static HOST_REF: OnceLock<&'static dyn Host> = OnceLock::new();
-/// The installed host, the VDI handle table and the store are process-wide.
-static SERIAL: Mutex<()> = Mutex::new(());
-
-fn screen() -> &'static Screen {
-    &HOST.get().expect("setting() not called").screen
-}
-
-const POISON: i16 = 0x7EAD;
-
-struct Pb {
-    contrl: Box<[i16; 16]>,
-    intin: Box<[i16; 128]>,
-    ptsin: Box<[i16; 256]>,
-    intout: Box<[i16; 512]>,
-    ptsout: Box<[i16; 256]>,
-    block: Box<[u64; 5]>,
-}
-
-impl Pb {
-    fn new() -> Pb {
-        let mut pb = Pb {
-            contrl: Box::new([0; 16]),
-            intin: Box::new([0; 128]),
-            ptsin: Box::new([0; 256]),
-            intout: Box::new([0; 512]),
-            ptsout: Box::new([0; 256]),
-            block: Box::new([0; 5]),
-        };
-        pb.block[0] = pb.contrl.as_ptr() as u64;
-        pb.block[1] = pb.intin.as_ptr() as u64;
-        pb.block[2] = pb.ptsin.as_ptr() as u64;
-        pb.block[3] = pb.intout.as_ptr() as u64;
-        pb.block[4] = pb.ptsout.as_ptr() as u64;
-        pb
-    }
-
-    /// One VDI call through the real dispatcher: `contrl[0]` opcode, `[1]`
-    /// PTSIN pairs, `[3]` INTIN count, `[5]` sub-opcode, `[6]` handle.
-    fn call(&mut self, opcode: i16, sub: i16, handle: i16, intin: &[i16], ptsin: &[i16]) -> i16 {
-        self.contrl.fill(0);
-        self.intout.fill(POISON);
-        self.ptsout.fill(POISON);
-        self.intin[..intin.len()].copy_from_slice(intin);
-        self.ptsin[..ptsin.len()].copy_from_slice(ptsin);
-        self.contrl[0] = opcode;
-        self.contrl[1] = (ptsin.len() / 2) as i16;
-        self.contrl[3] = intin.len() as i16;
-        self.contrl[5] = sub;
-        self.contrl[6] = handle;
-        // SAFETY: `block` holds five live pointers to arrays owned by `self`,
-        // each larger than any opcode issued here writes.
-        unsafe { tos_api::vdi::dispatch(self.block.as_ptr() as u64, Abi::Lp64) }
-    }
-}
-
-/// A virtual workstation on the physical one, opened at the current
-/// setting with every attribute index 1 and raster coordinates; closed on
-/// drop.
-struct Ws {
-    h: i16,
-    pb: Pb,
-}
-
-impl Ws {
-    fn open() -> Ws {
-        let mut pb = Pb::new();
-        let mut work_in = [1i16; 11];
-        work_in[10] = 2;
-        pb.call(1, 0, 0, &work_in, &[]); // v_opnwk
-        let phys = pb.contrl[6];
-        pb.call(100, 0, phys, &work_in, &[]); // v_opnvwk
-        let h = pb.contrl[6];
-        assert!(h > 0, "v_opnvwk handle {h}");
-        Ws { h, pb }
-    }
-    fn call(&mut self, opcode: i16, sub: i16, intin: &[i16], ptsin: &[i16]) {
-        self.pb.call(opcode, sub, self.h, intin, ptsin);
-    }
-    fn v_clrwk(&mut self) {
-        self.call(3, 0, &[], &[]);
-    }
-    fn vswr_mode(&mut self, mode: i16) {
-        self.call(32, 0, &[mode], &[]);
-    }
-    /// Solid interior, pen `pen`, no perimeter.
-    fn solid_fill(&mut self, pen: i16) {
-        self.call(23, 0, &[1], &[]); // vsf_interior FIS_SOLID
-        self.call(25, 0, &[pen], &[]); // vsf_color
-        self.call(104, 0, &[0], &[]); // vsf_perimeter off
-    }
-    fn vr_recfl(&mut self, x0: i16, y0: i16, x1: i16, y1: i16) {
-        self.call(114, 0, &[], &[x0, y0, x1, y1]);
-    }
-    fn vs_clip(&mut self, on: bool, x0: i16, y0: i16, x1: i16, y1: i16) {
-        self.call(129, 0, &[on as i16], &[x0, y0, x1, y1]);
-    }
-    /// `v_get_pixel(x, y)` → `(INTOUT[0], INTOUT[1])`.
-    fn v_get_pixel(&mut self, x: i16, y: i16) -> (i16, u16) {
-        self.call(105, 0, &[], &[x, y]);
-        (self.pb.intout[0], self.pb.intout[1] as u16)
-    }
-    fn v_contourfill(&mut self, x: i16, y: i16, intin0: i16) {
-        self.call(103, 0, &[intin0], &[x, y]);
-    }
-}
-
-impl Drop for Ws {
-    fn drop(&mut self) {
-        let h = self.h;
-        self.pb.call(101, 0, h, &[], &[]); // v_clsvwk
-    }
-}
-
-/// Take the lock, install the host once and set the depth the boot
-/// argument would have chosen.
-fn setting(planes: u16) -> MutexGuard<'static, ()> {
-    let g = SERIAL.lock().unwrap_or_else(|e| e.into_inner());
-    let host = *HOST.get_or_init(|| {
-        let mut req = [(0u16, 0u16, 0u16); 256];
-        req[..16].copy_from_slice(&VIDEL_PALETTE1);
-        Box::leak(Box::new(TestHost {
-            screen: Screen {
-                planes: AtomicU16::new(16),
-                px: Mutex::new(vec![0; H as usize * STRIDE as usize]),
-                palette: Mutex::new([0; 256]),
-                req: Mutex::new(req),
-            },
-        }))
-    });
-    HOST_REF.get_or_init(|| {
-        let href: &'static &'static dyn Host = Box::leak(Box::new(host as &'static dyn Host));
-        tos_api::host::install_host(href);
-        host as &'static dyn Host
-    });
-    host.screen.planes.store(planes, Ordering::Relaxed);
-    g
-}
-
-/// xorshift64*, deterministic: the X noise.
-struct Rng(u64);
-impl Rng {
-    fn next(&mut self) -> u64 {
-        self.0 ^= self.0 >> 12;
-        self.0 ^= self.0 << 25;
-        self.0 ^= self.0 >> 27;
-        self.0.wrapping_mul(0x2545_F491_4F6C_DD1D)
-    }
-    fn x_byte(&mut self) -> u32 {
-        ((self.next() >> 56) as u32) << 24
-    }
-    fn u32(&mut self) -> u32 {
-        (self.next() >> 32) as u32
-    }
-}
-
-/// The X byte of a store word.
-fn x_of(px: u32) -> u32 {
-    px >> 24
-}
+use tos_api::vdi::backend::{ClipRect, Pel, RasterBackend, Rect};
+use vdi_planes32_common::*;
 
 // ── R1, R2: a pen writes X = 0 ───────────────────────────────────────────
 
@@ -552,9 +61,14 @@ fn pen_scene(planes: u16) -> Vec<u32> {
         let (x0, y0) = (4 + 16 * i as i16, 4);
         ws.solid_fill(pen);
         ws.vr_recfl(x0, y0, x0 + 11, y0 + 11);
-        // The pen's pixel: the pseudo-palette word through the kernel's pen
-        // step, X = 0 (R2); the same 24 colour bits as at 16 planes (§3).
-        let want = word_to_device(scr.pel_to_device16(pen as Pel));
+        // The pen's pixel, X = 0 (R2): at 16 planes the pseudo-palette word
+        // through the kernel's pen step, at 32 the 8-bit rule of the request
+        // (V64, `_raster.md` P3, P6).
+        let want = if planes == 32 {
+            default_pen_pixel(32, pen as usize)
+        } else {
+            word_to_device(scr.pel_to_device16(pen as Pel))
+        };
         for (x, y) in [(x0, y0), (x0 + 11, y0 + 11), (x0 + 5, y0 + 6)] {
             let got = scr.raw(x, y);
             assert_eq!(got, want, "{planes} planes, pen {pen}: fill pixel at ({x},{y})");
@@ -572,7 +86,11 @@ fn pen_scene(planes: u16) -> Vec<u32> {
     let before = scr.snapshot();
     ws.call(22, 0, &[2], &[]); // vst_color red
     ws.call(8, 0, &[65, 66, 67, 87], &[40, 80]); // v_gtext "ABCW"
-    let (red, white) = (word_to_device(scr.pel_to_device16(2)), word_to_device(scr.pel_to_device16(0)));
+    let (red, white) = if planes == 32 {
+        (default_pen_pixel(32, 2), default_pen_pixel(32, 0))
+    } else {
+        (word_to_device(scr.pel_to_device16(2)), word_to_device(scr.pel_to_device16(0)))
+    };
     let after = scr.snapshot();
     let changed: Vec<u32> = before.iter().zip(&after).filter(|(b, a)| b != a).map(|(_, &a)| a).collect();
     assert!(changed.iter().filter(|&&p| p == red).count() > 20, "{planes} planes: v_gtext drew no text pixels");
@@ -584,18 +102,25 @@ fn pen_scene(planes: u16) -> Vec<u32> {
 }
 
 /// Fills, lines and text draw the pen's pixel `0x00RRGGBB` at 32 planes
-/// (R1, R2), and the scene's store equals the 16-plane one (R6). The
-/// comparison masks X, because a cleared pixel's X byte is not a contract
-/// at 32 planes (R3); every drawn pixel's X is asserted above.
+/// (R1, R2). Since V64 the 32-plane pens have 8 bits per gun, so the scene
+/// is the 16-plane one projected to 5 bits per gun within one step
+/// (`_raster.md` P9), exactly equal where a gun is 0 or 1000 (both rules
+/// give the extremes). The comparison masks X, because a cleared pixel's X
+/// byte is not a contract at 32 planes (R3); every drawn pixel's X is
+/// asserted above.
 #[test]
 fn fills_lines_and_text_draw_the_pen_pixel_with_x_zero() {
     let at16 = pen_scene(16);
     let at32 = pen_scene(32);
-    let masked = |v: &[u32]| v.iter().map(|p| p & COLOUR).collect::<Vec<_>>();
-    assert_eq!(masked(&at16), masked(&at32), "the scene's colours differ between 16 and 32 planes");
-    for (a, b) in at16.iter().zip(&at32) {
-        if x_of(*b) == 0 {
-            assert_eq!(a, b, "a drawn pixel differs between 16 and 32 planes");
+    assert_eq!(at16.len(), at32.len());
+    for (i, (a, b)) in at16.iter().zip(&at32).enumerate() {
+        let (a5, b5) = (guns5(*a), guns5(*b));
+        let step = (a5.0 - b5.0).abs().max((a5.1 - b5.1).abs()).max((a5.2 - b5.2).abs());
+        assert!(step <= 1, "pixel {i}: 0x{a:08X} at 16 and 0x{b:08X} at 32 differ by {step} 5-bit steps");
+        let extreme = |c: u32| c == 0 || c == 0xFF;
+        let (ra, ga, ba) = ((a >> 16) & 0xFF, (a >> 8) & 0xFF, a & 0xFF);
+        if extreme(ra) && extreme(ga) && extreme(ba) {
+            assert_eq!(a & COLOUR, b & COLOUR, "pixel {i}: a full-intensity colour differs between 16 and 32");
         }
     }
 }

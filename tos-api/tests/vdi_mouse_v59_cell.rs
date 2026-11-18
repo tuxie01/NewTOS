@@ -140,7 +140,7 @@ macro_rules! common_methods {
         fn query_color(&self, _: u16) -> (u16, u16, u16) {
             panic!("not used by the pointer");
         }
-        fn set_active_palette(&self, _: &[u16; 256]) {
+        fn set_active_palette(&self, _: &[u32; 256]) {
             panic!("not used by the pointer");
         }
         fn pel_to_device16(&self, _: Pel) -> u16 {

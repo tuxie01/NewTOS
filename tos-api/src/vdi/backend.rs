@@ -118,12 +118,12 @@ pub trait RasterBackend: Sync {
     /// workstation's own per-`Vwk` pseudo-palette before each colour-
     /// sensitive op (`vdi_col.c:601-614`, `set_color16`).
     ///
-    /// Each entry is one 16-bit pixel value `RRRRRGGGGG0BBBBB` (RGB555
-    /// packed into a 565 slot, the green LSB / bit 5 always 0 — EmuTOS
-    /// `vdi_defs.h:156`, `vdi_col.c:599`); the backend expands each gun
-    /// 5→8 bits at the write point (`c8 = (c5<<3)|(c5>>2)`, the VIDEL
-    /// truecolor DAC expansion).
-    fn set_active_palette(&self, palette: &[u16; 256]);
+    /// Each entry is in the form of the device depth ([`planes`](Self::planes)):
+    /// at 16 planes the 16-bit word `RRRRRGGGGG0BBBBB` in the low 16 bits (RGB555 in a
+    /// 565 slot, bit 5 always 0 — EmuTOS `vdi_defs.h:156`, `vdi_col.c:599`), each gun
+    /// expanded 5→8 bits at the write point (`c8 = (c5<<3)|(c5>>2)`); at
+    /// [`VDI_PLANES_WIDE`] the pen's pixel `0x00RRGGBB`, written as it is (ADR-038 point 4).
+    fn set_active_palette(&self, palette: &[u32; 256]);
 
     /// Resolve a PEL to the **16-bit RGB565 memory-MFDB pixel word** through
     /// the currently [active pseudo-palette](Self::set_active_palette) —
@@ -134,7 +134,8 @@ pub trait RasterBackend: Sync {
     /// framebuffer pixels. The screen-destination path resolves the same PEL
     /// to a device pixel internally (`blit_mono`); this exposes the packed
     /// 16-bit form the off-screen memory buffer needs. `pel` is a `u8`, so it
-    /// always indexes the 256-entry active palette in bounds.
+    /// always indexes the 256-entry active palette in bounds. At 32 planes, until
+    /// TASK/V65 gives the memory MFDB its 32-bit form: the pen pixel's top 5 bits per gun.
     fn pel_to_device16(&self, pel: Pel) -> u16;
 
     /// Convert a **raw device pixel word** (as returned by
@@ -712,3 +713,8 @@ impl ClipRect {
         }
     }
 }
+
+/// The 32-plane device depth (ADR-038 point 1, the boot argument
+/// `vdiplanes=32`): [`RasterBackend::planes`] answers it instead of the
+/// default 16, and the device pixel is `0xXXRRGGBB` with 8 bits per gun.
+pub const VDI_PLANES_WIDE: u16 = 32;
