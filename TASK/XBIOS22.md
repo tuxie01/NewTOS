@@ -45,7 +45,10 @@ VgetSize, VgetRGB we do not need it.)
 ## Acceptance
 
 - Cases 212-214 equal where the spec says equal, otherwise listed in the COMPATIBILITY entry; 211 and 215 ACCEPTED
-  by the entry. No case equal in the full XBIOS run differs anew.
+  by the entry. No case equal in the full XBIOS run differs anew, except cases 211-214 against the tt reference,
+  which the COMPATIBILITY entry "XBIOS Falcon video" names as accepted (NewTOS claims the Falcon profile).
+  (Reworded with the owner's approval 2026-11-18, "Ja ich bin damit einverstanden": the Falcon answers make the
+  four tt cases differ by design.)
 - `cargo xtask test` green; warnings delta 0; doc-check of the edited docs 0 failures.
 
 ## Spec step (researcher, 2026-11-12)
@@ -229,3 +232,21 @@ only (the configuration stays in `config.txt`) and that it goes together with `_
    ADR-012 amendment text of spec step 2 is applied in the implementing commit.
 4. `VgetSize` while no framebuffer is up (`Host::screen()` is `None`): the function number `0x5B`, EmuTOS's own
    "no Videl" answer (lead's recommendation, covered by the owner's "setze das so um"; not answered separately).
+
+## Owner decision 2026-11-18, after the tester's TeraDesk measurement
+
+Run `measurements/measurement-2026-11-18-xbios22-test/RUNINFO.TXT` (section "TERADESK GATE"). With `_VDO`
+TeraDesk takes its Falcon branch: the video dialog shows VGA-80-column, Overscan greyed, 64K colours. OK on the
+unchanged dialog raises TeraDesk's alert "A change of video mode will terminate all running applications";
+OK there restarts the AES, TeraDesk comes back and reads `0x001C` again; no crash. `main` without `_VDO` showed
+the ST/TT dialog (TT-Medium set), no alert, no restart.
+
+Owner: "ok dann gehen wir den falcon weg" (ok, then we take the Falcon way). `_VDO` = `0x00030000` stands; the
+branch landed as `f6bdafa47`.
+
+Open from this, not part of this ticket:
+
+- Owner's question: can the dialog show the right data (the Pi's real mode)? The Falcon mode word cannot name a
+  mode beyond its own set; to be answered by research before anything is built.
+- Not established: on the commit the first Return on the unchanged dialog left *Colours* at 256 and the alert
+  came with the second Return; with the arch06 injection on `main` it came with the first.
