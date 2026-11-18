@@ -1,6 +1,6 @@
 # XBIOS22 — Falcon video queries: `VgetMonitor`, `VgetSize`, `VgetRGB` answer for the Pi screen
 
-Status: IMPLEMENTED (2026-11-18) | Priority: P2 | Commit: self | Missing: tester run of bios-r1 211-215 and jar-r1 41/45 on the branch kernel, TeraDesk Falcon-branch vid-vdo scenario (decides the _VDO value), real-Pi check
+Status: DONE (2026-11-18) | Priority: P2 | Commit: f6bdafa47 | Receipt: XBIOS22-STATUS-DONE.MD
 
 Type: research (spec), then developer. Owner decision 2026-11-12, from the full XBIOS run
 `measurements/measurement-2026-11-12-xbios-full/RUNINFO.TXT`.
