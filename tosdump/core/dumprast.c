@@ -27,6 +27,7 @@
 #include "dump.h"
 #include "gem.h"
 #include "log.h"
+#include "record.h"
 #include "runner_rast.h"
 
 #ifndef TD_BUILD_ID
@@ -34,7 +35,10 @@
 #endif
 
 static struct td_rast_case_table table;
-static uint8_t records[(size_t)TD_RAST_MAX_CASES * TD_RAST_RECORD_SIZE];
+/* Sized for the larger record: a wide table (`!screen w,h,32`) writes the
+ * wide record of area TD_AREA_RASTER32 (tosdump.h), every other table the
+ * narrow one of area TD_AREA_RASTER into the front of the same space. */
+static uint8_t records[(size_t)TD_RAST_MAX_CASES * TD_RAST32_RECORD_SIZE];
 
 static const char *log_path = "RASTER.LOG";
 
@@ -130,13 +134,21 @@ int main(int argc, char **argv)
 			td_gem_close(&wk);
 			return finish(1);
 		}
+		/* EmuTOS has no path above 16 planes (vdi_defs.h:22): what a
+		 * wide table measures is NewTOS' own contract, and its dump is
+		 * a baseline of area VDI-RASTER32, never an oracle dump. */
+		if (table.screen.wide)
+			td_log("table declares a 32-plane screen: NewTOS contract "
+			       "(ADR-038), no oracle; area %s, record %lu bytes\n",
+			       td_area_name(td_rast_area(&table)),
+			       (unsigned long)td_rast_record_size(&table));
 	}
 
 	/* Written before the first case: a run that hangs still leaves this. */
 	td_log("running %u cases\n", table.count);
 	td_log_write(log_path);
 
-	bytes = (size_t)table.count * TD_RAST_RECORD_SIZE;
+	bytes = (size_t)table.count * td_rast_record_size(&table);
 	rc = td_run_raster(&table, &wk, records, sizeof records);
 	td_gem_close(&wk);
 	if (rc != 0) {
@@ -145,7 +157,7 @@ int main(int argc, char **argv)
 	}
 	td_log("all %u cases ran\n", table.count);
 
-	rc = td_dump_write(out_path, TD_AREA_RASTER, table.count, TD_BUILD_ID,
+	rc = td_dump_write(out_path, td_rast_area(&table), table.count, TD_BUILD_ID,
 	                   table.crc, records, bytes);
 	if (rc != 0) {
 		td_log("cannot write %s (%d)\n", out_path, rc);

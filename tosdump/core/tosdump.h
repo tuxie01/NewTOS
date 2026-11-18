@@ -74,6 +74,10 @@
 #define TD_AREA_VDI         4
 #define TD_AREA_AES         5
 #define TD_AREA_RASTER      6
+/* The raster area at the 32-plane setting (TASK/V69, ADR-038 point 13):
+ * the record of area 6 with buffers twice as long.  Only NewTOS writes it,
+ * so a dump of it is a NewTOS-contract baseline, never an oracle dump. */
+#define TD_AREA_RASTER32    7
 
 /* ------------------------------------------------------------------ */
 /* Case tables (spec section 6)                                        */
@@ -244,8 +248,9 @@
  *
  *   NOT comparable.  Pixels in DEVICE form below nine planes.  The TT stores
  *   a 4-plane form word-interleaved (s_nxwd = fd_nplanes * 2,
- *   vdi_raster.c:922); NewTOS stores every memory MFDB as one 16-bit RGB565
- *   word per pixel (raster.rs, Mfdb::mem_stride_px).  The same bytes mean
+ *   vdi_raster.c:922); NewTOS at the 16-plane setting stores every memory
+ *   MFDB as one 16-bit RGB565 word per pixel (raster.rs,
+ *   Mfdb::mem_stride_px).  The same bytes mean
  *   different pixels, so a copy of them is not a measurement of anything.
  *   A 16-plane form is the one exception -- EmuTOS' own vro_cpyfm16
  *   (vdi_raster.c:975-1221) is the identical chunky UWORD loop -- but only
@@ -296,6 +301,31 @@
 #define TD_RAST_OFF_BUF_B        2660   /* buffer B[512] after            */
 #define TD_RAST_OFF_RESERVED     3684   /* 12 bytes, zero                 */
 #define TD_RAST_RESERVED_LEN       12
+
+/*
+ * The WIDE raster record -- 5744 bytes, area TD_AREA_RASTER32 (TASK/V69;
+ * docs/TOS-REFERENCE-DUMPER.md, "The wide record and the readback").
+ *
+ * A table that declares a 32-plane screen ("!screen w,h,32", cases.h) is
+ * a wide table, and only a wide table writes this record.  A 32-plane
+ * pixel is two WORDs, so the 32 x 16 device form the narrow buffers were
+ * sized for needs 1024 WORDs.  Enlarging the narrow record instead would
+ * invalidate every frozen raster reference; so the narrow record above,
+ * its area and its constants stay exactly as they are, and the wide one
+ * is a second record of its own area.  The comparator refuses two dumps
+ * whose area or record size differ, so a 16-plane reference and a wide
+ * run can never be compared.
+ *
+ * Offsets 0 .. TD_RAST_OFF_BUF_A - 1 are the narrow record's, field for
+ * field; only the two buffers and what follows them move.
+ */
+#define TD_RAST32_PLANES          32
+#define TD_RAST32_BUF_WORDS     1024
+#define TD_RAST32_RECORD_SIZE   5744
+#define TD_RAST32_OFF_BUF_A     1636   /* buffer A[1024] after            */
+#define TD_RAST32_OFF_BUF_B     3684   /* buffer B[1024] after            */
+#define TD_RAST32_OFF_RESERVED  5732   /* 12 bytes, zero                  */
+#define TD_RAST32_RESERVED_LEN    12
 
 /* The two pointer slots inside CONTRL: contrl[7..14].  Recorded, never
  * compared by value -- they hold the address of one of the two buffers, at

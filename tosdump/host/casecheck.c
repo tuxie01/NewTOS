@@ -205,6 +205,9 @@ static int check_raster(const char *path)
 		printf("  !screen %dx%d at %d planes, %u preludes\n",
 		       rast_table.screen.w, rast_table.screen.h,
 		       rast_table.screen.planes, rast_table.prelude_count);
+	if (rast_table.screen.wide)
+		printf("  wide table: area VDI-RASTER32, NewTOS contract "
+		       "(ADR-038), no oracle\n");
 	for (i = 0; i < rast_table.count; i++) {
 		const struct td_rast_case *c = &rast_table.cases[i];
 		uint16_t j;

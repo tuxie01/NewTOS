@@ -117,6 +117,22 @@ struct td_raster_arrays {
 	int16_t buf_b[TD_RAST_BUF_WORDS];
 };
 
+/*
+ * The wide raster frame (area TD_AREA_RASTER32, tosdump.h): the same
+ * parameter arrays, buffers of TD_RAST32_BUF_WORDS.  A separate type, so
+ * the narrow frame -- its size, its buffers' adjacency, what a 16-plane
+ * run lays out in memory -- stays exactly as it was.
+ */
+struct td_raster32_arrays {
+	int16_t contrl[TD_RAST_CONTRL_N];
+	int16_t intin[TD_RAST_INTIN_N];
+	int16_t ptsin[TD_RAST_PTSIN_N];
+	int16_t intout[TD_RAST_INTOUT_N];
+	int16_t ptsout[TD_RAST_PTSOUT_N];
+	int16_t buf_a[TD_RAST32_BUF_WORDS];
+	int16_t buf_b[TD_RAST32_BUF_WORDS];
+};
+
 /* Fill every array and the capture buffer with the 0xDEAD pattern. */
 void td_poison_vdi(struct td_vdi_arrays *a);
 void td_poison_aes(struct td_aes_arrays *a);
@@ -130,6 +146,7 @@ void td_poison_call(struct td_call_frame *f);
  * that a permutation, an off-by-one row or an untouched region is visible.
  */
 void td_poison_raster(struct td_raster_arrays *a);
+void td_poison_raster32(struct td_raster32_arrays *a);
 
 /*
  * The buffer pattern.  A pure function of (seed, index) in fixed-width
@@ -177,6 +194,14 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
                             int32_t ret, const struct td_raster_arrays *after,
                             const int16_t *contrl_before,
                             const int16_t *src_mfdb, const int16_t *dst_mfdb);
+/* The wide record (TD_RAST32_RECORD_SIZE): the narrow record's fields at
+ * the narrow offsets, then the two TD_RAST32_BUF_WORDS buffers. */
+void td_raster32_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+                              int32_t ret,
+                              const struct td_raster32_arrays *after,
+                              const int16_t *contrl_before,
+                              const int16_t *src_mfdb,
+                              const int16_t *dst_mfdb);
 
 /* ---- field descriptors (used by the comparator to name a difference) --- */
 
@@ -308,6 +333,7 @@ extern const struct td_field td_vdi_fields[];
 extern const struct td_field td_aes_fields[];
 extern const struct td_field td_call_fields[];
 extern const struct td_field td_raster_fields[];
+extern const struct td_field td_raster32_fields[];
 
 const struct td_field *td_area_fields(uint16_t area);
 

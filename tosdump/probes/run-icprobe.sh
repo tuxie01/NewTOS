@@ -11,7 +11,10 @@
 #   newtos   tools/mkcard.sh (C:\ICPROBE.NAP, the tools/mkrsc.py conversion of
 #            the same file as C:\ICPROBE.RSC, NEWDESK.INF "#R 02",
 #            "#Z 01 C:\ICPROBE.NAP@"), QEMU raspi4b on an APFS clone of the card
-#            with `-append serial=on`.
+#            with `-append serial=on`, followed by $ICPROBE_BOOTARGS when it
+#            is set (TASK/V69: ICPROBE_BOOTARGS=vdiplanes=32 runs the probe at
+#            the 32-plane setting, its file version 2; a serial= token is
+#            refused, serial=on stays first).
 #
 # <out-dir> (must not exist) receives ICPROBE.LOG, ICPROBE.BIN, run.txt and the
 # side's log. Compare two runs with tosdump/probes/icprobe-compare.py.
@@ -30,6 +33,14 @@ case $SIDE in
 esac
 [ -f "$RSC" ] || { echo "resource not found: $RSC" >&2; exit 1; }
 [ ! -e "$OUT" ] || { echo "out-dir exists: $OUT" >&2; exit 1; }
+APPEND="serial=on"
+if [ -n "${ICPROBE_BOOTARGS:-}" ]; then
+    [ "$SIDE" = newtos ] || { echo "ICPROBE_BOOTARGS is a NewTOS boot argument; the oracle side has none" >&2; exit 2; }
+    for t in $ICPROBE_BOOTARGS; do
+        case $t in serial=*) echo "ICPROBE_BOOTARGS: '$t': serial=on is fixed" >&2; exit 2 ;; esac
+    done
+    APPEND="serial=on $(echo $ICPROBE_BOOTARGS)"
+fi
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 TD=$(cd "$HERE/.." && pwd)
@@ -69,6 +80,7 @@ if [ "$SIDE" = emutos ]; then
     echo "oracle    tools/hatari-oracle.sh $PROFILE (pinned ROM, tools/oracle/hatari.cfg)" >> "$OUT/run.txt"
 else
     echo "kernel    $(sha "$KERNEL") $KERNEL" >> "$OUT/run.txt"
+    echo "bootargs  $APPEND" >> "$OUT/run.txt"
     printf '#R 02\r\n#Z 01 C:\\ICPROBE.NAP@\r\n' > "$SCR/newdesk.inf"
     tools/mkcard.sh "$SCR/card.img" "$SCR/newdesk.inf" ICPROBE.NAP="$NAP" ICPROBE.RSC="$RSC" ICPROBE.TXT="$SCR/ICPROBE.TXT" > "$SCR/mkcard.stdout" 2>&1 || {
         cat "$SCR/mkcard.stdout" >&2; exit 1; }
@@ -77,7 +89,7 @@ else
     cp -c "$SCR/card.img" "$SCR/boot.img" 2>/dev/null || cp "$SCR/card.img" "$SCR/boot.img"
     : > "$OUT/BOOT-SERIAL.txt"
     qemu-system-aarch64 -M raspi4b -no-reboot -display none -serial file:"$OUT/BOOT-SERIAL.txt" \
-        -append serial=on -kernel "$KERNEL" -drive file="$SCR/boot.img",if=sd,format=raw &
+        -append "$APPEND" -kernel "$KERNEL" -drive file="$SCR/boot.img",if=sd,format=raw &
     pid=$!
     state=timeout
     for _ in $(seq 1 120); do

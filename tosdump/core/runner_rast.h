@@ -26,8 +26,14 @@
 #include "gem.h"
 #include "runner.h"
 
+/* `out` takes ct->count records of td_rast_record_size(ct) bytes. */
 int td_run_raster(const struct td_rast_case_table *ct, const struct td_wk *wk,
                   uint8_t *out, size_t out_bytes);
+
+/* The record a table's dump is made of: the wide record and its area for a
+ * wide table (`!screen w,h,32`, cases.h), the narrow one otherwise. */
+size_t   td_rast_record_size(const struct td_rast_case_table *ct);
+uint16_t td_rast_area(const struct td_rast_case_table *ct);
 
 /* INQ_TAB[4] of the open workstation (vq_extnd(1), vdi_control.c:210): the
  * plane count a table's `!screen` line is checked against before any case

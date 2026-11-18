@@ -40,7 +40,8 @@ static int columns_for_area(uint16_t area, const char *raw, size_t len)
 {
 	switch (area) {
 	case TD_AREA_AES:    return td_aes_table_columns(raw, len);
-	case TD_AREA_RASTER: return TD_RAST_CASE_COLUMNS;
+	case TD_AREA_RASTER:
+	case TD_AREA_RASTER32: return TD_RAST_CASE_COLUMNS;
 	default:             return TD_CASE_COLUMNS;
 	}
 }

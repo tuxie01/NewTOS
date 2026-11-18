@@ -2173,10 +2173,9 @@ static int parse_mfdb(const char *s, size_t len, struct td_rast_mfdb *out,
 		*what = "fd_stand is 0 (device form) or 1 (standard form)";
 		return TD_CASE_ERR_GEOMETRY;
 	}
-	if (out->nplanes > 16) {
-		*what = "fd_nplanes above 16 is past the plane cap the VDI itself "
-		        "applies (vdi_raster.c:963), so the call could only ever be "
-		        "a no-op -- and the geometry bound below assumes 16";
+	if (out->nplanes > (screen->wide ? TD_RAST32_PLANES : 16)) {
+		*what = "fd_nplanes past the plane cap the bound below assumes: 16, "
+		        "the VDI's own (vdi_raster.c:963), or 32 in a wide table";
 		return TD_CASE_ERR_GEOMETRY;
 	}
 	if (out->w > (int16_t)(out->wdwidth * 16)) {
@@ -2184,14 +2183,14 @@ static int parse_mfdb(const char *s, size_t len, struct td_rast_mfdb *out,
 		        "(fd_w + 15) / 16";
 		return TD_CASE_ERR_GEOMETRY;
 	}
-	/* The bound that makes a mistyped digit harmless: sixteen WORDs per
-	 * sixteen pixels covers the TT's planar reading (fd_nplanes <= 16
-	 * interleaved WORDs) and NewTOS' chunky one (one WORD per pixel)
-	 * alike.  32-bit arithmetic so the product cannot wrap. */
-	if ((int32_t)out->h * (int32_t)out->wdwidth * 16L >
-	    (int32_t)TD_RAST_BUF_WORDS) {
-		*what = "the form does not fit the dumper's buffer: "
-		        "fd_h * fd_wdwidth * 16 must be at most TD_RAST_BUF_WORDS";
+	/* The bound that makes a mistyped digit harmless: 16 WORDs per 16
+	 * pixels cover the TT's planar reading and NewTOS' chunky one at 16
+	 * planes; a wide table (cases.h) takes 32, two WORDs a 32-plane pixel,
+	 * in its wide buffers.  32-bit arithmetic so the product cannot wrap. */
+	if ((int32_t)out->h * (int32_t)out->wdwidth * (screen->wide ? 32L : 16L) >
+	    (int32_t)(screen->wide ? TD_RAST32_BUF_WORDS : TD_RAST_BUF_WORDS)) {
+		*what = "the form does not fit the dumper's buffer: fd_h * fd_wdwidth"
+		        " * 16 (32 in a wide table) must fit TD_RAST(32)_BUF_WORDS";
 		return TD_CASE_ERR_GEOMETRY;
 	}
 	return 0;
@@ -2254,9 +2253,9 @@ static int check_copy_rects(int16_t opcode, const int16_t *ptsin,
 		 * vr_trnfm walks fd_nplanes planes of fd_h * fd_wdwidth WORDs,
 		 * both taken from the SOURCE MFDB (vdi_raster.c:298-300), and
 		 * writes as many into the destination buffer.  No extra bound is
-		 * needed: fd_nplanes is capped at 16 and parse_mfdb already
-		 * required fd_h * fd_wdwidth * 16 to fit, so the transformed
-		 * form fits either buffer by construction.
+		 * needed: fd_nplanes is capped at 16 (32 in a wide table) and
+		 * parse_mfdb required fd_h * fd_wdwidth * 16 (32) to fit, so the
+		 * transformed form fits either buffer by construction.
 		 */
 		return 0;
 	}
@@ -2544,14 +2543,15 @@ static int parse_rast_directive(const char *line, size_t len,
 		*what = "!screen takes three values: w,h,planes";
 		return TD_CASE_ERR_DIRECTIVE;
 	}
-	if (v[0] <= 0 || v[1] <= 0 || v[2] <= 0 || v[2] > 16) {
-		*what = "!screen: w and h must be positive, planes 1..16";
+	if (v[0] <= 0 || v[1] <= 0 || v[2] <= 0 || (v[2] > 16 && v[2] != 32)) {
+		*what = "!screen: w and h must be positive, planes 1..16 or 32";
 		return TD_CASE_ERR_DIRECTIVE;
 	}
 	t->screen.declared = 1;
 	t->screen.w = v[0];
 	t->screen.h = v[1];
 	t->screen.planes = v[2];
+	t->screen.wide = (int16_t)(v[2] == TD_RAST32_PLANES);   /* cases.h */
 	return 0;
 }
 

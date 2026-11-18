@@ -20,7 +20,7 @@ Status: **GESCHLOSSEN** 2026-10-29 (ACCEPTED-Abweichung, Anwender) · Prioritaet
     to the UART would mix with the kernel log.
   - What it could affect: runs that search the serial log for markers
     — `cargo xtask tosdump` (`scan_serial`,
-    `tools/xtask/src/tosdump.rs:592@scan_serial`, "desktop up", panic lines),
+    `tools/xtask/src/tosdump.rs:734@scan_serial`, "desktop up", panic lines),
     the probe scripts under `tosdump/probes/` and measurement runs with
     `-serial file:`. These run on raspi4b; there AUX is "no cable" and
     would stay so. On qemu-virt, `virtrun.py`-style runs read the log by

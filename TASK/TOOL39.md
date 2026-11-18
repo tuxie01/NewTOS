@@ -55,7 +55,7 @@ Developer, 2026-11-10/11, uncommitted in the working tree (receipt: [TOOL39-STAT
   line takes the path from `ORACLE_CFLOW` and the version line from the check (same bytes as before).
 - **Manifest:** `tools/sd-manifest.sh` writes `host_cflow <first line of --version>` of `ORACLE_CFLOW` (read from
   `oracle.env` in a subshell) after `host_clang`, or `host_cflow not found`. Existing readers filter by key
-  (`tools/xtask/src/tosdump.rs:953@manifest_lines`: `image_sha256`, `optional_missing`) and are unaffected.
+  (`tools/xtask/src/tosdump.rs:1095@manifest_lines`: `image_sha256`, `optional_missing`) and are unaffected.
 - **Host test:** `tools/xtask/src/gen_deps_tests.rs` (5 tests, run by `cargo xtask test`) loads `gen-deps.py` with
   `python3 -I` as a module and calls `check_cflow` against fake `cflow` scripts in
   `target/xtask-gen-deps/`: missing, version 1.7, not GNU cflow, not executable (each: exit 1, exactly the one

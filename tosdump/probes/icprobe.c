@@ -36,6 +36,18 @@
  *                           every G_CICON zeroed (HypView's Init, sdk/apps/
  *                           hypview/init.c, "Entferne jeglichen Icon-Text")
  *   ICPROBE.LOG  one line per case; last line "END".
+ *
+ * THE 32-PLANE SETTING (TASK/V69; docs/TOS-REFERENCE-DUMPER.md, "The wide
+ * variant of icprobe.c"). The probe reads INQ_TAB[4] of vq_extnd(1) once.
+ * At 32 planes (NewTOS `vdiplanes=32`, ADR-038; no oracle has it) it writes
+ * VERSION 2: the I, S and T cases carry TWO WORDs per pixel, high then low
+ * of the 32-bit pixel (w and h stay the pixel geometry, so a case holds
+ * 2 * w * h WORDs); PENS and M are unchanged. I and S record the icon's
+ * device form as rsrc_load left it, 32-bit pixels (V67 I6, I8); a T case
+ * copies the screen into a 32-plane memory form and records the MASKED
+ * 0x00RRGGBB -- the unused byte of a screen pixel is never recorded
+ * (V63 R3, V65 section 3). Every other depth writes VERSION 1, byte for
+ * byte as before.
  */
 #include <osbind.h>
 #include <stdarg.h>
@@ -45,7 +57,8 @@
 
 #include "abi.h"
 
-#define VERSION 1
+#define VERSION    1   /* every pixel one WORD (16 planes)                 */
+#define VERSION_32 2   /* I, S, T: two WORDs a pixel, high then low (32)   */
 
 typedef struct cicon {
 	int16_t num_planes;
@@ -124,7 +137,10 @@ static void put16(uint8_t *p, int v)
 }
 
 static int caseno;
-static uint8_t wbuf[2048];
+static int wide;			/* the workstation runs 32 planes */
+/* One row of a record: 2 bytes a pixel, or 4 at 32 planes (a T case is up
+ * to RB_MAXW = 640 pixels wide). */
+static uint8_t wbuf[4 * 640];
 
 static void rec_head(const char *name, int x, int y, int w, int h)
 {
@@ -156,6 +172,28 @@ static void rec_words(const int16_t *src, int w, int h)
 	}
 }
 
+/* w*h native 32-bit pixels, each recorded as two WORDs, high then low,
+ * `mask` applied first (0x00FFFFFF for a screen pixel: X is never
+ * recorded). */
+static void rec_pixels32(const void *src, int w, int h, uint32_t mask)
+{
+	const uint8_t *p = (const uint8_t *)src;
+	int r, c;
+
+	for (r = 0; r < h; r++) {
+		for (c = 0; c < w; c++) {
+			uint32_t v;
+
+			memcpy(&v, p + ((long)r * w + c) * 4, 4);
+			v &= mask;
+			put16(wbuf + 4 * c, (int)(v >> 16));
+			put16(wbuf + 4 * c + 2, (int)(v & 0xFFFFu));
+		}
+		if (binfh >= 0)
+			Fwrite((short)binfh, (long)(4 * w), wbuf);
+	}
+}
+
 typedef struct {
 	void *fd_addr;
 	int16_t fd_w, fd_h, fd_wdwidth, fd_stand, fd_nplanes, fd_r1, fd_r2, fd_r3;
@@ -163,7 +201,11 @@ typedef struct {
 
 #define RB_MAXW 640
 #define RB_MAXH 480
-static uint16_t rbuf[RB_MAXW * RB_MAXH];
+/* The screen copy: 16-bit pixels, or 32-bit ones at 32 planes. */
+static union {
+	uint16_t w16[RB_MAXW * RB_MAXH];
+	uint32_t w32[RB_MAXW * RB_MAXH];
+} rbuf;
 static MFDB scr_mfdb, mem_mfdb;
 
 static void set_mfdb_ptr(int n, void *p)
@@ -177,12 +219,12 @@ static void grab(const char *name, int x, int y, int w, int h)
 {
 	memset(&scr_mfdb, 0, sizeof scr_mfdb);
 	memset(&mem_mfdb, 0, sizeof mem_mfdb);
-	mem_mfdb.fd_addr = rbuf;
+	mem_mfdb.fd_addr = &rbuf;
 	mem_mfdb.fd_w = (int16_t)w;
 	mem_mfdb.fd_h = (int16_t)h;
 	mem_mfdb.fd_wdwidth = (int16_t)((w + 15) / 16);
 	mem_mfdb.fd_stand = 0;
-	mem_mfdb.fd_nplanes = 16;
+	mem_mfdb.fd_nplanes = wide ? 32 : 16;
 	memset(contrl, 0, sizeof contrl);
 	contrl[0] = 109;
 	contrl[1] = 4;
@@ -200,8 +242,15 @@ static void grab(const char *name, int x, int y, int w, int h)
 	rec_head(name, x, y, w, h);
 	{
 		int r;
-		for (r = 0; r < h; r++)
-			rec_words((const int16_t *)(rbuf + (long)r * mem_mfdb.fd_wdwidth * 16), w, 1);
+		/* the row of either form is fd_wdwidth * 16 pixels */
+		for (r = 0; r < h; r++) {
+			long row = (long)r * mem_mfdb.fd_wdwidth * 16;
+
+			if (wide)
+				rec_pixels32(rbuf.w32 + row, w, 1, 0x00FFFFFFuL);
+			else
+				rec_words((const int16_t *)(rbuf.w16 + row), w, 1);
+		}
 	}
 	emit("%s %d,%d %dx%d\n", name, x, y, w, h);
 }
@@ -261,11 +310,17 @@ static void icons(int t, OBJ *tr)
 			if (c) {
 				snprintf(n, sizeof n, "I%d.%d", t, o);
 				rec_head(n, t, o, w, h);
-				rec_words(c->col_data, w, h);
+				if (wide)
+					rec_pixels32(c->col_data, w, h, 0xFFFFFFFFuL);
+				else
+					rec_words(c->col_data, w, h);
 				if (c->sel_data) {
 					snprintf(n, sizeof n, "S%d.%d", t, o);
 					rec_head(n, t, o, w, h);
-					rec_words(c->sel_data, w, h);
+					if (wide)
+						rec_pixels32(c->sel_data, w, h, 0xFFFFFFFFuL);
+					else
+						rec_words(c->sel_data, w, h);
 				}
 				snprintf(n, sizeof n, "M%d.%d", t, o);
 				rec_head(n, t, o, (w / 16) * h, 1);
@@ -341,13 +396,22 @@ int main(void)
 	handle = contrl[6];
 	emit("H handle %d xres %d yres %d colours %d\n", handle, intout[0], intout[1], intout[13]);
 
+	/* vq_extnd(1): INQ_TAB[4] is the plane count */
+	memset(contrl, 0, sizeof contrl);
+	contrl[0] = 102; contrl[3] = 1; contrl[6] = handle;
+	intin[0] = 1;
+	td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
+	wide = (intout[4] == 32);
+	emit("P planes %d, record version %d%s\n", intout[4], wide ? VERSION_32 : VERSION,
+	     wide ? " (32 planes: NewTOS contract, no oracle)" : "");
+
 	aes_int_in[0] = 256;			/* graf_mouse M_OFF */
 	aes_addr_in[0] = 0;
 	aes(78, 1, 1, 1, 0);
 
 	binfh = Fcreate("ICPROBE.BIN", 0);
 	memcpy(hd, "ICPR", 4);
-	put16(hd + 4, VERSION);
+	put16(hd + 4, wide ? VERSION_32 : VERSION);
 	if (binfh >= 0)
 		Fwrite((short)binfh, 6L, hd);
 

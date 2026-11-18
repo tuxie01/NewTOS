@@ -2008,12 +2008,15 @@ and writes 16-bit pixels into `Physbase` memory is wrong at either setting, beca
 
 Observable differences at 32 planes beyond the table, each indexed by trigger in `docs/DEVIATIONS.md` ("VDI at
 32 planes"): the mode word beside the plane count; a 16-plane memory form refused; `PRESENT.NAP` (hardwired 16-plane
-forms, `sdk/apps/present/present.c:620,1098@fd_nplanes`) therefore copies nothing until its patch (TASK/V69); the tosdump raster
-dumper refuses a 32-plane screen until V69 (`tosdump/core/dumprast.c:128@planes`); `tosdump/probes/icprobe.c` reads icon
-data as 16-bit words (V69). At 16 planes none of these exists. The gate for 32-plane behaviour is the host tests of
-V62-V68, not the oracle: `tos-api/tests/vdi_v62_planes_setting.rs`, `vdi_v63_device_pixel.rs`, `vdi_v64_pens.rs`,
-`vdi_v65_memory_forms.rs`, `vdi_v66_scrninfo32.rs`, `aes_v67_cicon32.rs`, `vt52_console_32.rs`,
-`vt52_console_32_default_palette.rs` and `xbios_v68_planes_setting.rs` (shared helpers in `tos-api/tests/vdi_planes32_common/`).
+forms, `sdk/apps/present/present.c:620,1098@fd_nplanes`) therefore copies nothing until its patch (TASK/V69). At 16 planes
+none of these exists. The gate for 32-plane behaviour is the host tests of V62-V68, not the oracle:
+`tos-api/tests/vdi_v62_planes_setting.rs`, `vdi_v63_device_pixel.rs`, `vdi_v64_pens.rs`, `vdi_v65_memory_forms.rs`,
+`vdi_v66_scrninfo32.rs`, `aes_v67_cicon32.rs`, `vt52_console_32.rs`, `vt52_console_32_default_palette.rs` and
+`xbios_v68_planes_setting.rs` (shared helpers in `tos-api/tests/vdi_planes32_common/`); and on the running system the
+two 32-plane tosdump tables `tosdump/cases/vdi-raster32.tsv` and `vdi-raster-screen32.tsv` with `vdi-a131-palette.tsv`, run
+with `cargo xtask tosdump ... --bootargs vdiplanes=32` and checked case by case against these values by
+`tosdump/host/contract32-check.py` -- a NewTOS-contract check, never an oracle comparison (TASK/V69;
+`docs/TOS-REFERENCE-DUMPER.md`, "The 32-plane setting").
 
 **XBIOS DMA sound 0x80-0x8D** — TASK/SND05, owner decisions TASK/SND01
 (2026-11-12: Q-N2 option D, Q-N3, Q-N4a-c, Q-N5, Q-N6) and 2026-11-17 (the

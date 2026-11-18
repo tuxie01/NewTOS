@@ -115,6 +115,7 @@ uint16_t td_area_record_size(uint16_t area)
 	case TD_AREA_VDI:    return TD_VDI_RECORD_SIZE;
 	case TD_AREA_AES:    return TD_AES_RECORD_SIZE;
 	case TD_AREA_RASTER: return TD_RAST_RECORD_SIZE;
+	case TD_AREA_RASTER32: return TD_RAST32_RECORD_SIZE;
 	default:             return 0;
 	}
 }
@@ -128,6 +129,7 @@ const char *td_area_name(uint16_t area)
 	case TD_AREA_VDI:    return "VDI";
 	case TD_AREA_AES:    return "AES";
 	case TD_AREA_RASTER: return "VDI-RASTER";
+	case TD_AREA_RASTER32: return "VDI-RASTER32";
 	default:             return "?";
 	}
 }
@@ -311,6 +313,16 @@ void td_poison_raster(struct td_raster_arrays *a)
 	/* buf_a / buf_b deliberately untouched -- see record.h */
 }
 
+void td_poison_raster32(struct td_raster32_arrays *a)
+{
+	poison16(a->contrl, TD_RAST_CONTRL_N);
+	poison16(a->intin,  TD_RAST_INTIN_N);
+	poison16(a->ptsin,  TD_RAST_PTSIN_N);
+	poison16(a->intout, TD_RAST_INTOUT_N);
+	poison16(a->ptsout, TD_RAST_PTSOUT_N);
+	/* buf_a / buf_b deliberately untouched, as in the narrow frame */
+}
+
 /*
  * The buffer pattern.
  *
@@ -479,6 +491,35 @@ void td_raster_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
 	/* reserved stays zero from the memset above */
 }
 
+/* The wide record: every field before the buffers at the narrow offsets,
+ * written the narrow way; then the two longer buffers. */
+void td_raster32_record_write(uint8_t *rec, uint16_t case_id, uint16_t opcode,
+                              int32_t ret,
+                              const struct td_raster32_arrays *after,
+                              const int16_t *contrl_before,
+                              const int16_t *src_mfdb,
+                              const int16_t *dst_mfdb)
+{
+	memset(rec, 0, TD_RAST32_RECORD_SIZE);
+	td_store_be16(rec + TD_RAST_OFF_CASEID, case_id);
+	td_store_be16(rec + TD_RAST_OFF_OPCODE, opcode);
+	td_store_be32(rec + TD_RAST_OFF_RET, (uint32_t)ret);
+	store16_array(rec + TD_RAST_OFF_CONTRL, after->contrl, TD_RAST_CONTRL_N);
+	store16_array(rec + TD_RAST_OFF_CONTRL_BEFORE, contrl_before,
+	              TD_RAST_CONTRL_N);
+	store16_array(rec + TD_RAST_OFF_INTIN,  after->intin,  TD_RAST_INTIN_N);
+	store16_array(rec + TD_RAST_OFF_PTSIN,  after->ptsin,  TD_RAST_PTSIN_N);
+	store16_array(rec + TD_RAST_OFF_INTOUT, after->intout, TD_RAST_INTOUT_N);
+	store16_array(rec + TD_RAST_OFF_PTSOUT, after->ptsout, TD_RAST_PTSOUT_N);
+	store16_array(rec + TD_RAST_OFF_SRC_MFDB, src_mfdb, TD_RAST_MFDB_N);
+	store16_array(rec + TD_RAST_OFF_DST_MFDB, dst_mfdb, TD_RAST_MFDB_N);
+	store16_array(rec + TD_RAST32_OFF_BUF_A, after->buf_a,
+	              TD_RAST32_BUF_WORDS);
+	store16_array(rec + TD_RAST32_OFF_BUF_B, after->buf_b,
+	              TD_RAST32_BUF_WORDS);
+	/* reserved stays zero from the memset above */
+}
+
 /* ------------------------------------------------------------------ */
 /* Field descriptors -- so a difference is reported by name             */
 /* ------------------------------------------------------------------ */
@@ -571,6 +612,30 @@ const struct td_field td_raster_fields[] = {
 	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
 };
 
+/* The wide raster area (TD_AREA_RASTER32): the narrow descriptors up to the
+ * MFDBs, then the two longer buffers.  A 32-plane pixel is a pair of
+ * WORDs; the comparator names the WORD, the reader pairs them. */
+const struct td_field td_raster32_fields[] = {
+	{ "d0",            TD_RAST_OFF_RET + 2,      1,                 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "contrl",        TD_RAST_OFF_CONTRL,       7,                 2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "contrl_mfdb",   TD_RAST_OFF_CONTRL + 14,  TD_RAST_CONTRL_PTR_N,
+	                                                                2, 0, TD_FIELD_ADDRESS, TD_ADDR_CELL_PTR, 0 },
+	{ "contrl_before", TD_RAST_OFF_CONTRL_BEFORE, 7,                2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "contrl_before_mfdb",
+	                   TD_RAST_OFF_CONTRL_BEFORE + 14,
+	                                             TD_RAST_CONTRL_PTR_N,
+	                                                                2, 0, TD_FIELD_ADDRESS, TD_ADDR_CELL_PTR, 0 },
+	{ "intin",         TD_RAST_OFF_INTIN,        TD_RAST_INTIN_N,   2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "ptsin",         TD_RAST_OFF_PTSIN,        TD_RAST_PTSIN_N,   2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "intout",        TD_RAST_OFF_INTOUT,       TD_RAST_INTOUT_N,  2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "ptsout",        TD_RAST_OFF_PTSOUT,       TD_RAST_PTSOUT_N,  2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "src_mfdb",      TD_RAST_OFF_SRC_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "dst_mfdb",      TD_RAST_OFF_DST_MFDB,     TD_RAST_MFDB_N,    2, 1, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "buf_a",         TD_RAST32_OFF_BUF_A,      TD_RAST32_BUF_WORDS, 2, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ "buf_b",         TD_RAST32_OFF_BUF_B,      TD_RAST32_BUF_WORDS, 2, 0, TD_FIELD_VALUE, TD_ADDR_CELL_NONE, 0 },
+	{ NULL, 0, 0, 0, 0, 0, 0, 0 }
+};
+
 const struct td_field *td_area_fields(uint16_t area)
 {
 	switch (area) {
@@ -580,6 +645,7 @@ const struct td_field *td_area_fields(uint16_t area)
 	case TD_AREA_VDI:    return td_vdi_fields;
 	case TD_AREA_AES:    return td_aes_fields;
 	case TD_AREA_RASTER: return td_raster_fields;
+	case TD_AREA_RASTER32: return td_raster32_fields;
 	default:             return NULL;
 	}
 }

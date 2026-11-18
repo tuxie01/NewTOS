@@ -73,6 +73,22 @@
 //!    (`tools/biostrace-check.py`), and `tosdump-run.txt` — commit, dirty
 //!    state, kernel and image sha256 (the image also after the run), the
 //!    manifests' `optional_missing` lines verbatim, every result line.
+//! 6. **The 32-plane setting** (TASK/V69, ADR-038 point 13): EmuTOS has no
+//!    path above 16 planes, so nothing measured at `vdiplanes=32` is an
+//!    oracle comparison. A raster table that declares `!screen w,h,32` is a
+//!    *wide* table ([`table_is_wide`]): it is refused without
+//!    `--bootargs vdiplanes=32` ([`vdi_planes`]), its dump is area 7
+//!    `VDI-RASTER32` and is saved as `RASTER32.BIN`/`.LOG` ([`out_stem`]),
+//!    and a `--reference` must be a `NEWTOS32-` baseline of area 7
+//!    ([`wide_reference_refusal`]) -- an oracle reference is refused before
+//!    anything is built. Any other table run at `vdiplanes=32` keeps its
+//!    references, but every comparison with a dump not written by NewTOS
+//!    (an oracle dump, [`written_by_newtos`]) is marked INFORMATIONAL in
+//!    `tosdump-run.txt` ([`ORACLE_AT_32_MARK`]). Every run at
+//!    `vdiplanes=32` ends with the check against the NewTOS contract
+//!    ([`CONTRACT32_CHECK`], `contract32-check.txt`): a difference is a
+//!    finding, a run it cannot check a failure, a table without contract
+//!    values ("not checked", exit 3) neither.
 //!
 //! Scratch: `--scratch <dir>` or `$CLAUDE_JOB_DIR/tmp`, never `/tmp` itself;
 //! the run's subdirectory (card, clone, test partitions) is deleted at the
@@ -302,7 +318,9 @@ usage: cargo xtask tosdump <dumper> <table.tsv> --out <dir> [--reference <BIN>].
   --bootargs <args>
             kernel boot arguments appended after the fixed serial=on of the
             QEMU -append string (e.g. vdiplanes=32); repeatable; a serial=
-            token is refused; recorded in tosdump-run.txt";
+            token is refused; recorded in tosdump-run.txt; a raster table
+            that declares !screen w,h,32 runs only with vdiplanes=32 and
+            compares only with a NEWTOS32- baseline (no oracle, ADR-038)";
 
 /// The boot argument every run passes first: the rpi4 kernel is UART-silent
 /// without it (`kernel/src/bootargs.rs`, `SERIAL_ON`), and the run is
@@ -315,6 +333,130 @@ pub const SERIAL_ON: &str = "serial=on";
 pub fn qemu_append(extra: &[String]) -> String {
     std::iter::once(SERIAL_ON).chain(extra.iter().map(String::as_str)).collect::<Vec<_>>().join(" ")
 }
+
+/// The boot argument prefix of the VDI depth (`kernel/src/bootargs.rs`,
+/// `VDIPLANES`).
+pub const VDIPLANES: &str = "vdiplanes=";
+
+/// The VDI depth the kernel takes from these `--bootargs` tokens, read the
+/// way `kernel/src/bootargs.rs` reads it (`vdi_planes`, `numeric_setting`):
+/// the **first** token that starts with `vdiplanes=` decides; ASCII digits
+/// only, at most 10 of them, and only 16 or 32 are depths. `None` when no
+/// token names it or the value is invalid -- the kernel then runs at its
+/// default, 16. `serial=on`, the token before them, never names it.
+pub fn vdi_planes(bootargs: &[String]) -> Option<u32> {
+    let tok = bootargs.iter().find(|t| t.starts_with(VDIPLANES))?;
+    let digits = &tok[VDIPLANES.len()..];
+    if digits.is_empty() || digits.len() > 10 || !digits.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+    match digits.parse::<u64>().ok()? {
+        16 => Some(16),
+        32 => Some(32),
+        _ => None,
+    }
+}
+
+/// The plane count of the 32-plane setting (ADR-038 point 1), the one
+/// depth with no oracle.
+pub const WIDE_PLANES: i64 = 32;
+
+/// The dump area of a wide raster table (`tosdump/core/tosdump.h`,
+/// `TD_AREA_RASTER32`) and the file name prefix of its frozen baselines
+/// (`docs/TOS-REFERENCE-DUMPER.md`, "The wide record and the readback").
+pub const WIDE_AREA: u16 = 7;
+pub const WIDE_BASELINE_PREFIX: &str = "NEWTOS32-";
+
+/// The plane count a raster table declares with `!screen <TAB> w,h,planes`
+/// (`tosdump/core/cases.c`, `parse_rast_directive`). Read more broadly than
+/// the loader: any whitespace separates, a comment line never counts, and
+/// the first `!screen` line decides (the loader refuses a second one).
+pub fn table_screen_planes(table: &[u8]) -> Option<i64> {
+    let text = String::from_utf8_lossy(table);
+    let line = text.lines().map(str::trim).find(|l| l.split_whitespace().next() == Some("!screen"))?;
+    let value = line.split_whitespace().nth(1)?;
+    value.split(',').nth(2)?.trim().parse::<i64>().ok()
+}
+
+/// Is this a wide raster table, one that declares a 32-plane screen
+/// (`tosdump/core/cases.h`, "THE 32-PLANE SETTING")?
+pub fn table_is_wide(table: &[u8]) -> bool {
+    table_screen_planes(table) == Some(WIDE_PLANES)
+}
+
+/// The stem the run's dump and log are saved under in `--out`: the
+/// dumper's area (`RASTER.BIN`, the name the dumper writes on the card),
+/// or `RASTER32` for a wide table, so a 32-plane dump never carries the
+/// file name of a 16-plane one.
+pub fn out_stem(area: &str, wide: bool) -> String {
+    if wide && area == "RASTER" {
+        "RASTER32".into()
+    } else {
+        area.into()
+    }
+}
+
+/// The header fields of a tosdump file this harness decides on: (area,
+/// pointer width, word order) at offsets 6, 20 and 22, big-endian
+/// (`tosdump/core/tosdump.h`, file header). `None` when the bytes are no
+/// tosdump header (magic `TDMP`, 32 bytes).
+pub fn dump_header(bytes: &[u8]) -> Option<(u16, u16, u16)> {
+    if bytes.len() < 32 || &bytes[..4] != b"TDMP" {
+        return None;
+    }
+    let be = |o: usize| u16::from_be_bytes([bytes[o], bytes[o + 1]]);
+    Some((be(6), be(20), be(22)))
+}
+
+/// Was this dump written by NewTOS? Its header states the AArch64
+/// pointer width and word order (8 bytes, least significant WORD first:
+/// the `xtask-tosdump` row of [`PROFILES_TSV`]). The oracle's (4, most
+/// significant first) and a format-2 header (0, 0) are not.
+pub fn written_by_newtos(header: (u16, u16, u16)) -> bool {
+    header.1 == 8 && header.2 == 2
+}
+
+/// The rule for a `--reference` of a raster run (TASK/V69): a wide table
+/// is compared only against a NewTOS-contract baseline -- named
+/// [`WIDE_BASELINE_PREFIX`]`…` and of area [`WIDE_AREA`] -- and a narrow
+/// table never against such a baseline. `None` when the reference may be
+/// used. tosdiff refuses two dumps of different areas as well; this rule
+/// says why, and says it before anything is built or booted.
+pub fn wide_reference_refusal(wide: bool, name: &str, header: Option<(u16, u16, u16)>) -> Option<String> {
+    let area = header.map(|h| h.0);
+    if wide {
+        if !name.starts_with(WIDE_BASELINE_PREFIX) || area != Some(WIDE_AREA) {
+            return Some(format!(
+                "reference {name}: the table declares a 32-plane screen, a NewTOS-contract table (ADR-038, no \
+                 oracle); it is compared only against a {WIDE_BASELINE_PREFIX}… baseline of area {WIDE_AREA} \
+                 VDI-RASTER32, this one is {}",
+                match area {
+                    Some(a) => format!("area {a}"),
+                    None => "no tosdump file".into(),
+                }
+            ));
+        }
+    } else if area == Some(WIDE_AREA) || name.starts_with(WIDE_BASELINE_PREFIX) {
+        return Some(format!(
+            "reference {name}: a 32-plane baseline (area {WIDE_AREA}, {WIDE_BASELINE_PREFIX}…) is compared only \
+             with a table that declares !screen w,h,32"
+        ));
+    }
+    None
+}
+
+/// The check of a run at `vdiplanes=32` against the NewTOS contract,
+/// relative to the harness tree: exit 0 every case as the contract says,
+/// 1 a difference (a finding), 2 the run could not be checked, 3 the table
+/// has no contract values (nothing to check).
+pub const CONTRACT32_CHECK: &str = "tosdump/host/contract32-check.py";
+
+/// What `tosdump-run.txt` appends to a comparison of a run at
+/// `vdiplanes=32` with a dump not written by NewTOS: the reference is an
+/// oracle dump of the 16-plane setting, and the difference count is
+/// information, not an oracle finding (ADR-038 point 13).
+pub const ORACLE_AT_32_MARK: &str = " [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the \
+     reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]";
 
 /// The QEMU command line (without the program name): `raspi4b`, no reboot,
 /// no display, serial into `serial`, the boot arguments `append`, the
@@ -998,6 +1140,28 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
             bad.push(format!("--testdisk {} not found", t.display()));
         }
     }
+    // The 32-plane setting (TASK/V69): a wide raster table runs only at
+    // vdiplanes=32 and is compared only with a NEWTOS32- baseline.
+    let planes = vdi_planes(&o.bootargs);
+    let wide = dumper.area == "RASTER" && fs::read(&o.table).map(|t| table_is_wide(&t)).unwrap_or(false);
+    if wide && planes != Some(32) {
+        bad.push(
+            "the table declares a 32-plane screen (!screen w,h,32): it runs only with --bootargs vdiplanes=32 \
+             (the dumper refuses any other depth)"
+                .into(),
+        );
+    }
+    let mut ref_headers = Vec::new();
+    for r in &references {
+        let name = r.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        let header = fs::read(r).ok().and_then(|b| dump_header(&b));
+        if dumper.area == "RASTER" {
+            if let Some(m) = wide_reference_refusal(wide, &name, header) {
+                bad.push(m);
+            }
+        }
+        ref_headers.push(header);
+    }
     let destructive = fs::read(&o.table).map(|t| table_is_destructive(&t)).unwrap_or(false);
     if let Some(m) = destructive_refusal(destructive, &o.disk) {
         bad.push(m);
@@ -1031,7 +1195,7 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     if o.disk != Disk::None {
         tools.extend(["fsck_msdos", "mformat"]);
     }
-    if arg_trace {
+    if arg_trace || planes == Some(32) {
         tools.push("python3");
     }
     for t in tools {
@@ -1076,7 +1240,20 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     } else {
         format!("bootargs  {append} (--bootargs {} after the fixed {SERIAL_ON}: NOT the default boot)", o.bootargs.join(" "))
     });
+    if planes == Some(32) {
+        rep.line(
+            "setting   vdiplanes=32: the 32-plane setting has no oracle (ADR-038 point 13); every comparison \
+             with an oracle dump below is informational",
+        );
+    }
     rep.line(format!("table     {} sha256 {}", o.table.display(), sha256(&o.table)?));
+    if wide {
+        rep.line(format!(
+            "table     declares a 32-plane screen: NewTOS contract (ADR-038), no oracle; dump area {WIDE_AREA} \
+             VDI-RASTER32, saved as {}.BIN",
+            out_stem(dumper.area, wide)
+        ));
+    }
     if destructive {
         rep.line("table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)");
     }
@@ -1311,11 +1488,18 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     rep.line(format!("card after the run sha256 {}", sha256(&boot)?));
 
     // 5. results.
-    let bin = out.join(format!("{}.BIN", dumper.area));
-    let logf = out.join(format!("{}.LOG", dumper.area));
+    let stem = out_stem(dumper.area, wide);
+    let bin = out.join(format!("{stem}.BIN"));
+    let logf = out.join(format!("{stem}.LOG"));
     for (name, dest) in [(format!("{}.BIN", dumper.area), &bin), (format!("{}.LOG", dumper.area), &logf)] {
+        let saved = dest.file_name().unwrap().to_string_lossy().into_owned();
+        let saved_as = if saved == name { String::new() } else { format!(" (saved as {saved})") };
         if mcopy_out(&boot, prog.start * 512, &name, dest) {
-            rep.line(format!("{name} {} bytes, sha256 {}", fs::metadata(dest).map(|m| m.len()).unwrap_or(0), sha256(dest)?));
+            rep.line(format!(
+                "{name} {} bytes, sha256 {}{saved_as}",
+                fs::metadata(dest).map(|m| m.len()).unwrap_or(0),
+                sha256(dest)?
+            ));
         } else {
             rep.line(format!("{name} MISSING on the card"));
         }
@@ -1426,7 +1610,7 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
         if logf.is_file() {
             fs::copy(&logf, cmpdir.join("NEWTOS.LOG")).map_err(|e| e.to_string())?;
         }
-        for r in &references {
+        for (r, header) in references.iter().zip(&ref_headers) {
             let name = r.file_name().unwrap().to_string_lossy().into_owned();
             fs::copy(r, cmpdir.join(&name)).map_err(|e| e.to_string())?;
             if let Some(stem) = name.strip_suffix(".BIN") {
@@ -1446,12 +1630,40 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
             let stem = name.trim_end_matches(".BIN");
             fs::write(out.join(format!("tosdiff-{stem}.txt")), &text).map_err(|e| e.to_string())?;
             let code = d.status.code().unwrap_or(-1);
+            let mark = if planes == Some(32) && !header.is_some_and(written_by_newtos) {
+                ORACLE_AT_32_MARK
+            } else {
+                ""
+            };
             rep.line(format!(
-                "tosdiff {name} vs NEWTOS.BIN: exit {code}, {}",
+                "tosdiff {name} vs NEWTOS.BIN: exit {code}, {}{mark}",
                 tosdiff_summary(&text).unwrap_or("no summary line")
             ));
             if code == 2 {
                 failures.push(format!("tosdiff refused {name}"));
+            }
+        }
+        if planes == Some(32) {
+            // TASK/V69: the run against the NewTOS contract of the 32-plane
+            // setting, the values ADR-038 and the 32-plane spec sections
+            // give for every case ([`CONTRACT32_CHECK`]).
+            let checker = harness.join(CONTRACT32_CHECK);
+            let c = Command::new("python3")
+                .arg("-I")
+                .arg(&checker)
+                .arg(&o.table)
+                .arg(&bin)
+                .output()
+                .map_err(|e| e.to_string())?;
+            let text = format!("{}{}", String::from_utf8_lossy(&c.stdout), String::from_utf8_lossy(&c.stderr));
+            fs::write(out.join("contract32-check.txt"), &text).map_err(|e| e.to_string())?;
+            let code = c.status.code().unwrap_or(-1);
+            rep.line(format!(
+                "contract check (NewTOS contract, ADR-038; {CONTRACT32_CHECK}): exit {code}, {}",
+                text.lines().rev().find(|l| !l.trim().is_empty()).unwrap_or("").trim()
+            ));
+            if code == 2 {
+                failures.push("the 32-plane contract check could not check the run".into());
             }
         }
         if arg_trace {
@@ -1639,6 +1851,83 @@ mod tests {
         // Not a serial= token: accepted, and serial=on still leads.
         let o = parse_args(&s(&["bios", "t.tsv", "--out", "o", "--bootargs", "xserial=on"]), cwd).unwrap();
         assert!(qemu_append(&o.bootargs).starts_with("serial=on "));
+    }
+
+    /// TASK/V69: the depth is read as the kernel reads it
+    /// (`kernel/src/bootargs.rs`, `vdiplanes_accepts_16_and_32_only`): the
+    /// first `vdiplanes=` token decides, only 16 and 32 are depths.
+    #[test]
+    fn the_vdi_depth_is_read_as_the_kernel_reads_it() {
+        assert_eq!(vdi_planes(&s(&[])), None);
+        assert_eq!(vdi_planes(&s(&["vdiplanes=32"])), Some(32));
+        assert_eq!(vdi_planes(&s(&["memprot=off", "vdiplanes=16"])), Some(16));
+        assert_eq!(vdi_planes(&s(&["vdiplanes=032"])), Some(32));
+        assert_eq!(vdi_planes(&s(&["vdiplanes=32", "vdiplanes=16"])), Some(32));
+        assert_eq!(vdi_planes(&s(&["vdiplanes=8", "vdiplanes=32"])), None);
+        for bad in ["vdiplanes=", "vdiplanes=abc", "vdiplanes=32x", "vdiplanes=-16", "vdiplanes=24", "vdiplanes=99999999999"] {
+            assert_eq!(vdi_planes(&s(&[bad])), None, "{bad}");
+        }
+        assert_eq!(vdi_planes(&s(&["xvdiplanes=32"])), None);
+    }
+
+    /// TASK/V69: a raster table is wide iff its `!screen` line declares 32
+    /// planes; every shipped 16-plane table is not, the 32-plane twins are.
+    #[test]
+    fn a_wide_table_is_the_one_that_declares_32_planes() {
+        assert_eq!(table_screen_planes(b"# !screen\t640,480,32 in a comment\n"), None);
+        assert_eq!(table_screen_planes(b"!screen\t640,480,16\n"), Some(16));
+        assert!(table_is_wide(b"# c\n!screen\t640,480,32\r\n109\t3\t-\n"));
+        assert!(table_is_wide(b"  !screen  640,480,32\n"), "broader than the loader");
+        assert!(!table_is_wide(b"!screen\t640,480,16\n"));
+        assert!(!table_is_wide(b"109\t3\t0,0,7,7,0,0,7,7\t0,32,16,2,0,32\n"));
+        let cases = repo().join("tosdump/cases");
+        for t in ["vdi-raster.tsv", "vdi-raster-screen.tsv", "vdi-v18-raster.tsv", "vdi-v18-t2-raster.tsv"] {
+            assert!(!table_is_wide(&fs::read(cases.join(t)).unwrap()), "{t}");
+        }
+        for t in ["vdi-raster32.tsv", "vdi-raster-screen32.tsv"] {
+            assert!(table_is_wide(&fs::read(cases.join(t)).unwrap()), "{t}");
+        }
+        assert_eq!(out_stem("RASTER", true), "RASTER32");
+        assert_eq!(out_stem("RASTER", false), "RASTER");
+        assert_eq!(out_stem("VDI", false), "VDI");
+    }
+
+    /// TASK/V69: a 32-plane dump is never compared with an oracle reference
+    /// by mistake -- a wide table takes only a NEWTOS32- baseline of area 7,
+    /// a narrow table never one; the frozen oracle references are refused
+    /// for a wide table by their header.
+    #[test]
+    fn a_wide_table_is_compared_only_with_a_newtos32_baseline() {
+        let oracle = Some((6, 4, 1));
+        let newtos16 = Some((6, 8, 2));
+        let wide = Some((7, 8, 2));
+        assert!(wide_reference_refusal(true, "EMUTOS-1a7484ab-RASTER-screen-falcontc.BIN", oracle).is_some());
+        assert!(wide_reference_refusal(true, "NEWTOS32-abcd-RASTER32-screen32.BIN", newtos16).is_some());
+        assert!(wide_reference_refusal(true, "RASTER32.BIN", wide).is_some(), "the name must say NEWTOS32-");
+        assert!(wide_reference_refusal(true, "NEWTOS32-x.BIN", None).is_some());
+        assert_eq!(wide_reference_refusal(true, "NEWTOS32-abcd-RASTER32-screen32.BIN", wide), None);
+        assert!(wide_reference_refusal(false, "NEWTOS32-abcd-RASTER32-screen32.BIN", wide).is_some());
+        assert!(wide_reference_refusal(false, "X.BIN", wide).is_some());
+        assert_eq!(wide_reference_refusal(false, "EMUTOS-1a7484ab-RASTER.BIN", oracle), None);
+        // every frozen raster reference is an oracle dump of area 6 and is
+        // refused for a wide table
+        let refs = repo().join("tosdump/reference");
+        let mut n = 0;
+        for e in fs::read_dir(&refs).unwrap().flatten() {
+            let name = e.file_name().to_string_lossy().into_owned();
+            if name.starts_with("EMUTOS") && name.contains("-RASTER") && name.ends_with(".BIN") {
+                let h = dump_header(&fs::read(e.path()).unwrap());
+                assert_eq!(h.map(|h| h.0), Some(6), "{name}");
+                assert!(!written_by_newtos(h.unwrap()), "{name}");
+                assert!(wide_reference_refusal(true, &name, h).is_some(), "{name}");
+                n += 1;
+            }
+        }
+        assert!(n >= 4, "{n} oracle raster references");
+        assert_eq!(dump_header(b"TDMP"), None);
+        assert!(written_by_newtos((4, 8, 2)));
+        assert!(!written_by_newtos((4, 4, 1)));
+        assert!(!written_by_newtos((4, 0, 0)));
     }
 
     #[test]

@@ -383,6 +383,73 @@ static void test_screen_rules(void)
 }
 
 /*
+ * The 32-plane setting (cases.h, THE 32-PLANE SETTING; TASK/V69): a table
+ * is wide iff it declares `!screen w,h,32`.  Wide: fd_nplanes 1..32 and the
+ * bound fd_h * fd_wdwidth * 32 <= TD_RAST32_BUF_WORDS.  Not wide: every
+ * rule as before -- the 17-plane refusals above still hold.
+ */
+#define SCREEN32 "!screen\t640,480,32\n"
+#define MEM32    "0,32,16,2,0,32"
+
+static void test_wide_rules(void)
+{
+	struct td_case_error err;
+
+	printf("the 32-plane setting: a wide table\n");
+
+	/* 32 is accepted, and only 32 above 16 */
+	TD_CHECK_EQ(parse(SCREEN32, &err), 0);
+	TD_CHECK_EQ(t.screen.declared, 1);
+	TD_CHECK_EQ(t.screen.planes, 32);
+	TD_CHECK_EQ(t.screen.wide, 1);
+	TD_CHECK_EQ(parse("!screen\t640,480,33\n", &err), TD_CASE_ERR_DIRECTIVE);
+	TD_CHECK_EQ(parse("!screen\t640,480,24\n", &err), TD_CASE_ERR_DIRECTIVE);
+	TD_CHECK_EQ(parse("!screen\t640,480,31\n", &err), TD_CASE_ERR_DIRECTIVE);
+	/* a 16-plane table, and a table without the directive, are not wide */
+	TD_CHECK_EQ(parse(SCREEN, &err), 0);
+	TD_CHECK_EQ(t.screen.wide, 0);
+	TD_CHECK_EQ(parse("110\t-\t-\t" FORM_A "\t" FORM_B "\t1,2\tc\n", &err), 0);
+	TD_CHECK_EQ(t.screen.wide, 0);
+
+	/* a 32 x 16 form at 32 planes: 16 * 2 * 32 = 1024 words, the whole
+	 * wide buffer; the screen at 32 planes; a readback */
+	TD_CHECK_EQ(parse2(SCREEN32,
+		"109\t3\t0,0,31,15,0,0,31,15\tS\t1,32,16,2,0,32\t1,2\ts to m\n"
+		"109\t3\t0,0,31,15,100,60,131,75\t" MEM32 "\tS\t3,4,100,60,32,16\tm to s\n"
+		"110\t-\t-\t0,32,16,2,1,32\t1,32,16,2,0,32\t5,6\ttrnfm\n",
+		&err), 0);
+	TD_CHECK_EQ(t.count, 3);
+	TD_CHECK_EQ(t.cases[0].src.nplanes, 32);
+	TD_CHECK_EQ(t.cases[0].dst.nplanes, 32);
+	TD_CHECK_EQ(t.cases[1].has_read, 1);
+	/* one row more is past the wide buffer: 17 * 2 * 32 = 1088 */
+	TD_CHECK_EQ(parse2(SCREEN32, "110\t-\t-\t0,32,17,2,1,32\t" MEM32
+	                   "\t1,2\tc\n", &err), TD_CASE_ERR_GEOMETRY);
+	/* the wide bound holds for every plane count: a 1-plane 32 x 17 form
+	 * fits the narrow rule (544 > 512 refused there) but not this one */
+	TD_CHECK_EQ(parse2(SCREEN32, "109\t3\t0,0,7,7,0,0,7,7\t0,32,17,2,0,1\t"
+	                   "1,32,16,2,0,1\t1,2\tc\n", &err), TD_CASE_ERR_GEOMETRY);
+	/* 9..16-plane forms are writable in a wide table: refusal cases */
+	TD_CHECK_EQ(parse2(SCREEN32, "109\t3\t0,0,15,15,0,0,15,15\t"
+	                   "0,32,16,2,0,16\t1,32,16,2,0,16\t1,2\tc\n", &err), 0);
+	TD_CHECK_EQ(parse2(SCREEN32, "109\t3\t0,0,15,15,0,0,15,15\t"
+	                   "0,32,16,2,0,12\t1,32,16,2,0,12\t1,2\tc\n", &err), 0);
+	/* above 32 planes is still refused */
+	TD_CHECK_EQ(parse2(SCREEN32, "110\t-\t-\t0,16,16,1,1,33\t1,16,16,1,0,33"
+	                   "\t1,2\tc\n", &err), TD_CASE_ERR_GEOMETRY);
+	/* and outside a wide table 32 planes stays refused */
+	TD_CHECK_EQ(parse2(SCREEN, "110\t-\t-\t0,16,16,1,1,32\t1,16,16,1,0,32"
+	                   "\t1,2\tc\n", &err), TD_CASE_ERR_GEOMETRY);
+	TD_CHECK_EQ(parse("110\t-\t-\t0,16,16,1,1,32\t1,16,16,1,0,32\t1,2\tc\n",
+	                  &err), TD_CASE_ERR_GEOMETRY);
+	/* the readback rectangle keeps its limits: 32 x 16 pixels */
+	TD_CHECK_EQ(parse2(SCREEN32, "109\t3\t0,0,7,7,0,0,7,7\t" MEM32 "\tS\t"
+	                   "1,2,0,0,33,8\ttoo wide\n", &err), TD_CASE_ERR_GEOMETRY);
+	TD_CHECK_EQ(parse2(SCREEN32, "109\t3\t0,0,7,7,0,0,7,7\t" MEM32 "\tS\t"
+	                   "1,2,0,0,32,17\ttoo high\n", &err), TD_CASE_ERR_GEOMETRY);
+}
+
+/*
  * The shipped table.  It is carried to a machine that has no debugger, so
  * "the guard accepts it" is not something to find out there.
  */
@@ -420,6 +487,35 @@ static void test_shipped_table(void)
 		TD_CHECK(n110 > 0);
 		TD_CHECK(n121 > 0);
 	}
+	TD_CHECK_EQ(t.screen.wide, 0);
+
+	/* the two 32-plane tables (TASK/V69): wide, and within the guard */
+	{
+		static const char *wide_tables[] = {
+			"../cases/vdi-raster32.tsv", "../cases/vdi-raster-screen32.tsv"
+		};
+		int k;
+
+		for (k = 0; k < 2; k++) {
+			memset(&err, 0, sizeof err);
+			rc = td_rast_cases_load(&t, wide_tables[k], &err);
+			if (rc != 0) {
+				printf("  FAIL %s line %u: %s (%s)\n", wide_tables[k],
+				       err.line, err.what ? err.what : "",
+				       td_case_error_text(rc));
+				td_test_failures++;
+				continue;
+			}
+			TD_CHECK_EQ(t.screen.wide, 1);
+			TD_CHECK_EQ(t.screen.planes, 32);
+			TD_CHECK_EQ(t.count, TD_RAST_MAX_CASES);
+		}
+	}
+	/* the shipped 16-plane screen table stays narrow */
+	memset(&err, 0, sizeof err);
+	TD_CHECK_EQ(td_rast_cases_load(&t, "../cases/vdi-raster-screen.tsv", &err), 0);
+	TD_CHECK_EQ(t.screen.wide, 0);
+	TD_CHECK_EQ(t.screen.planes, 16);
 }
 
 int main(void)
@@ -430,6 +526,7 @@ int main(void)
 	test_rect_guard();
 	test_misc_guard();
 	test_screen_rules();
+	test_wide_rules();
 	test_shipped_table();
 	return TD_TEST_RESULT();
 }

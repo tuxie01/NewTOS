@@ -561,11 +561,12 @@ int td_aes_table_columns(const char *buf, size_t len);
  *      against it could be compared anyway.
  *   3. the form fits the buffer under EITHER machine's reading of it:
  *      fd_h * fd_wdwidth * 16 <= TD_RAST_BUF_WORDS.  Sixteen, not
- *      fd_nplanes, because NewTOS reads a memory MFDB as one WORD per pixel
- *      (raster.rs) and the TT reads it as fd_nplanes interleaved planes
- *      (s_nxwd = fd_nplanes * 2, vdi_raster.c:922); sixteen words per
- *      sixteen pixels bounds both, and fd_nplanes is separately capped at
- *      16 (the CONF_WITH_VDI_16BIT plane limit, vdi_raster.c:963).
+ *      fd_nplanes, because NewTOS at the 16-plane setting reads a memory
+ *      MFDB as one WORD per pixel (raster.rs) and the TT reads it as
+ *      fd_nplanes interleaved planes (s_nxwd = fd_nplanes * 2,
+ *      vdi_raster.c:922); sixteen words per sixteen pixels bounds both, and
+ *      fd_nplanes is separately capped at 16 (the CONF_WITH_VDI_16BIT plane
+ *      limit, vdi_raster.c:963).  A WIDE table (below) has its own bound.
  *   4. fd_w <= fd_wdwidth * 16, fd_stand is 0 or 1, and all of fd_w, fd_h,
  *      fd_wdwidth, fd_nplanes are positive.
  *   5. for 109 and 121, PTSIN holds exactly eight values.  Fewer would
@@ -629,6 +630,37 @@ int td_aes_table_columns(const char *buf, size_t len);
  * A table without a `!screen` line, without `S`, without `+` lines and
  * with two-value fill columns -- cases/vdi-raster.tsv -- parses and runs
  * exactly as before; its CRC-bound dumps stay comparable.
+ *
+ * ------------------------------------------------------------------
+ * THE 32-PLANE SETTING: A WIDE TABLE (TASK/V69, 2026-11-18)
+ * ------------------------------------------------------------------
+ *
+ * EmuTOS has no path above 16 planes (vdi_defs.h:22), so at NewTOS'
+ * 32-plane setting (ADR-038) there is no oracle: what such a table
+ * measures is the NewTOS contract of ADR-038 and of the 32-plane
+ * sections of docs/api/vdi/raster/_raster.md, and its dump is a
+ * regression baseline, never an oracle reference.
+ *
+ * A table is WIDE if and only if it declares `!screen <TAB> w,h,32`.
+ * `!screen` accepts planes 1..16, as always, and exactly 32 besides;
+ * nothing of the wide mode is reachable from any other table, so every
+ * existing table parses, runs and dumps as before.  In a wide table:
+ *
+ *   * fd_nplanes may be 1..32 (so a 9..16-plane memory form can be
+ *     written, as a refusal case: the VDI refuses it at 32, ADR-038 O5);
+ *   * the geometry bound is fd_h * fd_wdwidth * 32 <= TD_RAST32_BUF_WORDS:
+ *     a 32-plane pixel is two WORDs, a planar form of n <= 32 planes is n
+ *     WORDs per sixteen pixels, and 32 bounds both;
+ *   * the buffers are TD_RAST32_BUF_WORDS long and the record is the wide
+ *     one of area TD_AREA_RASTER32 (tosdump.h);
+ *   * a readback stores BOTH words of v_get_pixel per pixel: INTOUT[0]
+ *     (the high word, 0x00RR) at buffer B[2 * (row * 32 + col)] and
+ *     INTOUT[1] (the low word, 0xGGBB) at [+1] -- the order the VDI
+ *     answers in, independent of the machine's WORD order (ADR-038
+ *     point 7).  rw <= 32, rh <= 16 as in a narrow table.
+ *
+ * The dumper's declared-depth check is unchanged: a wide table runs only
+ * on a workstation of exactly 32 planes, a 16-plane table only at 16.
  */
 #define TD_RAST_CASE_COLUMNS 7
 
@@ -637,7 +669,8 @@ int td_aes_table_columns(const char *buf, size_t len);
 #define TD_RAST_BUF_B      1
 #define TD_RAST_BUF_SCREEN 2
 
-/* The readback lands in buffer B laid out as a 32 x 16 device form. */
+/* The readback lands in buffer B laid out as a 32 x 16 device form: one
+ * WORD per pixel, or two in a wide table. */
 #define TD_RAST_READ_W  32
 #define TD_RAST_READ_H  16
 
@@ -656,6 +689,7 @@ struct td_rast_screen {
 	int16_t w;
 	int16_t h;
 	int16_t planes;
+	int16_t wide;                      /* planes == 32: a wide table      */
 };
 
 /* A prelude of the raster table: one call, issued before the measured

@@ -12,7 +12,7 @@ Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL19-STATUS-DONE.MD)) · Prioritae
 - TOOL07 resolves the unit token `u:0` through `D:\DISKUNIT.TXT`, which the
   profile definition writes (since TOOL19 from `tosdump/profiles.tsv`:
   `tools/hatari-oracle.sh:237@DISKUNIT`: 18;
-  `tools/xtask/src/tosdump.rs:1221@DISKUNIT`: 26). DUMPBIOS does not run a table
+  `tools/xtask/src/tosdump.rs:1276@DISKUNIT`: 26). DUMPBIOS does not run a table
   with `u:0` when the file is missing (`tosdump/core/dumpbios.c:51@unit_path`).
 - User 2026-10-28: acceptable **if** (a) the file is always generated from the
   profile definition, never by hand; (b) its content is recorded in RUNINFO;

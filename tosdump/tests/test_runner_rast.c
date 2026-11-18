@@ -303,6 +303,102 @@ int main(int argc, char **argv)
 		r0 = records;
 	}
 
+	/* --- a wide table (cases.h, THE 32-PLANE SETTING; TASK/V69) ------- */
+	/* The wide record: buffers of 1024 words laid with the case's seeds,
+	 * the readback storing BOTH words of v_get_pixel per pixel, INTOUT[0]
+	 * then INTOUT[1], at 2 * (row * 32 + col).  The stub's default arm
+	 * answers intout[0] = the opcode (105) and intout[1] = the handle, so
+	 * the two words are told apart and their order is visible. */
+	printf("a wide table: the wide record, both readback words in order\n");
+	{
+		static const char *wide_text =
+			"!screen\t640,480,32\n"
+			"109\t3\t0,0,31,15,100,60,131,75\t0,32,16,2,0,32\tS\t7,8,100,60,4,3\tm to s\n"
+			"109\t3\t0,0,31,15,0,0,31,15\t0,32,16,2,0,32\t1,32,16,2,0,32\t9,10\tm to m\n";
+		static struct td_rast_case_table wt;
+		static uint8_t wrec[2 * TD_RAST32_RECORD_SIZE];
+		const uint8_t *w0, *w1;
+		int k;
+
+		memset(&err, 0, sizeof err);
+		rc = td_rast_cases_parse(&wt, wide_text, strlen(wide_text), &err);
+		TD_CHECK_EQ(rc, 0);
+		TD_CHECK_EQ(wt.count, 2);
+		TD_CHECK_EQ(td_rast_record_size(&wt), TD_RAST32_RECORD_SIZE);
+		TD_CHECK_EQ(td_rast_area(&wt), TD_AREA_RASTER32);
+		/* a narrow table keeps the narrow record and area */
+		TD_CHECK_EQ(td_rast_record_size(&table), TD_RAST_RECORD_SIZE);
+		TD_CHECK_EQ(td_rast_area(&table), TD_AREA_RASTER);
+
+		/* refused rather than overrun: the narrow size is too small */
+		TD_CHECK_EQ(td_run_raster(&wt, &wk, wrec, 2 * TD_RAST_RECORD_SIZE),
+		            TD_RUN_ERR_BUFFER);
+		td_stub_reset();
+		TD_CHECK_EQ(td_run_raster(&wt, &wk, wrec, sizeof wrec), 0);
+		w0 = wrec;
+		w1 = wrec + TD_RAST32_RECORD_SIZE;
+		TD_CHECK_EQ(td_load_be16(w0 + TD_RAST_OFF_CASEID), 2);
+		TD_CHECK_EQ(td_load_be16(w1 + TD_RAST_OFF_CASEID), 3);
+		TD_CHECK_EQ(rec_word(w0, TD_RAST_OFF_SRC_MFDB, 4), 32); /* planes */
+
+		/* the readback: 4 x 3 pixels, two words each, high word first */
+		for (k = 0; k < 3; k++) {
+			int c;
+
+			for (c = 0; c < 4; c++) {
+				TD_CHECK_EQ(rec_word(w0, TD_RAST32_OFF_BUF_B,
+				                     2 * (k * 32 + c)), 105);
+				TD_CHECK_EQ(rec_word(w0, TD_RAST32_OFF_BUF_B,
+				                     2 * (k * 32 + c) + 1),
+				            TD_STUB_VWK_HANDLE);
+			}
+		}
+		/* past the rectangle B keeps its fill, to the last of 1024 words */
+		TD_CHECK_EQ((uint16_t)rec_word(w0, TD_RAST32_OFF_BUF_B, 8),
+		            td_rast_fill_word(8, 8));
+		TD_CHECK_EQ((uint16_t)rec_word(w0, TD_RAST32_OFF_BUF_B, 1023),
+		            td_rast_fill_word(8, 1023));
+		TD_CHECK_EQ((uint16_t)rec_word(w0, TD_RAST32_OFF_BUF_A, 1023),
+		            td_rast_fill_word(7, 1023));
+		/* the second case: both buffers laid whole with its seeds */
+		TD_CHECK_EQ((uint16_t)rec_word(w1, TD_RAST32_OFF_BUF_A, 1000),
+		            td_rast_fill_word(9, 1000));
+		TD_CHECK_EQ((uint16_t)rec_word(w1, TD_RAST32_OFF_BUF_B, 1000),
+		            td_rast_fill_word(10, 1000));
+		/* the parameter arrays are poisoned and recorded as in a narrow
+		 * record, at the narrow offsets */
+		TD_CHECK_EQ((uint16_t)rec_word(w1, TD_RAST_OFF_INTOUT, 0),
+		            (uint16_t)TD_POISON16);
+		TD_CHECK_EQ(rec_word(w1, TD_RAST_OFF_CONTRL, 0), 109);
+		TD_CHECK_EQ((uint16_t)rec_word(w1, TD_RAST_OFF_CONTRL_BEFORE, 2),
+		            (uint16_t)TD_POISON16);
+		for (k = 0; k < TD_RAST32_RESERVED_LEN; k++)
+			TD_CHECK_EQ(w1[TD_RAST32_OFF_RESERVED + k], 0);
+
+		/* the dump writer takes the wide area with the wide size, and
+		 * refuses the narrow size for it */
+		TD_CHECK_EQ(td_dump_write(out, TD_AREA_RASTER32, wt.count, "test",
+		                          wt.crc, wrec,
+		                          (size_t)wt.count * TD_RAST_RECORD_SIZE),
+		            TD_DUMP_ERR_SIZE);
+		/* the wide dump and its table, for test_tosdiff.sh */
+		if (argc > 4) {
+			FILE *f;
+
+			TD_CHECK_EQ(td_dump_write(argv[3], TD_AREA_RASTER32, wt.count,
+			                          "test", wt.crc, wrec,
+			                          (size_t)wt.count *
+			                          TD_RAST32_RECORD_SIZE), 0);
+			f = fopen(argv[4], "wb");
+			TD_CHECK(f != NULL);
+			if (f) {
+				TD_CHECK_EQ(fwrite(wide_text, 1, strlen(wide_text), f),
+				            strlen(wide_text));
+				fclose(f);
+			}
+		}
+	}
+
 	/* --- a well formed dump file ------------------------------------- */
 	rc = td_dump_write(out, TD_AREA_RASTER, table.count,
 	                   "test", table.crc, records,

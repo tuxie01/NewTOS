@@ -249,6 +249,45 @@ else
 	fails=$((fails + 1))
 fi
 
+# --- the wide raster area, 32 planes (TASK/V69) --------------------------
+#
+# A wide table's dump is area 7, VDI-RASTER32, record 5744 bytes, and a
+# NewTOS-contract baseline: the report says so, and a narrow (16-plane or
+# oracle) dump is never compared with it -- the comparator refuses two
+# dumps of different areas.  buf_b[0] of the wide record is at offset 3684.
+RAST32BIN="$BUILD/stub-raster32.bin"
+RAST32TSV="$BUILD/stub-raster32.tsv"
+if [ -f "$RAST32BIN" ] && [ -f "$RAST32TSV" ]; then
+	"$TOSDIFF" --validate "$RAST32BIN" "$RAST32TSV" >"$TMP/r32val.out" 2>&1
+	check "validate accepts the wide raster dump" 0 $?
+	grep_out "validate names the wide area" "$TMP/r32val.out" \
+	    "area VDI-RASTER32, 2 records of 5744 bytes"
+
+	cp "$RAST32BIN" "$TMP/r32_a.bin"
+	cp "$RAST32BIN" "$TMP/r32_b.bin"
+	printf '\125\125' | dd of="$TMP/r32_b.bin" bs=1 seek=$((32 + 3684)) \
+	    conv=notrunc status=none
+	"$TOSDIFF" "$RAST32TSV" "$TMP/r32_a.bin" "$TMP/r32_b.bin" \
+	    >"$TMP/r32.out" 2>&1
+	check "two wide dumps are compared" 1 $?
+	grep_out "a wide comparison is labelled NewTOS contract" "$TMP/r32.out" \
+	    "NewTOS contract (ADR-038, 32-plane setting): no oracle"
+	grep_out "the wide buffer word is reported" "$TMP/r32.out" "buf_b\\[0\\]"
+
+	"$TOSDIFF" "$RAST32TSV" "$RASTBIN" "$RAST32BIN" >"$TMP/r32x.out" 2>&1
+	check "a narrow dump against a wide one is refused" 2 $?
+	grep_out "the refusal names both areas" "$TMP/r32x.out" \
+	    "is area VDI-RASTER, .* is area VDI-RASTER32"
+	"$TOSDIFF" "$RASTTSV" "$RASTBIN" "$RASTBIN" >"$TMP/r16.out" 2>&1
+	if grep -q "NewTOS contract" "$TMP/r16.out"; then
+		echo "  FAIL a narrow raster comparison carries the 32-plane label"
+		fails=$((fails + 1))
+	fi
+else
+	echo "  FAIL stub wide raster dump missing: $RAST32BIN / $RAST32TSV"
+	fails=$((fails + 1))
+fi
+
 # --- format 3: the address check (docs/TOS-REFERENCE-DUMPER.md section 3) --
 #
 # The stub AES dump was written by td_dump_write on this host, so it is

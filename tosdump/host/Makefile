@@ -254,7 +254,8 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@echo "== VDI raster case table and its guard"
 	@$(BUILD)/test_cases_rast
 	@echo "== VDI raster runner against the stub backend"
-	@$(BUILD)/test_runner_rast $(BUILD)/stub-raster.bin $(BUILD)/stub-raster.tsv
+	@$(BUILD)/test_runner_rast $(BUILD)/stub-raster.bin $(BUILD)/stub-raster.tsv \
+	    $(BUILD)/stub-raster32.bin $(BUILD)/stub-raster32.tsv
 	@$(BUILD)/tosdiff --validate $(BUILD)/stub-raster.bin | sed 's/^/  /'
 	@echo "== call case table (BIOS + XBIOS) and its guard"
 	@$(BUILD)/test_cases_call
@@ -292,6 +293,8 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@cmp $(BUILD)/be.bin $(BUILD)/le.bin && echo "  ok"
 	@echo "== comparator"
 	@sh $(TESTS)/test_tosdiff.sh $(BUILD)
+	@echo "== the 32-plane NewTOS-contract check (TASK/V69): its numbers"
+	@python3 -I contract32-check.py --selftest
 	@echo "== self-check: every relational rule holds on the pinned oracle"
 	@sh $(TESTS)/test_selfcheck.sh $(BUILD)
 

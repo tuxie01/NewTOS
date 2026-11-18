@@ -1,0 +1,238 @@
+# vdi-raster-screen32.tsv -- NewTOS contract (ADR-038), 32-plane setting: no oracle.
+#
+# The 32-plane twin of vdi-raster-screen.tsv (TASK/V69): the VDI raster
+# group with the SCREEN as an operand, at vdiplanes=32. A WIDE table
+# (tosdump/core/cases.h, "THE 32-PLANE SETTING"): it declares a 32-plane
+# screen, so DUMPRAST runs it only at 32 planes, writes the wide record
+# (area 7 VDI-RASTER32, 5744 bytes, buffers of 1024 WORDs, the readback
+# storing both v_get_pixel words) and logs "NewTOS contract (ADR-038), no
+# oracle". EmuTOS has no path above 16 planes (vdi_defs.h:22): the values
+# below are the contract's -- ADR-038 (docs/MEMORY.md) and the 32-plane
+# sections of docs/api/vdi/raster/_raster.md (V63 R1-R6, V64 P1-P9, V65
+# sections 2-6) -- and tosdump/host/contract32-check.py lays them beside
+# every case, computed from the case line itself. Its dump is a regression
+# baseline (NEWTOS32-...), never an oracle reference.
+#
+# Run: cargo xtask tosdump rast tosdump/cases/vdi-raster-screen32.tsv
+#      --out <dir> --bootargs vdiplanes=32
+#
+#   opcode <TAB> intin <TAB> ptsin <TAB> src <TAB> dst <TAB> fill <TAB> comment
+#
+# Derived line by line from vdi-raster-screen.tsv: every 16-plane memory
+# form is a 32-plane one (a 32x16 form is 1024 WORDs, the whole wide
+# buffer), and two refusal cases are added (E19, F21). Section E is
+# changed by the rule below.
+#
+# THE WORDS THIS TABLE EXPECTS (docs/TOS-REFERENCE-DUMPER.md, "The
+# expected values at 32"):
+#
+#   pen pixel       0x00RRGGBB, each gun q = (c * 255 + 500) / 1000 (V64
+#                   P2, P3): pen 0 00FFFFFF, 1 00000000, 2 00FF0000, 3
+#                   0000FF00, 4 000000FF, 5 0000FFFF, 6 00FFFF00, 8
+#                   00BBBBBB, 9 00888888, 16 00FFFFFF, 255 00000000; X = 0
+#   memory pixel    fd_nplanes 32: native 32-bit 0xXXRRGGBB, row fd_wdwidth
+#                   * 16 pixels; on AArch64 pixel k is WORD 2k (low), 2k+1
+#                   (high) (V65 section 3)
+#   logic ops       bitwise on all 32 bits, X included; ALL_WHITE 0,
+#                   ALL_BLACK 0xFFFFFFFF (V63 R4)
+#   readback        v_get_pixel: INTOUT[0] = 0x00RR, INTOUT[1] = 0xGGBB, X
+#                   masked (V65 section 6); stored high word first at buffer
+#                   B[2 * (row * 32 + col)]. A cleared screen reads
+#                   {0x00FF, 0xFFFF}, the same as pen 0 (V63 R5)
+#   refusals        a memory form of 9..31 planes (16 included) against the
+#                   32-plane screen: s_nxwd != d_nxwd, silent no-op (V65
+#                   section 2, O5)
+#
+# THE X RULE ("paint before you copy"). The byte above R, G, B of a screen
+# pixel no pen wrote is implementation-defined (v_clrwk may fill 0xFF or
+# 0x00FFFFFF, V63 R3), and a raw Screen -> Memory copy carries it (V65
+# section 3). So every case of section E whose result reads a screen pixel
+# first paints the source rectangle with a pen (a pen writes X = 0, V63
+# R2); the memory result is then exact in all 32 bits. The readbacks of
+# sections F, G and H go through v_get_pixel, which masks X. The checker
+# refuses a table whose expected memory word depends on an unpainted pixel.
+#
+# The reset before every case (runner.c, td_reset_vdi) clears the screen
+# with v_clrwk and sets vs_clip off, vsf_interior solid, vsf_color 1.
+
+!screen	640,480,32
+
+# ======================================================================
+# SECTION E -- vro_cpyfm (109) SCREEN -> MEMORY at 32 planes.
+# ======================================================================
+# Source S, destination buffer B as a 32x16 form at 32 planes (1024
+# WORDs, the whole wide buffer). The screen counts as 32 planes; the copy
+# runs on the raw 32-bit store word (V65 section 3). No clipping: the
+# destination is not the screen. Every source rectangle is painted first.
++25	1	-	-	-	-	vsf_color pen 1
++114	-	100,60,131,75	-	-	-	vr_recfl the whole source rect
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	1,2	E1 pen 1 fill to memory: 512 x 0x00000000
++25	5	-	-	-	-	vsf_color pen 5
++114	-	0,0,31,15	-	-	-	vr_recfl at the origin
+109	3	0,0,31,15,0,0,31,15	S	1,32,16,2,0,32	3,4	E2 pen 5 at the origin to memory: 512 x 0x0000FFFF
+# the op runs on all 32 bits: the painted X (0) meets the fill's high byte
++25	8	-	-	-	-	vsf_color pen 8
++114	-	100,60,131,75	-	-	-	vr_recfl
+109	6	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	5,6	E3 XOR pen 8: B = fill ^ 0x00BBBBBB
++25	9	-	-	-	-	vsf_color pen 9
++114	-	100,60,131,75	-	-	-	vr_recfl
+109	1	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	7,8	E4 AND pen 9: B = fill & 0x00888888
++25	0	-	-	-	-	vsf_color pen 0
++114	-	100,60,131,75	-	-	-	vr_recfl
+109	4	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	9,10	E5 NOTS_AND_D pen 0: B = fill & 0xFF000000
+# NOT_D reads no source: nothing to paint
+109	10	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	11,12	E7 NOT_D: B = ~fill, all 32 bits
+# a vr_recfl pen fill (solid, replace, after the reset) then copied: the
+# pen's pixel, X 0
++25	2	-	-	-	-	vsf_color pen 2
++114	-	100,60,131,75	-	-	-	vr_recfl the whole source rect
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	13,14	E8 pen 2 fill to memory: 512 x 0x00FF0000
++25	0	-	-	-	-	vsf_color pen 0
++114	-	100,60,131,75	-	-	-	vr_recfl the whole source rect
++25	3	-	-	-	-	vsf_color pen 3
++114	-	108,64,123,71	-	-	-	vr_recfl 16x8 inside the source rect
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	15,16	E9 partial pen 3 fill: rows 4-11 cols 8-23 0x0000FF00, rest 0x00FFFFFF
+# pen 0 is 0x00FFFFFF: X 0, not the cleared screen's undefined X
++25	0	-	-	-	-	vsf_color pen 0
++114	-	100,60,131,75	-	-	-	vr_recfl pen 0
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	17,18	E10 pen 0 fill to memory: 512 x 0x00FFFFFF
+# a memory destination anchor off the origin: d_xmin/d_ymin and the
+# 32-plane row of fd_wdwidth * 16 pixels
++25	4	-	-	-	-	vsf_color pen 4
++114	-	108,64,123,71	-	-	-	vr_recfl 16x8
+109	3	108,64,123,71,8,4,23,11	S	1,32,16,2,0,32	19,20	E11 16x8 pen 4 block to memory (8,4): 0x000000FF there, fill elsewhere
+# two pens whose guns are not 0 or 255: the 8-bit quantisation
++25	8	-	-	-	-	vsf_color pen 8
++114	-	100,60,115,75	-	-	-	vr_recfl left half
++25	9	-	-	-	-	vsf_color pen 9
++114	-	116,60,131,75	-	-	-	vr_recfl right half
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	21,22	E12 pens 8 and 9: cols 0-15 0x00BBBBBB, cols 16-31 0x00888888
+# the rules on the screen path
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,4	23,24	E13 destination 4 planes: s_nxwd != d_nxwd, no-op
+109	0x13	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	25,26	E14 PAT_FLAG|3 on the truecolor path: nothing copied
++25	2	-	-	-	-	vsf_color pen 2
++114	-	100,60,131,75	-	-	-	vr_recfl
+109	3	131,75,100,60,0,0,31,15	S	1,32,16,2,0,32	27,28	E15 reversed source corners: sorted copy, PTSIN unchanged
++25	2	-	-	-	-	vsf_color pen 2
++114	-	100,60,131,75	-	-	-	vr_recfl
+109	6	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	29,30	E18 XOR a red screen into the fill: B = fill ^ 0x00FF0000
+# a 16-plane memory form against the 32-plane screen: refused (O5)
+109	3	100,60,131,75,0,0,31,15	S	1,32,16,2,0,16	125,126	E19 destination 16 planes at 32: refused, B keeps the fill
+
+# ======================================================================
+# SECTION F -- vro_cpyfm (109) MEMORY -> SCREEN, read back.
+# ======================================================================
+# Source buffer A (32x16, 32 planes: the fill read as 32-bit pixels),
+# destination S, written raw (V65 section 3). Clipping only if vs_clip is
+# on (:947-949) -- the reset turns it off, so dont_clip (:882-900). The
+# readback window (100,60) 32x16 is the destination rectangle, or a larger
+# window so an over-draw at the border would show as a pixel that is not
+# the cleared {0x00FF, 0xFFFF}. The readback masks X.
+109	3	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	31,32,100,60,32,16	F1 the whole form to the screen: readback = fill(31) & 0x00FFFFFF
+109	3	8,4,23,11,101,61,116,68	0,32,16,2,0,32	S	33,34,100,60,18,10	F2 16x8 from (8,4) to (101,61): rows 1-8 cols 1-16, cleared border
+109	6	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	35,36,100,60,32,16	F3 XOR onto the cleared screen: ~fill, RGB
+109	1	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	37,38,100,60,32,16	F4 AND onto the cleared screen: fill, RGB
+109	4	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	39,40,100,60,32,16	F5 NOTS_AND_D onto the cleared screen: ~fill, RGB
+109	10	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	41,42,100,60,32,16	F7 NOT_D: RGB 0
+109	15	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	43,44,100,60,32,16	F9 ALL_BLACK: 0xFFFFFFFF, reads as the cleared screen
+109	0x13	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	45,46,100,60,32,16	F11 PAT_FLAG|3 on the truecolor path: nothing drawn
+109	3	0,0,31,15,100,60,131,75	0,32,16,2,0,8	S	47,48,100,60,32,16	F12 source 8 planes: s_nxwd != d_nxwd, no-op
+# clipping, destination screen (do_clip, :809-877): the visible part
+# keeps its source offset -- s_xmin moves with d_xmin (:824-826)
++129	1	104,62,127,73	-	-	-	vs_clip on, inside the destination
+109	3	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	49,50,100,60,32,16	F13 clipped to (104,62)-(127,73): fill inside, cleared outside
++129	1	0,0,115,67	-	-	-	vs_clip on, cutting right and bottom
+109	3	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	51,52,100,60,32,16	F14 clip ends at (115,67): cols 0-15 rows 0-7 only
+109	3	0,0,15,7,115,67,100,60	0,32,16,2,0,32	S	53,54,100,60,18,10	F15 reversed destination corners: lands at (100,60) (arb_corner)
++25	2	-	-	-	-	vsf_color pen 2
++114	-	100,60,131,75	-	-	-	vr_recfl red
+109	6	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	55,56,100,60,32,16	F17 XOR onto red: (fill ^ 0x00FF0000), RGB
++25	3	-	-	-	-	vsf_color pen 3
++114	-	100,60,131,75	-	-	-	vr_recfl green
+109	5	0,0,31,15,100,60,131,75	0,32,16,2,0,32	S	57,58,100,60,32,16	F18 D_ONLY onto green: 0x0000FF00 untouched
+109	3	5,3,20,10,100,60,115,67	0,32,16,2,0,32	S	59,60,100,60,18,10	F20 source at (5,3), not word aligned: fill[(3+r)*32+5+c]
+# a 16-plane memory form against the 32-plane screen: refused (O5)
+109	3	0,0,31,15,100,60,131,75	0,32,16,2,0,16	S	127,128,100,60,32,16	F21 source 16 planes at 32: refused, the screen stays cleared
+
+# ======================================================================
+# SECTION G -- vro_cpyfm (109) SCREEN -> SCREEN, overlapping.
+# ======================================================================
+# A prelude lays a 16x8 block of the fill at the source rectangle; the
+# case moves it by (8,4), (8,0) or (0,4) in each direction so that the
+# destination overlaps the source.  EmuTOS chooses the copy direction by
+# comparing the two START ADDRESSES (vro_cpyfm16, :993; at 32 the same start-address rule, V65 section 3): src < dst ->
+# start at s_xmax/s_ymax and d_xmax/d_ymax, step -1 (:994-999).  On one
+# screen that is: reverse iff the destination is lower, or on the same
+# row and further right.  NewTOS decides rows and columns separately
+# (the kernel backend's copy_rect: down = dy > sy, right = dx > sx); for a
+# screen the two rules give the same picture -- which this section
+# measures rather than argues.  Every pixel of the fill differs, so a
+# copy that eats itself is visible.  PTSIN[6..7] is always consistent
+# with the source extent (D-VDI-25 / R01 is deferred and not restated).
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	3	100,60,115,67,108,64,123,71	S	S	61,62,100,60,32,16	G1 down and right by (8,4): backwards path
++109	3	0,0,15,7,108,64,123,71	0,32,16,2,0,32	S	-	block at (108,64)
+109	3	108,64,123,71,100,60,115,67	S	S	63,64,100,60,32,16	G2 up and left by (8,4): forwards path
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	3	100,60,115,67,108,60,123,67	S	S	65,66,100,60,32,16	G3 right by 8, same rows: backwards, column order decides
++109	3	0,0,15,7,108,60,123,67	0,32,16,2,0,32	S	-	block at (108,60)
+109	3	108,60,123,67,100,60,115,67	S	S	67,68,100,60,32,16	G4 left by 8, same rows: forwards
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	3	100,60,115,67,100,64,115,71	S	S	69,70,100,60,32,16	G5 down by 4, same columns: backwards, row order decides
++109	3	0,0,15,7,100,64,115,71	0,32,16,2,0,32	S	-	block at (100,64)
+109	3	100,64,115,71,100,60,115,67	S	S	71,72,100,60,32,16	G6 up by 4, same columns: forwards
++109	3	0,0,15,7,108,60,123,67	0,32,16,2,0,32	S	-	block at (108,60)
+109	3	108,60,123,67,100,64,115,71	S	S	73,74,100,60,32,16	G7 down and left: backwards rows, EmuTOS also backwards columns
++109	3	0,0,15,7,100,64,115,71	0,32,16,2,0,32	S	-	block at (100,64)
+109	3	100,64,115,71,108,60,123,67	S	S	75,76,100,60,32,16	G8 up and right: forwards rows, EmuTOS also forwards columns
+# XOR over the overlap: an earlier write is read back as source later
+# only if the directions differ, so the picture is the direction
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	6	100,60,115,67,108,64,123,71	S	S	77,78,100,60,32,16	G9 XOR down and right
++109	3	0,0,15,7,108,64,123,71	0,32,16,2,0,32	S	-	block at (108,64)
+109	6	108,64,123,71,100,60,115,67	S	S	79,80,100,60,32,16	G10 XOR up and left
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	3	100,60,115,67,100,60,115,67	S	S	81,82,100,60,32,16	G11 onto itself: src == dst, forwards, unchanged
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	6	100,60,115,67,100,60,115,67	S	S	83,84,100,60,32,16	G12 XOR onto itself: RGB 0 over the block
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
++129	1	104,62,127,73	-	-	-	vs_clip on
+109	3	100,60,115,67,108,64,123,71	S	S	85,86,100,60,32,16	G14 down and right, clipped to (104,62)-(127,73)
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	0x13	100,60,115,67,108,64,123,71	S	S	87,88,100,60,32,16	G16 PAT_FLAG|3 screen to screen: nothing copied
++109	3	0,0,15,7,100,60,115,67	0,32,16,2,0,32	S	-	block at (100,60)
+109	3	100,60,115,67,0,0,15,7	S	S	89,90,0,0,18,10	G17 to the origin, far apart: the block at (0,0), cleared border
+
+# ======================================================================
+# SECTION H -- vrt_cpyfm (121) MONO -> SCREEN, read back.
+# ======================================================================
+# Source buffer A as a 1-plane 32x16 form (two words per row, MSB first,
+# the fill's bits), destination S.  The source must be one plane
+# (s_nxwd == 2, :1384); fg/bg = validate_color_index(INTIN[1..2]) (ncol
+# 256 at 32), drawn as the pens' 32-bit pixels (V64 P3, the screen path
+# blit_mono, V65 section 4): MD_REPLACE fg/bg, MD_TRANS fg on set bits,
+# MD_XOR the complement on set bits, MD_ERASE bg on clear bits.  The
+# readback masks X: the expected pixels are the pens' RGB.
+121	1,1,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	91,92,100,60,32,16	H1 MD_REPLACE pens 1/0: set 0x000000, clear 0xFFFFFF
+121	2,1,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	93,94,100,60,32,16	H2 MD_TRANS pen 1: set 0x000000, clear stays cleared
+121	3,1,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	95,96,100,60,32,16	H3 MD_XOR on the cleared screen: set RGB 0
+121	4,1,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	97,98,100,60,32,16	H4 MD_ERASE bg pen 0: clear 0xFFFFFF, set stays cleared
+121	1,2,4	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	99,100,100,60,32,16	H5 MD_REPLACE red/blue: set 0xFF0000, clear 0x0000FF
+121	2,3,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	101,102,100,60,32,16	H6 MD_TRANS green: set 0x00FF00
+121	4,0,6	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	103,104,100,60,32,16	H7 MD_ERASE bg yellow: clear 0xFFFF00, set stays cleared
++25	2	-	-	-	-	vsf_color pen 2
++114	-	100,60,131,75	-	-	-	vr_recfl red
+121	3,1,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	105,106,100,60,32,16	H8 MD_XOR on red: set RGB 0x00FFFF, clear 0xFF0000
+121	1,999,-1	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	107,108,100,60,32,16	H9 pens out of range: validate_color_index -> 1, all 0x000000
+121	1,255,16	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	109,110,100,60,32,16	H10 pens 255/16 (videl_palette2): set 0x000000, clear 0xFFFFFF
+121	1,1,0	5,3,20,10,100,60,115,67	0,32,16,2,0,1	S	111,112,100,60,18,10	H11 source at (5,3), not word aligned: bits (3+r, 5+c), cleared border
+# PREDICTED DIFFERENCE, see the head of the file
+121	0x11,1,0	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	113,114,100,60,32,16	H12 PAT_FLAG|MD_REPLACE on the truecolor path: nothing drawn
+121	1,1,0	100,60,131,75,0,0,31,15	S	1,32,16,2,0,32	115,116	H13 the screen as a mono source: not one plane, no-op
++129	1	104,62,127,73	-	-	-	vs_clip on
+121	1,2,4	0,0,31,15,100,60,131,75	0,32,16,2,0,1	S	117,118,100,60,32,16	H14 MD_REPLACE clipped to (104,62)-(127,73)
+121	1,1,0	0,0,31,15,0,0,31,15	0,32,16,2,0,1	S	119,120,0,0,32,16	H15 MD_REPLACE at the origin
+# a 32-plane MEMORY destination (V65 section 4): the pen pixels, all 32
+# bits; MD_XOR complements all 32 bits
+121	1,2,4	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	121,122	H17 MD_REPLACE into memory: set 0x00FF0000, clear 0x000000FF
+121	3,1,0	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	123,124	H18 MD_XOR into memory: set ~fill(124), clear fill(124), 32 bits

@@ -30,6 +30,9 @@ struct td_mfdb {
 };
 
 static struct td_raster_arrays rast_arrays;
+/* The wide frame, used only by a wide table (cases.h, THE 32-PLANE
+ * SETTING): a separate object, so a narrow run lays out nothing new. */
+static struct td_raster32_arrays rast32_arrays;
 static int16_t                 rast_before[TD_RAST_CONTRL_N];
 static struct td_mfdb          rast_src;
 static struct td_mfdb          rast_dst;
@@ -50,8 +53,14 @@ static void set_mfdb_ptr(int16_t *contrl, int n, void *p)
 	memcpy(&contrl[7 + n * nptrints], &p, sizeof p);
 }
 
+/* The two pixel buffers of the frame a case runs in. */
+struct rast_bufs {
+	int16_t *a;
+	int16_t *b;
+};
+
 static void fill_mfdb(struct td_mfdb *m, const struct td_rast_mfdb *spec,
-                      struct td_raster_arrays *a)
+                      const struct rast_bufs *a)
 {
 	memset(m, 0, sizeof *m);
 	/* The screen: fd_addr NULL and every other field 0, the classic
@@ -60,8 +69,8 @@ static void fill_mfdb(struct td_mfdb *m, const struct td_rast_mfdb *spec,
 	 * the loader's guard, not the VDI's parameter. */
 	if (spec->buffer == TD_RAST_BUF_SCREEN)
 		return;
-	m->fd_addr    = (spec->buffer == TD_RAST_BUF_B) ? (void *)a->buf_b
-	                                                : (void *)a->buf_a;
+	m->fd_addr    = (spec->buffer == TD_RAST_BUF_B) ? (void *)a->b
+	                                                : (void *)a->a;
 	m->fd_w       = spec->w;
 	m->fd_h       = spec->h;
 	m->fd_wdwidth = spec->wdwidth;
@@ -86,7 +95,7 @@ static struct td_mfdb pre_src;
 static struct td_mfdb pre_dst;
 
 static void run_prelude(const struct td_rast_prelude *p, const struct td_wk *wk,
-                        struct td_raster_arrays *a)
+                        const struct rast_bufs *a)
 {
 	int j;
 
@@ -115,9 +124,13 @@ static void run_prelude(const struct td_rast_prelude *p, const struct td_wk *wk,
  * truecolor screen INTOUT[1] is the 16-bit screen word itself and
  * INTOUT[0] is 0 (vdi_fill.c:1095-1110); the table's plane guard is what
  * makes that the reading on both machines.
+ *
+ * In a wide table (cases.h, THE 32-PLANE SETTING) the pixel is two words,
+ * INTOUT[0] = 0x00RR and INTOUT[1] = 0xGGBB (ADR-038 point 7), and both
+ * are stored, high word first: B[2 * (row * 32 + col)] and [+1].
  */
 static void run_readback(const struct td_rast_case *c, const struct td_wk *wk,
-                         struct td_raster_arrays *a)
+                         const struct rast_bufs *a, int wide)
 {
 	int16_t r, col;
 
@@ -134,7 +147,12 @@ static void run_readback(const struct td_rast_case *c, const struct td_wk *wk,
 			pre_intout[1] = TD_POISON16;
 			td_abi_vdi(pre_contrl, pre_intin, pre_ptsin, pre_intout,
 			           pre_ptsout);
-			a->buf_b[r * TD_RAST_READ_W + col] = pre_intout[1];
+			if (wide) {
+				a->b[2 * (r * TD_RAST_READ_W + col)]     = pre_intout[0];
+				a->b[2 * (r * TD_RAST_READ_W + col) + 1] = pre_intout[1];
+			} else {
+				a->b[r * TD_RAST_READ_W + col] = pre_intout[1];
+			}
 		}
 	}
 }
@@ -167,73 +185,102 @@ static void mfdb_words(const struct td_mfdb *m, int16_t *out)
 	out[7] = m->fd_r3;
 }
 
+size_t td_rast_record_size(const struct td_rast_case_table *ct)
+{
+	return ct->screen.wide ? (size_t)TD_RAST32_RECORD_SIZE
+	                       : (size_t)TD_RAST_RECORD_SIZE;
+}
+
+uint16_t td_rast_area(const struct td_rast_case_table *ct)
+{
+	return ct->screen.wide ? (uint16_t)TD_AREA_RASTER32
+	                       : (uint16_t)TD_AREA_RASTER;
+}
+
 int td_run_raster(const struct td_rast_case_table *ct, const struct td_wk *wk,
                   uint8_t *out, size_t out_bytes)
 {
 	int16_t src_words[TD_RAST_MFDB_N];
 	int16_t dst_words[TD_RAST_MFDB_N];
+	const int wide = ct->screen.wide != 0;
+	const size_t rec_size = td_rast_record_size(ct);
+	/* The frame this table runs in: the narrow one, exactly as before,
+	 * or the wide one.  Only the parameter arrays and the two buffers
+	 * are taken from it; the order of the steps is the same for both. */
+	int16_t *contrl = wide ? rast32_arrays.contrl : rast_arrays.contrl;
+	int16_t *intin  = wide ? rast32_arrays.intin  : rast_arrays.intin;
+	int16_t *ptsin  = wide ? rast32_arrays.ptsin  : rast_arrays.ptsin;
+	int16_t *intout = wide ? rast32_arrays.intout : rast_arrays.intout;
+	int16_t *ptsout = wide ? rast32_arrays.ptsout : rast_arrays.ptsout;
+	const uint16_t buf_words = wide ? (uint16_t)TD_RAST32_BUF_WORDS
+	                                : (uint16_t)TD_RAST_BUF_WORDS;
+	struct rast_bufs bufs;
 	uint16_t i;
 	int32_t ret;
 	int j;
 
-	if (out_bytes < (size_t)ct->count * TD_RAST_RECORD_SIZE)
+	bufs.a = wide ? rast32_arrays.buf_a : rast_arrays.buf_a;
+	bufs.b = wide ? rast32_arrays.buf_b : rast_arrays.buf_b;
+
+	if (out_bytes < (size_t)ct->count * rec_size)
 		return TD_RUN_ERR_BUFFER;
 
 	for (i = 0; i < ct->count; i++) {
 		const struct td_rast_case *c = &ct->cases[i];
-		uint8_t *rec = out + (size_t)i * TD_RAST_RECORD_SIZE;
+		uint8_t *rec = out + (size_t)i * rec_size;
 
 		/* 1. reset the device state this case could otherwise inherit */
 		td_reset_vdi(wk);
 
 		/* 2. lay the two pixel buffers.  Not poison: see runner_rast.h */
-		td_rast_fill(rast_arrays.buf_a, TD_RAST_BUF_WORDS, c->seed_a);
-		td_rast_fill(rast_arrays.buf_b, TD_RAST_BUF_WORDS, c->seed_b);
+		td_rast_fill(bufs.a, buf_words, c->seed_a);
+		td_rast_fill(bufs.b, buf_words, c->seed_b);
 
 		/* 3. the two MFDBs, over the buffers the case named */
-		fill_mfdb(&rast_src, &c->src, &rast_arrays);
-		fill_mfdb(&rast_dst, &c->dst, &rast_arrays);
+		fill_mfdb(&rast_src, &c->src, &bufs);
+		fill_mfdb(&rast_dst, &c->dst, &bufs);
 
 		/* 3b. the case's preludes: after the reset and the buffer fill --
 		 *     a raster prelude may copy a laid buffer to the screen --
 		 *     through their own arrays, and never recorded. */
 		for (j = 0; j < (int)c->prelude_count; j++)
 			run_prelude(&ct->preludes[c->prelude_first + (uint16_t)j], wk,
-			            &rast_arrays);
+			            &bufs);
 
 		/* 4. poison every parameter array (spec section 4) */
-		td_poison_raster(&rast_arrays);
+		if (wide)
+			td_poison_raster32(&rast32_arrays);
+		else
+			td_poison_raster(&rast_arrays);
 
 		/* 5. lay the case values over the poison */
 		for (j = 0; j < (int)c->n_intin; j++)
-			rast_arrays.intin[j] = c->intin[j];
+			intin[j] = c->intin[j];
 		for (j = 0; j < (int)c->n_ptsin; j++)
-			rast_arrays.ptsin[j] = c->ptsin[j];
+			ptsin[j] = c->ptsin[j];
 
 		/* 6. contrl: only the input slots.  contrl[2] and contrl[4] are
 		 *    outputs and stay poisoned, so a VDI that leaves them alone
 		 *    stays distinguishable from one that writes 0. */
-		rast_arrays.contrl[0] = c->opcode;
-		rast_arrays.contrl[1] = (int16_t)(c->n_ptsin / 2);   /* points */
-		rast_arrays.contrl[3] = (int16_t)c->n_intin;
-		rast_arrays.contrl[5] = 0;
-		rast_arrays.contrl[6] = wk->handle;
-		set_mfdb_ptr(rast_arrays.contrl, 0, &rast_src);
-		set_mfdb_ptr(rast_arrays.contrl, 1, &rast_dst);
+		contrl[0] = c->opcode;
+		contrl[1] = (int16_t)(c->n_ptsin / 2);   /* points */
+		contrl[3] = (int16_t)c->n_intin;
+		contrl[5] = 0;
+		contrl[6] = wk->handle;
+		set_mfdb_ptr(contrl, 0, &rast_src);
+		set_mfdb_ptr(contrl, 1, &rast_dst);
 
 		/* 7. snapshot contrl as it stands going in */
 		for (j = 0; j < TD_RAST_CONTRL_N; j++)
-			rast_before[j] = rast_arrays.contrl[j];
+			rast_before[j] = contrl[j];
 
 		/* 8. the call under measurement */
-		ret = td_abi_vdi(rast_arrays.contrl, rast_arrays.intin,
-		                 rast_arrays.ptsin, rast_arrays.intout,
-		                 rast_arrays.ptsout);
+		ret = td_abi_vdi(contrl, intin, ptsin, intout, ptsout);
 
 		/* 8b. the readback, if the case asked for one: the screen
 		 *     rectangle into buffer B, through the preludes' arrays. */
 		if (c->has_read)
-			run_readback(c, wk, &rast_arrays);
+			run_readback(c, wk, &bufs, wide);
 
 		/* 9. the record.  Input arrays and both MFDBs go in as they stand
 		 *    AFTER the call: a raster op may modify neither, and dumping
@@ -242,9 +289,14 @@ int td_run_raster(const struct td_rast_case_table *ct, const struct td_wk *wk,
 		 *    required to overwrite. */
 		mfdb_words(&rast_src, src_words);
 		mfdb_words(&rast_dst, dst_words);
-		td_raster_record_write(rec, c->line, (uint16_t)c->opcode, ret,
-		                       &rast_arrays, rast_before,
-		                       src_words, dst_words);
+		if (wide)
+			td_raster32_record_write(rec, c->line, (uint16_t)c->opcode,
+			                         ret, &rast32_arrays, rast_before,
+			                         src_words, dst_words);
+		else
+			td_raster_record_write(rec, c->line, (uint16_t)c->opcode,
+			                       ret, &rast_arrays, rast_before,
+			                       src_words, dst_words);
 	}
 
 	return 0;

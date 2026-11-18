@@ -615,6 +615,7 @@ struct kept_pair {
 
 static const struct kept_pair kept_pairs[] = {
 	{ TD_AREA_RASTER, "contrl_mfdb", "contrl_before_mfdb" },
+	{ TD_AREA_RASTER32, "contrl_mfdb", "contrl_before_mfdb" },
 	{ 0, NULL, NULL }
 };
 
@@ -1220,6 +1221,11 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 		printf("%s vs %s -- area %s, %u cases from %s\n",
 		       a.label, b.label, td_area_name(a.h.area), a.h.record_count,
 		       basename_of(cases_path));
+	/* Only NewTOS writes the wide raster area (tosdump.h): neither side
+	 * is an oracle dump, and the report says so before any difference. */
+	if (a.h.area == TD_AREA_RASTER32)
+		printf("NewTOS contract (ADR-038, 32-plane setting): no oracle; "
+		       "a difference is against a NewTOS baseline\n");
 
 	for (rec = 0; rec < a.h.record_count; rec++) {
 		const uint8_t *ra = record_at(&a, rec);

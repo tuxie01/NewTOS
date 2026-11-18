@@ -185,8 +185,11 @@ static void test_header(void)
 	TD_CHECK_EQ(td_area_record_size(TD_AREA_XBIOS), TD_CALL_RECORD_SIZE);
 	TD_CHECK_EQ(td_area_record_size(TD_AREA_GEMDOS), TD_CALL_RECORD_SIZE);
 	TD_CHECK_EQ(td_area_record_size(TD_AREA_RASTER), TD_RAST_RECORD_SIZE);
+	/* TASK/V69: area 7 is the wide raster record; 8 is the first unknown */
+	TD_CHECK_EQ(td_area_record_size(TD_AREA_RASTER32), TD_RAST32_RECORD_SIZE);
+	TD_CHECK_EQ(TD_AREA_RASTER32, 7);
 	TD_CHECK_EQ(td_area_record_size(0), 0);
-	TD_CHECK_EQ(td_area_record_size(7), 0);
+	TD_CHECK_EQ(td_area_record_size(8), 0);
 }
 
 /*
@@ -676,6 +679,33 @@ static void test_field_tables(void)
 	TD_CHECK(f && f[2].off == TD_RAST_OFF_CONTRL + 14);
 	TD_CHECK(f && f[2].count == TD_RAST_CONTRL_PTR_N);
 
+	/* The wide raster area (TASK/V69): the narrow descriptors field for
+	 * field, only the two buffers longer and further on. */
+	{
+		const struct td_field *w = td_area_fields(TD_AREA_RASTER32);
+		int k;
+
+		TD_CHECK(w != NULL && w != f);
+		for (k = 0; w && f && w[k].name; k++) {
+			TD_CHECK(f[k].name != NULL);
+			if (!f[k].name)
+				break;
+			TD_CHECK(strcmp(w[k].name, f[k].name) == 0);
+			TD_CHECK_EQ(w[k].compare, f[k].compare);
+			TD_CHECK_EQ(w[k].addr_cell, f[k].addr_cell);
+			TD_CHECK_EQ(w[k].width, f[k].width);
+			if (strncmp(w[k].name, "buf_", 4) == 0) {
+				TD_CHECK_EQ(w[k].count, TD_RAST32_BUF_WORDS);
+			} else {
+				TD_CHECK_EQ(w[k].off, f[k].off);
+				TD_CHECK_EQ(w[k].count, f[k].count);
+			}
+		}
+		TD_CHECK_EQ(k, 13);
+		TD_CHECK(w && w[11].off == TD_RAST32_OFF_BUF_A);
+		TD_CHECK(w && w[12].off == TD_RAST32_OFF_BUF_B);
+	}
+
 	/* every other field is compared by value; the AES has exactly one
 	 * address field (ap_3resv, above) */
 	for (n = 0; td_vdi_fields[n].name; n++) {
@@ -773,6 +803,80 @@ static void test_raster_record(void)
 		TD_CHECK_EQ(rec[TD_RAST_OFF_RESERVED + i], 0);
 }
 
+/*
+ * The wide raster record (TASK/V69; docs/TOS-REFERENCE-DUMPER.md, "The
+ * wide record and the readback"): 5744 bytes, the narrow offsets up to the
+ * MFDBs, then two buffers of 1024 WORDs and 12 reserved bytes.  Stated as
+ * numbers here for the reason test_raster_record gives.
+ */
+static void test_raster32_record(void)
+{
+	static struct td_raster32_arrays a;
+	static uint8_t rec[TD_RAST32_RECORD_SIZE];
+	int16_t before[TD_RAST_CONTRL_N];
+	int16_t src[TD_RAST_MFDB_N], dst[TD_RAST_MFDB_N];
+	int i;
+
+	printf("VDI raster record layout, wide (32 planes)\n");
+
+	TD_CHECK_EQ(TD_RAST32_RECORD_SIZE, 5744);
+	TD_CHECK_EQ(TD_RAST32_BUF_WORDS, 1024);
+	TD_CHECK_EQ(TD_RAST32_OFF_BUF_A, 1636);
+	TD_CHECK_EQ(TD_RAST32_OFF_BUF_A, TD_RAST_OFF_BUF_A);
+	TD_CHECK_EQ(TD_RAST32_OFF_BUF_B, 3684);
+	TD_CHECK_EQ(TD_RAST32_OFF_BUF_B,
+	            TD_RAST32_OFF_BUF_A + TD_RAST32_BUF_WORDS * 2);
+	TD_CHECK_EQ(TD_RAST32_OFF_RESERVED, 5732);
+	TD_CHECK_EQ(TD_RAST32_OFF_RESERVED,
+	            TD_RAST32_OFF_BUF_B + TD_RAST32_BUF_WORDS * 2);
+	TD_CHECK_EQ(TD_RAST32_OFF_RESERVED + TD_RAST32_RESERVED_LEN,
+	            TD_RAST32_RECORD_SIZE);
+	/* a 32 x 16 form at 32 planes is two WORDs a pixel: the whole buffer */
+	TD_CHECK_EQ(32 * 16 * 2, TD_RAST32_BUF_WORDS);
+	TD_CHECK_EQ(td_area_record_size(TD_AREA_RASTER32), 5744);
+	TD_CHECK(strcmp(td_area_name(TD_AREA_RASTER32), "VDI-RASTER32") == 0);
+	/* the narrow record is untouched */
+	TD_CHECK_EQ(td_area_record_size(TD_AREA_RASTER), 3696);
+	TD_CHECK(strcmp(td_area_name(TD_AREA_RASTER), "VDI-RASTER") == 0);
+
+	td_poison_raster32(&a);
+	TD_CHECK_EQ((uint16_t)a.contrl[TD_RAST_CONTRL_N - 1],
+	            (uint16_t)TD_POISON16);
+	TD_CHECK_EQ((uint16_t)a.ptsout[TD_RAST_PTSOUT_N - 1],
+	            (uint16_t)TD_POISON16);
+	td_rast_fill(a.buf_a, TD_RAST32_BUF_WORDS, 1);
+	td_rast_fill(a.buf_b, TD_RAST32_BUF_WORDS, 2);
+	/* the fill rule is the narrow one, extended: a pure function of seed
+	 * and index, so the first 512 words are the narrow buffer's */
+	TD_CHECK_EQ((uint16_t)a.buf_a[5], td_rast_fill_word(1, 5));
+	TD_CHECK_EQ((uint16_t)a.buf_a[1023], td_rast_fill_word(1, 1023));
+
+	for (i = 0; i < TD_RAST_CONTRL_N; i++) {
+		a.contrl[i] = (int16_t)(0x100 + i);
+		before[i]   = (int16_t)(0x200 + i);
+	}
+	for (i = 0; i < TD_RAST_MFDB_N; i++) {
+		src[i] = (int16_t)(0x300 + i);
+		dst[i] = (int16_t)(0x400 + i);
+	}
+	memset(rec, 0x5A, sizeof rec);
+	td_raster32_record_write(rec, 42, 109, -1, &a, before, src, dst);
+
+	TD_CHECK_EQ(td_load_be16(rec + TD_RAST_OFF_CASEID), 42);
+	TD_CHECK_EQ(td_load_be16(rec + TD_RAST_OFF_OPCODE), 109);
+	TD_CHECK_EQ(td_load_be32(rec + TD_RAST_OFF_RET), 0xFFFFFFFFuL);
+	TD_CHECK_EQ(td_load_be16(rec + TD_RAST_OFF_CONTRL + 28), 0x10E);
+	TD_CHECK_EQ(td_load_be16(rec + TD_RAST_OFF_CONTRL_BEFORE), 0x200);
+	TD_CHECK_EQ(td_load_be16(rec + TD_RAST_OFF_SRC_MFDB + 6), 0x303);
+	TD_CHECK_EQ(td_load_be16(rec + TD_RAST_OFF_DST_MFDB + 6), 0x403);
+	TD_CHECK_EQ(td_load_be16(rec + 1636 + 10), td_rast_fill_word(1, 5));
+	TD_CHECK_EQ(td_load_be16(rec + 1636 + 2046), td_rast_fill_word(1, 1023));
+	TD_CHECK_EQ(td_load_be16(rec + 3684 + 10), td_rast_fill_word(2, 5));
+	TD_CHECK_EQ(td_load_be16(rec + 3684 + 2046), td_rast_fill_word(2, 1023));
+	for (i = 0; i < TD_RAST32_RESERVED_LEN; i++)
+		TD_CHECK_EQ(rec[TD_RAST32_OFF_RESERVED + i], 0);
+}
+
 int main(void)
 {
 	test_store_load();
@@ -785,6 +889,7 @@ int main(void)
 	test_call_record();
 	test_crc32();
 	test_raster_record();
+	test_raster32_record();
 	test_field_tables();
 	test_addr_cells();
 	return TD_TEST_RESULT();
