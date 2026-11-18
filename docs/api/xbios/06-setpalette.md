@@ -197,7 +197,7 @@ preserved so palette-animation programs stay tear-free.
   pointer is ignored. Otherwise the 16 caller words are read in the caller's
   space first (a fault ends the call with the palette untouched), then stored
   `& 0x0FFF` into the same shadow `Setcolor` reads and writes
-  (`tos-api/src/xbios/screen.rs:304@setpalette`; the shadow and its boot
+  (`tos-api/src/xbios/screen.rs:320@setpalette`; the shadow and its boot
   state: `docs/api/xbios/07-setcolor.md`, Pi binding). EmuTOS shares that store
   too (the ST(e) registers, `bios/vectors.S:358-383`).
 - **Immediate, not at the next VBL.** NewTOS has no ST(e) palette that is

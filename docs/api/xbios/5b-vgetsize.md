@@ -123,6 +123,6 @@ The developer reads `Host::screen().size_bytes`; before the framebuffer is up `s
 
 Owner 2026-11-18 (`TASK/XBIOS22.md`): option B1, the byte count of the 32-bpp `Physbase` screen; before the
 framebuffer is up the function number `0x5B` (EmuTOS's own no-Videl answer, `bios/videl.c:730-731`). Implemented
-in `tos-api/src/xbios/screen.rs:466@vgetsize`: `Host::screen()` → `size_bytes` (LONG, sign-extended), `None` → the
+in `tos-api/src/xbios/screen.rs:482@vgetsize`: `Host::screen()` → `size_bytes` (LONG, sign-extended), `None` → the
 dispatcher's function number (`tos-api/src/xbios/mod.rs:151@VGETSIZE`); `mode` is not read. Case 213: sanctioned
 deviation in `docs/COMPATIBILITY.md` ("XBIOS Falcon video"). Host tests `tos-api/tests/xbios22_falcon_video.rs`.

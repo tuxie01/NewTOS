@@ -867,10 +867,56 @@ geometry comes from `config.txt` and is detected at boot (fallback
 1920×1080); there is no runtime resolution switch. The 2026-07-09 text
 below (two switchable resolutions, Decision points 1, 5 and 7) is history.
 Its colour point 2 (16-colour palette kept) is superseded by ADR-024.
-Geometry independence (point 3) stands as a rule. (Originally accepted by
-user course-correction 2026-07-09, confirmed via team lead.)
+Geometry independence (point 3) stands as a rule. The `Getrez` value is
+settled by **Revision 3 (2026-11-12): `ST_HIGH` (2)**, replacing Revision 2's
+`TT_MEDIUM` (4). (Originally accepted by user course-correction 2026-07-09,
+confirmed via team lead.)
 **Phase:** cross-cutting (framebuffer driver, VDI workstation, AES globals,
 desktop `deskapp`/`deskwin`/`deskrez`, XBIOS screen group).
+
+### Revision 3 (2026-11-12) — `Getrez` reports the Falcon-truecolor class
+
+Owner decision 2026-11-12 (`TASK/XBIOS23.md`, "ich stimme allem so zu wie du
+vorgeschlagen hast": option A, `VsetMode(-1)` answered as a query, the amendment
+as a Revision 3 of this ADR); applied with TASK/XBIOS23.
+
+*Context.* Rev 2 fixed `Getrez` at `TT_MEDIUM` (4) on the ground that NewTOS is a
+16-colour framebuffer. ADR-024 superseded that: the VDI is a Falcon 16-bit
+truecolor workstation, committed reference profile Falcon030/TOS4. The oracle for
+that profile (falcontc, bios-r1 case 87) answers 2 for a truecolor Videl mode
+(`references/emutos/bios/screen.c:971-972`). 4 matches neither the colour depth
+nor the geometry now.
+
+*Decision: `Getrez()` = 2 (`ST_HIGH`).* This is exactly what EmuTOS returns for the
+mode class NewTOS's screen belongs to (non-ST-compatible truecolor Videl): EmuTOS
+maps every Videl mode word without `VIDEL_COMPAT` to 2
+(`references/emutos/bios/screen.c:948-987`), and NewTOS's `VsetMode(-1)` word
+`0x001C` (TASK/XBIOS22) is one. Case 87 becomes EQUAL on falcontc (tt stays
+measured-different, 4, and is not NewTOS's profile). `Getrez` is then, as on a
+Falcon, an ST-compat hint only; truth is VDI `DEV_TAB`/`vq_extnd` and `Physbase`;
+Falcon programs use `VsetMode(-1)`, which answers as a query (TASK/XBIOS22
+decision 4). Implemented in `tos-api/src/xbios/screen.rs:180@getrez`, with a
+build-time check that the mode word keeps `VIDEL_COMPAT` clear; spec
+`docs/api/xbios/04-getrez.md`.
+
+*Alternatives considered.*
+| | Value | For | Against |
+|--|------:|-----|---------|
+| A (chosen) | 2 `ST_HIGH` | equals the oracle (case 87); the Falcon profile's documented answer | ST-era programs read "monochrome 640x400"; `Getrez()+2` = 4 as `v_opnvwk` id; the rev 2 concern returns. Answered by the `VsetMode(-1)` query (TASK/XBIOS22): a Falcon-aware program can tell truecolor from mono |
+| B | 3 `FALCON_REZ` | names "Videl mode, ask VsetMode" (what EmuTOS's AES passes, `references/emutos/aes/gemgsxif.c:159-163`); not "mono" | EmuTOS `Getrez` never returns 3 -> case 87 stays DIFF (needs a COMPATIBILITY entry); `Getrez()+2` = 5 in programs built for ST codes; teradesk `rmap[3]` = 0 |
+| C | 4 `TT_MEDIUM` (rev 2) | no change; "colour" signal | wrong depth (4bpp, 640x480 class) since ADR-024; DIFF to the oracle's Falcon profile; only the TT oracle profile says 4 |
+| D | 7 `TT_LOW` | "colour, 256" | no source basis for NewTOS |
+
+*Consequences.* `Getrez` changes from 4 to 2 (`tos-api/src/xbios/screen.rs:180@getrez`;
+the boot selftest's expectation, `kernel/src/selftest_xbios.rs:136@getrez`;
+`docs/api/xbios/04-getrez.md`). `Setscreen`'s `rez` stays accepted-but-ignored
+(`docs/api/xbios/05-setscreen.md`), so the spec criterion "after
+`Setscreen(-1,-1,r)` `Getrez()` equals r" does not apply to NewTOS and is removed;
+NewTOS has no `sshiftmod` variable. Programs that derive a VDI device id from
+`Getrez() + 2` (HighWire, the `xgdos` overlay) now pass 4; NewTOS's `v_opnwk`
+reads no mode request (`docs/COMPATIBILITY.md`, "`v_opnwk` with a video-mode
+request does not switch modes"). The rev 2 text below about `Getrez` (`TT_MEDIUM`,
+"colour depth, not geometry") is history.
 
 ### Revision 2 (2026-07-16) — config.txt-driven, no in-menu switch
 

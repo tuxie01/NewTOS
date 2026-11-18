@@ -135,7 +135,7 @@ pub fn run() {
     let log0 = logbase();
     let rez = getrez();
     kprintln!(
-        "[xbios] Physbase=0x{:x} Logbase=0x{:x} Getrez={} (expect base!=0, log==phys, rez=4 TT_MEDIUM)",
+        "[xbios] Physbase=0x{:x} Logbase=0x{:x} Getrez={} (expect base!=0, log==phys, rez=2 ST_HIGH)",
         phys0, log0, rez,
     );
 

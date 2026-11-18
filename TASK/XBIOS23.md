@@ -1,6 +1,6 @@
 # XBIOS23 — `Getrez` must report the correct code; today a fixed `TT_MEDIUM` (4)
 
-Status: OPEN (2026-11-12) | Priority: P2
+Status: IMPLEMENTED (2026-11-18) | Priority: P2 | Commit: self | Missing: tester run of bios-r1 case 87 on the branch kernel (EQUAL on falcontc) and the full XBIOS run (no new difference), boot selftest line
 
 Type: research (spec and ADR-017 amendment), then developer. Owner decision 2026-11-12 ("Müssen wir fixen das es
 korrekt ist": we have to fix it so it is correct), from the full XBIOS run
@@ -9,7 +9,7 @@ korrekt ist": we have to fix it so it is correct), from the full XBIOS run
 ## Facts
 
 - `tosdump/cases/bios-r1.tsv` case 87 (`Getrez`) differs on falcontc: oracle 2, NewTOS 4; equal on tt.
-- `getrez` returns the constant `TT_MEDIUM` (`tos-api/src/xbios/screen.rs:164@getrez`), settled by ADR-017 rev 2
+- `getrez` returns the constant `TT_MEDIUM` (`tos-api/src/xbios/screen.rs:180@getrez`), settled by ADR-017 rev 2
   (`docs/api/xbios/04-getrez.md`, section "NewTOS behavior (settled — ADR-017 rev 2, 2026-07-16)"), on the grounds
   that NewTOS is a 16-colour framebuffer. That ground is outdated: the VDI workstation is truecolor (ADR-024).
 - EmuTOS on Videl maps the active mode to ST-compatible codes (`docs/api/xbios/04-getrez.md`, point 2 of the
@@ -75,7 +75,7 @@ hint only; truth is VDI `DEV_TAB`/`vq_extnd` and `Physbase`; Falcon programs use
 | C | 4 `TT_MEDIUM` (today) | no change; "colour" signal | wrong depth (4bpp, 640x480 class) since ADR-024; DIFF to the oracle's Falcon profile; only the TT oracle profile says 4 |
 | D | 7 `TT_LOW` | "colour, 256" | no source basis for NewTOS |
 
-*Consequences.* A: change `getrez` (`tos-api/src/xbios/screen.rs:164@getrez`), the selftest expecting 4
+*Consequences.* A: change `getrez` (`tos-api/src/xbios/screen.rs:180@getrez`), the selftest expecting 4
 (`kernel/src/selftest_xbios.rs:136@getrez`), the Getrez sections of `04-getrez.md`, `docs/COMPATIBILITY.md`
 if B; `Setscreen`'s `rez` stays accepted-but-ignored (`05-setscreen.md`), so the verification
 "after `Setscreen(-1,-1,r)` `Getrez()` equals r" does not apply to NewTOS and should be removed from the

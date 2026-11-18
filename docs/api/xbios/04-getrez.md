@@ -121,8 +121,9 @@ None.
   (`ST_HIGH`).
 - **Consistency with `sshiftmod`:** on the no-Atari-video path, `Getrez()`
   equals the current `sshiftmod`.
-- **Round-trip with `Setscreen`:** after `Setscreen(-1, -1, r)` for a valid
-  `r`, `Getrez()` returns `r`.
+- (EmuTOS's no-Atari-video round trip, "after `Setscreen(-1, -1, r)` `Getrez()`
+  returns `r`", does not apply to NewTOS: its `Setscreen` ignores `rez`
+  (`05-setscreen.md`); removed 2026-11-18, XBIOS23.)
 
 ---
 
@@ -206,32 +207,31 @@ None.
 
 (Empty during Phase 00.)
 
-PHASE-08: `Getrez` reports the code matching the active framebuffer mode; the
-TT-shifter profile can return TT codes (4/6/7) for HD-friendly modes.
+### NewTOS behavior (settled — ADR-017 Revision 3, owner decision 2026-11-12)
 
-> **Under review (TASK/XBIOS23, 2026-11-12):** the ground below (16-colour
-> framebuffer) was superseded by ADR-024 (truecolor VDI); options and the draft
-> amendment are in `TASK/XBIOS23.md`, "Draft for the owner". Until the owner decides,
-> the code still returns `TT_MEDIUM`.
+`getrez()` returns **`ST_HIGH` (2)** — `tos-api/src/xbios/screen.rs:180@getrez`.
+NewTOS's screen belongs to the **non-ST-compatible truecolor Videl mode class**:
+`VsetMode(-1)` reports the fixed word `0x001C` (VGA, 80 columns, truecolor,
+`VIDEL_COMPAT` clear; `58-vsetmode.md`), and EmuTOS's `atari_getrez` answers 2 for
+every such word (edge case 2 above). A build-time assertion in `screen.rs` ties the
+two: the constant `ST_HIGH` is valid only while the mode word has `VIDEL_COMPAT`
+clear. The value equals the oracle's on `falcontc` (bios-r1 case 87); the `tt`
+reference (4) is not NewTOS's profile.
 
-### NewTOS behavior (settled — ADR-017 rev 2, 2026-07-16)
+As on a Falcon, the code is an **ST-compatibility hint, not a description of the
+screen**: depth and geometry come from VDI `DEV_TAB` / `vq_extnd` and `Physbase`,
+the Falcon mode from `VsetMode(-1)`. A program written for ST codes reads
+"640×400 monochrome"; this is the same answer EmuTOS gives a Falcon in truecolor.
+The native geometry is **config.txt-driven and auto-detected at boot** (ADR-017)
+and has no classic `vmode_table[]` entry (`bios/screen.c:724-735`). There is **no
+in-system switch**: `Getrez` only reports, it never changes, and `Setscreen`'s
+`rez` does not move it (`05-setscreen.md`).
 
-`getrez()` returns a **fixed constant `TT_MEDIUM` (4)** —
-`tos-api/src/xbios/screen.rs`. NewTOS is a native **16-colour** framebuffer,
-and `TT_MEDIUM` (640×480, 16 colours) is the classic code whose *colour depth*
-matches. `Getrez` here reports **colour depth, not geometry**: the one thing a
-coarse rez code meaningfully conveys about NewTOS that VDI `DEV_TAB` /
-`Physbase` do not is "16 colours / *not monochrome*". A program that read
-`ST_HIGH` (2, monochrome) would wrongly avoid colour; `TT_MEDIUM` is the honest
-answer.
+Revision 2 (2026-07-16) had fixed the value at `TT_MEDIUM` (4) for a 16-colour
+framebuffer; ADR-024 (truecolor VDI) removed that ground.
 
-The native geometry is **config.txt-driven and auto-detected at boot** (ADR-017
-rev 2) and has **no classic `vmode_table[]` entry** (`bios/screen.c:724-735`),
-so the code deliberately does not attempt to encode 1920×1080 / 1280×800 as a
-rez value — geometry is read from VDI `DEV_TAB` / `Physbase`. There is **no
-in-system switch**: `Getrez` only reports, it never changes (see
-`05-setscreen.md`). Revisit at the truecolor VDI step, where a wider-depth code
-may become the more honest answer.
+Host tests: `tos-api/tests/xbios23_getrez.rs` (value, no-framebuffer case,
+agreement with `VsetMode(-1)` by EmuTOS's mapping, `Setscreen` rez ignored).
 
 ---
 
@@ -242,30 +242,21 @@ may become the more honest answer.
 > **contract is unchanged** — a WORD resolution code, no error path.
 > Peripheral + driver: see `docs/HARDWARE-PROFILE.md` §2/§3.1.
 
-> **Resolution policy (ADR-017 rev 2, 2026-07-16, `docs/MEMORY.md`):**
-> NewTOS renders **natively at the config.txt-driven HDMI geometry**
-> (auto-detected at boot; `drivers::BOOT_WIDTH/BOOT_HEIGHT` = 1920×1080 is the
-> fallback / QEMU-ramfb default), at 16 VDI colours. There is **no in-system
-> resolution switch** — the firmware `config.txt` owns the mode. This rev 2
-> **settles** the previously-open `Getrez`-value question below.
+> **Resolution policy (ADR-017, `docs/MEMORY.md`):** NewTOS renders
+> **natively at the config.txt-driven HDMI geometry** (auto-detected at boot;
+> `drivers::BOOT_WIDTH/BOOT_HEIGHT` = 1920×1080 is the fallback / QEMU-ramfb
+> default) on a truecolor VDI (ADR-024). There is **no in-system resolution
+> switch** — the firmware `config.txt` owns the mode. Revision 3 (2026-11-12)
+> settles the `Getrez` value below.
 
-- **Settled: `Getrez` returns the fixed constant `TT_MEDIUM` (`4`).** The
-  return value reports **colour depth (16 colours / not monochrome), not
-  geometry** — the live geometry has **no** `vmode_table[]` entry
-  (`bios/screen.c:724-735`) and is read from VDI `DEV_TAB` / `Physbase`
-  instead. `TT_MEDIUM` is chosen over `ST_HIGH` (2) precisely because
-  `ST_HIGH` means *monochrome* and would make colour-aware programs avoid the
-  16-colour palette NewTOS actually has.
-- **EmuTOS precedent for a fixed off-table code (retained reference).** EmuTOS
-  itself has no single mandated answer for an off-`vmode_table` mode and
-  simply hardcodes one: `atari_getrez()` (`bios/screen.c:948-971`) returns a
-  fixed `rez=2` (`ST_HIGH`) for *any* non-ST-compatible Videl mode regardless
-  of its real geometry/depth, while `vsetmode()` (`bios/videl.c:619-659`) sets
-  the shadow `sshiftmod=FALCON_REZ` (`:648-656`) for the same case. NewTOS
-  follows the same "one honest fixed code for the off-table native mode"
-  shape — choosing `TT_MEDIUM` because colour depth, not geometry, is what the
-  code can truthfully carry. Real Falcon software queries `VsetMode(-1)` for
-  ground-truth geometry; NewTOS software reads VDI `DEV_TAB` / `Physbase`.
+- **Settled: `Getrez` returns `ST_HIGH` (`2`)** — EmuTOS's answer for the mode
+  class the Pi screen belongs to: `atari_getrez()` (`bios/screen.c:948-987`)
+  returns `rez=2` for *any* non-ST-compatible Videl mode regardless of its
+  real geometry/depth, and NewTOS's `VsetMode(-1)` word `0x001C` is one
+  (`58-vsetmode.md`). `vsetmode()` (`bios/videl.c:619-659`) sets the shadow
+  `sshiftmod=FALCON_REZ` (`:648-656`) for the same case; NewTOS has no
+  `sshiftmod` variable. Falcon software queries `VsetMode(-1)` for the mode;
+  NewTOS software reads VDI `DEV_TAB` / `Physbase` for depth and geometry.
 - **`Setscreen`'s `rez` is correspondingly accepted-but-ignored** — see
   `docs/api/xbios/05-setscreen.md` (Pi binding).
 - **A NewTOS-native true-geometry query** (cookie-jar entry or new trap
@@ -278,14 +269,12 @@ may become the more honest answer.
 ## Coherence with `VsetMode(-1)` (added 2026-11-18, TASK/XBIOS22 spec step 2)
 
 Owner decisions 2026-11-12 (`TASK/XBIOS23.md`: `Getrez()` = 2; `TASK/XBIOS22.md`: `VsetMode(-1)` answers a fixed
-word) must agree. The proposed word `0x1C` (`58-vsetmode.md`) has `VIDEL_COMPAT` clear, so by
+word) must agree. The word `0x1C` (`58-vsetmode.md`) has `VIDEL_COMPAT` clear, so by
 `bios/screen.c:956-972` `Getrez` is 2 and by `bios/videl.c:648-656` `sshiftmod` would be 3: the same pair the
-oracle's falcontc profile measures (cases 87, 211). The "round-trip with `Setscreen`" criterion above does not
-apply to NewTOS (the `rez` of `Setscreen` is ignored, `05-setscreen.md`); the developer of XBIOS23 removes it.
+oracle's falcontc profile measures (cases 87, 211). The "round-trip with `Setscreen`" criterion was removed from
+the verification criteria above (XBIOS23): the `rez` of `Setscreen` is ignored (`05-setscreen.md`).
 
 ## Open points
 
-- The "NewTOS behavior (settled — ADR-017 rev 2)" section above still states `TT_MEDIUM` (4); it is rewritten by
-  the XBIOS23 implementing commit together with ADR-017 Revision 3 (owner decision 2026-11-12), not here.
 - Inferred: the coherence statement rests on reading `screen.c`/`videl.c`; `0x1C` with `Getrez` 2 is measured
   together only on the oracle (cases 87 and 211), not on NewTOS.

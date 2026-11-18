@@ -98,7 +98,7 @@ Host tests: ret `0` and the 16 values for `(0,16)`; `-1` for `index < 0`, `count
 ## Owner decision 2026-11-12 and implementation
 
 Owner 2026-11-12 (`TASK/XBIOS22.md`): option A, a separate Falcon table of 16 entries. Implemented in
-`tos-api/src/xbios/screen.rs:517@vgetrgb` with the table `tos-api/src/xbios/screen.rs:490@FALCON_PALETTE`
+`tos-api/src/xbios/screen.rs:533@vgetrgb` with the table `tos-api/src/xbios/screen.rs:506@FALCON_PALETTE`
 (`videl_dflt_palette[0..16]` as `0x00RRGGBB`), limit 16, `-1` for `index < 0`, `count <= 0`,
 `index + count > 16` with the buffer untouched; independent of a framebuffer and of `Setcolor`/`Setpalette`.
 Host tests `tos-api/tests/xbios22_falcon_video.rs` (the 16 values of case 214, the error ranges).

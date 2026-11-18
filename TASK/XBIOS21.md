@@ -11,8 +11,8 @@ Type: developer (spec check first). Owner decision 2026-11-12 ("ja ticket": yes,
   returns `0x0FFF` and `0x0F00`, NewTOS `0`.
 - `Setcolor` returns the previous palette word; `-1` is the query form (`docs/api/xbios/07-setcolor.md`,
   `references/emutos/bios/screen.c:1015-1036`).
-- NewTOS keeps the 16-entry shadow in `palette()` (`tos-api/src/xbios/screen.rs:401@PAL`), initialised to all zeros (before this fix);
-  `setcolor` (`tos-api/src/xbios/screen.rs:335@setcolor`) returns from it. Nothing seeds it from the default palette.
+- NewTOS keeps the 16-entry shadow in `palette()` (`tos-api/src/xbios/screen.rs:414@PAL`), initialised to all zeros (before this fix);
+  `setcolor` (`tos-api/src/xbios/screen.rs:348@setcolor`) returns from it. Nothing seeds it from the default palette.
 - Failure picture: a program that saves the palette with `Setcolor(n,-1)` and restores it on exit sets every colour
   to black.
 

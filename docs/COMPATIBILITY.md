@@ -1911,7 +1911,7 @@ decision).
 ([XBIOS22](../TASK/XBIOS22.md)); ADR-017 (no run-time mode switch: the mode is `config.txt`'s), ADR-012
 amendment 2026-11-18 (`_VDO` = `VDO_FALCON`). Specs `docs/api/xbios/58-vsetmode.md`,
 `docs/api/xbios/59-vgetmonitor.md`, `docs/api/xbios/5b-vgetsize.md`, `docs/api/xbios/5e-vgetrgb.md`; code
-`tos-api/src/xbios/screen.rs:439@vsetmode`, `:448@vgetmonitor`, `:466@vgetsize`, `:517@vgetrgb`.
+`tos-api/src/xbios/screen.rs:455@vsetmode`, `:464@vgetmonitor`, `:482@vgetsize`, `:533@vgetrgb`.
 NewTOS claims a Falcon *video description*: `VsetMode(-1)` answers `0x001C` (`VGA|80COL|TRUECOLOR`, case 211
 EQUAL on `falcontc`), `VgetMonitor` 2 (`MON_VGA`, case 212 EQUAL), `VgetRGB` the 16-entry Falcon default table
 (case 214 EQUAL), with `-1` for a bad range as EmuTOS (`references/emutos/bios/videl.c:872-879`). Against the `tt`
@@ -1933,6 +1933,12 @@ profile (no Videl, function numbers) these cases differ: ACCEPTED, NewTOS claims
   **Observable difference:** case 213 `VgetSize(0x1C)` answers the screen size against the oracle's `614400`
   (falcontc): ACCEPTED, no Falcon mode word can describe the real screen. A program that sizes a buffer for a
   Falcon mode it intends to set gets the (larger) current-screen size.
+* **`Getrez` (0x04) answers `ST_HIGH` (2)** (ADR-017 Revision 3, owner decision 2026-11-12,
+  [XBIOS23](../TASK/XBIOS23.md); spec `docs/api/xbios/04-getrez.md`): EmuTOS's answer for every Videl mode word
+  without `VIDEL_COMPAT`, such as `0x001C` (`references/emutos/bios/screen.c:948-987`), so case 87 is expected EQUAL
+  on `falcontc`. **Observable difference:** against `tt` (TT shifter, `TT_MEDIUM` 4) case 87 differs: ACCEPTED,
+  NewTOS claims the Falcon. A program written for ST codes reads "640x400 monochrome", as on a Falcon in
+  truecolor; depth and geometry come from VDI `vq_extnd` / `DEV_TAB` and `Physbase`.
 * **Not covered:** `Vsetsync` (0x5A), `VsetMask` (0x5C), `VsetRGB` (0x5D) answer their function number (outside
   the owner's scope); without `VsetRGB` the `VgetRGB` table is constant. `VgetMonitor`, `VsetMode(-1)` and
   `VgetRGB` answer the same with or without a framebuffer. Index of the differences by trigger:

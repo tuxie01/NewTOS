@@ -97,7 +97,7 @@ that feeds the answer back through the Videl fix-up gets the same word.
 ## Owner decision 2026-11-18 and implementation
 
 Owner 2026-11-18 (`TASK/XBIOS22.md`): option A, `VsetMode(-1)` answers `0x001C`; every `VsetMode(mode != -1)`
-keeps the function number. Implemented in `tos-api/src/xbios/screen.rs:439@vsetmode` (`FALCON_MODE_WORD`), the
+keeps the function number. Implemented in `tos-api/src/xbios/screen.rs:455@vsetmode` (`FALCON_MODE_WORD`), the
 function number in the dispatcher (`tos-api/src/xbios/mod.rs:149@VSETMODE`); the answer does not depend on a
 framebuffer being up. Sanctioned deviation for `mode != -1` and `Vfixmode`: `docs/COMPATIBILITY.md`
 ("XBIOS Falcon video"). Host tests `tos-api/tests/xbios22_falcon_video.rs`.

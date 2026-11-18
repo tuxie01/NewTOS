@@ -328,13 +328,13 @@ the `colorNum & 0x0F` masking are preserved.
   (`Setcolor`/`Setpalette`) does **not** reach the VDI colour table in the truecolor
   VDI; (3) no `0x0777` plain-ST mask, NewTOS is STe-class `0x0FFF`.
 - **What `setcolor` does (XBIOS21).** The index is masked `& 0x0F`; the old word is read
-  from the 16-entry shadow `PAL` (`tos-api/src/xbios/screen.rs:396@palette`) and
+  from the 16-entry shadow `PAL` (`tos-api/src/xbios/screen.rs:412@palette`) and
   returned `& 0x0FFF` as a WORD; when `color >= 0` the entry is stored `& 0x0FFF`
-  (`tos-api/src/xbios/screen.rs:332@setcolor`). `color < 0` writes nothing. Storing the
+  (`tos-api/src/xbios/screen.rs:348@setcolor`). `color < 0` writes nothing. Storing the
   masked word instead of EmuTOS's raw one is unobservable: the only read is the masked
   return.
 - **Boot state.** `PAL`'s initial value is `DFLT_PALETTE`
-  (`tos-api/src/xbios/screen.rs:356@DFLT_PALETTE`), the table of section "Boot palette"
+  (`tos-api/src/xbios/screen.rs:372@DFLT_PALETTE`), the table of section "Boot palette"
   in register order, loaded with the kernel image — the counterpart of EmuTOS's
   `initialise_ste_palette` at `screen_init`. No ST-medium/ST-high fix-up
   (`fixup_ste_palette`) and no ST-compatible Videl rewrite apply: NewTOS boots neither

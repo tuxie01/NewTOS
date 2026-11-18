@@ -261,7 +261,7 @@ Implemented in `tos-api/src/xbios/screen.rs`:
   (`atari_setrez`/`vsetmode`, `bios/screen.c:990-1013`,
   `bios/videl.c:619-659,976-993`) — here extended to *all* codes because
   *no* code is supported for switching. `Getrez` continues to report the
-  fixed `TT_MEDIUM` (4) regardless (see `04-getrez.md`).
+  fixed `ST_HIGH` (2) regardless (ADR-017 Revision 3, see `04-getrez.md`).
 - **Base handling is unchanged and orthogonal.** `logLoc`/`physLoc` are each
   stored into their shadow only when `> 0` (`screen.c:1106,1110`); `Physbase`/
   `Logbase` read those shadows. This is a separate concern from `rez` and is

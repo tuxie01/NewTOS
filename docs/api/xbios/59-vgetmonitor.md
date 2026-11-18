@@ -104,5 +104,5 @@ reach `VsetMode(-1)` (`58-vsetmode.md`) and `VgetMonitor` and read 2 / `0x1C`.
 
 - None for the value (decided: 2). The cookie is published (`_VDO` = `0x00030000`, ADR-012 amendment
   2026-11-18, `tos-api/src/cookie.rs:266@VDO_FALCON`); edge case 2 is history. Implemented in
-  `tos-api/src/xbios/screen.rs:448@vgetmonitor`, independent of a framebuffer; host tests
+  `tos-api/src/xbios/screen.rs:464@vgetmonitor`, independent of a framebuffer; host tests
   `tos-api/tests/xbios22_falcon_video.rs`.

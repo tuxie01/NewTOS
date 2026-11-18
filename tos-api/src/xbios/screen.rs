@@ -16,10 +16,11 @@
 //! (`docs/hardware/mailbox-framebuffer.md` §3b), so a program can draw into
 //! the page it cannot see and then show it.
 //!
-//! Resolution is **not** a shadow: per ADR-017 rev 2 (config.txt-driven,
-//! no in-system switch), `Getrez` reports a fixed honest code and
-//! `Setscreen`'s `rez` is accepted-but-ignored — there is no in-system
-//! resolution change (the firmware `config.txt` owns the HDMI mode).
+//! Resolution is **not** a shadow: per ADR-017 (config.txt-driven, no
+//! in-system switch), `Getrez` reports the code EmuTOS gives the Falcon mode
+//! class of the Pi screen (`ST_HIGH`, Revision 3) and `Setscreen`'s `rez` is
+//! accepted-but-ignored — there is no in-system resolution change (the
+//! firmware `config.txt` owns the HDMI mode).
 //!
 //! The palette (`Setpalette` / `Setcolor`) is the 16-entry ST(e) palette
 //! shadow that stands in for EmuTOS' ST(e) palette registers, seeded with
@@ -34,13 +35,25 @@ use crate::host;
 use crate::trap::TrapArgs;
 use tos_types::{Long, ProtMode};
 
-/// Atari resolution code `TT_MEDIUM` (`bios/screen.h`): 640×480, 16
-/// colours — the classic code whose colour depth matches NewTOS's native
-/// 16-colour framebuffer. `Getrez` reports this as an honest "not
-/// monochrome, 16 colours" indicator; the actual geometry is
-/// config.txt-driven and read via VDI `DEV_TAB` / `Physbase`, not this
-/// coarse code (ADR-017 rev 2).
-const TT_MEDIUM: i64 = 4;
+/// Atari resolution code `ST_HIGH` (`references/emutos/include/biosdefs.h:126`).
+/// On a Falcon it is what `Getrez` answers for every Videl mode without
+/// `VIDEL_COMPAT` (`references/emutos/bios/screen.c:956-972`), the class the
+/// Pi screen's mode word [`FALCON_MODE_WORD`] belongs to (ADR-017 Revision 3).
+const ST_HIGH: i64 = 2;
+
+/// `VIDEL_COMPAT` (`references/emutos/include/biosdefs.h:147`): the
+/// ST-compatible bit of a Falcon mode word.
+const VIDEL_COMPAT: u16 = 0x0080;
+
+// `Getrez` and `VsetMode(-1)` must describe the same mode: EmuTOS derives the
+// one from the other (`atari_getrez` reads `vsetmode(-1)`,
+// `references/emutos/bios/screen.c:955`), and `ST_HIGH` is its answer only
+// while the word has `VIDEL_COMPAT` clear. A word with the bit set would need
+// the ST-compatible branch (`:956-969`) instead.
+const _: () = assert!(
+    FALCON_MODE_WORD & VIDEL_COMPAT == 0,
+    "Getrez = ST_HIGH requires a non-ST-compatible FALCON_MODE_WORD"
+);
 
 /// High-half kernel VA offset — the whole of DRAM is mapped at
 /// `phys + VA_OFFSET` for EL1. Mirrored here the way
@@ -152,17 +165,20 @@ pub fn direct_screen_active() -> bool {
     usermem::uncached_shared_active()
 }
 
-/// `Getrez` (0x04) — current resolution code.
+/// `Getrez` (0x04) — current resolution code: always `ST_HIGH` (2).
 ///
-/// NewTOS is a native 16-colour framebuffer, so `Getrez` reports the
-/// classic 16-colour code `TT_MEDIUM` (4) as an honest colour-depth
-/// indicator (the one thing this coarse code conveys that VDI `DEV_TAB` /
-/// `Physbase` don't: colour depth / *not monochrome*). It is **not** a
-/// geometry claim — the live geometry is config.txt-driven and read from
-/// VDI `DEV_TAB` / `Physbase`, not from this value (ADR-017 rev 2). Revisit
-/// at the truecolor VDI step, when a wider-depth code may be more honest.
+/// EmuTOS on Videl maps the current mode word (`vsetmode(-1)`) to a code;
+/// every mode without `VIDEL_COMPAT`, truecolor included, answers 2
+/// (`references/emutos/bios/screen.c:948-987`). NewTOS's current mode word
+/// is the fixed [`FALCON_MODE_WORD`] (`VsetMode(-1)`, a non-ST-compatible
+/// truecolor mode; checked at build time above), so the answer is 2, the
+/// oracle's own on `falcontc` (bios-r1 case 87). As on a Falcon the code is
+/// an ST-compatibility hint, not a description of the screen: depth and
+/// geometry come from VDI `DEV_TAB` / `vq_extnd` and `Physbase`, the mode
+/// from `VsetMode(-1)` (ADR-017 Revision 3, owner decision 2026-11-12,
+/// `TASK/XBIOS23.md`; spec `docs/api/xbios/04-getrez.md`). No error path.
 pub fn getrez() -> i64 {
-    TT_MEDIUM
+    ST_HIGH
 }
 
 /// Translate a screen base as the **caller** wrote it into the kernel

@@ -231,7 +231,7 @@ Funktionen.
 |---|---|---|---|---|
 | `random` `bios/xbios.c:421` | `tos-api/src/xbios/system.rs:14@random` | bios | **DIFF** (Seed-Quelle, XBIOS-SYS-004; Generator EQUAL) | `bios-r1` 112; Sonde R01–R03, P08, X01 |
 | `protobt` `bios/floppy.c:690` | `tos-api/src/xbios/floppy.rs:126@protobt` | bios | **EQUAL** | `bios-r1` 115–119; `xbios-system-r1` 26–60 (31 Faelle); Sonde P01–P08 |
-| `cursconf` `bios/vt52.c:893` | `tos-api/src/xbios/screen.rs:380@cursconf`, `tos-api/src/vdi/escape.rs:761@cursconf` | bios | **EQUAL** (Rueckgaben; Bildschirmwirkung 0–3 offen, §6) | `bios-r1` 122; `xbios-system-r1` 63–65; Sonde C01–C17 |
+| `cursconf` `bios/vt52.c:893` | `tos-api/src/xbios/screen.rs:393@cursconf`, `tos-api/src/vdi/escape.rs:761@cursconf` | bios | **EQUAL** (Rueckgaben; Bildschirmwirkung 0–3 offen, §6) | `bios-r1` 122; `xbios-system-r1` 63–65; Sonde C01–C17 |
 | `settime` `bios/clock.c:1218` | `tos-api/src/gemdos/time.rs:205@xbios_settime` | bios | **DIFF** (XBIOS-SYS-001) | Sonde T01–T33 |
 | `gettime` `bios/clock.c:1266` | `tos-api/src/gemdos/time.rs:222@xbios_gettime` | bios | **DIFF** (XBIOS-SYS-002) | `bios-r1` 125; Sonde T00, H01 |
 | `setprt` `bios/parport.c:49` | `tos-api/src/xbios/system.rs:217@setprt` | bios | **EQUAL** | `bios-r1` 135; Sonde S01–S09 |
