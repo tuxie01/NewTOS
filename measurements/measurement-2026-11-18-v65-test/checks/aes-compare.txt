@@ -1,0 +1,25 @@
+== aes-v32
+p0 vs m1: 1920x1080: differing pixels per gun R 2233 G 1463 B 2233; first at (17, 1)
+p0 vs p1: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p0 vs d1: 1920x1080: differing pixels per gun R 146602 G 152722 B 146602; first at (17, 1)
+p0 vs d3: 1920x1080: differing pixels per gun R 78 G 108 B 78; first at (959, 539)
+p0 vs p2: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+== aes-v16
+p0 vs m1: 1920x1080: differing pixels per gun R 2233 G 1463 B 2233; first at (17, 1)
+p0 vs p1: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p0 vs d1: 1920x1080: differing pixels per gun R 146602 G 152722 B 146602; first at (17, 1)
+p0 vs d3: 1920x1080: differing pixels per gun R 78 G 108 B 78; first at (959, 539)
+p0 vs p2: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+== aes-main
+p0 vs m1: 1920x1080: differing pixels per gun R 2233 G 1463 B 2233; first at (17, 1)
+p0 vs p1: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p0 vs d1: 1920x1080: differing pixels per gun R 146602 G 152722 B 146602; first at (17, 1)
+p0 vs d3: 1920x1080: differing pixels per gun R 78 G 108 B 78; first at (959, 539)
+p0 vs p2: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 vs main p0: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 vs main m1: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 vs main p1: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 vs main d1: 1920x1080: differing pixels per gun R 138055 G 138055 B 138055; first at (769, 348)
+v32 vs main d2: 1920x1080: differing pixels per gun R 137980 G 137980 B 137980; first at (769, 348)
+v32 vs main d3: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 vs main p2: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None

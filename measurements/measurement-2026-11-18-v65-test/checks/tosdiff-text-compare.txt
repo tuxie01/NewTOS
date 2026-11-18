@@ -1,0 +1,2 @@
+default aes-r1 tosdiff-EMUTOS-1a7484ab-AES.txt difflines=0
+default aes-r1 tosdiff-validate.txt difflines=4

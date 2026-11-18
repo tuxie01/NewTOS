@@ -1,0 +1,10 @@
+aes-r1               | default: len 11432/11432 hdr-diff 4 body-diff 95 [68, 188, 308, 428, 548, 668] tosdiff-text-diff-files 0 | v16: len 11432/11432 hdr-diff 4 body-diff 95 [68, 188, 308, 428, 548, 668] tosdiff-text-diff-files 0
+vdi-a131-palette     | default: len 76448/76448 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 76448/76448 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-all              | default: len 289776/289776 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 289776/289776 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-raster           | default: len 218096/218096 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 218096/218096 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-raster-screen    | default: len 229184/229184 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 229184/229184 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-v18              | default: len 30280/30280 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 30280/30280 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-v18-raster       | default: len 62864/62864 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 62864/62864 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-v18-t2           | default: len 50976/50976 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 50976/50976 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-v18-t2-raster    | default: len 96128/96128 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 96128/96128 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0
+vdi-v18-t3           | default: len 3216/3216 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0 | v16: len 3216/3216 hdr-diff 4 body-diff 0 [] tosdiff-text-diff-files 0

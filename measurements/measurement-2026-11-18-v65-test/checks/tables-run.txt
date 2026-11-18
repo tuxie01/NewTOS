@@ -1,0 +1,44 @@
+main vdi-all exit 0 exit 1, 13 of 182 cases differ;exit 0, 0 of 182 cases differ;
+main vdi-v18 exit 0 exit 0, 0 of 19 cases differ;
+main vdi-v18-t2 exit 0 exit 0, 0 of 32 cases differ;
+main vdi-v18-t3 exit 0 exit 1, 1 of 2 cases differ;
+main vdi-a131-palette exit 0 exit 1, 32 of 48 cases differ;exit 0, 0 of 48 cases differ;
+main vdi-raster exit 0 exit 1, 1 of 59 cases differ;
+main vdi-raster-screen exit 0 exit 0, 0 of 62 cases differ;
+main vdi-v18-raster exit 0 exit 0, 0 of 17 cases differ;
+main vdi-v18-t2-raster exit 0 exit 1, 6 of 26 cases differ;
+main DONE
+default vdi-all exit 0 exit 1, 13 of 182 cases differ;exit 0, 0 of 182 cases differ;
+default vdi-v18 exit 0 exit 0, 0 of 19 cases differ;
+default vdi-v18-t2 exit 0 exit 0, 0 of 32 cases differ;
+default vdi-v18-t3 exit 0 exit 1, 1 of 2 cases differ;
+default vdi-a131-palette exit 0 exit 1, 32 of 48 cases differ;exit 0, 0 of 48 cases differ;
+default vdi-raster exit 0 exit 1, 1 of 59 cases differ;
+default vdi-raster-screen exit 0 exit 0, 0 of 62 cases differ;
+default vdi-v18-raster exit 0 exit 0, 0 of 17 cases differ;
+default vdi-v18-t2-raster exit 0 exit 1, 6 of 26 cases differ;
+default DONE
+v16 vdi-all exit 0 exit 1, 13 of 182 cases differ;exit 0, 0 of 182 cases differ;
+v16 vdi-v18 exit 0 exit 0, 0 of 19 cases differ;
+v16 vdi-v18-t2 exit 0 exit 0, 0 of 32 cases differ;
+v16 vdi-v18-t3 exit 0 exit 1, 1 of 2 cases differ;
+v16 vdi-a131-palette exit 0 exit 1, 32 of 48 cases differ;exit 0, 0 of 48 cases differ;
+v16 vdi-raster exit 0 exit 1, 1 of 59 cases differ;
+v16 vdi-raster-screen exit 0 exit 0, 0 of 62 cases differ;
+v16 vdi-v18-raster exit 0 exit 0, 0 of 17 cases differ;
+v16 vdi-v18-t2-raster exit 0 exit 1, 6 of 26 cases differ;
+v16 DONE
+v32 vdi-all exit 0 exit 1, 13 of 182 cases differ;exit 1, 6 of 182 cases differ;
+v32 vdi-v18 exit 0 exit 1, 11 of 19 cases differ;
+v32 vdi-v18-t2 exit 0 exit 1, 5 of 32 cases differ;
+v32 vdi-v18-t3 exit 0 exit 1, 1 of 2 cases differ;
+v32 vdi-a131-palette exit 0 exit 1, 32 of 48 cases differ;exit 1, 23 of 48 cases differ;
+v32 vdi-raster exit 0 exit 1, 24 of 59 cases differ;
+v32 vdi-raster-screen exit 1 
+v32 vdi-v18-raster exit 0 exit 1, 1 of 17 cases differ;
+v32 vdi-v18-t2-raster exit 0 exit 1, 16 of 26 cases differ;
+v32 DONE
+main aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+default aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+v16 aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+v32 aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 32

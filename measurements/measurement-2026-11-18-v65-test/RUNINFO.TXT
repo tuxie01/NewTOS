@@ -1,0 +1,131 @@
+measurement-2026-11-18-v65-test -- tester run for TASK/V65 at developer commit 446e2df68 (branch v65, descends from main e225d1780; compared with main e225d1780)
+=========================================================================================================================================================
+
+SCOPE  The 32-plane VDI memory form, vro_cpyfm / vrt_cpyfm / vr_trnfm, the wide v_get_pixel answer and the 32-bit AES save buffers at vdiplanes=32, plus the standing
+       16-plane baseline (ADR-038 points 5-7, 10, 11, 13). Tester (Sonnet), phase test. Nothing in the product was edited. No card, no Pi. All runs are QEMU (raspi4b and virt).
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2,
+         host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1; also the host_clang line of both card manifests).
+TREES  own detached worktrees /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7a3bbc49cba62b53/wt (446e2df68) and .../base (main e225d1780); cargo xtask worktree-setup in each.
+       Release kernels by "cargo xtask build --board <b> --release" (no CARGO_TARGET_DIR), objcopy'd to .../kern/<tree>-<board>.img.
+       Agent dir at the end (du -sh): 9.4G (wt 6.4G, base 2.7G, runs 153M). Kept until the accept step.
+
+VERDICT  PASS on QEMU (everything the scope needs ran on its board). Real-Pi4-only items are listed below and not claimed. The two items the ticket itself leaves open
+         (copy speed on the Pi 4; the round trip from the vq_scrninfo answer = V66) are not covered by this run and are named under COULD NOT VERIFY.
+
+TEMPORARY HARNESS CHANGES (my own trees only, never committed, all listed)
+  (a) wt: tools/xtask/src/tosdump.rs reads env V62_APPEND as the QEMU -append string (default "serial=on"); method/tester-xtask-append.patch (the V62-V64 patch). Stock path unchanged.
+  (b) wt and base: kernel/src/selftest_v65.rs (method/selftest_v65.rs, copy) plus a two-line wiring in kernel/src/lib.rs (mod + call before set_bootflags_from_shiftbits), built by
+      method/build-selftest.sh into kern/{wt,base}-st-{rpi4,virt}.img. It calls the VDI only through svc #2 (the trap dispatcher), at 32 asserts, at 16 prints PROBE lines.
+      The wiring was reverted (git checkout of lib.rs, file removed) in both trees BEFORE the table runs and the clean boots; the clean kernels (kern/*-rpi4.img, *-virt.img without "st")
+      were built before the wiring existed (git status of wt then showed only (a)).
+  (c) none in the product, in docs/, TASK/ or tools/ of the main tree.
+
+COMMANDS (board / outcome)
+ 1  BUILD + LINT (method/lint-rel.sh -> lint.sh; checks/lint-wt/summary.txt, checks/lint-base/summary.txt): cargo xtask build --board qemu-virt and --board rpi4 in both trees exit 0,
+      build warnings 159 / 159 on both boards and both trees; clippy kernel 121 + tos-api 73 on both boards and both trees (exit 0); desktop/newdesk clippy exit 0 per board; clippy
+      tos-api --tests: the same per-test warning set (sorted "generated N warnings" lines compared, SAMESET). DELTA 0. Release builds of both trees and boards exit 0.
+ 2  HOST TESTS cargo xtask test (wt, full; checks/host-test.log): exit 0, 2544 passed / 0 failed / 7 ignored (sum of the "test result" lines), 0 SKIPPED. Handover figure 2544/0/7
+      reproduced; baseline on main 2527/0/7 (handover) => +17 = the 17 tests of tos-api/tests/vdi_v65_memory_forms.rs (17 #[test] fns; 3 helper fns).
+      emutos_resolves_at_the_pin ran and is ok.
+ 3  cargo xtask deps --check-mapping: 1981 rows, all resolve, every class valid. status-check: 743 checked, 0 rejected, 7 reported (pre-existing, PROC08 etc.).
+      doc-check of TASK/V65.md, its receipt, TASK/V64 receipt, docs/api/vdi/raster/_raster.md, docs/api/vdi/inquiry/_color-pixel-input.md: 5 files, 0 failures (checks/doc-status-mapping-checks.txt).
+      (A plain "doc-check --base e225d1780" reports the standing docs backlog, 1040 failures in docs outside this change; not used as a verdict.)
+ 4  JUDGED THE TEST DIFF (git diff e225d1780..446e2df68 on tests/ and the V64 receipt): no 16-plane expectation changed. vdi_v63_device_pixel.rs, vdi_v64_pens.rs: every changed
+      assertion is `if planes == 32 { wide pair } else { the old 16-plane pair (0, word) }` (the 32-plane v_get_pixel answer, by design of V65); the 16-plane branches are the old lines.
+      The three aes_* tests only add the `b` backend argument to bb_save_words. vdi_planes32_common/mod.rs adds the pel_to_device32 / read_device_rect / write_device_rect doubles.
+      The V64 receipt change is one anchor line number (backend.rs:720 -> :736). Nothing else.
+ 5  BOOT + SCREENDUMP, release kernels, headless, QMP screendump, both boards, 7 configs each (method/boots.sh, run-qmp.sh; checks/boots.out; serial/{rpi4,virt}-*.log,
+      screendumps/{rpi4,virt}-*-a.png): main, default (no argument), vdiplanes=16, =32, =24, "vdiplanes=" (empty), =x. rpi4 on the plain card (tools/mkcard.sh, plain.img.manifest),
+      -append "serial=on [arg]"; virt: -M virt. All 14: "desktop up", 0 EXC/PANIC. Screendump sha256 prefixes: rpi4 a3bd102e7f28 for main, default, v16, v24, empty, x (6 of 7 identical);
+      rpi4 vdiplanes=32 29b2d392daee (the V64 desktop-green pixel 170 vs 173, the same hash as the V64 run; viewed (Read) next to main: the same desktop); virt 6985da3b3c38 for ALL 7.
+      => at default and 16 the boot screens equal main.
+ 6  VDI + RASTER + AES TOSDUMP TABLES on QEMU raspi4b (method/run-tables-vdi.sh, tables-vdi.sh, run-aes.sh; checks/tables-run.txt, table-body-compare.txt, vdi-v32-vs-main.txt):
+      9 VDI/raster tables (vdi-all, vdi-v18, -t2, -t3, vdi-a131-palette, vdi-raster, vdi-raster-screen, vdi-v18-raster, vdi-v18-t2-raster) + aes-r1, 4 configs: main (--tree base, stock),
+      default (wt, stock), v16 (wt, vdiplanes=16), v32 (wt, vdiplanes=32; informational). The XBIOS/BIOS tables of the V64 run were not repeated (V65 touches no BIOS/XBIOS code);
+      a first full-table chain was stopped after 6 main tables and replaced by this reduced one (main's bios/xbios results of the stopped chain are not cited).
+      DEFAULT AND v16 AGAINST MAIN: the tosdiff "X of Y cases differ" lines are identical to main's in all 10 tables (e.g. vdi-all 13/182 and 0/182, vdi-raster 1/59, vdi-v18-t2-raster 6/26);
+        tosdiff report texts (paths stripped) identical; BIN bytes: in the 9 VDI/raster tables only the 4 header bytes (dumper build id) differ, body bytes 0 differ. => no verdict changed.
+        aes-r1: 95 of 95 cases differ from the reference at main, default and v16 alike (the same set); the body differs in ONE cell per record (95 bytes, offsets 68, 188, 308, ... period 120):
+        main 0x1000BA58 vs default/v16 0x1000EA58 (+0x3000). The kernel images differ by exactly +12288 = 0x3000 bytes (kern/base-rpi4.img 1599760, kern/wt-rpi4.img 1612048). My reading
+        (inference, not proven by a second measurement): an address that moves with the kernel size, the class V64 observed for the IOREC address (xbios-ptr) and Getbpb/Getmpb. No verdict change.
+      v32 vs main (informational, all expected): vdi-all 6 cases (vq_extnd planes 16 -> 32 x3; v_get_pixel cleared screen 0,FFFF -> 255,FFFF x3 = the wide answer), vdi-v18 11 and vdi-v18-t2 5
+        (v_get_pixel answers: red 0,F800 -> 255,0000; green 0,07C0 -> 0,FF00; blue 0,001F -> 0,00FF; white 0,FFFF/FFDF -> 255,FFFF), vdi-a131-palette (vq_color realised pens 8..15 742 -> 733 etc.,
+        the V64 change; pixel answers are wide: pen 8 -> 187,BBBB), vdi-raster 24 of 59 (the 24 are exactly vro_cpyfm cases at fd_nplanes 16 = section C, listed in
+        runs/v32/vdi-raster/tosdiff-*RASTER.txt: ops 0-15, geometry and overlap cases; at the 32 setting a 16-plane memory form is a refused no-op by design). vdi-raster-screen at v32: the dumper's own guard
+        refuses (table declares 16 planes vs workstation 32), no RASTER.BIN, as at V63/V64. aes-r1 v32: ap_planes 32 (V62), default/v16 ap_planes 16.
+ 7  APITEST (sdk/apps/apitest/build-apitest.sh + sdk/build.sh sdk/examples/ptermch.c into scratch, card by tools/mkcard.sh with apitest.inf #Z autorun, apitest.img.manifest), raspi4b, checks/apitest.out:
+      main, default, vdiplanes=16, vdiplanes=32: TOTAL 110 / 0 / 6 in all four (serial/api-*.log), the baseline. Console screendump after the summary: sha256 prefix f79b85387b0e identical for
+      all four (the same hash as the V64 run).
+ 8  32-PLANE CONTRACT THROUGH THE REAL TRAP (selftest_v65, method/st-run.sh; serial/st-*.log). The temporary selftest issues v_opnvwk, v_clrwk, vs_color, vsf_color, vr_recfl, v_get_pixel,
+      vro_cpyfm, vrt_cpyfm, vr_trnfm as svc #2 calls (the dispatcher path of a user program). Kernel wt-st-virt.img and wt-st-rpi4.img, vdiplanes=32:
+        virt: 55 checks, 0 FAIL, "V65 SELFTEST PASS", 0 EXC/PANIC (serial/st-virt-v32.log).  rpi4: 55 checks, 0 FAIL, PASS, 0 EXC/PANIC (serial/st-rpi4-v32.log).
+      NEGATIVE CONTROL: the same selftest built into main (kern/base-st-virt.img) at vdiplanes=32: 55 checks, 41 FAIL (serial/st-virt-v32-MAIN-control.log) -- the checks can fail.
+      What the 55 checks assert (all with values printed in the log):
+        A  v_get_pixel wide answer: cleared screen (0x00FF,0xFFFF); pens 0..4 (white, black, red, green, blue) = (0x00FF,0xFFFF) (0,0) (0x00FF,0) (0,0xFF00) (0,0x00FF); the V64 test pens
+           (17,0,0) and (25,0,0) now read back as (4,0) and (6,0), i.e. two different pixels (at 16 both read 0,0x0800); off-screen 0,0 unchanged.
+        B1 memory (32 planes, 20 x 12, wdwidth 2) to screen, 240 pixels read back with v_get_pixel: all equal; B2 screen to memory: all 240 equal masked (& 0x00FFFFFF), padding words untouched
+           (the first stored word 0x5a010300 shows the raw X byte, never asserted); B3 memory to memory exact in 32 bits; B4 screen to screen 240 pixels; B4b overlapping screen to screen.
+        B5 the 16 logic ops (incl. replace, XOR, AND, OR, NOT-S, NOT-D, ALL_WHITE, ALL_BLACK) on 4 known pixel pairs, mem->screen, screen->screen, screen->mem (masked) and mem->mem (exact, X incl.): 0 mismatches.
+        B6 refused plane counts 16, 9, 24, 31, 33 at the 32 setting: mem->screen (screen stays red), screen->mem, mem->mem (16-bit buffers) and vrt_cpyfm into such a form leave the destination untouched.
+        C  vrt_cpyfm 1-plane source, pens 2 (red) / 4 (blue): modes 1..4 into a 32-plane memory form (replace, transparent, XOR = ~dest all 32 bits incl. X, erase) and onto the screen, modes 0 and 5
+           no-op, pens 5/6 (the (17,0,0)/(25,0,0) pens) give 0x00040000 / 0x00060000 in memory.
+        D  vr_trnfm 32 x 4: device to standard has plane p = bit 31-p for all 4096 pixel/plane bits; standard-to-device round trip identical bit for bit (X included); in place identical;
+           standard to device to standard identical; refused counts 16, 24, 9: destination and its fd_stand untouched.
+      16 SETTING AGAINST MAIN: the same selftest at default and vdiplanes=16 prints 31 PROBE lines (v_get_pixel words, a 16-plane memory form round trip hash, ops, vrt_cpyfm modes, vr_trnfm 16-plane
+        identity and hash, a 32-plane form refused at 16): the [v65] lines of kern/wt-st-* and kern/base-st-* are identical on both boards at default and v16 (4 diffs, all empty).
+ 9  AES AT 32 (virt, usb-mouse through QMP; method/aes-run.sh, aes-drive.py, aes-script.txt; screendumps/aes-*; checks/aes-compare.txt; PPMs compared per gun by method/ppmcmp.py):
+      script: pointer to the Desk title (menu drop-down opens), away and a click on the desktop (menu closes), again to Desk, item "Desktop info...", click (dialog opens), click OK, back.
+      32: p0 (before) vs p1 (menu closed): 0 differing pixels in R, G and B; p0 vs p2 (dialog closed): 0 differing; m1 (menu open) and d1 (dialog open) viewed (Read): menu drop-down and the
+      NewTOS info dialog drawn correctly, no garbage. The same script at vdiplanes=16 and main: the same counts (m1 2233/1463/2233, d1 146602/152722/146602 differing pixels against p0 in every config).
+      v32 against main per step: p0, m1, p1, d3, p2 identical (0 differing); d1/d2 (dialog open) differ in 138055 pixels, bounding box exactly the dialog (769,348)-(1150,749), and ONLY two colour
+      pairs: grey (189,189,189) -> (187,187,187) and shadow grey (140) -> (136) = the V64 pen change (733 per mille: 5-bit expansion 189 vs 8-bit 187). v16 d1 == main d1 byte for byte.
+      => the menu and the dialog save buffers (bb_save/bb_restore at 32-bit depth) restore the screen exactly; no EXC/PANIC in the three runs.
+      raspi4b has no input here: the AES save buffers on rpi4 are covered only by the booted desktop (item 5) and by the host tests bb_save_words_pins_the_size_at_both_settings and
+      bb_save_at_32_stays_inside_bb_save_words_and_restores_exactly (in the 2544 run).
+ 10 COLOUR ICONS at 32: the desktop of rpi4-v32-a.png (viewed): the icons on the desktop (Hard disk, Trash, Printer) are monochrome icons in this image and are drawn, no crash, no garbage rows.
+      The colour-icon blit (blit_device_mem, 16-bit icon form expanded at the blit) is NOT driven in a booted kernel: no colour-icon resource is on the standard image. Covered by the host test
+      the_colour_icon_blit_reads_its_16_bit_form_at_32 (in the 2544 run). Icon colour fidelity at 32 is V67 and not judged.
+ 11 CARD INTEGRITY: apitest card clone booted with vdiplanes=32 to TOTAL (110/0/6), killed, FAT partition dd'ed out (63 + 130977 sectors), fsck_msdos -n clean (checks/fsck-v32.txt, "4 files, 65164 KiB free",
+      fsck exit 0); sha256 of the clone after the run b95d5d3aac441ef626fba0e1b3225edf59cc621ecef41a60b9e3a21b5d82b8d7 (clone deleted). 0 EXC/PANIC in every serial log of this run.
+ 12 SPEED: no host-side micro benchmark of the raster copy kernels exists in the tree (grep: kernel/src/bench.rs is the shell's memory benchmark, the raster_kernel_* tests are correctness tests
+      with a struct called Bench); nothing run, no figure claimed.
+
+DROVE: both board builds, clippy delta (0), full host tests (2544/0/7), mapping/status/doc-check, 14 boots + screendumps (viewed) on raspi4b and virt incl. invalid arguments, 9 VDI/raster tables + aes-r1
+  x 4 configs against the pinned references with per-case lists against main, APITEST x4 at 110/0/6, a kernel-side trap selftest at 32 (55 checks, both boards, with a failing negative control on main)
+  and at 16 (identical to main), the AES menu drop-down and the info dialog at 32/16/main on virt with pixel-exact restore, the desktop icons at 32, fsck after a 32-plane boot.
+COULD NOT VERIFY / NOT DONE: copy speed against the 16-bit seam on the real Pi 4 (ADR-036 point 5; QEMU gives no figure); the round trip of a pixel built from the vq_scrninfo description (needs the table of
+  TASK/V66; this run builds the pixel from the ADR-038 constants, as the ticket's reading says); a colour icon blit in a booted kernel (no such resource on the image); the AES save buffers on raspi4b
+  (no input there); any tosdump table at 32 for the raster group (the dumper's guard declares 16 planes; its readback keeps only INTOUT[1] -- the selftest above replaces it); the XBIOS/BIOS tables
+  (not repeated, no such code changed); PRESENT.NAP at 32 (refused by design until V69).
+REAL-PI4-ONLY (never claimed here): the copy speed of the 32-bit paths on silicon (ADR-036 point 5), cmdline.txt vdiplanes path through the VideoCore mailbox, HDMI mode and the real framebuffer at 32,
+  QUIRK-001 TTBR0 wedge, cache coherence of the framebuffer under the new 32-bit copies, USB-HID interactive desktop use, real monitor/EDID.
+REPRODUCING COMMANDS (no FAIL): host: cargo xtask test; selftest: method/build-selftest.sh <tree> <name> then qemu-system-aarch64 -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -display none
+  -no-reboot -kernel kern/wt-st-virt.img -append vdiplanes=32 -serial file:<log>  (rpi4: -M raspi4b -append "serial=on vdiplanes=32"; method/st-run.sh); boot: method/boots.sh; tables: method/tables-vdi.sh;
+  AES: method/aes-run.sh <kernel> <tag> "vdiplanes=32" "$(cat method/aes-script.txt)".
+
+NOTES (no action)
+ - Kernel size grew by 0x3000 bytes with V65; one address cell of the AES dumper moves by the same amount (item 6); an address-class cell, not a behaviour change.
+ - At 32 the dialog grey is 187 (8-bit exact) against 189 at 16: the V64 pen change, visible in the AES dialog (item 9).
+ - The raspi4b desktop is 640x480, the virt desktop 1920x1080; the AES drive ran on virt.
+
+OUT-OF-SCOPE OBSERVATIONS
+ - cargo xtask build still fails with CARGO_TARGET_DIR set (known, V63/V64 observation): builds ran without it.
+ - The tosdump prelude pool and the dumper's single-word readback (INTOUT[1]) limit the raster tables at 32; a wide readback would need a dumper change (not made).
+
+IMAGE MANIFESTS (copies in this directory; optional_missing lines verbatim): plain.img.manifest "optional_missing none"; apitest.img.manifest "optional_missing none".
+  host_clang in each: Apple clang version 21.0.0 (clang-2100.4.1.1).
+
+GITIGNORED OUTPUTS CITED (path under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7a3bbc49cba62b53/, size, sha256):
+  kern/wt-rpi4.img        1612048 B  a2445154c427beb09a461d7bb48e1a00cb8035e443906f93869c82c0d5a1b982
+  kern/wt-virt.img        1517152 B  943ac697b86b1f8e0ce437b127d9363a71188e3f3ee039313b3079877bebb685
+  kern/base-rpi4.img      1599760 B  17d8d40cba5183f9be52ce88880d79fd90dcba86451e7a5d60834dac32133538
+  kern/base-virt.img      1504864 B  755e733fe40cd00a423fd6b68fbdd6d7e9c7b6f71b80d02181592ba5af772ef9
+  kern/wt-st-rpi4.img     1644816 B  2b4af0b9987aecce29a421fb5d58c8c563624da99ccaecdc660c9460618446a9   (selftest build, temporary)
+  kern/wt-st-virt.img     1549920 B  e07bccd1b85e79c5c6db3ff8ca0688f05218a0dfd67c26b19374c05cee052c62   (selftest build, temporary)
+  kern/base-st-rpi4.img   1632528 B  e3615b9f817249a2b6106edae2003c35f4df2f22a846cc7b5f48b75c9dce19f3   (selftest build on main, temporary)
+  kern/base-st-virt.img   1537632 B  71a4d8b91cfd3138e0f8c978242f4770648e610daf048aed56c42264d77b19a7   (selftest build on main, temporary)
+  scratch/APITEST.NCP     161040 B   948dd1bdca1798e338a2550f932862d7906307b656b74aacd6a185766b444ed9
+  scratch/PTERMCH.NCP     6328 B     30fa331eb3a5a5355664a3f6c7c4c1b8c68d9e1c642281db0a18c11acb64194e
+  scratch/cards/plain.img   (64 MiB) 78c0275e4164f22592b0fbe117111a930deb11856ff8efff2b176853a07ca0af
+  scratch/cards/apitest.img (64 MiB) ee4e27235324a0b2054376aa5cf1e896443a44fbd437c11d7a87c8529e25f473
+  runs/<cfg>/<table>/ (tosdump outputs, BIN files compared in checks/*) and runs/aes-*/ (PPM screendumps of the AES drive): 153M.

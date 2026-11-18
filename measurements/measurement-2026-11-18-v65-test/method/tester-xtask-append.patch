@@ -1,0 +1,13 @@
+diff --git a/tools/xtask/src/tosdump.rs b/tools/xtask/src/tosdump.rs
+index 5e1a7ba28..49f09977d 100644
+--- a/tools/xtask/src/tosdump.rs
++++ b/tools/xtask/src/tosdump.rs
+@@ -1195,7 +1195,7 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
+     q.args(["-M", "raspi4b", "-no-reboot", "-display", "none"])
+         .arg("-serial")
+         .arg(format!("file:{}", serial.display()))
+-        .args(["-append", "serial=on", "-kernel"])
++        .args(["-append", &std::env::var("V62_APPEND").unwrap_or_else(|_| "serial=on".into()), "-kernel"])
+         .arg(&kimg)
+         .arg("-drive")
+         .arg(format!("file={},if=sd,format=raw", boot.display()))
