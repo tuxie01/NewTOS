@@ -1,0 +1,2 @@
+bios-r1 BIOS case 87 14:0x04 Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile): EQUAL -> DIFF
+bios-r1 BIOS-falcontc case 87 14:0x04 Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile): DIFF -> EQUAL

@@ -1,0 +1,3 @@
+scratch-only edit of <scratch tree>/kernel/src/lib.rs: after `tos_api::aes::init::init();` insert
+    kprintln!("[ST] >> xbios"); selftest_xbios::run(); kprintln!("[ST] << xbios");
+(done inline in the shell with python; never in a branch)

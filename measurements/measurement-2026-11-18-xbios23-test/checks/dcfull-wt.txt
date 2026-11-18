@@ -1,0 +1,13 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask doc-check TASK/XBIOS21.md TASK/XBIOS22.md TASK/XBIOS23.md docs/COMPATIBILITY.md docs/HW-TEST-LOG.md docs/MEMORY.md docs/api/xbios/04-getrez.md docs/api/xbios/05-setscreen.md docs/api/xbios/06-setpalette.md docs/api/xbios/07-setcolor.md docs/api/xbios/58-vsetmode.md docs/api/xbios/59-vgetmonitor.md docs/api/xbios/5b-vgetsize.md docs/api/xbios/5e-vgetrgb.md docs/audits/2026-10-28-xbios-system.md`
+TASK/XBIOS23.md:51: Applications/cflib-git/appinit.c:72: missing
+docs/COMPATIBILITY.md:255: sdk/gemlib/gemlib-0.44.0/a_wind_get.c:355-358: missing
+docs/COMPATIBILITY.md:255: sdk/gemlib/gemlib-0.44.0/a_graf_xhandle.c:48-49: missing
+docs/COMPATIBILITY.md:397: sdk/gemlib/gemlib-0.44.0/a_wind_set_ptr_int.c:27-28: missing
+docs/COMPATIBILITY.md:482: sdk/cflib/cflib-21/purec.c:166,171: missing
+docs/COMPATIBILITY.md:592: sdk/zview/z-tools-04805b7/zview/zvdi/vdi.c:28: missing
+docs/COMPATIBILITY.md:2144: sdk/cflib/cflib-21/fsnorm.c:85-92: missing
+docs/MEMORY.md:1337: sdk/ldg/ldg-r133/demo/libs/ex_lib.c:66-69: missing
+docs/MEMORY.md:3258: Applications/: missing
+doc-check: 15 files, 1576 path cites and 267 ADR cites checked, 9 failures, 0 skipped (reference tree missing); 115 anchored line cites, 60 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+xtask: doc-check: 9 failures (see above)

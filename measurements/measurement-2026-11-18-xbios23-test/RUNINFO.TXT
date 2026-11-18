@@ -1,0 +1,85 @@
+measurement-2026-11-18-xbios23-test -- tester run for TASK/XBIOS23 at developer commit 8f6385a52 (branch xbios23, base main fa44c05e2; compared with main 4e983cad9)
+==================================================================================================================================
+SCOPE  Getrez answers 2 (ST_HIGH) instead of 4 (TT_MEDIUM), ADR-017 Revision 3 applied, and TeraDesk / QED / zView behaviour with it.
+       Tester (Sonnet), phase test. Nothing in the product was edited. No card, no Pi.
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2,
+         host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1).
+TREES  own detached worktrees /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a9830dbeb107ba8e9/wt (8f6385a52) and .../wtmain (main 4e983cad9);
+       scratch trees (own git repo roots, TOOL52) under .../scratch/trees and .../scratch-main/trees. Clone size at the end: 25G (du -sh agent dir, mostly cargo targets).
+
+ACCEPTANCE (TASK/XBIOS23.md "Acceptance"; the clause "no case equal in the full XBIOS run differs anew" as reworded by the owner 2026-11-18 ("das ist ok"),
+passed on by the lead):
+  "No case equal in the full XBIOS run differs anew, except case 87 against the tt reference, which COMPATIBILITY names as accepted (NewTOS claims the Falcon profile)."
+Also passed on by the lead (owner 2026-11-18, "ok"): "the developer's hand-made anchor-only edit in docs/audits/2026-10-28-xbios-system.md (one line number)
+  counts like a --fix-anchors edit, no translation required; not a finding."
+
+VERDICT  PASS (everything on QEMU; real-Pi4-only items listed below are not claimed).
+
+COMMANDS (board / outcome)   method/ holds the scripts (copied from measurement-2026-11-18-xbios22-test/method, paths adapted: run-qmp.sh; new: mkcards23.sh, build-all-trace.sh,
+  series-all.sh, selftest-wire23.txt)
+ 1  method/lint.sh on wtmain and wt (cargo xtask build both boards, clippy kernel/desktop/newdesk both boards, clippy tos-api --tests): checks/lint-main, checks/lint-wt.
+      Both builds exit 0 on both boards (qemu-virt, rpi4). build warnings 159 / 159 (main) vs 159 / 159 (commit); clippy tos-api lib 73, kernel 121, lib-test 78 on both;
+      desktop/newdesk 0. Sorted summary files identical (only the order of the per-test lines differs). DELTA 0.
+ 2  cargo xtask test (wt, full): checks/xtask-test.txt, exit 0, 2501 passed / 0 failed / 7 ignored (sum of the "test result" lines; the developer states 2501/0/7;
+      XBIOS22 test run 2497/0/7; +4 = tos-api/tests/xbios23_getrez.rs: setscreen_rez_does_not_change_getrez, getrez_agrees_with_the_vsetmode_query,
+      getrez_answers_st_high, getrez_answers_st_high_without_a_framebuffer, all ok).
+ 3  cargo xtask deps --check-mapping: 1968 rows, all resolve. cargo xtask status-check: 733 checked, 0 rejected, 7 reported (pre-existing, MEM11/PROC08 ...) (checks/checks.txt).
+ 4  cargo xtask doc-check on the 15 docs the commit edits (not the receipt), wt vs wtmain: 9 failures on the commit, 16 on main (checks/dcfull-*.txt); every failure is "missing"
+      (gitignored sdk/ and Applications/ inputs a worktree does not link, TOOL69); the commit adds none (it has fewer: 9 vs 16, not analysed further).
+ 5  FULL XBIOS run, method/run-all.sh (= measurement-2026-11-12-xbios-full): cargo xtask tosdump bios <table> on QEMU raspi4b from wt, 7 tables, each against tt and falcontc:
+      all 7 exit 0, tosdiff --validate exit 0 for all (xbios-full/*.stdout, summary.txt, per-case.tsv, per-table tosdiff texts).
+ 6  Boot to the desktop, plain release kernels, same card (tools/mkcard.sh, plain.inf), serial=on: raspi4b commit vs main (serial/desk-rpi4-wt.log, -wtmain.log): "desktop up", 0 EXC/PANIC both,
+      serial logs equal after masking addresses, desktop PNG sha256 a3bd102e7f28.. equal. qemu-virt (ramfb, headless, then 20 relative mouse events): commit and main desktop PNG sha256 6985da3b3c38.. equal
+      (also before/after the mouse events: pointer not moved by the QMP events, same on both). Both PNGs viewed (menu bar, icons, green desktop).
+ 7  Kernel selftest, SCRATCH-wired (scratch tree .../scratch/trees/st, never in a branch; method/selftest-wire23.txt), raspi4b release: serial/st-xbios-rpi4.log:
+      "[xbios] Physbase=... Getrez=2 (expect base!=0, log==phys, rez=2 ST_HIGH)", Setscreen(rez=9) -> 0 (ignored), the other [xbios] lines as expected, 0 EXC/PANIC.
+ 8  APITEST via #Z (card with APITEST.NCP + PTERMCH.NCP, rebuilt by sdk/apps/apitest/build-apitest.sh and sdk/build.sh; sha256 identical to the XBIOS22 run's binaries), raspi4b:
+      commit memprot on / off / strict and main on: TOTAL 110 / 0 / 6 in all four (serial/api-*.log), per-test PASS/FAIL/SKIP lines of commit = main (diff empty).
+      The STATUS baseline is 110/0/6 for this build (earlier runs noted 111/0/5 for other APITEST.NCP builds; the 6 SKIPs are T29.3 and BC26-BC30, key-needing, same on main).
+ 9  TeraDesk gate (scenarios of measurement-2026-11-18-xbios22-test, method/series-all.sh + series.sh + gen.py + tools/inject-arm.py; kernels with bios-arg-trace, headless raspi4b,
+      scripted IKBD injector), commit vs main, TeraDesk from the main tree's sdk/apps/teradesk/build/dist: runs/{commit,main}/:
+        vid-vdo-td      Options -> Video options..., dialog, Return, Return (kernel publishes _VDO on both sides: XBIOS22 is on main)
+        vid-vdo-ext-td  the same, Return x4 (follows the restart)
+        apps-tdapps     QED and zView started from TeraDesk desktop icons, Ctrl-Q back (card tdapps = td + QED + zView + codecs)
+        apps2-tdapps    the same, then TeraDesk quit via Ctrl-Q -> Quit/Shutdown dialog -> Quit
+      Every run: mdrive rc 0, fsck_msdos -n rc 0 on the run's clone, 0 EXC/PANIC. Non-injector serial lines identical commit vs main in all four runs (injector tick numbers differ by 1-3, as expected).
+      The BIOS/XBIOS call trace differs in exactly the Getrez lines: commit "14:0x04 Getrez -> 0x2" at calls 000004 and 000013, main "-> 0x4" (the receipt names it: TeraDesk reads Getrez, then
+      calls Setexc(0x5A0) (finds _VDO), VsetMode(-1) -> 0x1C, VgetMonitor -> 2, and works from those). Everything else in the trace identical.
+      Screendumps (viewed): 36 of 38 PNG pairs byte-identical, among them the Video Options dialog (VGA-80-column set, ST-Low/ST-Medium selectable, ST-High/TT-High and Overscan greyed, Colours 64K),
+      the alert after the second Return and the restarted desktop, QED menu bar (qed Datei Bearbeiten ...) and zView menu bar after start, the return to TeraDesk after Ctrl-Q, the TeraDesk exit
+      back to the NEWDESK desktop. The two differing PNGs are timing frames, not behaviour: apps-tdapps-pre (commit: QED.NAP title + busy bee, main: QED menu already up; the next frames q1,q2,qed are identical)
+      and apps2-tdapps-quit (commit: NEWDESK desktop with icons, main: bare green screen mid-redraw; the following end/end2 frames are identical). Same kind of single timing frame as in the XBIOS22 run.
+      => TeraDesk, QED and zView behave as on main; no difference the receipt does not name. The stop condition did not trigger.
+
+FULL XBIOS RUN: per-case verdict changes (both references; "tt" = reference BIOS, "ft" = BIOS-falcontc; case = line in bios-r1.tsv)
+ Against the XBIOS22 test run (measurement-2026-11-18-xbios22-test/xbios-full/per-case.tsv, i.e. main plus XBIOS22), all 7 tables x 2 references (checks/per-case-changes-vs-xbios22-test.txt):
+   bios-r1 tt  case 87 Getrez() -- WORD getrez, bios/screen.c:1076: EQUAL -> DIFF   (oracle 0x0004, NewTOS 0x0002; by decision: COMPATIBILITY "XBIOS Falcon video", Getrez bullet, ACCEPTED)
+   bios-r1 ft  case 87 Getrez():                                                    DIFF -> EQUAL   (the ticket's goal: falcontc oracle 2 = NewTOS 2; no tosdiff block for case 87)
+   no other case in any table changes verdict.
+ Against measurement-2026-11-12-xbios-full (checks/per-case-changes-vs-2026-11-12.txt): the above, plus 93/94 (Setcolor, both refs, DIFF -> EQUAL, already on main before this commit)
+   and 211-214 tt / 211,212,214 ft (XBIOS22, already accepted by that ticket); nothing else.
+ Totals: bios-r1 tt 147 cases 112 EQUAL / 35 DIFF; ft 116 / 31; super 9/0 both; bconmap 0/1; chardev 22/1 and 21/2; flush 204/3 both; ptr 9/0; system 34/9 both.
+ CLAUSE (as reworded, quoted above): met. The only case equal before that differs now is case 87 against tt, the one the clause names; no other newly differing case.
+ (Deliberately not run: a separate bios-r1 attribution run on main 4e983cad9; main carries exactly XBIOS22, which the XBIOS22 test run measured, so the 22-test run is the main baseline.)
+
+DROVE: builds both boards, clippy delta, full cargo test, deps/status/doc checks, full XBIOS run vs tt and falcontc with per-case change list, boot raspi4b and qemu-virt (equal to main),
+  scratch-wired XBIOS selftest, APITEST x4 (110/0/6), TeraDesk gate x4 scenarios x2 sides incl. QED, zView, Video Options, alert/restart and TeraDesk quit.
+COULD NOT VERIFY / NOT DONE: Getrez read through the real trap by a user-mode program other than TeraDesk (APITEST has no Getrez case; the host test xbios23_getrez drives it through the dispatcher);
+  HighWire / xgdos (Getrez()+2 as v_opnvwk id) not exercised (no ticketed run; the receipt says the VDI reads no mode request); the real mode change (shel_write only restarts the AES, ADR-017).
+REAL-PI4-ONLY (never claimed here): HDMI mode and real screen geometry, QUIRK-001 TTBR0 wedge, cache coherence, USB-HID interactive TeraDesk use, real monitor/EDID. (The developer names nothing Pi-only for this value.)
+REPRODUCING COMMANDS (no FAIL): full run: cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out <d> --scratch <s> --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN
+  --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN (in the tree under test; method/run-all.sh for all tables); TeraDesk: method/series-all.sh <scratch> commit|main after method/build-all-trace.sh and method/mkcards23.sh.
+
+OUT-OF-SCOPE OBSERVATIONS
+ - The developer lists stale mentions of Getrez = TT_MEDIUM / 4 that it left: docs/HARDWARE-PROFILE.md:65,135, docs/INVENTORY.md:499,558, docs/api/emucon/05-config-strings-hardware.md:100,
+   docs/api/xbios/58-vsetmode.md:62, tosdump/cases/bios-r1.tsv:87 comment "(TT-Medium: profile)", docs/api/_discrepancies.md D-076/D-078. Not touched by me.
+ - TeraDesk shows "VGA-80-column" / ST-High greyed etc. exactly as on main (unchanged by this commit).
+ - A first boot attempt used the TeraDesk card with the "desktop up" marker (no such marker with #Z TeraDesk); killed and redone with the plain card (no result kept; stale serial file overwritten by the rerun).
+ - zsh on this host does not word-split `set -- $x`: my first series loop made four empty junk run dirs; deleted by me before the real runs (never committed).
+
+MANIFESTS (copies in cards/ and xbios-full/*/card.img.manifest): td, tdapps, plain, apitest (tools/mkcard.sh) and the 7 tosdump cards.
+ Every one says verbatim: "optional_missing none" (4 in cards/, 7 in xbios-full/).
+
+GITIGNORED OUTPUTS (path, size, sha256): checks/sha256-gitignored.txt (25 lines: release kernels commit/main for rpi4 and virt, the scratch-wired selftest kernel, APITEST/PTERMCH, the 8 trace kernels,
+  the 4 cards, TeraDesk dist, QED.NAP, ZVIEW.NAP).
+ Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a9830dbeb107ba8e9 (25G before cleanup by xtask accept / scratch-clean).

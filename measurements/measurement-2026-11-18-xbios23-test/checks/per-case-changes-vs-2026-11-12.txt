@@ -1,0 +1,13 @@
+bios-r1 BIOS case 87 Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile): EQUAL -> DIFF
+bios-r1 BIOS case 93 Setcolor(0,-1) -- bios/screen.c:1192 (palette: profile): DIFF -> EQUAL
+bios-r1 BIOS case 94 Setcolor(1,-1) -- bios/screen.c:1192 (palette: profile): DIFF -> EQUAL
+bios-r1 BIOS case 211 VsetMode(-1) -- bios/videl.c:619: EQUAL -> DIFF
+bios-r1 BIOS case 212 VgetMonitor() -- bios/videl.c:664: EQUAL -> DIFF
+bios-r1 BIOS case 213 VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724: EQUAL -> DIFF
+bios-r1 BIOS case 214 VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862: EQUAL -> DIFF
+bios-r1 BIOS-falcontc case 87 Getrez() -- WORD getrez, bios/screen.c:1076 (TT-Medium: profile): DIFF -> EQUAL
+bios-r1 BIOS-falcontc case 93 Setcolor(0,-1) -- bios/screen.c:1192 (palette: profile): DIFF -> EQUAL
+bios-r1 BIOS-falcontc case 94 Setcolor(1,-1) -- bios/screen.c:1192 (palette: profile): DIFF -> EQUAL
+bios-r1 BIOS-falcontc case 211 VsetMode(-1) -- bios/videl.c:619: DIFF -> EQUAL
+bios-r1 BIOS-falcontc case 212 VgetMonitor() -- bios/videl.c:664: DIFF -> EQUAL
+bios-r1 BIOS-falcontc case 214 VgetRGB(0,16,b0) -- WORD vgetrgb, bios/videl.c:862: DIFF -> EQUAL

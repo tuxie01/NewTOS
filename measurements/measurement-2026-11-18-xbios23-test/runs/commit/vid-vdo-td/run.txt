@@ -1,0 +1,13 @@
+run vid-vdo-td 2026-11-18 09:10:03 CET
+c2b069d49fda0c94a8d8261e93da72f3b6580f4e952913afa95f49992caaab0c  kernel8.img (kernel8-trace-vid-vdo.img)
+ca824c22c1bc6f2fbcaa776b328f20aac5cbfad28a4722f310b9ef7b128e526a  base card td.img
+t=17.6s -> vid-vdo-td-desk.png {"return": {}}
+t=19.7s -> vid-vdo-td-opts.png {"return": {}}
+t=21.0s -> vid-vdo-td-hover.png {"return": {}}
+t=24.1s -> vid-vdo-td-ok.png {"return": {}}
+t=25.7s -> vid-vdo-td-alertok.png {"return": {}}
+t=32.0s -> vid-vdo-td-after.png {"return": {}}
+MCHPROBE.LOG: not on the card
+SVCSEQ.LOG: not on the card
+clone after run ca824c22c1bc6f2fbcaa776b328f20aac5cbfad28a4722f310b9ef7b128e526a (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 0 lines: 131
