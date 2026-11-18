@@ -1,6 +1,6 @@
 # XBIOS24 — TeraDesk's video dialog shows the Pi's real mode ("Pi mode")
 
-Status: OPEN (2026-11-18) | Priority: P3
+Status: PARKED (2026-11-18) | Priority: P3 | Reason: owner 2026-11-18: leave TeraDesk for now, first the operating system reports the screen as it really is; analysis docs/analysis/teradesk-video-pi-mode-2026-11-18.md landed (6651c9bfc) | Reopen: after the owner decided how the OS reports the real screen depth
 
 Title: TeraDesk's video dialog shows the Pi's real mode ("Pi mode")
 
@@ -46,3 +46,7 @@ one can get the right data in there) and, asked whether to file the research: "b
   *Colours* observation explained or named as not explainable from the source.
 - After the fix (wording follows the owner's choice in step 2): TeraDesk's video dialog shows the screen's real
   resolution and depth; OK on the unchanged dialog raises no mode-change alert and restarts nothing.
+
+## Status history
+
+- 2026-11-18: set to PARKED by `cargo xtask set-status` (was "Status: OPEN (2026-11-18) | Priority: P3")
