@@ -16,8 +16,8 @@ whether we can build it for NewTOS).
   z-tools) is not known.
 - zDesk is part of z-tools, like zView. The z-tools state pinned for the zView port (`sdk/zview/`, `04805b7`)
   holds `zview`, `ztask` and `common`, no `zdesk`.
-- Its Makefile links `-lgem -lldg`; the tree has its own raster code (a raster directory and an MFDB module) and a file of French
-  and no licence file of its own.
+- Its Makefile links `-lgem -lldg`; the tree has its own raster code (a raster
+  directory and an MFDB module), a file of bug notes in French, and no licence file of its own.
 
 ## Not established
 
