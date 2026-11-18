@@ -1,0 +1,19 @@
+PASS 1  M1  ALL_WHITE region (rows/cols 8..15) all 0x00000000
+PASS 2  M16 ALL_BLACK region all 0xFFFFFFFF (X too)
+PASS 3  M4  S_ONLY region B(8..15)=A(0..7), all 32 bits
+PASS 4  V5  pens 2/4 -> {00FF0000, 000000FF}
+PASS 5  V6  pens 8/9 (733/533 permille) -> {00BBBBBB, 00888888}
+PASS 6  V8  pens 255/16 -> {00000000, 00FFFFFF}
+PASS 7  V7  pens 999/-1 out of range -> pen 1 -> all 0x00000000
+PASS 8  V4  MD_ERASE bg pen 6: clear bits 0x00FFFF00 present
+PASS 9  E2  screen->memory pen 5 (cyan): 512 x 0x0000FFFF
+PASS 10 E8  screen->memory pen 2 (red): 512 x 0x00FF0000
+PASS 11 E1  screen->memory pen 1 (black): 512 x 0x00000000
+PASS 12 F9  ALL_BLACK onto cleared screen reads {00FF,FFFF} (cleared = white)
+PASS 13 F21 16-plane source refused at 32: screen stays cleared {00FF,FFFF}
+PASS 14 F1  round trip memory->screen->v_get_pixel: readback == A & 0x00FFFFFF, 512 pixels
+PASS 15 H5  mono->screen red/blue read back {00FF,0000} / {0000,00FF}
+PASS 16 H7  MD_ERASE bg yellow: clear bits read {00FF,FF00}, set bits stay cleared {00FF,FFFF}
+PASS 17 H9  out-of-range pens -> pen 1: all {0000,0000}
+PASS 18 R1  16-plane memory forms refused at 32: d0 0, INTOUT[0..1] still 0xDEAD
+ALL PASS

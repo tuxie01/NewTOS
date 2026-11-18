@@ -1,0 +1,36 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump vdi tosdump/cases/vdi-v18-t2.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/base-v32/vdi-v18-t2 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/base-v32 --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN`
+tosdump: command   cargo xtask tosdump vdi tosdump/cases/vdi-v18-t2.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/base-v32/vdi-v18-t2 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/base-v32 --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    06ef14f5b040525b3008c3597ffe6b95ffc0360f
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit 06ef14f5b040525b3008c3597ffe6b95ffc0360f
+tosdump: features  (none)
+tosdump: bootargs  serial=on vdiplanes=32 (--bootargs vdiplanes=32 after the fixed serial=on: NOT the default boot)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/tosdump/cases/vdi-v18-t2.tsv sha256 f8a3c4017f6e3d49bc0cca4e688ac59d872ee6e4d9fb76ca6665960f220f9b9d
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (5 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 471be47f8a03bdc57cb67953f6ea04c913237b0346f44d42e6f6b9218440ffd7
+tosdump: kernel ELF  sha256 5e66767ae5387c089f955ecf4a00527a3911e1d2365289cd974cfe653d940a64 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPVDI.NAP (tosdump/build-dumpvdi-newtos.sh) in the measured tree …
+tosdump: dumper build id 06ef
+tosdump: DUMPVDI.NAP sha256 d9cb6a7e85a04c6f6f3d2d2cab287e83d88ef8aeff55babf80c9c599c6309e56
+tosdump: card.img.manifest: image_sha256 4ba4179f3ec5283cd03e9ac81fc9b42af7623e4bd3a87128d5d2361a220ab1ad
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/base-v32/tosdump-88544/card.img sha256 4ba4179f3ec5283cd03e9ac81fc9b42af7623e4bd3a87128d5d2361a220ab1ad (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on vdiplanes=32, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: card after the run sha256 5df3d0bef68b00c86a475f5cc4edcfe67ef4ae2cd1a715eec7d7c24026e81b62
+tosdump: VDI.BIN 50976 bytes, sha256 de5d33a1f02b20062fbaeb216e7be284e96b561630a028ababd665d4e6df39c3
+tosdump: VDI.LOG 365 bytes, sha256 e52e6003a3033840a3877cf332be33bea7204b45ea0f27a1d068fadeea7735ce
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/tosdump/host/build/tosdiff sha256 e9352f3847b62ecdd5cd73c77460b637d80a018b2c7948ebbc5dc3a567640228
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 32 records of 1592 bytes, build 06ef, case CRC BEFB79A7
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 5 of 32 cases differ
+tosdump: total     33 s
+tosdump: result    run complete (differences above are findings, not failures)

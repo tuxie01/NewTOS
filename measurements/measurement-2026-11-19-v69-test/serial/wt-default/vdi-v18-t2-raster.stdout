@@ -1,0 +1,36 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump rast tosdump/cases/vdi-v18-t2-raster.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-default/vdi-v18-t2-raster --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-default --reference tosdump/reference/EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN`
+tosdump: command   cargo xtask tosdump rast tosdump/cases/vdi-v18-t2-raster.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-default/vdi-v18-t2-raster --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-default --reference tosdump/reference/EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    5ee76a97b40e785beb6619be12ba74350404bb5f
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit 5ee76a97b40e785beb6619be12ba74350404bb5f
+tosdump: features  (none)
+tosdump: bootargs  serial=on (the default; no --bootargs)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-v18-t2-raster.tsv sha256 09d735c71a71240b1584c4f68055f634c7e9b0627eea7d038b41b3f1568e4791
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (5 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 517010ede7ce83d6e2b02ed2aefabe883f7779ae973d758a8fd07e4567d297aa
+tosdump: kernel ELF  sha256 664f68c4836de89e3617a74ff159242592bbb2612c7be600ec684bf3b9cfb7fb (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPRAST.NAP (tosdump/build-dumprast-newtos.sh) in the measured tree …
+tosdump: dumper build id 5ee7
+tosdump: DUMPRAST.NAP sha256 f0c873f8e90fa7670a91f02caaa486d77a0cba453cf650761acbc72d10c8695b
+tosdump: card.img.manifest: image_sha256 cad603624e022225104e1a45b53c10851e2dea94d5c5882cbcbcdd06ae386995
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-default/tosdump-63625/card.img sha256 cad603624e022225104e1a45b53c10851e2dea94d5c5882cbcbcdd06ae386995 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPRAST.NAP, rc=0
+tosdump: card after the run sha256 e4fb3bec418ee2111e2683b4a61a3b3800f917abef46eed44f56ee0e85fa9f5d
+tosdump: RASTER.BIN 96128 bytes, sha256 120bf6026259ab384d9ec35abac6a5a5d811844e6c356798eace174b7f2eb2ea
+tosdump: RASTER.LOG 400 bytes, sha256 d390db649090d8ceac88313d118ddd6f7f3b48ccdfbda84b1f56560a8f5c0510
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 f7e9b9f3989081f738d9f20e723bc39fe2928c9df7713c1987806cba2ca0f650
+tosdump: tosdiff --validate: exit 0 RASTER.BIN: area VDI-RASTER, 26 records of 3696 bytes, build 5ee7, case CRC 60A10E40
+tosdump: tosdiff EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 6 of 26 cases differ
+tosdump: total     31 s
+tosdump: result    run complete (differences above are findings, not failures)

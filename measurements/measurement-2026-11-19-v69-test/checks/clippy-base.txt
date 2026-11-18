@@ -1,0 +1,2 @@
+warning: `xtask` (bin "xtask") generated 1 warning (run `cargo clippy --fix --bin "xtask" -p xtask -- ` to apply 1 suggestion)
+warning: `xtask` (bin "xtask" test) generated 9 warnings (run `cargo clippy --fix --bin "xtask" -p xtask --tests -- ` to apply 4 suggestions)

@@ -1,0 +1,1 @@
+contract32-check: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-raster.tsv has no NewTOS-contract values here (neither a wide raster table nor the vq_color/v_get_pixel table): not checked

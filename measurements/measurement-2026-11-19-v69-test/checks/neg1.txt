@@ -1,0 +1,1 @@
+contract32-check: the dump carries case table CRC 09A6D228, scratch/neg/vdi-raster32-mod.tsv is 8F4C3DB5

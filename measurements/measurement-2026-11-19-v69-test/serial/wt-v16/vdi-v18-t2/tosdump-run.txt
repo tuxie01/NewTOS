@@ -1,0 +1,34 @@
+command   cargo xtask tosdump vdi tosdump/cases/vdi-v18-t2.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-v16/vdi-v18-t2 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16 --bootargs vdiplanes=16 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN
+cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    5ee76a97b40e785beb6619be12ba74350404bb5f
+dirty     0 path(s) in git status --porcelain
+harness commit 5ee76a97b40e785beb6619be12ba74350404bb5f
+features  (none)
+bootargs  serial=on vdiplanes=16 (--bootargs vdiplanes=16 after the fixed serial=on: NOT the default boot)
+table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-v18-t2.tsv sha256 f8a3c4017f6e3d49bc0cca4e688ac59d872ee6e4d9fb76ca6665960f220f9b9d
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 517010ede7ce83d6e2b02ed2aefabe883f7779ae973d758a8fd07e4567d297aa
+kernel ELF  sha256 664f68c4836de89e3617a74ff159242592bbb2612c7be600ec684bf3b9cfb7fb (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPVDI.NAP (tosdump/build-dumpvdi-newtos.sh) in the measured tree …
+dumper build id 5ee7
+DUMPVDI.NAP sha256 6144e647ebd8270b87675259e2be437525d08397d9af2346c8b5fa90720dbb36
+card.img.manifest: image_sha256 9e894a9a9a766acfbb6f4521d13fc946bb2f6d0616925516c54abe2122fe4664
+card.img.manifest: optional_missing none
+card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16/tosdump-68457/card.img sha256 9e894a9a9a766acfbb6f4521d13fc946bb2f6d0616925516c54abe2122fe4664 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on vdiplanes=16, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+card after the run sha256 998f0cc90ad133841ceed037587069e804bd86688349f38865d623e3abc30450
+VDI.BIN 50976 bytes, sha256 410180c6dbdad93cf6385a20dcf2012b33c2d4fa07a3a6a55d9bd25fbd9a96d6
+VDI.LOG 365 bytes, sha256 5002ffa9a3fb8bc31bfdb941f82dae7d2f7b52fe86d10b76a92952380d6e0888
+tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 f7e9b9f3989081f738d9f20e723bc39fe2928c9df7713c1987806cba2ca0f650
+tosdiff --validate: exit 0 VDI.BIN: area VDI, 32 records of 1592 bytes, build 5ee7, case CRC BEFB79A7
+tosdiff EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 32 cases differ
+total     37 s
+result    run complete (differences above are findings, not failures)

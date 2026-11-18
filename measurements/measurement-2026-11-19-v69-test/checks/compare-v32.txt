@@ -1,0 +1,41 @@
+== aes-r1: verdicts DIFF; tosdiff reports (2) SAME; AES.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (11432 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-AES.BIN vs NEWTOS.BIN: exit 1, 95 of 95 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-AES.BIN vs NEWTOS.BIN: exit 1, 95 of 95 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== bios-r1: verdicts DIFF; tosdiff reports (3) SAME; BIOS.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (47072 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 35 of 147 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 35 of 147 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+   base: tosdump: tosdiff EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN: exit 1, 31 of 147 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN: exit 1, 31 of 147 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== vdi-a131-palette: verdicts DIFF; tosdiff reports (3) SAME; VDI.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (76448 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-a131pal.BIN vs NEWTOS.BIN: exit 1, 32 of 48 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-a131pal.BIN vs NEWTOS.BIN: exit 1, 32 of 48 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-a131pal-falcontc.BIN vs NEWTOS.BIN: exit 1, 23 of 48 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-a131pal-falcontc.BIN vs NEWTOS.BIN: exit 1, 23 of 48 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+   base: tosdump: result    run complete (differences above are findings, not failures) 
+   wt:   tosdump: contract check (NewTOS contract, ADR-038; tosdump/host/contract32-check.py): exit 0, 0 of 48 cases differ from the NewTOS contract
+== vdi-all: verdicts DIFF; tosdiff reports (3) SAME; VDI.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (289776 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-all.BIN vs NEWTOS.BIN: exit 1, 13 of 182 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-all.BIN vs NEWTOS.BIN: exit 1, 13 of 182 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN: exit 1, 6 of 182 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN: exit 1, 6 of 182 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== vdi-raster: verdicts DIFF; tosdiff reports (2) SAME; RASTER.BIN [build-id bytes [12, 13, 15] differ]: 708 differing bytes; header 0; outside MFDB cells 0; offsets-in-record [22, 23, 25, 30, 31, 33, 52, 53, 55, 60, 61, 63] (records touched 59)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-RASTER.BIN vs NEWTOS.BIN: exit 1, 24 of 59 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-RASTER.BIN vs NEWTOS.BIN: exit 1, 24 of 59 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== vdi-raster-screen: verdicts SAME; tosdiff reports (0) SAME; 
+== vdi-v18: verdicts DIFF; tosdiff reports (2) SAME; VDI.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (30280 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18-falcontc.BIN vs NEWTOS.BIN: exit 1, 11 of 19 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18-falcontc.BIN vs NEWTOS.BIN: exit 1, 11 of 19 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+   base: tosdump: result    run complete (differences above are findings, not failures) 
+   wt:   tosdump: contract check (NewTOS contract, ADR-038; tosdump/host/contract32-check.py): exit 1, 4 of 19 cases differ from the NewTOS contract
+== vdi-v18-raster: verdicts DIFF; tosdiff reports (2) SAME; RASTER.BIN [build-id bytes [12, 13, 15] differ]: 204 differing bytes; header 0; outside MFDB cells 0; offsets-in-record [22, 23, 25, 30, 31, 33, 52, 53, 55, 60, 61, 63] (records touched 17)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-RASTER-v18-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 17 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-RASTER-v18-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 17 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== vdi-v18-t2: verdicts DIFF; tosdiff reports (2) SAME; VDI.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (50976 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 5 of 32 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 5 of 32 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== vdi-v18-t2-raster: verdicts DIFF; tosdiff reports (2) SAME; RASTER.BIN [build-id bytes [12, 13, 15] differ]: 312 differing bytes; header 0; outside MFDB cells 0; offsets-in-record [22, 23, 25, 30, 31, 33, 52, 53, 55, 60, 61, 63] (records touched 26)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 16 of 26 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN vs NEWTOS.BIN: exit 1, 16 of 26 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+== vdi-v18-t3: verdicts DIFF; tosdiff reports (2) SAME; VDI.BIN [build-id bytes [12, 13, 15] differ]: byte-identical (3216 bytes)
+   base: tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 2 cases differ 
+   wt:   tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 2 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]

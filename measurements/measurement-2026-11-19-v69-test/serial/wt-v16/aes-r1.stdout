@@ -1,0 +1,36 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump aes tosdump/cases/aes-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-v16/aes-r1 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16 --bootargs vdiplanes=16 --reference tosdump/reference/EMUTOS-1a7484ab-AES.BIN`
+tosdump: command   cargo xtask tosdump aes tosdump/cases/aes-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-v16/aes-r1 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16 --bootargs vdiplanes=16 --reference tosdump/reference/EMUTOS-1a7484ab-AES.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    5ee76a97b40e785beb6619be12ba74350404bb5f
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit 5ee76a97b40e785beb6619be12ba74350404bb5f
+tosdump: features  (none)
+tosdump: bootargs  serial=on vdiplanes=16 (--bootargs vdiplanes=16 after the fixed serial=on: NOT the default boot)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/aes-r1.tsv sha256 f7e6c72b7ba45a6e97fd8b3d9cddf625afdc4b6997a4f2610ae3ff39c2a90f39
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (5 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 517010ede7ce83d6e2b02ed2aefabe883f7779ae973d758a8fd07e4567d297aa
+tosdump: kernel ELF  sha256 664f68c4836de89e3617a74ff159242592bbb2612c7be600ec684bf3b9cfb7fb (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPAES.NAP (tosdump/build-dumpaes-newtos.sh) in the measured tree …
+tosdump: dumper build id 5ee7
+tosdump: DUMPAES.NAP sha256 da3a87487ac66ca67d681e1be371ab9d0595a219a06fe797aa35a26cf711bcc7
+tosdump: card.img.manifest: image_sha256 16162b30203d9eb1dda9e187114959164ecdc8c7ed1351b8796ac4b67a50c2b1
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16/tosdump-74797/card.img sha256 16162b30203d9eb1dda9e187114959164ecdc8c7ed1351b8796ac4b67a50c2b1 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on vdiplanes=16, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPAES.NAP, rc=0
+tosdump: card after the run sha256 000917230b72c81b5591ff8d9732e8f45605f57d83cc02aba3db92a9f43550ed
+tosdump: AES.BIN 11432 bytes, sha256 0b29d58ef283ed413d96795d173a3bb1cbcceb4214c22f1e3c0cf5a8a866e1bd
+tosdump: AES.LOG 299 bytes, sha256 fa3ef018bf668561d1c91be922dc8ed217b55992e985a8ffb4c88090093d79cd
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 f7e9b9f3989081f738d9f20e723bc39fe2928c9df7713c1987806cba2ca0f650
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 95 records of 120 bytes, build 5ee7, case CRC 33C13C8F
+tosdump: tosdiff EMUTOS-1a7484ab-AES.BIN vs NEWTOS.BIN: exit 1, 95 of 95 cases differ
+tosdump: total     31 s
+tosdump: result    run complete (differences above are findings, not failures)

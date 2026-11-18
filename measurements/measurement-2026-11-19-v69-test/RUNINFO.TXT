@@ -1,0 +1,152 @@
+V69 part A tester run -- tosdump at 32 planes (commit 5ee76a97b, branch v69), baseline main 06ef14f5b
+==========================================================================================
+
+VERDICT: FAIL (one finding, see "Failures"); everything else green. Part B (programs) is not in this commit and not tested.
+
+Scope (one sentence): V69 part A, the tosdump instruments at the 32-plane setting (wide raster record, tables vdi-raster32 /
+vdi-raster-screen32, contract32-check.py, cargo xtask tosdump guards, wide icprobe), plus the baseline (16-plane tables, full boot
+build, host tests) of the commit against main.
+
+Machine: Ingo's Mac mini (scutil --get ComputerName); macOS 27.0.1 (sw_vers -productVersion); Claude Code 2.1.327;
+host clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of every manifest).
+Tester agent id a1ff55b6fbd5f4b6f. Run date 2026-11-19 (started 2026-11-18, crossed midnight; the directory carries the real date).
+
+Trees (own, detached; all under the agent directory, removed at the end of the run):
+  /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt    = 5ee76a97b40e785beb6619be12ba74350404bb5f
+  /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base  = 06ef14f5b (main, baseline)
+  agent directory size at the end: 8.2G (du -sh; wt 2.1G, base 2.1G, runs, scratch, tgt-test).
+No temporary harness change: everything ran with the committed tools. Scratch inputs of the negative control only in the agent directory
+(scratch/neg), copies in method/ (vdi-raster32-mod.tsv, contract32-check-mod.py).
+
+Commands and outcome (board / result)
+-------------------------------------
+Build / host
+ 1. cargo xtask build --board qemu-virt (wt and base)           OK, 159 "warning" lines on both (tos-api 64 + kernel 93) -> delta 0
+ 2. cargo xtask build --board rpi4 (wt and base)                OK, 159 on both; delta 0. (+ release build by every tosdump run, OK)
+    (checks/build-*.txt, checks/build-base-*.txt)
+ 3. cargo clippy -p xtask --all-targets (base, wt)              bin 1 warning + bin test 9 warnings on both: delta 0 (checks/clippy-*.txt)
+ 4. cargo xtask test (full, wt)                                 2579 passed / 0 failed / 7 ignored (baseline in docs/STATUS.md: 2576/0/7; +3 = the three
+                                                                new xtask tests). Summed from the "test result" lines, checks/test-wt.txt. Not run on main (the
+                                                                STATUS baseline was taken as given).
+ 5. make -C tosdump/host test (wt)                              rc 0, incl. the wide record, parser, runner, tosdiff and checker selftest (checks/host-make-test.txt)
+ 6. cargo xtask status-check --new-only                         0 rejected;  cargo xtask deps --check-mapping: 1990 rows, all resolve
+ 7. cargo xtask doc-check on the 9 edited docs/tickets           12 failures, ALL of one kind: "sdk/gemlib|cflib|zview|libc/... missing" -- gitignored SDK trees a worktree does
+                                                                not link (the same files exist in the main tree, checked with ls). No failure from the commit's own cites.
+
+Acceptance criterion 1, first half: 16-plane tables, branch vs main (method/run-tables.sh; 11 tables each: vdi-all, vdi-v18, vdi-v18-t2,
+vdi-v18-t3, vdi-a131-palette, vdi-raster, vdi-raster-screen, vdi-v18-raster, vdi-v18-t2-raster, aes-r1, bios-r1; with the pinned
+EMUTOS-1a7484ab-* references; boards: QEMU raspi4b via cargo xtask tosdump). Configs: default boot and --bootargs vdiplanes=16.
+ 8. default, base and wt, 22 runs, all exit 0                   checks/compare-default.txt (method/compare.py): verdict lines SAME, tosdiff reports SAME
+                                                                (2-3 per table, including --validate), for all 11 tables
+ 9. vdiplanes=16, base and wt, 22 runs, all exit 0              checks/compare-v16.txt: same result, 11 of 11
+Both: "X of Y cases differ" counts equal base for every table.
+Normalisation by compare.py (stated, because a plain diff is NOT clean): (a) the 4-hex "build" id (header bytes 12,13,15 and the text "build 06ef" vs "build 5ee7")
+is the commit's own id and differs in every dump and in tosdiff-validate.txt; (b) absolute paths and timings removed.
+
+THE OPEN POINT OF THE HANDOVER -- raster dumps vs main, byte by byte (checks/compare-default.txt, compare-v16.txt):
+  VDI (5 tables), AES, BIOS dumps: byte-identical except the build-id header bytes. bios-r1 at vdiplanes=16: 3 bytes differ at file offsets 16709-16711 =
+  record 52, offset 37, the Random() case (bios-r1.tsv, retclass IGNORE) -- the same 3 bytes differ between base-default and base-v16 (run to run), so noise.
+  Raster dumps (4 tables), default and v16 identical: differing bytes outside the build id = 708 (vdi-raster, 59 records), 744 (vdi-raster-screen, 62),
+  204 (vdi-v18-raster, 17), 312 (vdi-v18-t2-raster, 26) = exactly 12 bytes per record, ALL at record offsets 22,23,25,30,31,33 and 52,53,55,60,61,63.
+  Record offsets 22..37 = contrl[7..14] after the call (TD_RAST_OFF_CONTRL + 14, 8 words = the two MFDB pointers, field "contrl_mfdb", class
+  TD_FIELD_ADDRESS, tosdump/core/record.c:594@td_raster_fields) and 52..67 = the same slots before the call ("contrl_before_mfdb"). The changed bytes are the
+  low three bytes of each pointer: e.g. record 0, source pointer 0x01a93f00 on main, 0x01ab6718 on the branch (the buffer moved; DUMPRAST grew by ~10 KB), the
+  destination pointer likewise, before == after in both. 0 differing bytes outside those cells, 0 in any header field but the build id.
+  Compare treatment, from source: tosdump/host/tosdiff.c:1289-1300@TD_FIELD_ADDRESS -- an address-class field is "never compared by value" (the comment says
+  why: a difference would measure the linker); each side's cells are checked for < 0x80000000 and the kept check (after == before) instead. Measured:
+  the tosdiff report lines "address check ... 236 address cells checked, 0 not < 0x80000000" and the kept check are identical on main and on the branch for
+  vdi-raster (and every report SAME). Conclusion: the developer's statement is correct; the 16-plane raster dump files are not byte-identical to main
+  and cannot be (DUMPRAST's own buffer addresses move with its size), and the cells never take part in a comparison.
+
+Acceptance criterion 1, second half: 32-plane tables (method/run-wide.sh, wt, --bootargs vdiplanes=32, QEMU raspi4b)
+ 10. rast vdi-raster32.tsv           exit 0, RASTER32.BIN area VDI-RASTER32, 64 records of 5744 bytes, build 5ee7; contract check exit 0, 0 of 64 differ
+ 11. rast vdi-raster-screen32.tsv    exit 0, same shape; contract check exit 0, 0 of 64
+ 12. vdi vdi-a131-palette.tsv        exit 0, VDI.BIN 48 records; contract check exit 0, 0 of 48; the two oracle comparisons are marked
+                                     "[INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038) ... not an oracle comparison]" (32 of 48 / 23 of 48 differ, as the base's
+                                     vdiplanes=32 run)
+ "NewTOS contract" label, seen in the outputs: tosdump-run.txt "table declares a 32-plane screen: NewTOS contract (ADR-038), no oracle; dump area 7 VDI-RASTER32,
+ saved as RASTER32.BIN"; RASTER32.LOG "table declares a 32-plane screen: NewTOS contract (ADR-038), no oracle; area VDI-RASTER32, record 5744 bytes"; first comment line
+ of both tables; contract-check output line "NewTOS contract (ADR-038, 32-plane setting), no oracle". No NEWTOS32- baseline exists or was frozen (nothing to freeze by the
+ tester; the developer did not either).
+ Hand spot-check (method/handcheck.py, my own decoder; expected values written from ADR-038 / V64 P2-P3 (q=(c*255+500)/1000, 0x00RRGGBB), V65 section 6, not taken from
+ contract32-check.py); checks/handcheck.txt, 18 of 18 PASS:
+   M1 ALL_WHITE region = 0x00000000; M16 ALL_BLACK region = 0xFFFFFFFF (X too); M4 S_ONLY B==A over the rectangle, 32 bits; V5 pens 2/4 -> 00FF0000/000000FF;
+   V6 pens 8/9 (733/533 permille) -> 00BBBBBB/00888888 (the 8-bit quantisation); V8 pens 255/16 -> 0/00FFFFFF; V7 pens 999/-1 -> pen 1 -> 0; V4 MD_ERASE bg yellow 00FFFF00;
+   E2 screen->memory pen 5 512 x 0000FFFF; E8 pen 2 512 x 00FF0000; E1 pen 1 512 x 0; F9 ALL_BLACK onto the cleared screen reads {00FF,FFFF} (the wide v_get_pixel answer,
+   cleared screen = white); F21 16-plane source refused, screen stays cleared, INTOUT poison untouched; F1 round trip memory -> screen -> v_get_pixel: readback == A & 0x00FFFFFF
+   for all 512 pixels; H5 mono->screen red/blue read back {00FF,0000}/{0000,00FF}; H7 MD_ERASE yellow {00FF,FF00} and cleared {00FF,FFFF}; H9 out-of-range pens {0000,0000};
+   R1 16-plane memory forms refused at 32: d0 0, INTOUT[0..1] still 0xDEAD.
+ The 16-plane tables at vdiplanes=32 (method/run-tables.sh wt v32 / base v32, 22 runs): every "X of Y differ" count equals main's own vdiplanes=32 run for all tables (the
+ first-step list of the receipt: e.g. vdi-all 13/6 of 182, vdi-raster 24 of 59, aes-r1 95 of 95), the tosdiff reports are identical but for the new INFORMATIONAL mark;
+ vdi-raster-screen refuses at 32 (exit 1, "screen mismatch: refusing to run the table"), as on main. bios-r1 byte-identical.
+
+Guard rails (method/run-wide.sh; stdout in serial/wide/*.stdout)
+ 13. (a) wide table + --reference EMUTOS-...-RASTER.BIN, --bootargs vdiplanes=32: exit 1 "1 problem(s), nothing run: ... a NewTOS-contract table (ADR-038, no oracle); it is compared
+     only against a NEWTOS32-... baseline of area 7, this one is area 6". Same for vdi-raster-screen32 + RASTER-screen-falcontc.BIN (2 problems, also no vdiplanes=32).
+ 14. (a) direct: tosdiff vdi-raster32.tsv EMUTOS-1a7484ab-RASTER.BIN RASTER32.BIN (and reversed) -> "tosdiff: refusing: ... area VDI-RASTER, ... area VDI-RASTER32", exit 2
+     (checks/tosdiff-wide-vs-oracle.txt). A wide dump against itself: "0 of 64 cases differ", address and kept checks pass.
+ 15. (b) wide table at the default boot, and with --bootargs vdiplanes=16: both exit 1 "nothing run: the table declares a 32-plane screen: it runs only with --bootargs vdiplanes=32".
+ 16. (b) 16-plane table without !screen (vdi-raster.tsv) at vdiplanes=32: runs, 24 of 59 differ, marked INFORMATIONAL; contract check exit 3 "no NewTOS-contract values here" (the run
+     still ends "run complete"). A 16-plane table WITH !screen (vdi-raster-screen) at 32: the dumper refuses (item above).
+ 17. (c) negative control (scratch copies, not the repo): (1) vdi-raster32 table copy with V6 pens 8/9 -> 8/10: checker exit 2, "the dump carries case table CRC 09A6D228, ... is 8F4C3DB5"
+     (table/dump mismatch refused); (2) a copy of the checker with pen 9 = (540,540,540) instead of 533: exit 1, "1 of 64 cases differ", case 112: buf_b[744] contract 0x8A8A,
+     recorded 0x8888, six words named (checks/neg1.txt, neg2.txt). The unmodified checker: exit 0, 0 of 64.
+
+icprobe (tosdump/probes/run-icprobe.sh, QEMU raspi4b, resource sdk/apps/hypview/build/hyp_view.rsc sha256 1d1186e81a951c56f819ff4e19c1305d3a7e46f7557545275bdba25f7b847c60, 7 trees)
+ 18. wt at 16 vs base (main) probe at 16: ICPROBE.BIN byte-identical (cmp; sha256 6be8708d...c494, 4925951 bytes); ICPROBE.LOG differs only by the new line "P planes 16, record version 1".
+ 19. wt at ICPROBE_BOOTARGS=vdiplanes=32: log "P planes 32, record version 2 (32 planes: NewTOS contract, no oracle)", 9846399 bytes; icprobe-compare.py n16 n32: "cases 59, differing 0",
+     every T case MEMBER ("every one a pen's"); two version-2 runs against each other: all EQUAL, "cases 59, differing 0" (deterministic).
+
+Part B untouched (item 7): git diff --stat 06ef14f5b 5ee76a97b over tosdump/reference references sdk programs kernel tos-api tos-types docs/analysis measurements = empty
+(checks/diff-reference-sdk-programs-kernel.txt). No frozen reference file changed; checked: tosdump/reference/, references/. No product code (kernel, tos-api, tos-types, programs)
+changed. Changed files: checks/diff-stat-all.txt (32 files).
+
+DEVIATIONS.md (item 6): the commit removes two rows ("tosdump raster dumper at 32 planes with a table that declares its screen", "icprobe for the colour-icon form at 32 planes") and keeps
+PRESENT.NAP and the 16-plane-memory-form rows. icprobe row: matches (wide variant works, items 18-19). Raster dumper row: the wide table (!screen ...,32) now runs (items 10-11), but a table
+that declares a 16-plane screen still refuses at vdiplanes=32 (measured, vdi-raster-screen, exit 1) -- by design (documented in the dumper doc, "What stays", point 3), not an EmuTOS
+difference of the product; the removed row's text said "a table that declares its screen ... refuses" in general. Not wrong enough to fail; noted. PRESENT row and 16-plane memory
+form row: nothing in this run touches them.
+
+Failures (reproducing command)
+------------------------------
+F1. The contract check reports a false violation on a table that is not a contract table. At vdiplanes=32, `cargo xtask tosdump vdi tosdump/cases/vdi-v18.tsv --out <dir> --bootargs vdiplanes=32
+    --reference tosdump/reference/EMUTOS-1a7484ab-VDI-v18-falcontc.BIN` ends with "contract check ... exit 1, 4 of 19 cases differ from the NewTOS contract" (cases 29, 32, 43, 59:
+    v_get_pixel of a white / cleared pixel, "contract 0x0000, recorded 0x00FF / 0xFFFF"; serial/wt-v32/vdi-v18/contract32-check.txt). The recorded {0x00FF,0xFFFF} is the correct wide answer
+    for a white pixel (V65 section 6; the receipt's own first-step table lists these cases as 0 -> {00FF,FFFF}); the checker's is_palette_table()/check_palette() (tosdump/host/contract32-check.py:517,561)
+    take any table of only vq_color/v_get_pixel ops as vdi-a131-palette and assume every v_get_pixel reads the pixel the preceding vr_recfl pen painted (default pen 1 = 0), which only holds for
+    that table. Effect: a correct kernel is reported red in a normal documented run. The developer's gate did not show this line (its list says only the INFORMATIONAL mark for the 16-plane tables).
+    Fix direction (developer's call): restrict the check to the tables it models (by name or by an explicit marker), or model the unpainted pixel; the other tables correctly end exit 3.
+
+Drove vs. could not verify
+--------------------------
+Drove: both board builds, clippy delta, full host tests, 66 table runs on QEMU raspi4b (11 tables x 6 configs), the 3 wide runs, 8 guard-rail runs, 4 icprobe runs, byte-level dump comparison,
+hand decode of 18 values, the negative controls. Did not run: m68k dumpers (references stay frozen); the oracle side (Hatari) for anything (no 32-plane oracle exists); qemu-virt boot (no
+board code changed; item 1 is a build only; the tosdump tables need the raspi4b SD). No screendump (no rendering change in scope). Part B.
+
+Real-Pi4-only (not claimed): cache coherence and the QUIRK-001 TTBR0 wedge; HDMI output at 32 planes (the 32-bit framebuffer on real VideoCore); USB-HID input; the timing of the
+wide dumps on silicon; real-card FAT behaviour of the tosdump disk round (not used here). 4 items.
+
+Out-of-scope observations
+-------------------------
+- The kernel8.img of the branch (sha256 517010ed...) differs from main's (471be47f...) with no kernel source change: the build embeds the commit id (the dumper's "build 5ee7"/"06ef" shows it).
+  The developer's receipt cites 471be47f for both (from before the commit existed).
+- The receipt's cited RASTER32.BIN hashes (7da01ef2..., 7e0789eb...) differ from mine (71bc7a4b..., 5dc1a7a0...) by the header build id and the MFDB pointer cells, as expected; both pass the check.
+- bios-r1 Random() (case at record 52) is run-to-run noise at 16 planes (3 bytes), IGNORE class.
+- vdi-raster at 32 (no !screen): the run's final line is "run complete" although the contract check ends exit 3; harmless, documented as "nothing to check".
+
+Image manifests of every booted image: serial/<label>/<table>/card.img.manifest (68 files; serial/icprobe/<run>/ for the icprobe cards). All 68 carry
+"optional_missing none" and "host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)", "host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8". Booted images are APFS clones of cards built by tools/mkcard.sh
+inside cargo xtask tosdump / run-icprobe.sh (no hand-built card, no hdiutil/diskutil by hand).
+
+Gitignored outputs cited (agent directory .../target-agents/agent-a1ff55b6fbd5f4b6f/, removed after this commit; sizes du -sh, sha256):
+  runs/wide/raster32/RASTER32.BIN      360K  71bc7a4b6a80927ab0b366f0ec5d7f65f32b8be3388e76d5290476842259382b
+  runs/wide/rscreen32/RASTER32.BIN     360K  5dc1a7a039cc40bca0fcbb03c11101ecbbfe3f5cc74636406ea4ade174442a49
+  runs/wide/a131pal32/VDI.BIN           76K  b2e2539528195b3828ac5cfe021f66a387a880eab788913eddebe728f79aec9c
+  runs/base-default/vdi-raster/RASTER.BIN  8f32ea444e3300302ffc1c3a9feb23adbd9fcc461def152d14663fdb47919c52  (main; the branch's: e534aa9031e4fe8348ff818ec851193844b443a805ee83f3f803ca28a00ede55)
+  runs/ic-base16/ICPROBE.BIN and runs/ic-wt16/ICPROBE.BIN  4.7M  6be8708d45f5d56a0257af6b810a8f2f00d2e81b682698f684c4e7671d56c494
+  runs/ic-wt32/ICPROBE.BIN and ic-wt32b  9.4M  6a35063ecb4729ce6bd620e68184532aae1d409e63413347c6ebb151356b8bd7
+  wt/target/aarch64-unknown-none-softfloat/release/kernel8.img  517010ede7ce83d6e2b02ed2aefabe883f7779ae973d758a8fd07e4567d297aa
+  base/target/aarch64-unknown-none-softfloat/release/kernel8.img  471be47f8a03bdc57cb67953f6ea04c913237b0346f44d42e6f6b9218440ffd7
+Every other dump hash is in the per-run tosdump-run.txt under serial/. Image sha256 after each run (booted clone) are in the same files.
+
+Method files: method/run-tables.sh, run-wide.sh, compare.py, handcheck.py, vdi-raster32-mod.tsv, contract32-check-mod.py (negative-control copies).

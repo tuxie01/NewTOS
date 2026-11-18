@@ -1,0 +1,37 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump vdi tosdump/cases/vdi-all.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-v16/vdi-all --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16 --bootargs vdiplanes=16 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all.BIN --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN`
+tosdump: command   cargo xtask tosdump vdi tosdump/cases/vdi-all.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-v16/vdi-all --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16 --bootargs vdiplanes=16 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all.BIN --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    5ee76a97b40e785beb6619be12ba74350404bb5f
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit 5ee76a97b40e785beb6619be12ba74350404bb5f
+tosdump: features  (none)
+tosdump: bootargs  serial=on vdiplanes=16 (--bootargs vdiplanes=16 after the fixed serial=on: NOT the default boot)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-all.tsv sha256 7ca7de7ce52af54e82bfe0dca8dff310b32f75359177068060172a841a764ada
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (5 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 517010ede7ce83d6e2b02ed2aefabe883f7779ae973d758a8fd07e4567d297aa
+tosdump: kernel ELF  sha256 664f68c4836de89e3617a74ff159242592bbb2612c7be600ec684bf3b9cfb7fb (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPVDI.NAP (tosdump/build-dumpvdi-newtos.sh) in the measured tree …
+tosdump: dumper build id 5ee7
+tosdump: DUMPVDI.NAP sha256 6144e647ebd8270b87675259e2be437525d08397d9af2346c8b5fa90720dbb36
+tosdump: card.img.manifest: image_sha256 6b6498ee6e26f68a6f5292a8c288db44ed49761fb72574adb3da9b69dcd11ae3
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v16/tosdump-66059/card.img sha256 6b6498ee6e26f68a6f5292a8c288db44ed49761fb72574adb3da9b69dcd11ae3 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on vdiplanes=16, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: card after the run sha256 61b9332fb7bdbcb0f301bda303e9fe982a142ef270dfc586cbca2f0dfd177b4c
+tosdump: VDI.BIN 289776 bytes, sha256 15f25fd0fc28486a4e2b3f3f21def7fb171beb65fad68b136c3258d9043730ed
+tosdump: VDI.LOG 370 bytes, sha256 acdd0a22ca9e2e84133111d4eb8c2a604cac8d7daa6147be0cc7af2da944351f
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 f7e9b9f3989081f738d9f20e723bc39fe2928c9df7713c1987806cba2ca0f650
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 182 records of 1592 bytes, build 5ee7, case CRC D135ADAF
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-all.BIN vs NEWTOS.BIN: exit 1, 13 of 182 cases differ
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN: exit 0, 0 of 182 cases differ
+tosdump: total     37 s
+tosdump: result    run complete (differences above are findings, not failures)

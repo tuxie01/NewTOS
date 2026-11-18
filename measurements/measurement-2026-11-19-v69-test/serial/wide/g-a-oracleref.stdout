@@ -1,0 +1,4 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump rast tosdump/cases/vdi-raster32.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wide/g-a-oracleref --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-RASTER.BIN --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wide`
+xtask: tosdump: 1 problem(s), nothing run:
+  reference EMUTOS-1a7484ab-RASTER.BIN: the table declares a 32-plane screen, a NewTOS-contract table (ADR-038, no oracle); it is compared only against a NEWTOS32-… baseline of area 7 VDI-RASTER32, this one is area 6

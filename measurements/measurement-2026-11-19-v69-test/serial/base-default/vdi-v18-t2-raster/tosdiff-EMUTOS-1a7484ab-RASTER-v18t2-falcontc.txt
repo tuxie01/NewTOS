@@ -1,0 +1,50 @@
+EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN vs NEWTOS.BIN -- area VDI-RASTER, 26 cases from vdi-v18-t2-raster.tsv
+
+case 28  opcode 121  rider vrt 1 -> 9 planes, replace
+    buf_b[144]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x0000   NEWTOS.BIN                                = 0x9954
+    buf_b[145]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0x9655
+    buf_b[146]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0x438A
+    buf_b[147]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0x4172
+    buf_b[148]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0x4EEF
+    buf_b[149]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x0000   NEWTOS.BIN                                = 0x2130
+    buf_b[150]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0xB1E6
+
+case 29  opcode 121  rider vrt 1 -> 12 planes, replace
+    buf_b[192]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x0000   NEWTOS.BIN                                = 0x8626
+    buf_b[193]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x0000   NEWTOS.BIN                                = 0x4B50
+    buf_b[194]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0x5B71
+    buf_b[195]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xFFDF   NEWTOS.BIN                                = 0x2A44
+
+case 33  opcode 109  rider vro 9 planes whole form, S_ONLY
+    buf_b[144]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x92DD   NEWTOS.BIN                                = 0x8EE7
+    buf_b[145]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xBF38   NEWTOS.BIN                                = 0x387F
+    buf_b[146]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x5CCE   NEWTOS.BIN                                = 0xEF3B
+    buf_b[147]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x7190   NEWTOS.BIN                                = 0xC2D5
+    buf_b[148]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x40D3   NEWTOS.BIN                                = 0xCDEE
+    buf_b[149]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x7D60   NEWTOS.BIN                                = 0xD61C
+    buf_b[150]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x61C6   NEWTOS.BIN                                = 0x495A
+
+case 34  opcode 109  rider vro 12 planes whole form, S_ONLY
+    buf_b[192]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x11F5   NEWTOS.BIN                                = 0xA2A2
+    buf_b[193]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x427F   NEWTOS.BIN                                = 0x0EC6
+    buf_b[194]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xEDFD   NEWTOS.BIN                                = 0x51BE
+    buf_b[195]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x0E31   NEWTOS.BIN                                = 0x73B8
+
+case 35  opcode 109  rider vro 15 planes whole form, S_ONLY
+    buf_b[240]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x844B   NEWTOS.BIN                                = 0xC2BB
+
+case 37  opcode 109  rider vro 12 planes 32x16 fd_wdwidth 2, S_XOR_D
+    buf_b[384]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x91A0   NEWTOS.BIN                                = 0x9FEC
+    buf_b[385]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xC6F4   NEWTOS.BIN                                = 0xB7B2
+    buf_b[386]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x5183   NEWTOS.BIN                                = 0x1FEE
+    buf_b[387]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x6F74   NEWTOS.BIN                                = 0x1A50
+    buf_b[388]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xAFD3   NEWTOS.BIN                                = 0x4831
+    buf_b[389]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xA6ED   NEWTOS.BIN                                = 0x5B4F
+    buf_b[390]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0x4A1E   NEWTOS.BIN                                = 0x57FC
+    buf_b[391]               EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN = 0xF817   NEWTOS.BIN                                = 0xAAD4
+
+6 of 26 cases differ
+address check, EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN: format 3, pointer 4 bytes, most significant word first; 104 address cells checked, 0 not < 0x80000000
+address check, NEWTOS.BIN: format 3, pointer 8 bytes, least significant word first; 104 address cells checked, 0 not < 0x80000000
+kept check, EMUTOS-1a7484ab-RASTER-v18t2-falcontc.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 52 cells checked, 0 changed by the call
+kept check, NEWTOS.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 52 cells checked, 0 changed by the call

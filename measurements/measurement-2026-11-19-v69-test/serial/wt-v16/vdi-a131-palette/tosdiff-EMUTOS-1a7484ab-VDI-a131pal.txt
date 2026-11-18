@@ -1,0 +1,146 @@
+EMUTOS-1a7484ab-VDI-a131pal.BIN vs NEWTOS.BIN -- area VDI, 48 cases from vdi-a131-palette.tsv
+
+case 34  opcode 26  vq_color pen 8 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x029B (667)   NEWTOS.BIN                      = 0x02DD (733)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x029B (667)   NEWTOS.BIN                      = 0x02DD (733)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x029B (667)   NEWTOS.BIN                      = 0x02DD (733)
+
+case 35  opcode 26  vq_color pen 8 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x029B (667)   NEWTOS.BIN                      = 0x02E6 (742)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x029B (667)   NEWTOS.BIN                      = 0x02E6 (742)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x029B (667)   NEWTOS.BIN                      = 0x02E6 (742)
+
+case 36  opcode 26  vq_color pen 9 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0190 (400)   NEWTOS.BIN                      = 0x0215 (533)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0190 (400)   NEWTOS.BIN                      = 0x0215 (533)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0190 (400)   NEWTOS.BIN                      = 0x0215 (533)
+
+case 37  opcode 26  vq_color pen 9 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0190 (400)   NEWTOS.BIN                      = 0x0224 (548)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0190 (400)   NEWTOS.BIN                      = 0x0224 (548)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0190 (400)   NEWTOS.BIN                      = 0x0224 (548)
+
+case 38  opcode 26  vq_color pen 10 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 39  opcode 26  vq_color pen 10 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 40  opcode 26  vq_color pen 11 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 41  opcode 26  vq_color pen 11 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 42  opcode 26  vq_color pen 12 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+
+case 43  opcode 26  vq_color pen 12 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+
+case 44  opcode 26  vq_color pen 13 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+
+case 45  opcode 26  vq_color pen 13 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+
+case 46  opcode 26  vq_color pen 14 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 47  opcode 26  vq_color pen 14 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 48  opcode 26  vq_color pen 15 requested
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x029B (667)
+
+case 49  opcode 26  vq_color pen 15 realised
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+    intout[2]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0258 (600)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[3]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x03E8 (1000)   NEWTOS.BIN                      = 0x02A5 (677)
+
+case 55  opcode 105  v_get_pixel inside a v_bar in pen 0
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0000 (0)   NEWTOS.BIN                      = 0xFFDF (-33)
+
+case 59  opcode 105  v_get_pixel inside a v_bar in pen 1
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000F (15)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0001 (1)   NEWTOS.BIN                      = 0x0000 (0)
+
+case 63  opcode 105  v_get_pixel inside a v_bar in pen 2
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0001 (1)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0002 (2)   NEWTOS.BIN                      = 0xF800 (-2048)
+
+case 67  opcode 105  v_get_pixel inside a v_bar in pen 3
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0002 (2)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0003 (3)   NEWTOS.BIN                      = 0x07C0 (1984)
+
+case 71  opcode 105  v_get_pixel inside a v_bar in pen 4
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0004 (4)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0004 (4)   NEWTOS.BIN                      = 0x001F (31)
+
+case 75  opcode 105  v_get_pixel inside a v_bar in pen 5
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0006 (6)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0005 (5)   NEWTOS.BIN                      = 0x07DF (2015)
+
+case 79  opcode 105  v_get_pixel inside a v_bar in pen 6
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0003 (3)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0006 (6)   NEWTOS.BIN                      = 0xFFC0 (-64)
+
+case 83  opcode 105  v_get_pixel inside a v_bar in pen 7
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0005 (5)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0007 (7)   NEWTOS.BIN                      = 0xF81F (-2017)
+
+case 87  opcode 105  v_get_pixel inside a v_bar in pen 8
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0007 (7)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0008 (8)   NEWTOS.BIN                      = 0xBDD7 (-16937)
+
+case 91  opcode 105  v_get_pixel inside a v_bar in pen 9
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0008 (8)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0009 (9)   NEWTOS.BIN                      = 0x8C51 (-29615)
+
+case 95  opcode 105  v_get_pixel inside a v_bar in pen 10
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x0009 (9)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000A (10)   NEWTOS.BIN                      = 0xA800 (-22528)
+
+case 99  opcode 105  v_get_pixel inside a v_bar in pen 11
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000A (10)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000B (11)   NEWTOS.BIN                      = 0x0540 (1344)
+
+case 103  opcode 105  v_get_pixel inside a v_bar in pen 12
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000C (12)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000C (12)   NEWTOS.BIN                      = 0x0015 (21)
+
+case 107  opcode 105  v_get_pixel inside a v_bar in pen 13
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000E (14)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000D (13)   NEWTOS.BIN                      = 0x0555 (1365)
+
+case 111  opcode 105  v_get_pixel inside a v_bar in pen 14
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000B (11)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000E (14)   NEWTOS.BIN                      = 0xAD40 (-21184)
+
+case 115  opcode 105  v_get_pixel inside a v_bar in pen 15
+    intout[0]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000D (13)   NEWTOS.BIN                      = 0x0000 (0)
+    intout[1]              EMUTOS-1a7484ab-VDI-a131pal.BIN = 0x000F (15)   NEWTOS.BIN                      = 0xA815 (-22507)
+
+32 of 48 cases differ

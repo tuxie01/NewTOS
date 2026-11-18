@@ -1,0 +1,4 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump rast tosdump/cases/vdi-raster32.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wide/g-b-wide-v16 --bootargs vdiplanes=16 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wide`
+xtask: tosdump: 1 problem(s), nothing run:
+  the table declares a 32-plane screen (!screen w,h,32): it runs only with --bootargs vdiplanes=32 (the dumper refuses any other depth)

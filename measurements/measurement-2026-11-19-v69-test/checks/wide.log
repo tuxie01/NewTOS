@@ -1,0 +1,9 @@
+raster32 exit 0
+rscreen32 exit 0
+a131pal32 exit 0
+g-a-oracleref exit 1
+g-a-oracleref2 exit 1
+g-b-wide-default exit 1
+g-b-wide-v16 exit 1
+g-b-n16-at32 exit 0
+WIDEDONE

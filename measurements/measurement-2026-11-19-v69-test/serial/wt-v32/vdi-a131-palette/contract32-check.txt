@@ -1,0 +1,2 @@
+NewTOS contract (ADR-038, 32-plane setting), no oracle: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-a131-palette.tsv, VDI palette table (vq_color, v_get_pixel)
+0 of 48 cases differ from the NewTOS contract

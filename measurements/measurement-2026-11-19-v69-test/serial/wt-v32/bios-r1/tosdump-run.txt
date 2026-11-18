@@ -1,0 +1,37 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/wt-v32/bios-r1 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v32 --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN
+cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    5ee76a97b40e785beb6619be12ba74350404bb5f
+dirty     0 path(s) in git status --porcelain
+harness commit 5ee76a97b40e785beb6619be12ba74350404bb5f
+features  (none)
+bootargs  serial=on vdiplanes=32 (--bootargs vdiplanes=32 after the fixed serial=on: NOT the default boot)
+setting   vdiplanes=32: the 32-plane setting has no oracle (ADR-038 point 13); every comparison with an oracle dump below is informational
+table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 517010ede7ce83d6e2b02ed2aefabe883f7779ae973d758a8fd07e4567d297aa
+kernel ELF  sha256 664f68c4836de89e3617a74ff159242592bbb2612c7be600ec684bf3b9cfb7fb (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id 5ee7
+DUMPBIOS.NAP sha256 46309aab065a9d9a666d3743318150bdb14eb68158072a0f84b8e4e37e7ecbcd
+card.img.manifest: image_sha256 2847e657d4fc1b4ea3c72f574d70e84b0e351882b855b0e54362ccdf6500935d
+card.img.manifest: optional_missing none
+card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/wt-v32/tosdump-84985/card.img sha256 2847e657d4fc1b4ea3c72f574d70e84b0e351882b855b0e54362ccdf6500935d (booted as an APFS clone)
+qemu      raspi4b, -append serial=on vdiplanes=32, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 600007c88d77921d3155963866bc62fa36ae6c27a37005ed2016c47cc3bd5963
+BIOS.BIN 47072 bytes, sha256 96bb27a4113340db85afb7597474eb391bf8f519413a94d65807345404d5cd5f
+BIOS.LOG 172 bytes, sha256 16921118e64a86abbbeb2136b13b8fee97121c7a220d2f29d3adc58733aebd62
+tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 f7e9b9f3989081f738d9f20e723bc39fe2928c9df7713c1987806cba2ca0f650
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 147 records of 320 bytes, build 5ee7, case CRC 583C11E0
+tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 35 of 147 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+tosdiff EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN: exit 1, 31 of 147 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+contract check (NewTOS contract, ADR-038; tosdump/host/contract32-check.py): exit 3, contract32-check: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/bios-r1.tsv has no NewTOS-contract values here (neither a wide raster table nor the vq_color/v_get_pixel table): not checked
+total     31 s
+result    run complete (differences above are findings, not failures)

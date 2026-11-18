@@ -1,0 +1,1 @@
+tosdiff: refusing: RASTER32.BIN is area VDI-RASTER32, EMUTOS-1a7484ab-RASTER.BIN is area VDI-RASTER

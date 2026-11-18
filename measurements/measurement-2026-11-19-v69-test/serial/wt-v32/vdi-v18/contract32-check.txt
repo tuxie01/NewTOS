@@ -1,0 +1,10 @@
+  case 29: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 29: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 32: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 32: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 43: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 43: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 59: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 59: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+NewTOS contract (ADR-038, 32-plane setting), no oracle: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-v18.tsv, VDI palette table (vq_color, v_get_pixel)
+4 of 19 cases differ from the NewTOS contract

@@ -1,0 +1,36 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump aes tosdump/cases/aes-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/base-v32/aes-r1 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/base-v32 --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-AES.BIN`
+tosdump: command   cargo xtask tosdump aes tosdump/cases/aes-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/base-v32/aes-r1 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/base-v32 --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-AES.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    06ef14f5b040525b3008c3597ffe6b95ffc0360f
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit 06ef14f5b040525b3008c3597ffe6b95ffc0360f
+tosdump: features  (none)
+tosdump: bootargs  serial=on vdiplanes=32 (--bootargs vdiplanes=32 after the fixed serial=on: NOT the default boot)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/tosdump/cases/aes-r1.tsv sha256 f7e6c72b7ba45a6e97fd8b3d9cddf625afdc4b6997a4f2610ae3ff39c2a90f39
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (5 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 471be47f8a03bdc57cb67953f6ea04c913237b0346f44d42e6f6b9218440ffd7
+tosdump: kernel ELF  sha256 5e66767ae5387c089f955ecf4a00527a3911e1d2365289cd974cfe653d940a64 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPAES.NAP (tosdump/build-dumpaes-newtos.sh) in the measured tree …
+tosdump: dumper build id 06ef
+tosdump: DUMPAES.NAP sha256 764057bfb37f2381d575e98e2dda1d569924ab11b5327f19e43f40b88a2c6485
+tosdump: card.img.manifest: image_sha256 526261e0f243c4f8eb4c32c14d64c66119337858240e91bc5123c6bc431b7db7
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/base-v32/tosdump-99255/card.img sha256 526261e0f243c4f8eb4c32c14d64c66119337858240e91bc5123c6bc431b7db7 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on vdiplanes=32, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPAES.NAP, rc=0
+tosdump: card after the run sha256 32f07cef4bcceb5c0e97b33ba26207416581652d354ca7df1bf2cb2d81c666ef
+tosdump: AES.BIN 11432 bytes, sha256 690816c001b36421157999b25482ba9d70868e1d42a17a7561f16eca3aa7c02c
+tosdump: AES.LOG 299 bytes, sha256 4feadf5478fbc503f07ac29224b343ef9d5a7052846c1f87c0e33f0667a553c7
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/base/tosdump/host/build/tosdiff sha256 e9352f3847b62ecdd5cd73c77460b637d80a018b2c7948ebbc5dc3a567640228
+tosdump: tosdiff --validate: exit 0 AES.BIN: area AES, 95 records of 120 bytes, build 06ef, case CRC 33C13C8F
+tosdump: tosdiff EMUTOS-1a7484ab-AES.BIN vs NEWTOS.BIN: exit 1, 95 of 95 cases differ
+tosdump: total     33 s
+tosdump: result    run complete (differences above are findings, not failures)

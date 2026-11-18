@@ -1,0 +1,73 @@
+base-default vdi-all exit 0
+base-default vdi-v18 exit 0
+base-default vdi-v18-t2 exit 0
+base-default vdi-v18-t3 exit 0
+base-default vdi-a131-palette exit 0
+base-default vdi-raster exit 0
+base-default vdi-raster-screen exit 0
+base-default vdi-v18-raster exit 0
+base-default vdi-v18-t2-raster exit 0
+base-default aes-r1 exit 0
+base-default bios-r1 exit 0
+base-default DONE
+base-v16 vdi-all exit 0
+base-v16 vdi-v18 exit 0
+base-v16 vdi-v18-t2 exit 0
+base-v16 vdi-v18-t3 exit 0
+base-v16 vdi-a131-palette exit 0
+base-v16 vdi-raster exit 0
+base-v16 vdi-raster-screen exit 0
+base-v16 vdi-v18-raster exit 0
+base-v16 vdi-v18-t2-raster exit 0
+base-v16 aes-r1 exit 0
+base-v16 bios-r1 exit 0
+base-v16 DONE
+wt-default vdi-all exit 0
+wt-default vdi-v18 exit 0
+wt-default vdi-v18-t2 exit 0
+wt-default vdi-v18-t3 exit 0
+wt-default vdi-a131-palette exit 0
+wt-default vdi-raster exit 0
+wt-default vdi-raster-screen exit 0
+wt-default vdi-v18-raster exit 0
+wt-default vdi-v18-t2-raster exit 0
+wt-default aes-r1 exit 0
+wt-default bios-r1 exit 0
+wt-default DONE
+wt-v16 vdi-all exit 0
+wt-v16 vdi-v18 exit 0
+wt-v16 vdi-v18-t2 exit 0
+wt-v16 vdi-v18-t3 exit 0
+wt-v16 vdi-a131-palette exit 0
+wt-v16 vdi-raster exit 0
+wt-v16 vdi-raster-screen exit 0
+wt-v16 vdi-v18-raster exit 0
+wt-v16 vdi-v18-t2-raster exit 0
+wt-v16 aes-r1 exit 0
+wt-v16 bios-r1 exit 0
+wt-v16 DONE
+wt-v32 vdi-all exit 0
+wt-v32 vdi-v18 exit 0
+wt-v32 vdi-v18-t2 exit 0
+wt-v32 vdi-v18-t3 exit 0
+wt-v32 vdi-a131-palette exit 0
+wt-v32 vdi-raster exit 0
+wt-v32 vdi-raster-screen exit 1
+wt-v32 vdi-v18-raster exit 0
+wt-v32 vdi-v18-t2-raster exit 0
+wt-v32 aes-r1 exit 0
+wt-v32 bios-r1 exit 0
+wt-v32 DONE
+base-v32 vdi-all exit 0
+base-v32 vdi-v18 exit 0
+base-v32 vdi-v18-t2 exit 0
+base-v32 vdi-v18-t3 exit 0
+base-v32 vdi-a131-palette exit 0
+base-v32 vdi-raster exit 0
+base-v32 vdi-raster-screen exit 1
+base-v32 vdi-v18-raster exit 0
+base-v32 vdi-v18-t2-raster exit 0
+base-v32 aes-r1 exit 0
+base-v32 bios-r1 exit 0
+base-v32 DONE
+ALLDONE
