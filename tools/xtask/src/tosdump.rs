@@ -6,7 +6,7 @@
 //! ```text
 //! cargo xtask tosdump <dumper> <table.tsv> --out <dir> [--reference <BIN>]...
 //!       [--tree <dir>] [--features a,b] [--disk | --testdisk <img>]
-//!       [--scratch <dir>] [--time-limit <s>]
+//!       [--bootargs <args>]... [--scratch <dir>] [--time-limit <s>]
 //! ```
 //!
 //! The run, in order:
@@ -60,6 +60,12 @@
 //!    `<out>/BOOT-SERIAL.txt`; the run ends when the desktop is up after the
 //!    dumper, on a kernel panic / unhandled exception / program crash screen
 //!    (own message, [`scan_serial`]), when QEMU exits, or at the time limit.
+//!    `--bootargs <args>` (repeatable, TASK/V68.md) appends further kernel
+//!    boot arguments after the fixed `serial=on`, e.g. `vdiplanes=32`
+//!    ([`qemu_append`]); a token `serial=…` is refused, so the option cannot
+//!    drop or override it. Without the option the QEMU call is the one above,
+//!    unchanged ([`qemu_args`]). `tosdump-run.txt` records the append string
+//!    of every run (`bootargs` and `qemu` lines), the default included.
 //! 5. **Results** into `--out` (must be new or empty): `<AREA>.BIN`/`.LOG`
 //!    (mcopy from the program partition), the card manifest(s), the dumper,
 //!    the build logs, `tosdiff --validate` and one `tosdiff` per
@@ -75,6 +81,7 @@
 //! crash, a timeout or a failed step ends with a non-zero status after
 //! everything that exists has been saved.
 
+use std::ffi::OsString;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
@@ -136,6 +143,9 @@ pub struct Opts {
     pub disk: Disk,
     pub scratch: Option<PathBuf>,
     pub time_limit: u64,
+    /// Extra kernel boot arguments (`--bootargs`), whitespace-split tokens
+    /// in the order given; empty = the default `-append serial=on`.
+    pub bootargs: Vec<String>,
 }
 
 /// The run profiles' one definition (TOOL19), relative to the harness tree:
@@ -286,9 +296,61 @@ pub const ARG_TRACE_FEATURE: &str = "bios-arg-trace";
 pub const USAGE: &str = "\
 usage: cargo xtask tosdump <dumper> <table.tsv> --out <dir> [--reference <BIN>]...
          [--tree <dir>] [--features a,b] [--disk | --testdisk <img>]
-         [--scratch <dir>] [--time-limit <s>]
+         [--bootargs <args>]... [--scratch <dir>] [--time-limit <s>]
   <dumper>  bios | vdi | aes | rast (built in the measured tree), or the path
-            of a prebuilt DUMPBIOS/DUMPVDI/DUMPAES/DUMPRAST.NAP";
+            of a prebuilt DUMPBIOS/DUMPVDI/DUMPAES/DUMPRAST.NAP
+  --bootargs <args>
+            kernel boot arguments appended after the fixed serial=on of the
+            QEMU -append string (e.g. vdiplanes=32); repeatable; a serial=
+            token is refused; recorded in tosdump-run.txt";
+
+/// The boot argument every run passes first: the rpi4 kernel is UART-silent
+/// without it (`kernel/src/bootargs.rs`, `SERIAL_ON`), and the run is
+/// watched on the serial line.
+pub const SERIAL_ON: &str = "serial=on";
+
+/// The QEMU `-append` string: [`SERIAL_ON`], then the `--bootargs` tokens
+/// in order, one space apart. Without extra tokens it is exactly
+/// `serial=on`, the string of every run before TASK/V68.md.
+pub fn qemu_append(extra: &[String]) -> String {
+    std::iter::once(SERIAL_ON).chain(extra.iter().map(String::as_str)).collect::<Vec<_>>().join(" ")
+}
+
+/// The QEMU command line (without the program name): `raspi4b`, no reboot,
+/// no display, serial into `serial`, the boot arguments `append`, the
+/// kernel `kernel` and the SD card `card`.
+pub fn qemu_args(serial: &Path, append: &str, kernel: &Path, card: &Path) -> Vec<OsString> {
+    vec![
+        "-M".into(),
+        "raspi4b".into(),
+        "-no-reboot".into(),
+        "-display".into(),
+        "none".into(),
+        "-serial".into(),
+        format!("file:{}", serial.display()).into(),
+        "-append".into(),
+        append.into(),
+        "-kernel".into(),
+        kernel.as_os_str().to_owned(),
+        "-drive".into(),
+        format!("file={},if=sd,format=raw", card.display()).into(),
+    ]
+}
+
+/// The tokens of one `--bootargs` value: split at whitespace (as the kernel
+/// splits its command line, `kernel/src/bootargs.rs`, `has_token`). Refused:
+/// a value without a token, and a token that starts with `serial=` -- the
+/// harness's [`SERIAL_ON`] is fixed, the option only adds.
+pub fn parse_bootargs(value: &str) -> Result<Vec<String>, String> {
+    let tokens: Vec<String> = value.split_ascii_whitespace().map(str::to_string).collect();
+    if tokens.is_empty() {
+        return Err("--bootargs: the value names no boot argument".into());
+    }
+    if let Some(t) = tokens.iter().find(|t| t.starts_with("serial=")) {
+        return Err(format!("--bootargs: '{t}': {SERIAL_ON} is fixed by tosdump; the option adds arguments, it does not set serial="));
+    }
+    Ok(tokens)
+}
 
 /// `p` made absolute against `cwd` and lexically normalised (`.` dropped,
 /// `..` folded); the file need not exist.
@@ -351,6 +413,7 @@ pub fn parse_args(args: &[String], cwd: &Path) -> Result<Opts, String> {
     let mut disk = Disk::None;
     let mut scratch = None;
     let mut time_limit = DEFAULT_TIME_LIMIT;
+    let mut bootargs: Vec<String> = Vec::new();
     let mut it = args.iter();
     while let Some(a) = it.next() {
         let mut value = |flag: &str| it.next().cloned().ok_or(format!("{flag} requires a value"));
@@ -365,6 +428,7 @@ pub fn parse_args(args: &[String], cwd: &Path) -> Result<Opts, String> {
                     .filter(|s| !s.is_empty())
                     .map(str::to_string),
             ),
+            "--bootargs" => bootargs.extend(parse_bootargs(&value("--bootargs")?)?),
             "--time-limit" => {
                 let v = value("--time-limit")?;
                 time_limit = v
@@ -404,6 +468,7 @@ pub fn parse_args(args: &[String], cwd: &Path) -> Result<Opts, String> {
         disk,
         scratch,
         time_limit,
+        bootargs,
     })
 }
 
@@ -1005,6 +1070,12 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     }
     rep.line(format!("harness commit {}", git_line(harness, &["rev-parse", "HEAD"])));
     rep.line(format!("features  {}", if o.features.is_empty() { "(none)".into() } else { o.features.join(",") }));
+    let append = qemu_append(&o.bootargs);
+    rep.line(if o.bootargs.is_empty() {
+        format!("bootargs  {append} (the default; no --bootargs)")
+    } else {
+        format!("bootargs  {append} (--bootargs {} after the fixed {SERIAL_ON}: NOT the default boot)", o.bootargs.join(" "))
+    });
     rep.line(format!("table     {} sha256 {}", o.table.display(), sha256(&o.table)?));
     if destructive {
         rep.line("table     DESTRUCTIVE: runs on a fresh clone of the test image (the card is built from it for this run)");
@@ -1192,17 +1263,11 @@ pub fn cmd(harness: &Path, args: &[String]) -> Result<(), String> {
     let serial = out.join("BOOT-SERIAL.txt");
     fs::write(&serial, b"").map_err(|e| e.to_string())?;
     let mut q = Command::new("qemu-system-aarch64");
-    q.args(["-M", "raspi4b", "-no-reboot", "-display", "none"])
-        .arg("-serial")
-        .arg(format!("file:{}", serial.display()))
-        .args(["-append", "serial=on", "-kernel"])
-        .arg(&kimg)
-        .arg("-drive")
-        .arg(format!("file={},if=sd,format=raw", boot.display()))
+    q.args(qemu_args(&serial, &append, &kimg, &boot))
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::from(fs::File::create(out.join("qemu-stderr.txt")).map_err(|e| e.to_string())?));
-    rep.line(format!("qemu      raspi4b, -append serial=on, time limit {} s", o.time_limit));
+    rep.line(format!("qemu      raspi4b, -append {append}, time limit {} s", o.time_limit));
     let started = Instant::now();
     let mut qemu = Qemu(q.spawn().map_err(|e| format!("qemu-system-aarch64: {e}"))?);
     let limit = Duration::from_secs(o.time_limit);
@@ -1455,6 +1520,7 @@ mod tests {
         assert_eq!(o.tree, None);
         assert_eq!(o.disk, Disk::None);
         assert_eq!(o.time_limit, DEFAULT_TIME_LIMIT);
+        assert!(o.bootargs.is_empty());
     }
 
     #[test]
@@ -1497,9 +1563,82 @@ mod tests {
             &["vdi", "t.tsv", "--out", "o", "--disk"][..],            // disk round is BIOS
             &["bios", "t.tsv", "--out", "o", "--time-limit", "0"][..],
             &["bios", "t.tsv", "--out", "o", "--bogus"][..],
+            &["bios", "t.tsv", "--out", "o", "--bootargs"][..],       // flag without value
+            &["bios", "t.tsv", "--out", "o", "--bootargs", ""][..],   // no token
+            &["bios", "t.tsv", "--out", "o", "--bootargs", " \t"][..], // no token
         ] {
             assert!(parse_args(&s(bad), cwd).is_err(), "{bad:?}");
         }
+    }
+
+    /// TASK/V68.md: without `--bootargs` the run passes exactly
+    /// `-append serial=on`, and the QEMU call is the one every run made
+    /// before the option existed, argument for argument.
+    #[test]
+    fn without_bootargs_the_qemu_call_is_unchanged() {
+        let o = parse_args(&s(&["bios", "t.tsv", "--out", "o"]), Path::new("/c")).unwrap();
+        assert!(o.bootargs.is_empty());
+        assert_eq!(qemu_append(&o.bootargs), "serial=on");
+        let args = qemu_args(Path::new("/r/BOOT-SERIAL.txt"), &qemu_append(&o.bootargs), Path::new("/s/kernel8.img"), Path::new("/s/run.img"));
+        let want = [
+            "-M",
+            "raspi4b",
+            "-no-reboot",
+            "-display",
+            "none",
+            "-serial",
+            "file:/r/BOOT-SERIAL.txt",
+            "-append",
+            "serial=on",
+            "-kernel",
+            "/s/kernel8.img",
+            "-drive",
+            "file=/s/run.img,if=sd,format=raw",
+        ];
+        assert_eq!(args, want.map(OsString::from));
+    }
+
+    /// `--bootargs` adds tokens after `serial=on`, in the order given,
+    /// repeatable, whitespace normalised to one space; only the `-append`
+    /// value of the call changes.
+    #[test]
+    fn bootargs_are_appended_after_serial_on() {
+        let cwd = Path::new("/c");
+        let o = parse_args(&s(&["vdi", "t.tsv", "--out", "o", "--bootargs", "vdiplanes=32"]), cwd).unwrap();
+        assert_eq!(o.bootargs, s(&["vdiplanes=32"]));
+        assert_eq!(qemu_append(&o.bootargs), "serial=on vdiplanes=32");
+        let o = parse_args(
+            &s(&["bios", "t.tsv", "--bootargs", " vdiplanes=32\tmemprot=off ", "--out", "o", "--bootargs", "asid=on"]),
+            cwd,
+        )
+        .unwrap();
+        assert_eq!(o.bootargs, s(&["vdiplanes=32", "memprot=off", "asid=on"]));
+        assert_eq!(qemu_append(&o.bootargs), "serial=on vdiplanes=32 memprot=off asid=on");
+        let p = Path::new("/p");
+        let base = qemu_args(p, &qemu_append(&[]), p, p);
+        let with = qemu_args(p, &qemu_append(&o.bootargs), p, p);
+        let i = base.iter().position(|a| a == "-append").unwrap() + 1;
+        assert_eq!(with[i], "serial=on vdiplanes=32 memprot=off asid=on");
+        assert_eq!(base.len(), with.len());
+        for (k, (a, b)) in base.iter().zip(&with).enumerate() {
+            if k != i {
+                assert_eq!(a, b, "argument {k} other than the -append value changed");
+            }
+        }
+    }
+
+    /// The option cannot drop or override `serial=on`: a `serial=` token is
+    /// refused, and whatever is accepted comes after the fixed token.
+    #[test]
+    fn bootargs_cannot_touch_serial_on() {
+        let cwd = Path::new("/c");
+        for v in ["serial=off", "serial=on", "vdiplanes=32 serial=", "serial=onx"] {
+            let e = parse_args(&s(&["bios", "t.tsv", "--out", "o", "--bootargs", v]), cwd).unwrap_err();
+            assert!(e.contains("serial="), "{v}: {e}");
+        }
+        // Not a serial= token: accepted, and serial=on still leads.
+        let o = parse_args(&s(&["bios", "t.tsv", "--out", "o", "--bootargs", "xserial=on"]), cwd).unwrap();
+        assert!(qemu_append(&o.bootargs).starts_with("serial=on "));
     }
 
     #[test]

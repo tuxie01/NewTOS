@@ -1,4 +1,4 @@
-# XBIOS17 — qemu-virt: `Bconout(1)` verwirft, obwohl der Empfang jetzt arbeitet
+# XBIOS17 — qemu-virt: `Bconout(1)` discards, although reception now works
 
 Status: ACCEPTED (2026-11-11) | Priority: P3 | Ref: docs/COMPATIBILITY.md
 
@@ -7,43 +7,43 @@ Migrated (owner batch 16, 2026-11-11, to ACCEPTED), evidence: commit 639c3aa02 (
 Line 3 before the migration:
 Status: **GESCHLOSSEN** 2026-10-29 (ACCEPTED-Abweichung, Anwender) · Prioritaet: **P3** · Typ: Developer — Anwenderentscheidung 2026-10-29, Fund aus [XBIOS15](XBIOS15.md); Entscheidung offen, erst Bericht
 
-## Sachverhalt
+## Facts
 
-- Seit XBIOS15 liest AUX auf qemu-virt aus dem Ring von Geraet 0
-  (`kernel/src/console.rs@AuxSerial`); `Bconout(1)`/`Bcostat(1)` laufen
-  weiter ueber `AuxNoCable` (`tos-api/src/bios/chardev.rs:132@AuxNoCable`:
-  `Bconout` verwirft und meldet 1, `Bcostat` -1).
-- **Bericht des Leads (2026-10-29), keine Entscheidung:**
-  - Die UART ist geteilt: `SerialConsole` ist der einzige Sendeweg fuer
-    `kprint!`/`kprintln!`, Programm-Konsolenausgabe, Panik-Handler und
-    Selbsttests (`kernel/src/console.rs:106-111@SerialConsole`). `Bconout(1)`
-    auf die UART wuerde sich mit dem Kernel-Log mischen.
-  - Was es beruehren koennte: Laeufe, die das serielle Log nach Markern
-    durchsuchen — `cargo xtask tosdump` (`scan_serial`,
-    `tools/xtask/src/tosdump.rs:527@scan_serial`, „desktop up“, Panik-Zeilen),
-    die Sondenskripte unter `tosdump/probes/` und Messlaeufe mit
-    `-serial file:`. Diese laufen auf raspi4b; dort ist AUX „kein Kabel“ und
-    bliebe es. Auf qemu-virt lesen `virtrun.py`-artige Laeufe das Log per
-    Regex: ein Programm, das auf AUX schreibt, koennte Marker vortaeuschen
-    oder Zeilen zerreissen.
-  - EmuTOS gibt AUX-Ausgabe ueber `bconout1` an die serielle Schnittstelle
-    (`references/emutos/bios/serport.c:279-317`); das Kernel-Log hat EmuTOS
-    nicht auf dieser Leitung.
+- Since XBIOS15 AUX on qemu-virt reads from the ring of device 0
+  (`kernel/src/console.rs@AuxSerial`); `Bconout(1)`/`Bcostat(1)` still go
+  through `AuxNoCable` (`tos-api/src/bios/chardev.rs:132@AuxNoCable`:
+  `Bconout` discards and reports 1, `Bcostat` -1).
+- **Lead's report (2026-10-29), no decision:**
+  - The UART is shared: `SerialConsole` is the only send path for
+    `kprint!`/`kprintln!`, program console output, panic handler and
+    self-tests (`kernel/src/console.rs:106-111@SerialConsole`). `Bconout(1)`
+    to the UART would mix with the kernel log.
+  - What it could affect: runs that search the serial log for markers
+    — `cargo xtask tosdump` (`scan_serial`,
+    `tools/xtask/src/tosdump.rs:592@scan_serial`, "desktop up", panic lines),
+    the probe scripts under `tosdump/probes/` and measurement runs with
+    `-serial file:`. These run on raspi4b; there AUX is "no cable" and
+    would stay so. On qemu-virt, `virtrun.py`-style runs read the log by
+    regex: a program writing to AUX could fake markers
+    or tear lines apart.
+  - EmuTOS sends AUX output through `bconout1` to the serial port
+    (`references/emutos/bios/serport.c:279-317`); EmuTOS has no kernel log
+    on that line.
 
-## Arbeit (nach Entscheidung)
+## Work (after the decision)
 
-0. Lokalisierung (Lead) nach CLAUDE.md „Testing“.
-1. Entscheidung beim Anwender, z. B. `Bconout(1)` auf die UART (mit
-   Trennung vom Kernel-Log, etwa Kernel-Log nur bei `serial=on`), oder
-   weiter verwerfen als dokumentierte Abweichung.
+0. Localisation (lead) per CLAUDE.md "Testing".
+1. Decision by the user, e.g. `Bconout(1)` to the UART (separated
+   from the kernel log, e.g. kernel log only with `serial=on`), or
+   keep discarding as a documented deviation.
 
-## Abnahme
+## Acceptance
 
-- Nach Entscheidung; Messfall gegen das Orakel (Hatari `--rs232-out`).
+- After the decision; a measurement case against the oracle (Hatari `--rs232-out`).
 
-## Anwenderentscheidung 2026-10-29
+## User decision 2026-10-29
 
-- ACCEPTED-Abweichung auf qemu-virt: AUX-Ausgabe wird verworfen, die UART ist
-  mit dem Kernel-Log geteilt, qemu-virt ist ein Entwicklungsboard. Eintrag in
-  `docs/COMPATIBILITY.md`; wiedervorlegen, wenn ein Port auf AUX schreibt.
-  Ticket geschlossen.
+- ACCEPTED deviation on qemu-virt: AUX output is discarded, the UART is
+  shared with the kernel log, qemu-virt is a development board. Entry in
+  `docs/COMPATIBILITY.md`; revisit when a port writes to AUX.
+  Ticket closed.

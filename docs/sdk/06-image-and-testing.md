@@ -304,7 +304,7 @@ cargo xtask run --board rpi4 --sd /tmp/sd.img --release  # release-profile kerne
 cargo xtask run --board rpi4 --sd /tmp/sd.img --debug    # halted, gdbstub on :1234
 ```
 
-`cmd_run_rpi4` (`tools/xtask/src/main.rs:991@cmd_run_rpi4`) builds the kernel for
+`cmd_run_rpi4` (`tools/xtask/src/main.rs:995@cmd_run_rpi4`) builds the kernel for
 `rpi4`, produces `kernel8.img` beside the kernel ELF,
 `target/aarch64-unknown-none-softfloat/<debug|release>/kernel8.img`, by
 `objcopy -O binary` (`tools/xtask/src/main.rs:676@produce_kernel8_img`; never in the

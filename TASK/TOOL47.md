@@ -69,7 +69,7 @@ Worktree branch `worktree-agent-a8b2d21b93aa0c6b8`, based on `b76a31c6b`. Receip
   (`tools/xtask/src/doc_check.rs:2087@refs_absent`), and adds the link forms, which have one candidate and fail in
   both trees. It passes without the switch; doc-check itself is unchanged.
 - **Report** (Work 4): `cargo xtask test` points `NEWTOS_SKIP_LOG` at `xtask-test-skips.log` in the workspace target directory
-  (`tools/xtask/src/main.rs:1067@skip_log`) and prints the sorted skip lines at the end
+  (`tools/xtask/src/main.rs:1071@skip_log`) and prints the sorted skip lines at the end
   (`tools/xtask/src/main.rs:1117@report_skips`, text from `tools/xtask/src/test_inputs.rs:110@summary`); nothing
   when nothing skipped.
 - **Host tests** (Work 5): `tools/xtask/src/test_inputs.rs` `mod tests`: only `1` is the switch; present runs

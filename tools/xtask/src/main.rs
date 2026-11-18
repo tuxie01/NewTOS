@@ -287,7 +287,7 @@ Commands:
                                    (test_tiers.rs, TOOL04), named at the end
   tosdump <dumper> <table.tsv> --out <dir> [--reference <BIN>]...
           [--tree <dir>] [--features a,b] [--disk | --testdisk <img>]
-          [--scratch <dir>] [--time-limit <s>]
+          [--bootargs <args>]... [--scratch <dir>] [--time-limit <s>]
                                  — one tosdump run on NewTOS (TOOL09): kernel
                                    (rpi4, release) and dumper (bios|vdi|aes|
                                    rast, or a DUMP*.NAP path) built in the
@@ -303,7 +303,11 @@ Commands:
                                    partition comparison (a destructive
                                    table runs only there); --features
                                    bios-arg-trace adds the input check
-                                   (tools/biostrace-check.py, TOOL08)
+                                   (tools/biostrace-check.py, TOOL08);
+                                   --bootargs appends kernel boot
+                                   arguments after the fixed serial=on
+                                   (e.g. vdiplanes=32; a serial= token is
+                                   refused; recorded in tosdump-run.txt)
   help
 {}{}{}{}", tickets::USAGE, tickets::migrate::USAGE, worktree_setup::USAGE, scratch::USAGE);
 }

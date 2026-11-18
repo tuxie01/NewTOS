@@ -1,4 +1,4 @@
-# TOOL19 — `DISKUNIT.TXT`: Inhalt im RUNINFO, Abweisung bei fehlender oder falscher Einheit
+# TOOL19 — `DISKUNIT.TXT`: content in RUNINFO, refusal on a missing or wrong unit
 
 Status: DONE (2026-11-11) | Priority: P2 | Commit: 6f38e9b9f | Receipt: TOOL19-STATUS-DONE.MD
 
@@ -7,31 +7,31 @@ Migrated (owner batch 5, 2026-11-11), evidence: receipt TASK/TOOL19-STATUS-DONE.
 Line 3 before the migration:
 Status: **ERLEDIGT** 2026-10-29 ([Quittung](TOOL19-STATUS-DONE.MD)) · Prioritaet: **P2** · Typ: Developer (Werkzeug) — Anwenderentscheidung 2026-10-28, aus [TOOL07](TOOL07.md)
 
-## Sachverhalt
+## Facts
 
-- TOOL07 loest das Einheiten-Token `u:0` ueber `D:\DISKUNIT.TXT` auf, die die
-  Profildefinition schreibt (seit TOOL19 aus `tosdump/profiles.tsv`:
+- TOOL07 resolves the unit token `u:0` through `D:\DISKUNIT.TXT`, which the
+  profile definition writes (since TOOL19 from `tosdump/profiles.tsv`:
   `tools/hatari-oracle.sh:237@DISKUNIT`: 18;
-  `tools/xtask/src/tosdump.rs:1150@DISKUNIT`: 26). DUMPBIOS laeuft eine Tabelle
-  mit `u:0` nicht, wenn die Datei fehlt (`tosdump/core/dumpbios.c:51@unit_path`).
-- Anwender 2026-10-28: in Ordnung, **wenn** (a) die Datei immer aus der
-  Profildefinition erzeugt wird, nie von Hand; (b) ihr Inhalt im RUNINFO steht;
-  (c) der Runner abweist, wenn sie fehlt oder nicht zum Profil passt — kein
-  Standardwert.
+  `tools/xtask/src/tosdump.rs:1221@DISKUNIT`: 26). DUMPBIOS does not run a table
+  with `u:0` when the file is missing (`tosdump/core/dumpbios.c:51@unit_path`).
+- User 2026-10-28: acceptable **if** (a) the file is always generated from the
+  profile definition, never by hand; (b) its content is recorded in RUNINFO;
+  (c) the runner refuses when it is missing or does not match the profile — no
+  default value.
 
-## Arbeit
+## Work
 
-1. Pruefen und belegen, dass (a) gilt (keine handgeschriebene Kopie in
-   `measurements/`-Methoden oder Tabellen).
-2. (b): die Einheit steht im RUNINFO bzw. Manifest beider Seiten (Orakel-
-   Skript und `cargo xtask tosdump`) und im LOG des Dumpers.
-3. (c): `cargo xtask tosdump` und `tools/hatari-oracle.sh` weisen eine Tabelle
-   mit `u:0` ab, wenn die Datei fehlt oder ihr Wert nicht der Einheit des
-   Profils entspricht; tosdiff vergleicht nur Laeufe, deren aufgezeichnete
-   Einheit zum jeweiligen Profil passt. Kein Standardwert.
-4. Tests fuer die Abweisungen.
+1. Check and show that (a) holds (no handwritten copy in
+   `measurements/` methods or tables).
+2. (b): the unit is recorded in the RUNINFO or manifest of both sides (oracle
+   script and `cargo xtask tosdump`) and in the dumper's LOG.
+3. (c): `cargo xtask tosdump` and `tools/hatari-oracle.sh` refuse a table
+   with `u:0` when the file is missing or its value does not match the
+   profile's unit; tosdiff compares only runs whose recorded
+   unit matches the respective profile. No default value.
+4. Tests for the refusals.
 
-## Abnahme
+## Acceptance
 
-- Abweisungen gemessen (fehlend, falscher Wert); Hosttests gruen
-  (`cargo xtask test`, `make -C tosdump host-test`); doc-check 0 Fehler.
+- Refusals measured (missing, wrong value); host tests green
+  (`cargo xtask test`, `make -C tosdump host-test`); doc-check 0 failures.
