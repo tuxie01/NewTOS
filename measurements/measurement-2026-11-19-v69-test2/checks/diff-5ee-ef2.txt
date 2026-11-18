@@ -1,0 +1,4 @@
+ TASK/V69-STATUS-UNFINISHED.MD    |  59 +++++++++++++++++++-
+ docs/TOS-REFERENCE-DUMPER.md     |  13 +++++
+ tosdump/host/contract32-check.py | 116 +++++++++++++++++++++++++++++++++------
+ 3 files changed, 169 insertions(+), 19 deletions(-)

@@ -1,0 +1,34 @@
+command   cargo xtask tosdump rast tosdump/cases/vdi-raster.tsv --reference tosdump/reference/EMUTOS-1a7484ab-RASTER.BIN --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/d-vdi-raster --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch
+cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    ef2a14395ce7601ad62caebd3949de9c83d35e5c
+dirty     0 path(s) in git status --porcelain
+harness commit ef2a14395ce7601ad62caebd3949de9c83d35e5c
+features  (none)
+bootargs  serial=on (the default; no --bootargs)
+table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-raster.tsv sha256 4b81d3cc17c0c171217a848696cbf2c1d9e4b856f19559028bd44ecb98a64082
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 fb522ba5852d715d0e70757e4e6745b4d5397da896f3cbf649cf9e481a407306
+kernel ELF  sha256 44f89aae00e4a83105842eb4de7092859ce8d1e48c4b0fc37a9c463c00f5b41d (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPRAST.NAP (tosdump/build-dumprast-newtos.sh) in the measured tree …
+dumper build id ef2a
+DUMPRAST.NAP sha256 3ebc8f19b21db38cefb1955bade486f8eb2ba5febe8980c407a5d364dbb8d3a3
+card.img.manifest: image_sha256 8af23e42ea376829d5262725cafa438b94051fddf0cb84aa87e41cfbdc2b7426
+card.img.manifest: optional_missing none
+card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/tosdump-8263/card.img sha256 8af23e42ea376829d5262725cafa438b94051fddf0cb84aa87e41cfbdc2b7426 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPRAST.NAP, rc=0
+card after the run sha256 e1bbad12b79a2aa454b1fff539a052f7e26a81b799a01425fbe35d425fb34e02
+RASTER.BIN 218096 bytes, sha256 c487dbdc74b5275064031d7bdbf74ae2e51e1ae47535822e30a2f9cf7879660e
+RASTER.LOG 401 bytes, sha256 cd8fbeaf70e2c44ea5c60f184b4995f896712201aff8d57c57a7909c2541381a
+tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 328f9c61606027e32d31e2f2cb8a219076d043e6dae016b2fc19b37fccd48336
+tosdiff --validate: exit 0 RASTER.BIN: area VDI-RASTER, 59 records of 3696 bytes, build ef2a, case CRC 702EEA7D
+tosdiff EMUTOS-1a7484ab-RASTER.BIN vs NEWTOS.BIN: exit 1, 1 of 59 cases differ
+total     37 s
+result    run complete (differences above are findings, not failures)

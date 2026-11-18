@@ -1,0 +1,39 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/xtask tosdump vdi tosdump/cases/vdi-all.tsv --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all.BIN --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/v32-vdi-all --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch`
+tosdump: command   cargo xtask tosdump vdi tosdump/cases/vdi-all.tsv --bootargs vdiplanes=32 --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all.BIN --reference tosdump/reference/EMUTOS-1a7484ab-VDI-all-falcontc.BIN --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/runs/v32-vdi-all --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    ef2a14395ce7601ad62caebd3949de9c83d35e5c
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit ef2a14395ce7601ad62caebd3949de9c83d35e5c
+tosdump: features  (none)
+tosdump: bootargs  serial=on vdiplanes=32 (--bootargs vdiplanes=32 after the fixed serial=on: NOT the default boot)
+tosdump: setting   vdiplanes=32: the 32-plane setting has no oracle (ADR-038 point 13); every comparison with an oracle dump below is informational
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-all.tsv sha256 7ca7de7ce52af54e82bfe0dca8dff310b32f75359177068060172a841a764ada
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (5 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 fb522ba5852d715d0e70757e4e6745b4d5397da896f3cbf649cf9e481a407306
+tosdump: kernel ELF  sha256 44f89aae00e4a83105842eb4de7092859ce8d1e48c4b0fc37a9c463c00f5b41d (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPVDI.NAP (tosdump/build-dumpvdi-newtos.sh) in the measured tree …
+tosdump: dumper build id ef2a
+tosdump: DUMPVDI.NAP sha256 356257b8ece8e3f1a7327f838ca3408a006fe0a919d3558c8ab688929cc82d3c
+tosdump: card.img.manifest: image_sha256 b46f874d24df27217bf4479af55f3287bc474b5c1e2d5ad3d0c9d3fe304b1753
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/tosdump-19149/card.img sha256 b46f874d24df27217bf4479af55f3287bc474b5c1e2d5ad3d0c9d3fe304b1753 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on vdiplanes=32, time limit 480 s
+tosdump: run       ended normally after 20 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: card after the run sha256 077aa4e77411442f4a3c8cdb1efaef1369017503272536b988a0a4e8c4baf135
+tosdump: VDI.BIN 289776 bytes, sha256 43b152afd5ff2b144fcaa30cf252907cecff3784f6ad6736d5d5d168ab70b89f
+tosdump: VDI.LOG 370 bytes, sha256 8f203b07a1f97bb0028a4a4f10090b269544ec2c808cc1de29009233ee7f891e
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/host/build/tosdiff sha256 328f9c61606027e32d31e2f2cb8a219076d043e6dae016b2fc19b37fccd48336
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 182 records of 1592 bytes, build ef2a, case CRC D135ADAF
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-all.BIN vs NEWTOS.BIN: exit 1, 13 of 182 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN: exit 1, 6 of 182 cases differ [INFORMATIONAL: run at vdiplanes=32, NewTOS contract (ADR-038); the reference is an oracle dump and the oracle has no 32-plane setting -- not an oracle comparison]
+tosdump: contract check (NewTOS contract, ADR-038; tosdump/host/contract32-check.py): exit 3, contract32-check: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/wt/tosdump/cases/vdi-all.tsv has no NewTOS-contract values here (neither a wide raster table nor a VDI table of VDI_CONTRACT_TABLES): not checked
+tosdump: total     38 s
+tosdump: result    run complete (differences above are findings, not failures)

@@ -1,0 +1,1 @@
+contract32-check: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1ff55b6fbd5f4b6f/scratch/neg/a131-copy.tsv has no NewTOS-contract values here (neither a wide raster table nor a VDI table of VDI_CONTRACT_TABLES): not checked

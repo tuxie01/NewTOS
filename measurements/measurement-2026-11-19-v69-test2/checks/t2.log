@@ -1,0 +1,16 @@
+v32-vdi-v18 xtask-exit 0
+v32-vdi-all xtask-exit 0
+v32-vdi-v18-t2 xtask-exit 0
+v32-vdi-v18-t3 xtask-exit 0
+v32-vdi-raster xtask-exit 0
+v32-vdi-raster-screen xtask-exit 1
+v32-vdi-v18-raster xtask-exit 0
+v32-vdi-v18-t2-raster xtask-exit 0
+v32-aes-r1 xtask-exit 0
+v32-bios-r1 xtask-exit 0
+c-raster32 xtask-exit 0
+c-rscreen32 xtask-exit 0
+c-a131pal32 xtask-exit 0
+d-vdi-v18 xtask-exit 0
+d-vdi-raster xtask-exit 0
+T2DONE

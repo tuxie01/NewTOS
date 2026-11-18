@@ -1,0 +1,4 @@
+RASTER32.BIN: area VDI-RASTER32, 64 records of 5744 bytes, build ef2a, case CRC 3A5D30D1
+RASTER32.BIN: format 3, pointer 8 bytes, least significant word first
+RASTER32.BIN: matches vdi-raster-screen32.tsv (64 cases)
+RASTER32.BIN: accepted

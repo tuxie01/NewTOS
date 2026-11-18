@@ -1,0 +1,37 @@
+  FAIL vdi-v18.tsv as area 4: 'palette', want None
+  case 15: intout[1] (v_get_pixel, pen 2): contract 0x0000, recorded 0xFFFF
+  case 18: intout[0] (v_get_pixel, pen 3): contract 0x0000, recorded 0x00FF
+  case 18: intout[1] (v_get_pixel, pen 3): contract 0xFF00, recorded 0xFFFF
+  case 21: intout[0] (v_get_pixel, pen 4): contract 0x0000, recorded 0x00FF
+  case 21: intout[1] (v_get_pixel, pen 4): contract 0x00FF, recorded 0xFFFF
+  case 24: intout[0] (v_get_pixel, pen 4): contract 0x0000, recorded 0x00FF
+  case 24: intout[1] (v_get_pixel, pen 4): contract 0x00FF, recorded 0xFFFF
+  case 29: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 29: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 32: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 32: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 35: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 35: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 40: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 40: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 43: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 43: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 45: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 45: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 47: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 47: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 51: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 51: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 53: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 53: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 59: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 59: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 109: intout[1] (v_get_pixel, pen 2): contract 0x0000, recorded 0xFFFF
+  case 154: intout[1] (v_get_pixel, pen 2): contract 0x0000, recorded 0xFFFF
+  case 199: intout[1] (v_get_pixel, pen 2): contract 0x0000, recorded 0xFFFF
+  case 205: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 205: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  case 209: intout[0] (v_get_pixel, pen None): contract 0x0000, recorded 0x00FF
+  case 209: intout[1] (v_get_pixel, pen None): contract 0x0000, recorded 0xFFFF
+  FAIL vdi-v18.tsv at 32 is not judged: 'VDI palette table', want None
+  2 failure(s)

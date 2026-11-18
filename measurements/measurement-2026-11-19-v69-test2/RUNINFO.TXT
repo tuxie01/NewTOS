@@ -1,0 +1,51 @@
+V69 part A re-test after the FAIL of measurements/measurement-2026-11-19-v69-test/RUNINFO.TXT -- commit ef2a14395 (branch v69; on top of 5ee76a97b), baseline main 3793cdde0
+================================================================================================================================================
+
+VERDICT: PASS (part A). Finding F1 of the first run is fixed; everything the first run found green is unchanged. The ticket stays IMPLEMENTED (part B open; no accept).
+
+Scope: the fix commit ef2a14395 (contract32-check.py judges only its own tables), its test, the dumper doc, and the regression of what was green.
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.327; host clang Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang of all 15 manifests; all 15 "optional_missing none").
+Trees (own, detached, removed at the end): target-agents/agent-a1ff55b6fbd5f4b6f/wt = ef2a14395, .../base = 3793cdde0. Directory size at the end 8.0G (du -sh).
+Not repeated (see the first run, same tooling, same dumper and tosdump.rs): the 16-plane tables at default and vdiplanes=16 branch vs main, the byte-level dump comparison (MFDB pointer cells),
+the guard rails with oracle references, the icprobe runs, the 18-value hand decode. Why that is sound: see item 1.
+
+1. What changed, 5ee76a97b..ef2a14395 (git diff --stat; checks/diff-5ee-ef2.txt): TASK/V69-STATUS-UNFINISHED.MD (receipt), docs/TOS-REFERENCE-DUMPER.md (+13), tosdump/host/contract32-check.py (+116/-19).
+   Nothing else: no tosdump.rs, no dumper (tosdump/core), no tosdiff, no kernel. Content of the checker diff read: is_palette_table() (opcode rule) replaced by VDI_CONTRACT_TABLES
+   {0x7E23929E: vdi-a131-palette.tsv} (CRC32 of the table file); classify(): wide raster table by its own `!screen w,h,32`, palette table by CRC, anything else None; check() carries the
+   table/dump CRC refusal; the selftest gained a classification of every shipped table and two forged dumps. No finding.
+   Consequence for the regression scope: the fix is reachable only at vdiplanes=32 through the checker; the 16-plane default-boot path is bytewise the code of run 1 (verdicts/reports there
+   were identical to main). I re-ran vdi-v18 and vdi-raster at the default boot anyway: "0 of 19" and "1 of 59" cases differ, equal to run 1's base-default.
+2. The failing command (cargo xtask tosdump vdi tosdump/cases/vdi-v18.tsv --bootargs vdiplanes=32 --reference .../EMUTOS-1a7484ab-VDI-v18-falcontc.BIN), now:
+   user sees: "tosdump: contract check (NewTOS contract, ADR-038; tosdump/host/contract32-check.py): exit 3, contract32-check: <path>/vdi-v18.tsv has no NewTOS-contract values here (neither a wide raster
+   table nor a VDI table of VDI_CONTRACT_TABLES): not checked", then "tosdump: result    run complete (differences above are findings, not failures)". Exit status of `cargo xtask tosdump` itself: 0
+   (measured, checks/t2.log "xtask-exit 0"). So a table without contract values is reported as completed, not failed, and the text names it "not checked"; a real failure of the tool is
+   "result FAILED ..." with xtask exit 1 (v32-vdi-raster-screen: "DUMPRAST.NAP exited with rc=1", xtask-exit 1). The doc (TOS-REFERENCE-DUMPER.md, the added paragraph "Which tables it judges") states: every other table
+   run at 32 ends with exit 3, "not checked"; and the second added paragraph says the refused 16-plane !screen table ends exit 1 "screen mismatch ... reports the run as failed". The doc does not
+   spell out "xtask exit 0 for 3" in those words; the "run complete (differences above are findings, not failures)" line carries it. (Remark only, no action needed.)
+   Other ten 16-plane tables at 32 (serial/v32-*.stdout): vdi-all, vdi-v18-t2, vdi-v18-t3, vdi-raster, vdi-v18-raster, vdi-v18-t2-raster, aes-r1, bios-r1: contract exit 3 "not checked", xtask exit 0;
+   vdi-raster-screen: refused by the dumper, xtask exit 1, as documented. All oracle comparisons carry the INFORMATIONAL mark as in run 1.
+3. Contract tables at 32 (xtask exit 0 each): vdi-raster32 0 of 64, vdi-raster-screen32 0 of 64, vdi-a131-palette 0 of 48 (contract check exit 0).
+   Negative controls: (a) checker copy with pen 9 = 540 permille: exit 1, "1 of 64 cases differ", case 112 (checks/neg2.txt); (b) changed copy of vdi-raster32.tsv (V6 pens 8/9 -> 8/10) against the original dump:
+   exit 2, table CRC mismatch (checks/neg1.txt); (c) edited copy of vdi-a131-palette.tsv (one comment line appended) run end to end through cargo xtask tosdump at 32: contract check exit 3 "not checked" (its CRC
+   is no longer in VDI_CONTRACT_TABLES), xtask exit 0 (serial/neg-a131copy*) -- what the new doc paragraph says ("no edited copy of this one"). A changed copy is therefore not judged, not wrongly judged.
+4. The test for the false positive: the new selftest (contract32-check.py --selftest, run by make -C tosdump/host test) classifies every shipped table and runs a forged vdi-v18.tsv dump (all v_get_pixel
+   answering {00FF,FFFF}) through check(): passes on ef2a14395 ("ok"). It cannot run against the 5ee76a97b file (the test lives in the new file), so I put the old opcode rule back into a copy of the new checker's classify()
+   (method/contract32-check-oldrule.py, executed inside wt/tosdump/host so the cases path resolves, then deleted): the selftest FAILS with "vdi-v18.tsv as area 4: 'palette', want None" and
+   "vdi-v18.tsv at 32 is not judged: 'VDI palette table', want None", and prints the old false case lines (cases 15, 18, 21, 24, 29, ...; checks/selftest-oldrule.txt). Honest note: this is the old rule as a pre-fix copy of classify(), not the unmodified 5ee76a97b file (which
+   reproduces the failure on the real dump in run 1: exit 1, 4 of 19).
+5. Regression: cargo xtask test (full, wt) 2579 passed / 0 failed / 7 ignored (= baseline 2576/0/7 + 3; the fix adds no Rust test). cargo xtask build --board qemu-virt and --board rpi4, wt and base: OK, 159 warning lines each,
+   delta 0. cargo clippy -p xtask --all-targets: bin 1 + bin test 9 on both, delta 0. status-check --new-only 0 rejected. doc-check of the edited doc and the receipt: only the two gitignored sdk/gemlib cites a worktree does not link
+   (as run 1; they exist in the main tree). Frozen references and part B: git diff 06ef14f5b ef2a14395 over tosdump/reference references sdk programs kernel tos-api tos-types tools shows only tools/xtask/src/tosdump.rs, which is the
+   first commit's change already tested in run 1 (5ee76a97b..ef2a14395 does not touch it); no reference, sdk, programs, kernel, tos-api or tos-types file changed.
+
+Drove: 15 QEMU raspi4b tosdump runs + 1 edited-copy run, selftests, full tests, both builds on two trees, clippy. Not run: the oracle side, qemu-virt boot (no board code), screendumps (no rendering), icprobe and the full 16-plane matrix (see "Not repeated").
+Real-Pi4-only (not claimed): cache coherence and the QUIRK-001 TTBR0 wedge; HDMI at 32 planes; USB-HID input; silicon timing of the wide dumps (4 items).
+Out-of-scope observations: none new. (The branch's kernel8.img hash differs from main's by the embedded commit id, as in run 1.)
+
+Gitignored outputs cited (agent dir target-agents/agent-a1ff55b6fbd5f4b6f/, removed after this commit):
+  runs/c-raster32/RASTER32.BIN   360K  3c19b602397074f3bb4ed361cf38b093f23525be44ac87b008151d139e4244e5
+  runs/c-rscreen32/RASTER32.BIN  360K  1230ec6d09f2ad2f7d79ca783a5a5fc9a438144c86a6114b1e6e1e51dcc87b73
+  runs/c-a131pal32/VDI.BIN        76K  d2ff135fa359647de87b5d55b1ba015be37ff57f16b241b58b1d48f27aaf0316
+  kernel8.img of the tosdump runs (release, wt): fb522ba5852d715d0e70757e4e6745b4d5397da896f3cbf649cf9e481a407306
+Per-run dump hashes and the booted card hashes are in serial/<run>/tosdump-run.txt; manifests in serial/<run>/card.img.manifest.
+Method: method/run-t2.sh, contract32-check-oldrule.py, r32-mod.tsv.
