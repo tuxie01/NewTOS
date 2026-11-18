@@ -1521,3 +1521,203 @@ manifest-to-recipe mapping of every other image executable was not done (open po
 - **Out-of-scope observations:** the `tosdump` caps at 16 planes (`tosdump/core/cases.c:2548@planes`) belong to ADR-038
   point 13 (iv), not this slice; EmuTOS's AES sets `gl_tmp.fd_stand = TRUE` (`references/emutos/aes/gemgsxif.c:347`), which
   `vro_cpyfm` never reads (`setup_info`, `references/emutos/vdi/vdi_raster.c:919-940`).
+
+---
+
+## 32-plane setting: AES colour icons, the AES inventory, the order of the change (ADR-038 points 10 and 11, V67)
+
+Spec gate of TASK/V67 (researcher, 2026-11-18). **Contract source:** ADR-038 in `docs/MEMORY.md` (point 10
+"colour-icon device forms follow the MFDB of point 5", point 5 for the pixel, point 4 for the pen pixel, point 11 for
+what stays). EmuTOS has no path above 16 planes (`references/emutos/vdi/vdi_defs.h:22`), so at 32 planes the ADR is
+the contract and the oracle cannot decide (ADR-038 point 12). Labels: **[C]** read in the source cited in this run,
+**[I]** inferred, **[N]** NewTOS contract where EmuTOS has no rule (ADR-038 is the only source), **[calc]**
+arithmetic, **[M]** measured by the tester of V65 (`measurements/measurement-2026-11-18-v65-test/RUNINFO.TXT`). The
+VT52 cell writer of the same ticket is in its own file, `docs/api/bios/_vt52-32plane.md` (the VT52 spec,
+`docs/api/bios/_vt52.md`, is German and is not touched here). **At 16 planes nothing in this section applies**: every
+rule is gated on the setting's depth (`backend.planes() == 32`), and section 8 lists the 16-plane paths that stay.
+
+### 1. Inventory: what the AES at 32 planes does after V65, and what is left
+
+**Works (measured or derived, nothing to do in V67):**
+
+| What | Evidence |
+|---|---|
+| `ap_planes` = the backend's plane count | `tos-api/src/aes/appl.rs:369@screen_planes`, set by V62 **[C]** |
+| screen save buffer, pop-up and submenu blocks, the heap fallback, `bb_save`/`bb_restore` follow the depth through `bb_save_words` | `tos-api/src/aes/gsxif.rs:358@gsx_mcalc`, `tos-api/src/aes/gsxif.rs:528@bb_save`, `tos-api/src/aes/gsxif.rs:582@popup_blit_save`, `tos-api/src/vdi/raster.rs:1299@bb_save_words`, one depth source `tos-api/src/vdi/raster/wide.rs:42@device_mem_planes` **[C]**; boot log `gsx_malloc ... len=8294400` at 1920x1080 and `1228800` at 640x480 for `vdiplanes=32`, `4147200` at 16 (`measurements/measurement-2026-11-18-v65-test/serial/aes-v32.log:67`, `measurements/measurement-2026-11-18-v65-test/serial/rpi4-v32.log:54`, `measurements/measurement-2026-11-18-v65-test/serial/aes-v16.log:67`) **[M]** |
+| menu drop-down and dialog restore the screen exactly | V65 RUNINFO item 9: steps before / menu closed / dialog closed differ in 0 pixels per gun at 32; the dialog open differs from main only in the two grey pairs of the V64 pen change **[M]** |
+| mono icons, `BITBLK`, text, patterns, frames | no 16-bit word in their path (kernel mono expansion, `blit_mono`); V65 RUNINFO item 10 viewed the desktop icons at 32 **[M]** |
+| the desktop's plane switch | `programs/desktop/src/global.rs:183@patcol_index` maps every count above 2 to arm 2, as at 16 **[C]** |
+| the AES background pair at start | `tos-api/src/aes/init.rs:351@planes`: `planes > 2` gives index 2 **[C]** |
+
+**Left (every AES site that still assumes a 16-bit pixel or a 16-plane form, found by reading `tos-api/src/aes/`,
+`tos-api/src/vdi/raster.rs` and `kernel/src/vdi_backend.rs`; the patterns of the grep are in section 7):**
+
+| # | Site | What it assumes |
+|---|---|---|
+| L1 | `tos-api/src/aes/resource.rs:3064@palette` `CiconDevice.palette: [u16; 256]` | a pen entry is a 16-bit word |
+| L2 | `tos-api/src/aes/resource.rs:3082@pack_color16` (`CiconDevice::live`) | the palette is built from the 5-bit packer; `pack_color32` exists only as an associated function (`tos-api/src/vdi/vwk.rs:458@pack_color32`), the free re-export is `pack_color16` only (`tos-api/src/vdi/mod.rs:78@pack_color16`) |
+| L3 | `tos-api/src/aes/resource.rs:3151@cicon_pixel` | returns `u16` |
+| L4 | `tos-api/src/aes/resource.rs:3185@transform_cicon` | destination is `*mut u16`, `wd * 16 * h` pixels |
+| L5 | `tos-api/src/aes/resource.rs:3330@bytes` (pass 1: the size of the one buffer) and `tos-api/src/aes/resource.rs:3357@bytes` (pass 2: the cursor step) | `wd * 16 * rows * 2` bytes per image |
+| L6 | `tos-api/src/aes/object.rs:3973@img_bytes` | the span the drawer resolves through the owner's mapping: `stride * 16 * 2 * h` |
+| L7 | `tos-api/src/aes/object.rs:3981@pdata` | `pdata as *const u16`, handed to `blit_device_mem` |
+| L8 | `tos-api/src/vdi/raster.rs:1372@blit_device_mem`, `tos-api/src/vdi/raster.rs:1373@device_mem` | the source stamp is the constant `CHUNKY_PLANES` (16), not the depth source; signature `*const u16` |
+| L9 | `tos-api/src/vdi/raster/wide.rs:188@fetch_row` (`MemPx for u32`, the branch for a form that is not 32-plane) | exists only to expand the 16-bit icon form at 32 (V65 reading 4); dead after V67 |
+| L10 | doc comments: `tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES` ("colour-icon form 16-bit until TASK/V67"), `tos-api/src/vdi/raster.rs:1372@blit_device_mem`, the module doc of `tos-api/src/vdi/raster/wide.rs` | state that the icon form is 16-bit at every setting |
+| L11 | host tests: `tos-api/src/aes/resource.rs:4635@device` and the `Vec<u16>` buffers of the `fix_cicons` tests; `tos-api/tests/vdi_v65_memory_forms.rs:712@the_colour_icon_blit_reads_its_16_bit_form_at_32` (asserts the 16-bit form at 32, will fail by design); `tos-api/tests/aes_cicon_draw.rs` (16-plane double, stays) | 16-bit icon form |
+| L12 | the VT52 cell writer | companion file |
+
+The AES has **no other** site: the save buffers are derived (the table above), the mono blits are depth-agnostic, and the
+`WF_SCREEN` answer is the buffer's own address and length, which follow the depth (the `gsx_malloc` log above).
+`tos-api/src/aes/menu.rs:2729@read_pixel` is a self-test and not reached in production (V64 spec, change-set table).
+
+### 2. Colour icons: what EmuTOS does at load, and what a truecolor device gets
+
+EmuTOS runs `fix_cicons` from `rs_readit` (`references/emutos/aes/gemrslib.c:549-573,795-797`); `transform_all_cicons`
+(`:403-477`) works per CICONBLK:
+
+1. `best_match` (`:267-282`): a variant with `num_planes > gl_nplanes` is skipped; an exact match wins at once;
+   otherwise the variant with the most planes below `gl_nplanes` **[C]**. The rule uses `gl_nplanes` as a number only;
+   it has no depth-specific text.
+2. `data_size = muls(w/8 * gl_nplanes, h)` **bytes** (`:421`), `expand = (cicon->num_planes != gl_nplanes)` (`:422`);
+   one colour buffer of `data_size`, twice that with a SELECTED image (`:437`); a temporary expand buffer when
+   `expand` (`:428`) **[C]**.
+3. `expand_cicondata` (`:296-343`) when `expand`: the source planes are the first planes, plane `S` is the AND of all
+   source planes, the remaining destination planes copy plane `S`, then every destination plane is ANDed with the mask
+   plane **[C]**. An exact match is transformed as it is: no AND plane, no mask (`:418-422`) **[C]**.
+4. `transform_cicon` (`:348-396`): `vrn_trnfm` of the standard form to the device form with `planes = gl_nplanes`
+   (`:357`); then, only `#if CONF_WITH_VDI_16BIT` and `planes > 8` (`:359,370`), each pixel `WORD` has its top byte read
+   in reversed bit order as an index `n` 0..255 (`:371-390`) and replaced by `phys_work.ext->palette[n]` (`:392`)
+   **[C]**. That palette holds, per hardware register, the 16-bit word `set_color16` packed, `(r<<11)|(g<<6)|b`
+   (`references/emutos/vdi/vdi_col.c:601-614`) **[C]**.
+5. `col_data` and `sel_data` point into the buffer, `num_planes = gl_nplanes`, `next_res = NULL` (`:454,467,471-472`);
+   the masks stay the file's (`:452-467`) **[C]**.
+6. Draw: `gr_gicon` calls `gr_colourblit(pdata, pi, cicon->num_planes)` (`references/emutos/aes/gemgraf.c:774`); that
+   builds the source MFDB with `fd_nplanes = num_planes`, the screen as destination, and uses `S_AND_D` when
+   `num_planes > 8` (`:648-651,663-670`) **[C]**.
+
+**Where EmuTOS has a 16-bit rule only.** Step 4 works on one 16-bit `WORD` per pixel and on the 16-plane transform:
+`vdi_vr_trnfm` sends every `fd_nplanes > 8` form to `vr_trnfm16`, which moves `planesize * 16` words whatever the plane
+count (`references/emutos/vdi/vdi_raster.c:190-199,290-292`) **[C]**. A literal run of EmuTOS's code at `gl_nplanes = 32`
+would therefore transform 32-plane buffers with the 16-plane routine and read "the top byte" of a 16-bit word; it is not
+a rule at 32 planes. What does generalise mechanically is the size arithmetic (step 2: `w/8 * 32 * h` bytes
+= `wd * 16 * h * 4`, **[calc]**) and the shape of the draw (step 6). The 32-plane rules below are therefore **[N]** per
+ADR-038 point 10, each naming the EmuTOS step it extends.
+
+### 3. The 32-plane rules for a colour icon
+
+| # | Rule at 32 planes | EmuTOS step | Label |
+|---|---|---|---|
+| I1 | **Depth source.** The device form of an icon is a 32-plane chunky memory form (ADR-038 point 5) exactly when `backend.planes() == 32`, else the 16-bit form of today. Loader (`CiconDevice.planes`, `tos-api/src/aes/resource.rs:3075@live`) and drawer (`tos-api/src/vdi/raster/wide.rs:42@device_mem_planes`) read the same `backend.planes()`; the depth is fixed once at boot, before the framebuffer (`kernel/src/vdi_backend.rs:1128@set_planes`, called by `kernel/src/lib.rs:1393@set_planes`), so a loaded icon never meets another depth (ADR-038 point 2) | 2, 4 | [N]; "before any AES call" is [I] (read, not run) |
+| I2 | **Pixel.** `pixel(n) = 0x00RRGGBB`, the pen pixel of pen `REV_MAP_COL[n]` by rule P3 (V64): `q(c) = (c * 255 + 500) / 1000` per gun of the pen's requested triple, X = 0. The triples are the ones `CiconDevice::live` reads today (`r.query_color(pen)`, `tos-api/src/aes/resource.rs:3082@pack_color16`); only the packer changes, to `VwkExt::pack_color32` (`tos-api/src/vdi/vwk.rs:458@pack_color32`). The hardware-register to pen fold stays (`tos-api/src/aes/resource.rs:3105@rev_map_col`) | 4 (`palette[n]`) | [N] |
+| I3 | **Index `n`.** `n` is the pixel's value across **planes 0..7 of the variant's standard form**, plane `p` = bit `p` (`tos-api/src/aes/resource.rs:3151@cicon_pixel`: `e & 0xff`), after the expansion of I4. It is **not** the top byte of a 32-plane `vr_trnfm` word: in the 32-plane standard form plane `p` holds bit `31 - p` of the pixel, planes 0..7 being the X byte (`tos-api/src/vdi/raster/wide.rs:221@vr_trnfm32` and its doc, ADR-038 point 6), so a literal "top byte" reading at 32 would index by X | 4 | [N]; that `n` equals the 16-plane `n` is **[I]** (the code folds `vr_trnfm` and the reversal into the plane bits, so `n` does not depend on the device depth) |
+| I4 | **Expansion** exactly as `expand_cicondata` with `dst_planes = 32` (planes above `S`: the AND of all source planes; the mask ANDed into every plane). Only the low 8 planes reach `n`, so the result is the same as for 16 destination planes | 3 | [C] algorithm, [I] equality |
+| I5 | **Which variant.** `best_match` with `gl_nplanes = 32`. The file side accepts a variant only with `num_planes` in 1..=16 (`tos-api/src/aes/resource.rs:1227@planes`; a blob with another count is refused whole, unchanged, ADR-038 point 10 "the file-side `num_planes` ... is not touched"), so no exact match exists at 32 and the variant is the deepest one the file has, **the same variant as at 16 for every file**. At 32 the expansion of I4 therefore always applies; at 16 an exact 16-plane variant is transformed without expansion (step 3). The only pixel that can differ between the settings for the same variant is, in such a 16-plane variant, one whose mask bit is clear: expanded, `n = 0`; exact, `n` = the data's index | 1, 3 | [C] `best_match` and the 1..=16 check, [I] the consequence |
+| I6 | **Buffer.** One allocation per resource, as today (the deviation stated at `tos-api/src/aes/resource.rs:3040@deviation`). Per chosen variant `B = wd * 16 * rows * px` bytes with `px = 4` at 32 (2 at 16); `need = sum(B)` over the variants, a variant with a SELECTED image counted twice; the SELECTED image follows the colour image at offset `B`. This is EmuTOS's `data_size` with `gl_nplanes = 32`; `need` at 32 is **exactly twice** `need` at 16 for the same resource (every term doubles) | 2, 5 | [C]+[calc] |
+| I7 | **Masks, SELECTED, darkening.** `col_mask`/`sel_mask` stay the file's one-plane masks; the mask blit in the background pen, the label box, the `dither_mask` darkening of a variant without SELECTED image and the SELECTED fg/bg swap are the mono paths of `draw_icon` and do not change | 5, 6 | [C] (EmuTOS `gr_gicon`), unchanged code |
+| I8 | **Draw.** The image is read as a 32-plane device form of row stride `wd * 16` pixels (`Mfdb::device_mem` at the depth source), 4 bytes per pixel, and combined with the screen by `S_AND_D` on the raw 32-bit words, clipped; `num_planes` in the CICON record is stamped 32 (EmuTOS `:471`). No per-pixel expansion at the blit (V65's 16-to-32 expansion goes away). A pen 0 of `0x00FFFFFF` leaves the destination unchanged under the AND, as at 16 | 6 | [N] |
+| I9 | **Span.** `draw_icon` resolves `stride * 16 * px * h` bytes (`px` as in I6) before the blit; the drawer's read extent is exactly that (the form is bound to `fd_h` rows, `tos-api/src/vdi/raster.rs:338@read_row`) | 6 | [C] read extent, [N] size |
+| I10 | **Palette time.** The palette is read once at load, from `query_color`; a later `vs_color` does not recolour a loaded icon. Unchanged at both settings (EmuTOS reads `phys_work.ext->palette` once at `fix_cicons`, `:392`) | 4 | [C], unchanged |
+| I11 | **No backend.** Without a raster backend (host test) `CiconDevice::live` stays `planes: 4`, black palette, 16-bit form (`tos-api/src/aes/resource.rs:3075@live`) | - | [C] |
+
+### 4. Order of the change, safe against buffer overruns (the stop of TASK/V62)
+
+Five things in the colour-icon path carry the pixel width and must change in one commit: the pixel the loader stores
+(L3, L4), the byte size of the buffer and the cursor step (L5), the span the drawer resolves (L6) and the stamp the blit
+reads with (L8), together with the palette entry (L1, L2) that makes the pixel. They read the same depth (I1). What each
+mismatch does **[I, derived from the lines cited, not run]**:
+
+| Mismatch | Effect |
+|---|---|
+| blit stamps 32 over 16-bit buffers (L8 changed alone) | reads twice the buffer: a read past the icon form into the rest of the one buffer and beyond it (the V62 stop) |
+| buffers and loader 32-bit, blit still 16 (L8 left) | reads the left half of each row as pixels: a wrong picture, no read past the buffer |
+| `img_bytes` still `* 2` with a 32-bit blit (L6 left) | the span check covers half the read; a mapped neighbour is read, an unmapped one skips the icon |
+| buffer size 16-bit, loader writes 32-bit (L4 changed, L5 left) | writes twice the allocation: **a write overrun**, the worst case |
+
+Therefore: **one commit** for L1-L9 and their tests, no stepping stone; the stamp is changed in the same commit as the
+buffer size, from the depth source of I1. The VT52 cell writer is independent of this commit and may land before or after
+it (companion file §6). The save buffers need no step: V65 landed them (section 1). Nothing else in the AES changes size.
+
+### 5. The change set for the developer
+
+| Function / site | Anchor | What changes at 32 | Slice |
+|---|---|---|---|
+| `CiconDevice.palette`, `CiconDevice::live` | `tos-api/src/aes/resource.rs:3064@palette`, `tos-api/src/aes/resource.rs:3082@pack_color16` | entry wide enough for `0x00RRGGBB`; filled by `pack_color32` at 32 and `pack_color16` at 16; a free `pack_color32` re-export beside `tos-api/src/vdi/mod.rs:78@pack_color16` (or the associated function made reachable) | V67 |
+| `cicon_pixel`, `transform_cicon` | `tos-api/src/aes/resource.rs:3151@cicon_pixel`, `tos-api/src/aes/resource.rs:3185@transform_cicon` | store 4 bytes per pixel at 32, 2 at 16; index, expansion and mask logic unchanged | V67 |
+| `fix_cicons` pass 1 and 2 | `tos-api/src/aes/resource.rs:3330@bytes`, `tos-api/src/aes/resource.rs:3357@bytes` | `* px` instead of `* 2`; the cursor and the SELECTED offset follow | V67 |
+| allocation | `tos-api/src/aes/resource.rs:3423@kernel_cicon_alloc`, `tos-api/src/aes/resource.rs:2356@cicon_alloc` | none: both take the byte count `fix_cicons` asks for; the alignment 8 holds for 4-byte pixels and every pixel access is unaligned-safe (`tos-api/src/vdi/raster.rs:338@read_row`) | none |
+| `draw_icon` span and pointer | `tos-api/src/aes/object.rs:3973@img_bytes`, `tos-api/src/aes/object.rs:3981@pdata` | span `stride * 16 * px * h`; the pointer type matches the new `blit_device_mem` | V67 |
+| `blit_device_mem` | `tos-api/src/vdi/raster.rs:1372@blit_device_mem`, `tos-api/src/vdi/raster.rs:1373@device_mem` | stamp from the depth source (`device_mem_planes`), signature without `*const u16` | V67 |
+| the 16-bit expansion branch | `tos-api/src/vdi/raster/wide.rs:188@fetch_row` | unreachable once the icon form is 32-bit; removal or a `debug_assert` is the developer's | V67 |
+| comments naming the icon form 16-bit | `tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES`, module doc of `tos-api/src/vdi/raster/wide.rs` | follow the code | V67 |
+| tests | `tos-api/src/aes/resource.rs:4635@device`, `tos-api/tests/vdi_v65_memory_forms.rs:712@the_colour_icon_blit_reads_its_16_bit_form_at_32`, `tos-api/tests/aes_cicon_draw.rs` | the V65 test is replaced by a 32-bit-form test (stamp, span, AND); the `fix_cicons` tests get a 32-plane device (buffer size twice, pixel = P3 pixel of `REV_MAP_COL[n]`); the 16-plane tests stay as they are | V67 |
+| VT52 cell writer | `docs/api/bios/_vt52-32plane.md` §5 | companion file | V67 |
+| docs that say "one device form, RGB565" | `docs/api/aes/object-form.md:484`, `docs/api/aes/resource-fileselector.md:1176-1195,1273` | follow the code; `resource-fileselector.md` is partly German (from `:1843`), so touching it means translating that part in the same commit, or leaving the correction to `object-form.md` only | V67 (docs) |
+| `vq_extnd`, XBIOS answers, `docs/COMPATIBILITY.md` | - | not V67 | V68 |
+
+### 6. Acceptance of TASK/V67, per criterion (not reworded)
+
+| Criterion | Testable with this spec? |
+|---|---|
+| "At 32 planes the desktop, a dialog with save and restore, colour icons and the console show the same picture as at 16 (screendump pairs, within the pen tolerance of V64)" | **Per part.** *Desktop and dialog:* yes, the V65 method repeated (RUNINFO item 9: `measurements/measurement-2026-11-18-v65-test/method/aes-run.sh`, PPMs compared per gun); the tolerance is V64's: for any request `c` the 8-bit gun of the 32-plane pen and of the 16-plane pen (5-bit, replicated) differ by at most 5 (`_raster.md` P9 [calc]); measured so far: 187 against 189 (dialog grey), 170 against 173 (desktop green) **[M]**. *Colour icons:* the same tolerance applies to an icon pixel, because both settings take the same variant (I5), the same index `n` (I3, I4) and the pen of the same triple (I2); a **booted** check needs a colour-icon resource, and the standard image has exactly one, TeraDesk's `cicons.rsc` (`tools/make-sd-image.sh:91@teradesk`), shown by launching `DESKTOP.NAP` (the V65 tester drove none: RUNINFO item 10). `tosdump/probes/icprobe.c` reads `col_data` as 16-bit words (`tosdump/probes/icprobe.c:185@fd_nplanes`), so it cannot read the 32-bit form without a change that belongs to V69. *Console:* yes, see the companion file §7; the default colours are pen 0 (`0x00FFFFFF`) and pen 255 (pixel 0), identical at both settings, so the apitest console screendump (V65 RUNINFO item 7: prefix `f79b85387b0e` at four configurations) is the bar for "the same picture" |
+| "At 16 planes nothing changes" | **Yes.** Section 8 lists the paths; the bar is V65's: tosdump tables at default and `vdiplanes=16` against main with no changed verdict (RUNINFO item 6), boot screendump hashes (item 5, rpi4 prefix `a3bd102e7f28`), apitest 110/0/6 and its console hash (item 7), the 16-plane host tests, and for the icon path the unchanged `tos-api/tests/aes_cicon_draw.rs` |
+| "`cargo xtask test` green; both board builds; warnings delta 0; doc-check of the edited docs 0 failures" | Mechanical; no spec content |
+
+### 7. After V67: what in the kernel or `tos-api` still assumes 16 planes at the 32 setting (facts, grep-based)
+
+Patterns searched over `tos-api/src`, `kernel/src`, `programs/` (`*.rs`) with `/usr/bin/grep -rnE`:
+`rgb565|pel_to_device16|device_to_rgb565|CHUNKY_PLANES|blit_device_mem|device_mem|pack_color16|read_row_rgb565|write_row_rgb565|VDI_PLANES_WIDE`;
+`planes() (==|<=|>|<) (16|8)`, `== 16`, `gl_nplanes|ap_planes`; `fd_nplanes *= *16` over `sdk/apps`, `sdk/examples`,
+`programs` and `tosdump`. Result, after the changes of this section and of the companion file:
+
+| Site | Assumption | Owner |
+|---|---|---|
+| the 16-bit seam by design: `pel_to_device16`, `device_to_rgb565`, `rgb565_to_device`, `read_row_rgb565`, `write_row_rgb565`, `clear_screen_word(u16)` and their kernel bodies (`kernel/src/vdi_backend.rs:510@device_to_rgb565`, `kernel/src/vdi_backend.rs:945@read_row_rgb565`) | the trait keeps the `u16` words for the 16-plane setting (ADR-038 point 11). At 32 the remaining callers are `v_clrwk` (`clear_screen_word(0xFFFF)`, V63 R3, allowed), the pen-word fallbacks and the `MemPx for u16` instance | none (ADR-038 point 11) |
+| `tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES` and the non-wide arm of `device_mem_planes` | the 16-bit memory form at the 16 setting (and on a palette backend) | none (default setting) |
+| `tos-api/src/vdi/workstation.rs:331@planes` | `planes == 16 \|\| planes == 32` gate of `INQ_TAB[5]`, already both | none |
+| `tos-api/src/vdi/eddi.rs:53@DEVICE_PLANES` | the 16-plane table beside `LAYOUT_32` (`tos-api/src/vdi/eddi.rs:197@LAYOUT_32`) | none (V66) |
+| `kernel/src/selftest_raster.rs:166@mfdb` and `tos-api/src/aes/menu.rs:2729@read_pixel` | hand-built 16-bit form; unwired self-tests | none (not reached in production) |
+| `tosdump/core/cases.c:2176@nplanes`, `tosdump/core/cases.c:2548@planes`, `tosdump/core/dumprast.c:128@planes`, `tosdump/probes/icprobe.c:185@fd_nplanes`, `tosdump/probes/vdprobe.c:164@fd_nplanes`, `tosdump/probes/wkprobe.c:189@fd_nplanes` | planes capped or hard-wired at 16; the icon probe reads the icon form as WORDs | **V69** (ADR-038 point 13 (iv)) |
+| `sdk/apps/present/present.c:620@fd_nplanes`, `sdk/apps/present/present.c:1098@fd_nplanes` | builds 16-plane memory forms, refused at 32 (O5) | **V69** (patch decision) |
+| XBIOS answers (`VsetMode` word `0x001C`, `Getrez`, `VgetSize`) and the `docs/COMPATIBILITY.md` text | the mode word says 16-bit truecolor beside a 32-plane VDI by ADR-038 point 9 | **V68** |
+
+No file under `tos-api/src` or `kernel/src` outside the rows above assumes 16 planes at the 32 setting **[C for the
+patterns searched; not a proof for patterns not searched]**. The ticket text names programs (TeraDesk's 17-entry
+table, HighWire's `ULONG`); those are program patches (V69), not kernel or `tos-api`.
+
+### 8. The 16-plane paths this slice does not touch (ADR-038 point 11)
+
+| What | Why it stays |
+|---|---|
+| `CiconDevice::live` with `pack_color16`, `cicon_pixel` and `transform_cicon` storing `u16`, the buffer `* 2`, `img_bytes * 2` | the `px = 2` arm of every rule above; the 16-plane colour-icon tests (`tos-api/tests/aes_cicon_draw.rs`, the `fix_cicons` tests at planes 4, 8, 16) are the regression bar |
+| `blit_device_mem` at 16: stamp 16, 16-bit rows through `read_row_rgb565`/`write_row_rgb565` | the default of `device_mem_planes` |
+| the exact-match transform of a 16-plane variant at 16 (no expansion, no mask AND) | I5 |
+| `best_match`, the one-buffer deviation, the free path, the file-side `1..=16` check | not depth dependent |
+| the mono icon paths, `blit_plane`, `dither_mask` | no pixel word |
+
+### Open points
+
+- **Question 1 (icon pixel at 32, I2).** My reading **[I]**: the pen pixel by P3 from the same triples as today, so an icon
+  pixel equals the pixel a draw with that pen gives. The alternative, a 5-bit pen word replicated to 8 bits (what V65 does
+  at the blit today), keeps the icon colour equal to 16 planes bit for bit but ignores the 8-bit pens. ADR-038 point 10 says
+  "follow the MFDB of point 5" and point 4 gives the pen pixel, so I took P3. The lead confirms.
+- **Question 2 (exact 16-plane variant, I5).** At 16 planes an exact 16-plane variant is not expanded or masked; at 32 it is.
+  The pixels under a clear mask bit can then differ between the settings. I did not look for a 16-plane variant in the
+  resources on the image (only the converter's output names are known). My reading: harmless, because the mask blit paints
+  the background first and the AND leaves it where the data is white; not measured.
+- **Question 3 (docs that say "RGB565").** `docs/api/aes/object-form.md:484` and `docs/api/aes/resource-fileselector.md`
+  (partly German) state one 16-bit icon form. This section is the 32-plane statement; correcting those two is part of the
+  developer's commit or a translation commit. The lead decides.
+- **Not checked:** whether `qed.rsc`, `desktop.rsc`, ZVIEW or the AES's own resources hold CICONBLKs. The survey
+  (`/usr/bin/grep` over `sdk/`, `programs/`, `tosdump/`, `tools/`) names TeraDesk's `cicons.rsc` (loaded by
+  `rsrc_load("cicons.rsc")`, `sdk/overlays/teradesk/icon.c:2747@rsrc_load`), HypView's recoloured icons
+  (`sdk/overlays/hypview/rsc/recolour-cicons.py`; HypView is not on the standard image) and the windom overlay's own
+  conversion (`sdk/windom/overlay/src/cicon.c`; not on the image). The manifest mapping: the programs of the standard
+  image are the `REQUIRED` list of `tools/make-sd-image.sh:71@REQUIRED`, every entry names its `sdk/` or `tosdump/`
+  build recipe, and the freestanding `sdk/examples` programs are built by the script itself; I did not open the
+  generated manifest.
+- **Not executed:** every "today" statement is reading; nothing was run or measured by this gate except what section 1
+  quotes from the V65 run. At 32 planes the oracle cannot measure.
+- **Inferred:** every **[I]** line; the order table of section 4 is derived from the lines cited, not run.
+- **Out-of-scope observations:** `gsx_malloc` takes 8 294 400 bytes at 1920x1080 at 32 (logged); whether the TT-RAM pool of a
+  board with less memory supplies that was not checked (the heap fallback exists, `tos-api/src/aes/gsxif.rs:528@bb_save`).
