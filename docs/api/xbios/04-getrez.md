@@ -274,7 +274,22 @@ word) must agree. The word `0x1C` (`58-vsetmode.md`) has `VIDEL_COMPAT` clear, s
 oracle's falcontc profile measures (cases 87, 211). The "round-trip with `Setscreen`" criterion was removed from
 the verification criteria above (XBIOS23): the `rez` of `Setscreen` is ignored (`05-setscreen.md`).
 
+## At the 32-plane setting (ADR-038 point 9, V68)
+
+Spec gate of TASK/V68 (researcher, 2026-11-18). **Answer:** `Getrez()` is 2 (`ST_HIGH`) at `vdiplanes=16` and at
+`vdiplanes=32`.
+
+- **Contract (ADR-038 point 9):** unchanged. Reason, from the ADR: the answer depends on the mode word having
+  `VIDEL_COMPAT` clear (`tos-api/src/xbios/screen.rs:180@getrez`; ADR-017 Revision 3), and `VsetMode(-1)` stays
+  `0x001C` in both settings (`58-vsetmode.md`), so EmuTOS's own mapping gives 2 for it
+  (`references/emutos/bios/screen.c:948-987` **[C]**). As before the code is an ST-compatibility hint; depth is read
+  from `vq_extnd` / `vq_scrninfo` (32 at the 32-plane setting).
+- **Read from the code [C]:** `getrez` returns the constant `ST_HIGH`, no argument, no state
+  (`tos-api/src/xbios/screen.rs:180@getrez`), with the build-time check on `FALCON_MODE_WORD` (`tos-api/src/xbios/screen.rs:53@FALCON_MODE_WORD`). **No
+  dependency on the VDI depth setting today.**
+
 ## Open points
 
 - Inferred: the coherence statement rests on reading `screen.c`/`videl.c`; `0x1C` with `Getrez` 2 is measured
   together only on the oracle (cases 87 and 211), not on NewTOS.
+- Inferred: independence of the setting is read from the code, not yet shown by a run at `vdiplanes=32`.

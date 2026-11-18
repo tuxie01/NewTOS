@@ -1960,10 +1960,58 @@ profile (no Videl, function numbers) these cases differ: ACCEPTED, NewTOS claims
   on `falcontc`. **Observable difference:** against `tt` (TT shifter, `TT_MEDIUM` 4) case 87 differs: ACCEPTED,
   NewTOS claims the Falcon. A program written for ST codes reads "640x400 monochrome", as on a Falcon in
   truecolor; depth and geometry come from VDI `vq_extnd` / `DEV_TAB` and `Physbase`.
+* **At the 32-plane setting (`vdiplanes=32`, ADR-038 point 9) every answer above is the same** (`VsetMode(-1)`
+  `0x001C`, `Getrez` 2, `VgetSize` the 32-bpp screen, `VgetMonitor` 2, `VgetRGB` the Falcon table): none of the calls
+  reads the VDI depth. The mode word then says 16-bit truecolor beside a 32-plane VDI; the note is in "The VDI device
+  depth: 16 planes by default, 32 planes by a boot setting" below.
 * **Not covered:** `Vsetsync` (0x5A), `VsetMask` (0x5C), `VsetRGB` (0x5D) answer their function number (outside
   the owner's scope); without `VsetRGB` the `VgetRGB` table is constant. `VgetMonitor`, `VsetMode(-1)` and
   `VgetRGB` answer the same with or without a framebuffer. Index of the differences by trigger:
   `docs/DEVIATIONS.md` ("XBIOS, keyboard, system variables").
+
+**The VDI device depth: 16 planes by default, 32 planes by a boot setting** — owner decision 2026-11-18
+([V61](../TASK/V61.md), option C), ADR-038 (points 3-9 here; point 2 is the selector, 10 the AES, 11 the kernels), slices
+V62-V67 (landed) and V68 (the XBIOS words and this text). Two depths, one default: at 16 planes (no argument, or
+`vdiplanes=16`) everything in this file stands and EmuTOS decides every pixel; at 32 planes (`vdiplanes=32` in
+`cmdline.txt`, read once at boot, never changed by a program: ADR-038 point 2, `kernel/src/bootargs.rs:158@VDIPLANES`,
+`kernel/src/lib.rs:1376@apply_vdi_planes`) EmuTOS has no path (`references/emutos/vdi/vdi_defs.h:22`), so ADR-038 is
+the contract (ADR-038 point 12, amending ADR-035 point 1). "Contract" below means what a program observes at the 32
+setting; the oracle cannot decide it, a tosdump table at 32 planes is labelled "NewTOS contract", never "oracle"
+(ADR-038 point 13). Specs: `docs/api/vdi/workstation/100-v_opnvwk.md` ("32-plane setting"),
+`docs/api/vdi/raster/_raster.md` (the four "32-plane setting" sections), `docs/api/vdi/eddi-vq_scrninfo-32.md`,
+`docs/api/bios/_vt52-32plane.md`, `docs/api/xbios/58-vsetmode.md`, `5b-vgetsize.md`, `04-getrez.md`. Per point, **whose**
+contract it is: *EmuTOS rule generalised* (EmuTOS's formula or behaviour with the depth as a parameter; the rule is
+cited) or *NewTOS own design* (no EmuTOS value exists; an ADR choice, a plausibility witness at most).
+
+| ADR-038 point | What a program sees at 32 planes | Whose contract |
+|---|---|---|
+| 3 workstation answers | `vq_extnd(1)` `INTOUT[4]` = 32; `DEV_TAB[13]` = 256 and `[35]` = 1; `DEV_TAB[39]` = 0; `ap_planes` = 32; the 256 pens and the `planes > 8` truecolor gates stay | EmuTOS rule generalised: `INQ_TAB[4] = v_planes`, the `[13]`/`[35]` formulas (`references/emutos/vdi/vdi_control.c:206-210`), `ap_planes = gl_nplanes` (`references/emutos/aes/gemsuper.c:97`), `TRUECOLOR_MODE = v_planes > 8` (`references/emutos/vdi/vdi_defs.h:22`) |
+| 3 video lookup table | `INQ_TAB[5]` = 0 (EmuTOS writes 0 only `== 16`, so a literal copy would say 1, "table present") | NewTOS own design (fVDI writes 0 for every depth, `references/fvdi/fvdi/drivers/aranym/spec.c:389`, a witness) |
+| 4 device pixel | one 32-bit `0xXXRRGGBB`, 8 bits per gun, equal to the store word; the X byte is unused: pens write 0, reads mask it, `v_clrwk` may leave `0xFF` there; a cleared screen reads as the white pen | NewTOS own design (owner choice O1); the read mask generalises EmuTOS's overlay-bit mask (`references/emutos/vdi/vdi_fill.c:702-709,755`) |
+| 4 pens | 8 bits per gun: pen to pixel `q = (c * 255 + 500) / 1000`; `vq_color` returns the last request or, for "actual", `(q * 1000 + 127) / 255` | EmuTOS rule generalised to 8 bits (`references/emutos/vdi/vdi_col.c:586-616,800-805,821-826`); the 8-bit constants are inferred, fVDI a witness (owner choice O2) |
+| 5 memory MFDB | `fd_stand = 0`, `fd_nplanes = 32`, one native-endian 32-bit pixel per position, a row of `fd_wdwidth * 16` pixels; `vro_cpyfm`/`vrt_cpyfm` accept it, logic ops are bitwise on all 32 bits | NewTOS own design for the form; the cap `plane_ct <= 16` (`references/emutos/vdi/vdi_raster.c:962-966`) and the bitwise ops generalised |
+| 5 **refused 16-plane memory form** | a memory MFDB of 16 planes (indeed of 9..31) is **refused**: a silent no-op, no error value, the destination, `INTOUT` and `PTSOUT` untouched. A program hardwired to 16-plane forms runs at the default setting or gets a patch | EmuTOS's own no-op for a plane count it does not support (`references/emutos/vdi/vdi_raster.c:1352-1361,1384-1385`) generalised; which counts are refused is NewTOS's choice (owner choice O5; 9..31 inferred in `_raster.md`, V65) |
+| 6 `vr_trnfm`, standard form | 32 planes, plane-sequential, plane `p` holds bit `31 - p` of the pixel, in place through a scratch buffer, a failed allocation silent | EmuTOS rule generalised (`vr_trnfm16`, `references/emutos/vdi/vdi_raster.c:190-258`, 32 for 16) |
+| 7 `v_get_pixel` | `INTOUT[0]` = high word, `INTOUT[1]` = low word of the 24-bit pixel (X masked); at 16 planes `INTOUT[0] = 0`, `INTOUT[1]` = the word, so both settings order the words alike | NewTOS own design, shape widened from EmuTOS's (`references/emutos/vdi/vdi_fill.c:1104-1110`; owner choice O3) |
+| 8 `vq_scrninfo` / `EdDI` | the 273-word table of the EdDI item above (point 5 there); the `EdDI` cookie is the same marker | NewTOS own design: structure from the existing table, values from the NVDI statement and fVDI's row as witnesses (`docs/api/vdi/eddi-vq_scrninfo-32.md`); EmuTOS has no EdDI |
+| 9 XBIOS and cookies | `VsetMode(-1)` = `0x001C`, `Getrez` = 2, `VgetSize` the 32-bpp screen bytes, `VgetMonitor` 2, `VgetRGB`, `_VDO`, `_MCH`: **the same at both settings**; see the note below | EmuTOS rule (the answers of the Falcon-truecolor profile, "XBIOS Falcon video" above, ADR-017 Revision 3), kept unchanged by owner choice O4 |
+
+**The mode word and the plane count disagree at 32 planes.** `VsetMode(-1)` answers `0x001C` in both settings
+(`tos-api/src/xbios/screen.rs:455@vsetmode`, `:442@FALCON_MODE_WORD`): bits 2-0 = 4, `VIDEL_TRUECOLOR`, "65536 colours"
+(`references/emutos/include/biosdefs.h:146-158`). The Falcon word has no 32-bit value and no source defines another, so
+with `vdiplanes=32` the word says 16-bit truecolor while the VDI has 32 planes (ADR-038 point 9). `Getrez` (2) and
+`VgetSize` carry no depth either. **A program that needs the depth reads `vq_extnd(1)` `INTOUT[4]` (32) or
+`vq_scrninfo` (`[2]` = 32, colours `[3]:[4]`, the bit tables), never the mode word**; a program that trusts the word
+and writes 16-bit pixels into `Physbase` memory is wrong at either setting, because the memory is a 32-bpp store (row
+"A program writes the screen memory" in `docs/DEVIATIONS.md`). Specs: `docs/api/xbios/58-vsetmode.md`,
+`5b-vgetsize.md`, `04-getrez.md` ("At the 32-plane setting").
+
+Observable differences at 32 planes beyond the table, each indexed by trigger in `docs/DEVIATIONS.md` ("VDI at
+32 planes"): the mode word beside the plane count; a 16-plane memory form refused; `PRESENT.NAP` (hardwired 16-plane
+forms, `sdk/apps/present/present.c:620,1098@fd_nplanes`) therefore copies nothing until its patch (TASK/V69); the tosdump raster
+dumper refuses a 32-plane screen until V69 (`tosdump/core/dumprast.c:128@planes`); `tosdump/probes/icprobe.c` reads icon
+data as 16-bit words (V69). At 16 planes none of these exists. The gate for 32-plane behaviour is the tests of
+V62-V67 (`tos-api/tests/vdi_*32*.rs`, `vdi_v62_planes_setting.rs`), not the oracle.
 
 **XBIOS DMA sound 0x80-0x8D** — TASK/SND05, owner decisions TASK/SND01
 (2026-11-12: Q-N2 option D, Q-N3, Q-N4a-c, Q-N5, Q-N6) and 2026-11-17 (the

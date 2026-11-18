@@ -126,3 +126,28 @@ framebuffer is up the function number `0x5B` (EmuTOS's own no-Videl answer, `bio
 in `tos-api/src/xbios/screen.rs:482@vgetsize`: `Host::screen()` → `size_bytes` (LONG, sign-extended), `None` → the
 dispatcher's function number (`tos-api/src/xbios/mod.rs:151@VGETSIZE`); `mode` is not read. Case 213: sanctioned
 deviation in `docs/COMPATIBILITY.md` ("XBIOS Falcon video"). Host tests `tos-api/tests/xbios22_falcon_video.rs`.
+
+## At the 32-plane setting (ADR-038 point 9, V68)
+
+Spec gate of TASK/V68 (researcher, 2026-11-18). **Answer:** `VgetSize(mode)` is the byte size of one 32-bpp screen at
+`vdiplanes=16` and at `vdiplanes=32`, the same number (and `0x5B` before a framebuffer is up).
+
+- **Contract (ADR-038 point 9):** unchanged. Reason, from the ADR: the answer is already the 32-bpp store as
+  `Physbase` shows it (option B1 above); at 32 planes it "now agrees with the VDI", because the store word is the
+  device pixel (ADR-038 point 4). The numbers above that compare it with a 16-bit memory MFDB (option B2) describe
+  the 16-plane setting; at 32 planes a memory MFDB of the screen's area is 4 bytes a pixel, the same unit as the
+  store (arithmetic from `docs/api/vdi/raster/_raster.md`, "32-plane setting: memory forms", section 3: row =
+  `fd_wdwidth * 16` pixels, 4 bytes each; equal to `size_bytes` only when the stride has no padding) **[I]**.
+- **Read from the code [C]:** `vgetsize` returns `Host::screen()`'s `size_bytes`
+  (`tos-api/src/xbios/screen.rs:482@vgetsize`), which the kernel fills from `stride_bytes() * height`
+  (`kernel/src/host_env.rs:303@size_bytes`, `kernel/src/vdi_backend.rs:1060@size_bytes`, `:1054@stride_bytes` =
+  `stride_px * 4`). Neither reads `PLANES` (`kernel/src/vdi_backend.rs:44@PLANES`); the 32-bpp request is the
+  constant `DEPTH_BPP` (`kernel/src/drivers/bcm2711/framebuffer.rs:34@DEPTH_BPP`). **No dependency on the VDI depth
+  setting today.**
+- `docs/DEVIATIONS.md` keeps the `VgetSize(mode)` row (differs from EmuTOS's Falcon-mode bytes at both settings).
+
+## Open points
+
+- Inferred: independence of the setting is read from the code, not yet shown by a run at `vdiplanes=32`.
+- Inferred: "equal to a 32-plane memory MFDB of the screen" holds only without stride padding; not a statement
+  the contract makes.

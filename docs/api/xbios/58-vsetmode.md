@@ -101,3 +101,27 @@ keeps the function number. Implemented in `tos-api/src/xbios/screen.rs:455@vsetm
 function number in the dispatcher (`tos-api/src/xbios/mod.rs:149@VSETMODE`); the answer does not depend on a
 framebuffer being up. Sanctioned deviation for `mode != -1` and `Vfixmode`: `docs/COMPATIBILITY.md`
 ("XBIOS Falcon video"). Host tests `tos-api/tests/xbios22_falcon_video.rs`.
+
+## At the 32-plane setting (ADR-038 point 9, V68)
+
+Spec gate of TASK/V68 (researcher, 2026-11-18). **Answer:** `VsetMode(-1)` is `0x001C` at `vdiplanes=16` and at
+`vdiplanes=32`; `VsetMode(mode != -1)` is the function number `0x58` at both (unchanged by this slice).
+
+- **Contract (ADR-038 point 9, owner choice O4):** the word stays `0x001C` in both settings. Reason, from the ADR:
+  the Falcon mode word has no 32-bit value (the depth field defines 0..4, 4 = `VIDEL_TRUECOLOR` "65536 colours",
+  `references/emutos/include/biosdefs.h:146-158` **[C]**) and no source defines another, so the word then says
+  16-bit truecolor while the VDI says 32 planes. That mismatch is recorded in `docs/COMPATIBILITY.md` ("The VDI
+  device depth: 16 planes by default, 32 planes by a boot setting"). A program that wants the VDI's depth reads
+  `vq_extnd` (`INTOUT[4]`) or `vq_scrninfo` (`[2]`), not this word.
+- **Read from the code [C]:** `vsetmode` is a `match` on `args.arg_i16(0) == -1` returning the constant
+  `FALCON_MODE_WORD` (`tos-api/src/xbios/screen.rs:455@vsetmode`, `:442@FALCON_MODE_WORD`); the file names neither the
+  backend nor `planes()` (grep `planes|backend` in `tos-api/src/xbios/screen.rs` finds only comments about the
+  drawing backend, not a read of the depth). The kernel sets the depth once at boot
+  (`kernel/src/lib.rs:1376@apply_vdi_planes`, `kernel/src/vdi_backend.rs:1128@set_planes`); nothing links it to
+  this call. **No dependency on the VDI depth setting today.**
+
+## Open points
+
+- Inferred: that the call is independent of the setting rests on reading `screen.rs` and the dispatcher
+  (`tos-api/src/xbios/mod.rs:149@VSETMODE`); no run at `vdiplanes=32` has shown it yet (V68 acceptance 1).
+- Cited, not an open point: the mismatch (word says 16-bit, VDI says 32) is the owner's choice O4, not a defect.
