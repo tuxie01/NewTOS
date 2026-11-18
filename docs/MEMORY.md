@@ -2208,7 +2208,7 @@ the two amendments is gone with ADR-021's window:
 **Documented retroactively 2026-09-21 (A101)** — the decision shipped without
 a contemporaneous ADR; this entry records it after the fact from the landed
 code and the design doc that preceded it.
-**Status:** Accepted (implemented and shipped).
+**Status:** Accepted (implemented and shipped). Amended by ADR-038 (2026-11-18): points 1, 4 and 5 hold at the 16-plane setting; a 32-plane setting exists beside it.
 **Phase:** cross-cutting (VDI workstation/attributes/raster backend, AES
 `appl_init` `ap_planes`).
 
@@ -3362,7 +3362,7 @@ wants to see how TOS 4.04 builds DMA sound and VDI functions and to compare them
 ## ADR-035: MagiC and fVDI as read-only comparisons for raster technique
 
 **Date:** 2026-11-07
-**Status:** **Accepted** (2026-11-07, user: "wir haben als Referenz die MagiC-Sourcen und auch fVDI, also auch die Sourcen von TOS 4, wir koennten ja dort schauen wie die das gemacht haben"; translated from German: "we have the MagiC sources and also fVDI as a reference, so also the sources of TOS 4, we could look there at how they did it").
+**Status:** **Accepted** (2026-11-07, user: "wir haben als Referenz die MagiC-Sourcen und auch fVDI, also auch die Sourcen von TOS 4, wir koennten ja dort schauen wie die das gemacht haben"; translated from German: "we have the MagiC sources and also fVDI as a reference, so also the sources of TOS 4, we could look there at how they did it"). Amended by ADR-038 point 12 (2026-11-18): at 32 planes, a depth EmuTOS does not have, ADR-038 is the contract.
 **Phase:** cross-cutting (VDI raster performance; first use [V49](../TASK/V49.md)).
 
 ### Context
@@ -3642,6 +3642,131 @@ qualifies points 11, 12 and 13 for migrated tickets and for repeated acceptances
     moved back to `OPEN` or `IMPLEMENTED`.
 
 ---
+
+## ADR-038: VDI device depth — 16 planes by default, 32 planes by a boot setting
+
+**Date:** 2026-11-18.
+**Status:** **Accepted**, not implemented yet (owner 2026-11-18, TASK/V61.md: option C of
+`docs/analysis/vdi-32bit-scope-2026-11-18.md`, "ich gehe mit deinen Empfehlungen"; the five choices O1-O5 of the
+ticket's step 2, "empfehlung": the lead's recommendation each). Amends ADR-024, ADR-035 and ADR-017 (point 12).
+Labels kept from the research: **[C]** cited, **[I]** inferred, **[D]** design choice, **[M]** to be measured.
+**Phase:** cross-cutting (VDI workstation, raster backend, AES `ap_planes`, EdDI, XBIOS Falcon-video answers).
+
+**Context.** ADR-024 made the VDI a 16-plane RGB565 device over a 32-bpp store; the store is 32-bpp XRGB8888 by the
+framebuffer request (`kernel/src/drivers/bcm2711/framebuffer.rs:34@DEPTH_BPP`), the device word is 16 bits
+(`kernel/src/vdi_backend.rs:44@PLANES`). `Physbase` already hands out 32-bpp memory
+(`sdk/examples/physbase.c:19-25@XRGB8888`), `VgetSize` already counts it (`tos-api/src/xbios/screen.rs:482@vgetsize`).
+EmuTOS has no 24/32-bit VDI path (`references/emutos/vdi/vdi_defs.h:22`, ADR-024). The owner wants the VDI to report the
+depth the store really has.
+
+**Decision.**
+
+1. **Two depths, one default.** The VDI workstation has 16 planes (ADR-024 unchanged, the oracle-measurable mode,
+   default) or 32 planes. 32 is the same store with a 32-bit device pixel. No other depth (24 packed has no store).
+2. **Selection.** The boot argument `vdiplanes=<16|32>` in `cmdline.txt`, read once at boot with the existing mechanism:
+   `bootargs::numeric_setting` (`kernel/src/bootargs.rs:113@numeric_setting`) through `boot_switch`
+   (`kernel/src/lib.rs:288@mdlimit`, `:296@input_aes`), absent = 16; any other value counts as `Setting::Invalid`
+   (`kernel/src/bootargs.rs:98@Setting`) and gives 16 with a boot line **[D]** (the token name is cosmetic). It is a boot
+   argument, not a call, so a program cannot change the depth (as for `mdlimit`, `kernel/src/bootargs.rs:94@MDLIMIT`
+   doc). No run-time switch: ADR-017 Revision 2 has none, and `shel_write(SHW_RESCHNG)` records the request without
+   switching (`tos-api/src/aes/shell.rs:484-492@SHW_RESCHNG`) **[C]**. `config.txt` is the firmware's file and the kernel
+   reads the geometry from the VideoCore, not from it (ADR-017 Revision 2) **[C]**; `NEWDESK.INF` belongs to the
+   desktop, which runs after the VDI exists **[I]**: `cmdline.txt` is the channel the kernel already reads for its boot
+   switches. ADR-017's "config surface = exactly two files" is amended by one sentence.
+3. **What the program sees at 32 planes** (through the same code paths as at 16; `planes()` becomes a boot-time value
+   instead of a constant): `vq_extnd` `INQ_TAB[4] = 32` (`tos-api/src/vdi/workstation.rs:325@inq`); `INQ_TAB[5] = 0`, no
+   video LUT (EmuTOS writes `== 16` only because 16 is the only truecolor depth it knows,
+   `references/emutos/vdi/vdi_control.c:211-213`; fVDI's driver writes 0 for every depth,
+   `references/fvdi/fvdi/drivers/aranym/spec.c:389`; today's gate `tos-api/src/vdi/workstation.rs:330@planes`) **[D]**;
+   `DEV_TAB[13] = 256` and `DEV_TAB[35] = 1` by EmuTOS's formulas (`references/emutos/vdi/vdi_control.c:206-207`);
+   `DEV_TAB[39] = 0` (`tos-api/src/vdi/workstation.rs:39@palette_precision`); `ap_planes = 32`
+   (`tos-api/src/aes/appl.rs:369@screen_planes`); the `planes > 8` truecolor gates stay true
+   (`references/emutos/vdi/vdi_defs.h:22`). The 256 pens, their default values and the default pen set stay (ADR-024
+   point 2); their quantisation is point 4.
+4. **Device pixel.** One 32-bit integer `0xXXRRGGBB`, 8 bits per gun, equal to the store word (little-endian bytes B, G,
+   R, X). **The X byte is unused** (owner choice O1): pens write it 0 (`0x00RRGGBB`); `v_clrwk` may fill every byte `0xff` as
+   EmuTOS does for truecolor (`references/emutos/vdi/vdi_control.c:610-618`); every read (`v_get_pixel`, flood fill)
+   masks it off, as EmuTOS masks the overlay bit (`references/emutos/vdi/vdi_fill.c:702-709,755`), so a cleared screen
+   reads as the white pen; raster logic operations are bitwise on all 32 bits and X noise is ignored on read.
+   **Pens have 8 bits per gun** (owner choice O2). Pen to pixel: `q = (c * 255 + 500) / 1000` per gun for `c` clamped to 0..1000 (the EmuTOS
+   rule with 8 bits, `references/emutos/vdi/vdi_col.c:586-590,594-616`; fVDI
+   `references/fvdi/fvdi/drivers/aranym/palette.c:194`) **[I]**; `vq_color` returns the last-requested values
+   (`references/emutos/vdi/vdi_col.c:821-826`) or, for "actual", `(q * 1000 + 127) / 255` (the EmuTOS rule
+   `(q * 1000 + 16) / 31`, `references/emutos/vdi/vdi_col.c:800-805`, with 8 bits; fVDI
+   `references/fvdi/fvdi/drivers/aranym/palette.c:195`) **[I]**.
+5. **Memory MFDB.** `fd_stand = 0`, `fd_nplanes = 32`, one native-endian 32-bit pixel per position, a row of
+   `fd_wdwidth * 16` pixels (analogue of ADR-024 point 4, where a row is `fd_wdwidth * 16` native 16-bit words,
+   `references/emutos/vdi/vdi_raster.c:190-199`) **[D]**. `vro_cpyfm` and `vrt_cpyfm` accept 32-plane device MFDBs (the
+   cap `plane_ct <= 16`, `references/emutos/vdi/vdi_raster.c:962-966`, `tos-api/src/vdi/raster.rs:821@CHUNKY_PLANES`, is
+   raised to the setting's depth); logic operations are bitwise on 32 bits as EmuTOS's are bitwise on 16
+   (`references/emutos/vdi/vdi_raster.c:975-985`) **[I]**. **A 16-plane memory MFDB in this setting is refused** (owner choice O5): a silent no-op, as EmuTOS does
+   for a plane count it does not support; a program hardwired to 16 planes runs at the default setting or gets a patch.
+6. **Standard form and `vr_trnfm`.** 32 planes, plane-sequential, `fd_h * fd_wdwidth` words per plane, plane `p` holds
+   bit `31 - p` of the pixel, leftmost pixel = most significant bit of the word, total `planesize * 32` words;
+   transform in place through a scratch buffer, `fd_stand` of the destination left to the caller, a failed allocation
+   silent (all as `vr_trnfm16`, `references/emutos/vdi/vdi_raster.c:190-258`, with 32 for 16; fVDI as a second witness, `references/fvdi/fvdi/engine/blit.s:985-1521`)
+   **[I]**. The truecolor gate (`src.nplanes > 8` and `planes() > 8`) already holds
+   (`tos-api/src/vdi/raster.rs:1523@planes`).
+7. **`v_get_pixel`.** EmuTOS's shape widened (owner choice O3): `INTOUT[0]` = high word, `INTOUT[1]` = low word of the
+   pixel (EmuTOS at 16 planes: `INTOUT[0] = 0`, `INTOUT[1] = pel`, `references/emutos/vdi/vdi_fill.c:1104-1110`), so
+   both settings order the words alike. X is masked off (point 4).
+8. **`vq_scrninfo` / EdDI.** The answer is generated for both depths (today only at 16,
+   `tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`). At 32 planes: `[0] = 2` (packed), `[1] = 2` (software CLUT), `[2] = 32`,
+   `[3] = 0x0100`, `[4] = 0` (2^24 colours as a LONG, high word first; fVDI
+   `references/fvdi/fvdi/drivers/common/init.c:123-128`, NVDI "16,7 Mio." for 32 planes,
+   `docs/api/vdi/eddi-vq_scrninfo.md` §3.3), `[5..7] = 0` (as at 16), `[8..10] = 8`, `[14] = 1`, red `[16..23] = 16..23`,
+   green `[32..39] = 8..15`, blue `[48..55] = 0..7`, `-1` elsewhere in 16..127 except the unused table `[96..103] = 24..31`; `[11] = 0`, `[12] = 0`, `[13] = 8` (X unused,
+   point 4),
+   `[128..272] = 0`. Structural basis: the existing table (`tos-api/src/vdi/eddi.rs:112@scrninfo_table`) and the spec
+   file above; value basis: NVDI statement via that spec and fVDI's `32` "usual" row (TASK/V61.md, step 2, section A point 2) **[D]**. The `EdDI`
+   cookie is the same marker (`tos-api/src/cookie.rs:37@EDDI`).
+9. **XBIOS and cookies at 32 planes.** `VgetSize`: unchanged (already the 32-bpp store; it now agrees with the VDI).
+   `Getrez`: 2 (the answer depends on the mode word having `VIDEL_COMPAT` clear,
+   `tos-api/src/xbios/screen.rs:180@getrez`; ADR-017 Revision 3). `VgetRGB`, `VgetMonitor`, `_VDO = VDO_FALCON`
+   (`tos-api/src/cookie.rs:266@VDO_FALCON`), `_MCH`: unchanged. `VsetMode(-1)` stays `0x001C` in both settings
+   (owner choice O4, `tos-api/src/xbios/screen.rs:442@FALCON_MODE_WORD`): the Falcon word has no 32-bit value
+   (`references/emutos/include/biosdefs.h:146-154`) and no source defines another; the word then says 16-bit truecolor
+   while the VDI says 32 planes, which `docs/COMPATIBILITY.md` records. At 16 planes all of them stay as they
+   are; `VgetSize` keeps its row in `docs/DEVIATIONS.md`.
+10. **AES.** `ap_planes = 32`; the screen save buffer (`tos-api/src/aes/gsxif.rs:354-355@bb_save_words`) doubles in size
+    (arithmetic, `docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.2); colour-icon device forms follow the MFDB of point 5
+    (`tos-api/src/aes/resource.rs:3058@CiconDevice`); the file-side `num_planes` of resources is the file's depth and is
+    not touched.
+11. **Raster kernels** (ADR-036): `fill_span`, `raster_op`, expansion and line kernels keep working on `u32` pixels; only
+    the pen-to-pixel step, the clear value and the read-back masks change **[I]**. The `u16` seam
+    (`tos-api/src/vdi/backend.rs:138@pel_to_device16` and the trait methods of `docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1) stays for the 16-plane
+    setting.
+12. **What counts as the specification where EmuTOS has none (amendments).**
+    - ADR-035 point 1 gets an exception: for a depth EmuTOS does not have (32 planes) the contract is this ADR; EmuTOS
+      still decides every pixel at 16 planes and every rule that generalises mechanically (points 3-6 cite the rule they
+      generalise). Point 2 additionally permits reading *values of a documented table* (point 8) from fVDI as a
+      plausibility witness, not as the source. Point 3 stands: nothing copied; the table is written from this ADR's
+      description. Point 4 gets a carve-out: at 32 planes the oracle cannot decide.
+    - ADR-024 points 1, 4, 5 read "at the 16-plane setting"; point 3 gains: at 32 planes the store word is the device
+      pixel and its X byte is unused (point 4).
+    - ADR-017 Revision 2 "config surface" gains the boot-argument sentence of point 2 of this ADR.
+    - `docs/COMPATIBILITY.md` gets one section for decision points 3-9 (what is contract, what is own design); the rows of
+      `VsetMode`/`VgetSize`/`Getrez` name the 32-plane setting (point 9).
+13. **Testing without the oracle** (`docs/analysis/vdi-32bit-scope-2026-11-18.md` §3.3, tightened):
+    - The default (16) keeps the whole existing tosdump/tosdiff regression bar, unchanged and still against
+      `tt`/`falcontc`.
+    - 32 planes: (i) a structural self-test of the `vq_scrninfo` table (bit tables partition the word, colour count
+      `1 << (r+g+b)`, a built pixel through `vro_cpyfm` then `v_get_pixel` comes back; the round trip the EdDI spec itself
+      asks for, `docs/api/vdi/eddi-vq_scrninfo.md` §6); (ii) NewTOS-16 against NewTOS-32 on the same scenes with the
+      32-bit result projected to 16 bits: within one 5-bit step per gun (computed in TASK/V61.md, step 2, O2)
+      **[M]**; (iii) program-level acceptance (HighWire, zView, DOOM show a correct image) **[M]**; (iv) the tosdump caps at
+      16 planes are lifted for 32 (`tosdump/core/cases.c:2548@planes`, `tosdump/core/cases.c:2176@nplanes`,
+      `tosdump/core/dumprast.c:128@planes`), with the 32-plane expected values coming from points 3-8 of this ADR,
+      labelled "NewTOS contract", never "oracle".
+
+**Consequences.** Programs at risk in the 32 setting: TeraDesk (`npc[]` has 17 entries, indexed by the plane count,
+`sdk/apps/teradesk/video.c:446,592`: an out-of-bounds read at 32), `present` (hardwired 16, point 5), hypview and any program
+that stamps `vq_extnd[4]` into a memory MFDB until the cap is raised (`docs/analysis/vdi-32bit-scope-2026-11-18.md` §4). They keep working at the default 16. The
+`docs/DEVIATIONS.md` row "VDI says 16 planes over a 32-bpp `Physbase`" is removed when the 32 setting becomes the
+default; it stays while 16 is the default.
+
+---
+
 
 ## Template for new ADRs
 
