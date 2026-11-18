@@ -28,7 +28,9 @@ korrekt ist": we have to fix it so it is correct), from the full XBIOS run
 ## Acceptance
 
 - Case 87 EQUAL on falcontc (or the decided difference recorded in the amendment and COMPATIBILITY); no case equal in
-  the full XBIOS run differs anew.
+  the full XBIOS run differs anew, except case 87 against the tt reference, which COMPATIBILITY names as
+  accepted (NewTOS claims the Falcon profile). (Reworded with the owner's approval 2026-11-18, "das ist ok":
+  with `Getrez` = 2 the tt case differs by design.)
 - `cargo xtask test` green; warnings delta 0; doc-check of the edited docs 0 failures.
 
 ## Spec step (researcher, 2026-11-12)
@@ -95,3 +97,11 @@ Owner 2026-11-12: "ich stimme allem so zu wie du vorgeschlagen hast" (I agree to
 1. A: `Getrez()` = 2 (`ST_HIGH`).
 2. Yes: `VsetMode(-1)` is answered as a query ([XBIOS22](XBIOS22.md) decision 4).
 3. As ADR-017 Revision 3, the draft text above; applied to `docs/MEMORY.md` in the implementing commit.
+
+## Owner decisions 2026-11-18
+
+- The acceptance clause above is reworded as shown ("das ist ok").
+- The developer's hand-made anchor-only edit in `docs/audits/2026-10-28-xbios-system.md` (one line number, the
+  file is German) counts like an edit by `cargo xtask doc-check --fix-anchors`, which TASK/TOOL49.md has not
+  built yet: no translation required ("ok").
+- Landed as `8a6225eec`; tester run `measurements/measurement-2026-11-18-xbios23-test/RUNINFO.TXT`.
