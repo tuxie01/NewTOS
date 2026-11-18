@@ -300,3 +300,16 @@ place a pen becomes a pixel (ADR-038 point 4, V64)". For the two calls here:
 ### Open points
 
 - Inferred: the interim `v_get_pixel` answer stays in V64 (the lead confirms; `_raster.md` F5).
+
+## 32-plane setting: the wide `v_get_pixel` answer (ADR-038 point 7, V65)
+
+Spec gate of TASK/V65 (researcher, 2026-11-18). From V65 on, at 32 planes the answer is
+`INTOUT[0]` = high word and `INTOUT[1]` = low word of the masked 24-bit pixel `0x00RRGGBB`, i.e.
+`{0x00RR, 0xGGBB}`; a cleared screen answers `{0x00FF, 0xFFFF}`. This replaces the interim answers of the
+two sections above. At 16 planes the answer stays `{0, word}`
+(`references/emutos/vdi/vdi_fill.c:1104-1110`). Contents, X masking and the 16-plane
+non-change: [`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting: memory forms ... (V65)", §6.
+
+### Open points
+
+- Inferred: the shape follows ADR-038 point 7 / owner choice O3; no EmuTOS path exists above 16 planes.
