@@ -1,0 +1,4 @@
+9,7G	.
+194M	runs
+6,5G	wt
+2,7G	base

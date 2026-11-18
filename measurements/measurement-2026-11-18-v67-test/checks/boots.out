@@ -1,0 +1,122 @@
+shotA {'return': {}}
+run rpi4-main: 56 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-default: 56 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-v16: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-v32: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-v24: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-vempty: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run rpi4-vx: 57 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-main: 69 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-default: 69 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-v16: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-v32: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-v24: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-vempty: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+shotA {'return': {}}
+run virt-vx: 70 serial lines; end: 1; desktop up: 1; EXC/PANIC: 0
+cp: .gYLi/card.img: Not a directory
+qemu-system-aarch64: -drive file=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-default
+.gYLi/card.img,if=sd,format=raw: Could not open '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-default
+.gYLi/card.img': No such file or directory
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ConnectionRefusedError: [Errno 61] Connection refused
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-default: binary operator expected
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-default: binary operator expected
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-default: No such file or directory
+grep: .log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-default: No such file or directory
+grep: .log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-default: No such file or directory
+grep: .log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-default: No such file or directory
+grep: .log: No such file or directory
+run td-default :  serial lines; end: ; desktop up: ; EXC/PANIC: 
+cp: vdiplanes=16.XxXn/card.img: Not a directory
+qemu-system-aarch64: -drive file=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16
+vdiplanes=16.XxXn/card.img,if=sd,format=raw: Could not open '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16
+vdiplanes=16.XxXn/card.img': No such file or directory
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ConnectionRefusedError: [Errno 61] Connection refused
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16: binary operator expected
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16: binary operator expected
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+run td-v16 vdiplanes=16:  serial lines; end: ; desktop up: ; EXC/PANIC: 
+cp: vdiplanes=32.gLTM/card.img: Not a directory
+qemu-system-aarch64: -drive file=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32
+vdiplanes=32.gLTM/card.img,if=sd,format=raw: Could not open '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32
+vdiplanes=32.gLTM/card.img': No such file or directory
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ConnectionRefusedError: [Errno 61] Connection refused
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32: binary operator expected
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32: binary operator expected
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+run td-v32 vdiplanes=32:  serial lines; end: ; desktop up: ; EXC/PANIC: 
+ALLDONE
+run td-default: 55 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0
+cp: vdiplanes=16.G7l2/card.img: Not a directory
+qemu-system-aarch64: -drive file=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16
+vdiplanes=16.G7l2/card.img,if=sd,format=raw: Could not open '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16
+vdiplanes=16.G7l2/card.img': No such file or directory
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ConnectionRefusedError: [Errno 61] Connection refused
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16: binary operator expected
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v16: binary operator expected
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v16: No such file or directory
+grep: vdiplanes=16.log: No such file or directory
+run td-v16 vdiplanes=16:  serial lines; end: ; desktop up: ; EXC/PANIC: 
+cp: vdiplanes=32.lezf/card.img: Not a directory
+qemu-system-aarch64: -drive file=/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32
+vdiplanes=32.lezf/card.img,if=sd,format=raw: Could not open '/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32
+vdiplanes=32.lezf/card.img': No such file or directory
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+ConnectionRefusedError: [Errno 61] Connection refused
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32: binary operator expected
+/Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/method/run-qmp.sh: line 39: [: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/xt/run-td-v32: binary operator expected
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+grep: /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-18-v67-test/serial/td-v32: No such file or directory
+grep: vdiplanes=32.log: No such file or directory
+run td-v32 vdiplanes=32:  serial lines; end: ; desktop up: ; EXC/PANIC: 
+run td-v16: 56 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0
+run td-v32: 56 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0

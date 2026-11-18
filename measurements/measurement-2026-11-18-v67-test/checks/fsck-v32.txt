@@ -1,0 +1,18 @@
+qemu-system-aarch64: terminating on signal 15 from pid 28458 (<unknown process>)
+TOTAL      110   0     6     
+sha256 after run: 28f6f00e12f69f55d869cf66a2d14464ee55687d0e50c42bf62a39e37380aa91  card.img
+Disk: card.img	geometry: 520/4/63 [131072 sectors]
+Signature: 0xAA55
+         Starting       Ending
+ #: id  cyl  hd sec -  cyl  hd sec [     start -       size]
+------------------------------------------------------------------------
+ 1: 06    0   1   1 - 1023 254  63 [        63 -     130977] DOS > 32MB  
+ 2: 00    0   0   0 -    0   0   0 [         0 -          0] unused      
+ 3: 00    0   0   0 -    0   0   0 [         0 -          0] unused      
+partition 1 start,sectors: 63 130977
+** fat.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 4 files, 65164 KiB free (32582 clusters)
+fsck exit 0

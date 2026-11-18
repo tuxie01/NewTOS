@@ -1,0 +1,1 @@
+640x480: pixels differing 62607; per gun exact R/G/B [35831, 49829, 40846]; top-5-bits R/G/B [0, 0, 0]; max step R/G/B [4, 4, 4]; first (36, 2)

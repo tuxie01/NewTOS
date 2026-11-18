@@ -1,0 +1,9 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/xtask deps --check-mapping`
+docs/analysis/deps/mapping.tsv: 1990 rows, all resolve, every class is valid; every bios/, bdos/, vdi/, aes/ function has a row
+status-check: report [fix-commit-not-closed] TASK/PROC08.md is PARKED and 4 fix/feat commit(s) name it
+status-check: 743 checked, 0 rejected, 7 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+status-check: 656 of 656 Migrated lines match their owner-approved batch row (TOOL58)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.19s
+     Running `target/debug/xtask doc-check TASK/V67.md TASK/V67-STATUS-UNFINISHED.MD docs/api/aes/object-form.md docs/api/bios/_vt52-32plane.md docs/api/vdi/raster/_raster.md`
+doc-check: 5 files, 958 path cites and 80 ADR cites checked, 0 failures, 0 skipped (reference tree missing); 310 anchored line cites, 45 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)

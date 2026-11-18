@@ -1,0 +1,26 @@
+p0 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p0 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p0 v16-vs-v32: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+m1 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+m1 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+m1 v16-vs-v32: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p1 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p1 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p1 v16-vs-v32: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d1 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d1 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d1 v16-vs-v32: 1920x1080: differing pixels per gun R 138055 G 138055 B 138055; first at (769, 348)
+d2 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d2 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d2 v16-vs-v32: 1920x1080: differing pixels per gun R 137980 G 137980 B 137980; first at (769, 348)
+d3 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d3 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+d3 v16-vs-v32: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p2 main-vs-default: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p2 main-vs-v16: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+p2 v16-vs-v32: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v16 p0-vs-p2: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v16 p1-vs-p0: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 p0-vs-p2: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+v32 p1-vs-p0: 1920x1080: differing pixels per gun R 0 G 0 B 0; first at None
+1920x1080: pixels differing 138055; per gun exact R/G/B [138055, 138055, 138055]; top-5-bits R/G/B [0, 0, 0]; max step R/G/B [4, 4, 4]; first (769, 348)

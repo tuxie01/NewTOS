@@ -1,0 +1,4 @@
+run vt-main: 91 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0
+run vt-default: 91 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0
+run vt-v16: 92 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0
+run vt-v32: 92 serial lines; end: 0; desktop up: 0; EXC/PANIC: 0

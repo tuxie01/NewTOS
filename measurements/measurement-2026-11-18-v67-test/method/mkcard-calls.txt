@@ -1,0 +1,4 @@
+mkcard: tools/mkcard.sh <img> method/plain.inf ; tools/mkcard.sh <img> method/apitest.inf APITEST.NCP=<f> PTERMCH.NCP=<f>
+tools/mkcard.sh <img> method/doom.inf DOOM/DOOM.NAP=sdk/apps/doom/build/DOOM.NAP DOOM/DOOM1.WAD=Applications/doom-wad/doom1.wad
+tools/mkcard.sh <img> method/z-teradesk.inf Apps/TERADESK/{DESKTOP.NAP,desktop.rsc,icons.rsc,cicons.rsc}=sdk/apps/teradesk/build/dist/<f> Apps/TERADESK/TERADESK.INF=method/TERADESK.INF  (td.img)
+tools/mkcard.sh <img> method/vt52col.inf VT52COL.NCP=<scratch>/VT52COL.NCP  (vt52.img; the program: method/vt52col.c)

@@ -1,0 +1,85 @@
+measurement-2026-11-18-v67-test -- tester run for TASK/V67 at developer commit bc0b21945 (branch v67, descends from main 04fe3f8f5; compared with main 04fe3f8f5)
+===========================================================================================================================================
+
+SCOPE    32-plane setting: AES colour icons (loader pixel store, buffer bytes, blit stamp) and the VT52 cell writer at vdiplanes=32 (ADR-038 point 10), plus the standing 16-plane baseline. Tester (Sonnet), phase test.
+         Nothing in the product was edited. No card, no Pi. All runs QEMU (raspi4b and virt).
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2, host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (host_clang line of the manifests).
+TREES    own detached worktrees /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/wt (bc0b21945) and .../base (main 04fe3f8f5); cargo xtask worktree-setup in each.
+         Release kernels by "cargo xtask build --board <b> --release" (no CARGO_TARGET_DIR), objcopy'd to .../kern/{base,wt}-{rpi4,virt}.img.
+         Agent dir (du -sh): 9.7G (wt 6.5G, base 2.7G, runs 194M). Kept until the accept step.
+
+VERDICT  PASS on QEMU for every mechanism the scope needs; the items that cannot be driven here are listed under COULD NOT VERIFY and REAL-PI4-ONLY (none of them is a failure).
+
+TEMPORARY HARNESS CHANGES (own trees only, never committed)
+  (a) wt: tools/xtask/src/tosdump.rs reads env V62_APPEND as the QEMU -append string (method/tester-xtask-append.patch); applied for the table runs, reverted afterwards (git status of wt clean).
+  (b) scratch program method/vt52col.c (built by sdk/build.sh from the scratch dir into VT52COL.NCP, autorun by method/vt52col.inf); written for this run, never in the product tree.
+  (c) APITEST.NCP and PTERMCH.NCP rebuilt into scratch (sdk/apps/apitest/build-apitest.sh, sdk/build.sh sdk/examples/ptermch.c); sizes equal the V66 run (161040, 6328 B).
+  (d) no trap-level selftest kernel was built in this run (see COULD NOT VERIFY).
+
+COMMANDS (board / outcome)
+ 1  BUILD + LINT (method/lint-rel.sh -> lint.sh; checks/lint-wt/summary.txt, checks/lint-base/summary.txt): cargo xtask build --board qemu-virt and --board rpi4 in both trees exit 0; build warnings 159/159 on both boards and trees;
+      clippy kernel 121 + tos-api 73 on both boards and trees (exit 0); desktop/newdesk clippy exit 0 per board; clippy tos-api --tests: the same per-test warning set (only the "(2 duplicates)" annotation moves between two test lines
+      because of ordering; no new warning). DELTA 0. Release builds of both trees and both boards exit 0.
+ 2  HOST TESTS cargo xtask test (wt, full, run as it is at bc0b21945; hosttest.log not kept, the "test result" lines are in checks/host-test-results.txt): 2570 passed / 0 failed / 7 ignored (sum of the "test result" lines), 0 SKIPPED.
+      Handover figure 2570/0/7 reproduced; baseline main 2554/0/7. emutos_resolves_at_the_pin ran and is ok.
+ 3  cargo xtask deps --check-mapping: 1990 rows, all resolve, every class valid. status-check: 743 checked, 0 rejected, 7 reported (pre-existing, PROC08 etc.). doc-check of TASK/V67.md, its receipt, docs/api/aes/object-form.md,
+      docs/api/bios/_vt52-32plane.md, docs/api/vdi/raster/_raster.md: 0 failures (checks/doc-status-mapping-checks.txt).
+ 4  JUDGED THE TEST DIFF (git diff 04fe3f8f5..bc0b21945 -- tos-api/tests): new aes_v67_cicon32.rs, vt52_console_32.rs, vt52_console_32_default_palette.rs; vdi_v64_pens.rs changed only in the 32-plane expectation of
+      the_vt52_console_takes_its_colours_from_the_pen_table (the 16-plane branch (fg,bg) = word16 expectation and its comment sentence about 16 planes are unchanged); vdi_v65_memory_forms.rs: the 32-plane icon blit test replaced
+      (reading 1) and a new 16-plane test the_colour_icon_blit_reads_its_16_bit_form_at_16 added. No 16-plane expectation changed or weakened.
+ 5  BOOT + SCREENDUMP, release kernels, headless, QMP screendump, both boards, 7 configs each (method/boots.sh, run-qmp.sh; checks/boots.out; serial/{rpi4,virt}-*.log; screendumps/{rpi4,virt}-*-a.png): main, default, vdiplanes=16,
+      =32, =24, "vdiplanes=" , =x. All 14: "desktop up", 0 EXC/PANIC. Screendump sha256 prefixes: rpi4 a3bd102e7f28 for main, default, v16, v24, empty, x; rpi4 vdiplanes=32 29b2d392daee (same hash as the V65 and V66 runs:
+      the V64 desktop-green pen difference, nothing new from V67); virt 6985da3b3c38 for ALL 7. => at default and 16 the boot screens equal main byte for byte.
+ 6  VDI + RASTER + AES TOSDUMP TABLES on raspi4b (method/tables-vdi.sh, run-tables-vdi.sh, run-aes.sh; checks/tables-run.txt, table-body-compare.txt, report-compare.txt): 9 VDI/raster tables + aes-r1, 4 configs
+      (main = --tree base stock, default, v16, v32 informational). DEFAULT AND v16 AGAINST MAIN: the "X of Y cases differ" lines are identical to main's in all 10 tables (vdi-all 13/182 and 0/182, vdi-v18-t3 1/2,
+      vdi-a131-palette 32/48 and 0/48, vdi-raster 1/59, vdi-v18-t2-raster 6/26, aes-r1 95/95 in all four configs); the tosdiff report texts (22 reports x 2 configs = 44 comparisons, paths stripped, the "build <hash>" id of the
+      header line stripped) are identical (checks/report-compare.txt: 44 compared, 0 differing); BIN bytes: only the 4 differing header bytes (dumper build id), 0 bytes past the 32-byte header in every table incl. aes-r1.
+      => no verdict changed. v32 (informational): case counts equal those of the V65/V66 runs (vdi-all 6, vdi-v18 11, vdi-v18-t2 5, vdi-a131-palette 23, vdi-raster 24, vdi-v18-raster 1, vdi-v18-t2-raster 16); vdi-raster-screen
+      at v32 exits 1 (the dumper's own guard refuses, the table declares 16 planes), no RASTER.BIN, as in V63-V66; aes-r1 v32 ap_planes 32, others 16. All completed at 32 with no EXC/PANIC.
+ 7  APITEST (card tools/mkcard.sh with apitest.inf), raspi4b, checks/apitest.out: main, default, vdiplanes=16, vdiplanes=32: TOTAL 110 / 0 / 6 in all four (serial/api-*.log) = baseline. Console screendump after the summary:
+      sha256 prefix f79b85387b0e identical for all four (viewed at 32: the summary screen, clean text, no garbage rows). 0 EXC/PANIC.
+ 8  VT52 console with colours at 32 (scratch program method/vt52col.c on card vt52.img; method/vt52-runs.sh; checks/vt52.out, vt52-cmp.txt; screendumps/vt-*-a.png): the program clears (ESC E), cursor on (ESC e), writes 16 lines with
+      foreground/background pens (ESC b / ESC c) over all 16 pens, a reverse-video line (ESC p/q), 16 more lines (scrolls the top rows away, bottom rows filled in the background pen), ESC Y position, text, the cursor, then waits.
+      main, default and vdiplanes=16: screendump sha256 prefix 35ecf4003975 for all three (pixel-equal to main). vdiplanes=32 viewed (Read) next to the 16 one: the same picture (coloured stripes, reverse line, scrolled rows,
+      the cursor block visible at the end of the last line, no remnant cursor blocks, no garbage rows). Per gun 16 against 32 (method/bmpcmp.py): 62607 pixels differ, top 5 bits of R/G/B equal in all pixels (0/0/0 differing),
+      largest per-gun step 4 (tolerance of TASK/V64.md: 16). (The oddly clipped first characters of some lines are my scratch program's control bytes in ESC b/c operands, identical at 16 and 32.)
+      The boot-time console text before the first workstation: screendumps/boot-v32-a.png (APITEST's first test lines at vdiplanes=32, viewed, clean); the rule C3 default-palette case is covered by the host test
+      vt52_console_32_default_palette (item 2), not by a booted frame.
+ 9  COLOUR ICONS AT 32 IN A BOOTED KERNEL: TeraDesk (sdk/apps/teradesk/build/dist: DESKTOP.NAP, desktop.rsc, icons.rsc, cicons.rsc) from C:\Apps\TERADESK\ by #Z autorun (td.img, z-teradesk.inf), raspi4b 640x480 (method/td-runs.sh,
+      run-qmp.sh; screendumps/td-*-a.png; serial/td-*.log), after 50 s. FACT about the resource: cicons.rsc (NRSC v13, 63650 B) holds 38 CICONBLKs, each with ONE variant of 4 planes (36 with a SELECTED image, 2 without), no chain,
+      NO 16-plane variant (parsed from the file with a script run during this test: Counter {(4 planes, no next, selected): 36, (4, no next, no selected): 2}). So at 16 and at 32 every icon is the 4-plane variant expanded by the loader.
+      main, default (wt) and vdiplanes=16 (wt): screendump sha256 prefix 1779c26e41c0 for all three (pixel-equal to main). vdiplanes=32: 03f741cd3186; viewed next to main, cropped and magnified 3x on the icon row
+      (cmp/c-main.png, c-v32.png, not kept): four HARD DISC cabinet icons with their coloured folders and the TRASH can drawn at both, masks right (no boxes, no garbage). Per gun against main: 2082 pixels differ (the icon
+      colours, 8-bit against 5-bit replicated), top 5 bits equal in all (0 differing), largest per-gun step 4 (method/bmpcmp.py).
+      NOT driven: the SELECTED state of an icon (no input on raspi4b, no C: on virt); a 16-plane variant (no resource carries one).
+10  AES AT 32 (virt, usb-mouse through QMP; method/aes-run.sh, aes-drive.py, aes-script.txt; screendumps/aes-*; checks/aes-compare.txt; PPMs compared per gun): main, default, v16, v32. Menu drop-down (Desk) opened, the
+      "Desktop info" dialog opened and closed. Default and v16 against main: all 7 shots pixel-identical (0 differing pixels). v32: the pointer-parked shot p0 equals p2 (after drop-down and dialog closed) pixel-exactly, and p1
+      equals p0: the screen is restored exactly. v32 against v16: shots with the dialog differ (138055 px: the dialog grey 187 vs 189, V64 pen change), top 5 bits equal in all, largest step 4; the other shots identical.
+      Viewed: aes-v32-m1.png (drop-down), aes-v32-d1.png (dialog, grey panel, OK button, text clean). 0 EXC/PANIC. gsx_malloc line: main and v16 "len=4147200", v32 "len=8294400" (1920x1080x4 B; raspi4b 640x480 at 16 planes: 614400, td-main.log).
+11  CARD INTEGRITY: apitest card clone booted with vdiplanes=32 to TOTAL, killed, FAT partition dd'ed out, fsck_msdos -n clean ("4 files, 65164 KiB free", fsck exit 0; checks/fsck-v32.txt, method/fsck-v32.sh).
+      0 EXC/PANIC in every serial log of this run.
+
+DROVE: both board builds, clippy delta (0), full host tests (2570/0/7), mapping/status/doc-check, 14 boots + screendumps (incl. invalid arguments), 10 tosdump tables x 4 configs against main (default/v16 identical), APITEST x4
+  (110/0/6), a VT52 colour/reverse/scroll/clear/cursor scratch program at main/default/16 (equal) and 32 (within 4 per gun, top 5 bits equal), TeraDesk with its colour icons at main/default/16 (equal) and 32 (same picture),
+  AES menu and dialog at 16/32 on virt with exact restore, fsck after a 32-plane boot.
+COULD NOT VERIFY / NOT DONE: selected state of a colour icon and an icon with a 16-plane variant in a booted kernel (no resource/input path; covered by the host tests aes_v67_cicon32 and the_colour_icon_blit_* in
+  vdi_v65_memory_forms); the VT52 cursor save/restore under cursor movement and the default-palette boot console beyond what the screendumps show (host tests vt52_console_32*); no trap-level selftest of the new paths was built;
+  gsx_malloc on a board with a smaller pool (as in the ticket).
+REAL-PI4-ONLY (never claimed here): cmdline.txt vdiplanes path through the VideoCore mailbox, HDMI mode and the real framebuffer at 32, QUIRK-001 TTBR0 wedge, cache coherence of the framebuffer, USB-HID interactive use
+  (clicking the icons), real monitor/EDID.
+REPRODUCING COMMANDS (no FAIL): host: cargo xtask test; boots: method/boots.sh; tables: method/tables-vdi.sh; APITEST: method/apitest-runs.sh; console: method/vt52-runs.sh; TeraDesk: method/td-runs.sh; AES: method/aes-run.sh
+  <kernel> <tag> "vdiplanes=32" "$(cat method/aes-script.txt)"; fsck: method/fsck-v32.sh.
+
+NOTES (no action)
+ - Several method scripts are V66 copies with the agent paths changed; scripts not used here (selftest, doom, chain) are left in method/ unused.
+ - The first td-v32 screendump file was accidentally cropped in place by a sips call of mine; the run was repeated and the file restored (same sha256 prefix 03f741cd3186); the cropped copy was never cited.
+
+OUT-OF-SCOPE OBSERVATIONS
+ - doc-check in a fresh worktree reports "missing" for cites into gitignored extracted sdk dirs that worktree-setup does not link (seen in V66); not hit in this run's file set.
+ - cargo xtask build with CARGO_TARGET_DIR set still fails (known); builds ran without it.
+
+IMAGE MANIFESTS (copies in this directory; optional_missing lines verbatim): plain.img.manifest "optional_missing none"; apitest.img.manifest "optional_missing none"; td.img.manifest "optional_missing none";
+  vt52.img.manifest "optional_missing none". host_clang in each: Apple clang version 21.0.0 (clang-2100.4.1.1). Calls: method/mkcard-calls.txt.
+
+GITIGNORED OUTPUTS CITED: path (under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a5835b4b6e8d83e6f/), size, sha256: checks/sha256-gitignored.txt (kernels, NCPs, the four cards, the TeraDesk dist files).
+  runs/<cfg>/<table>/ (tosdump outputs) and runs/aes-*/ (PPM screendumps): 194M under runs/.
