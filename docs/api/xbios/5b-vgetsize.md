@@ -89,9 +89,32 @@ Facts for the choice: NewTOS reports a config.txt-driven geometry (ADR-017 rev 2
 | B. Current screen only | ignores `mode`; always the byte size of one NewTOS screen: `size_bytes` (32-bpp, 8 294 400 at 1920x1080) | Correct for "buffer I can blit Physbase into"; case 213 stays DIFF (record in COMPATIBILITY). The 16-bit alternative (`width*height*2` = 4 147 200) matches the VDI device pixel, but not the bytes a program that copies `Physbase` memory handles; choose one and document it. |
 | C. Hybrid | the current-screen size when `mode` equals the word NewTOS reports as its current mode (what `VsetMode(-1)` would answer, see below), the Falcon formula for every other word | Programs that ask about the running mode get the right size, programs probing other modes get Falcon-table answers; needs the `VsetMode(-1)` word to be defined (open question in `04-getrez.md` and TASK/XBIOS22). Most code. |
 
-Open points: (1) 32-bpp vs 16-bit bytes for B/C (the owner's ADR-024 contract says memory MFDB = 16-bit,
-Physbase memory = 32-bit); (2) whether `mode == -1` (the `VsetMode` convention) is to be accepted —
-EmuTOS masks it to `0x01FF` and runs the formula on `0x1FF` bpp-folded (`:733-737`), it is not a query.
+## Owner decision B and the byte count — draft for the owner (2026-11-18, no decision taken)
 
-Host tests: the chosen answer for the chosen inputs; the folded bpp (`mode & 7 > 4`) and the
-not-in-table fallback if option A is taken.
+Owner 2026-11-12: option B, the size of the current screen only; `mode` is ignored (case 213 then differs from
+the oracle's 614400; COMPATIBILITY entry). Still to choose: which byte count.
+
+Facts (read): the memory behind `Physbase` is linear 32-bpp XRGB8888 that the program writes directly
+(`docs/api/xbios/02-physbase.md:231-246`); `Host::screen()` publishes `size_bytes` = `stride_bytes * height`
+for **one** screen (`tos-api/src/host.rs:579@size_bytes`; 8 294 400 at 1920x1080, QEMU `raspi4b` default
+640x480: 1 228 800, `02-physbase.md:256-259`). The VDI device pixel is 16-bit (ADR-024), so a memory MFDB of
+the same area is `width * height * 2` (4 147 200 at 1920x1080). EmuTOS says what the call is for: the
+video RAM a `Vsetscreen` of that mode needs (`bios/videl.c:702-722`, comment above `vgetsize`).
+
+| Option | Bytes | For | Against |
+|--------|-------|-----|---------|
+| B1 (recommended) | `size_bytes`: one 32-bpp screen as `Physbase` shows it, stride padding included | The question the call answers ("RAM for a screen of the current mode") has this number as its answer on NewTOS: a program that allocates it and copies `Physbase`/`Logbase` memory (a screen save, an off-screen copy of what it writes) is exactly sized; over-allocation of a 16-bit consumer is harmless, under-allocation is a crash | Not the 16-bit pixel size a VDI memory-MFDB program needs (2x too large for that) |
+| B2 | `width * height * 2` | equals the VDI device pixel, EmuTOS's truecolor bytes-per-pixel (`videl.c:756`, `determine_width` word count x 2) | A program that copies `Physbase` bytes into it overruns by 2x; no NewTOS memory is 16-bit-per-pixel at screen scale except an MFDB the program builds itself |
+
+The developer reads `Host::screen().size_bytes`; before the framebuffer is up `screen()` is `None`
+(`02-physbase.md`, "How it is read"): the answer then is not decided here (see open points).
+
+## Open points
+
+- STOP (owner): B1 or B2 (recommended B1), then the sanctioned-deviation row for case 213.
+- STOP: `VgetSize` before the framebuffer is up (`Host::screen()` = `None`): which value (0 or the function number)?
+  Not decidable from EmuTOS (no Videl-present analogue); Physbase yields 0 in that state.
+- Inferred: that the callers' purpose is a screen-RAM allocation (EmuTOS comment `videl.c:702-722`, not a
+  measurement of any NewTOS program; no ported program calls `VgetSize`: grep `sdk/apps`, `sdk/overlays`,
+  `programs` 2026-11-18, only the libc header `sdk/libc/overlay/include/mint/falcon.h:152@VgetSize` defines it).
+- Cited: with B the call never runs `vfixmode`, so `Vfixmode` stays unimplemented without affecting it.

@@ -272,3 +272,20 @@ may become the more honest answer.
   returning live width/height/depth) remains a possible future refinement,
   mirroring the Falcon `Getrez`(hint)/`VsetMode`(truth) split; not needed
   today since VDI `DEV_TAB` / `Physbase` already carry the live geometry.
+
+---
+
+## Coherence with `VsetMode(-1)` (added 2026-11-18, TASK/XBIOS22 spec step 2)
+
+Owner decisions 2026-11-12 (`TASK/XBIOS23.md`: `Getrez()` = 2; `TASK/XBIOS22.md`: `VsetMode(-1)` answers a fixed
+word) must agree. The proposed word `0x1C` (`58-vsetmode.md`) has `VIDEL_COMPAT` clear, so by
+`bios/screen.c:956-972` `Getrez` is 2 and by `bios/videl.c:648-656` `sshiftmod` would be 3: the same pair the
+oracle's falcontc profile measures (cases 87, 211). The "round-trip with `Setscreen`" criterion above does not
+apply to NewTOS (the `rez` of `Setscreen` is ignored, `05-setscreen.md`); the developer of XBIOS23 removes it.
+
+## Open points
+
+- The "NewTOS behavior (settled — ADR-017 rev 2)" section above still states `TT_MEDIUM` (4); it is rewritten by
+  the XBIOS23 implementing commit together with ADR-017 Revision 3 (owner decision 2026-11-12), not here.
+- Inferred: the coherence statement rests on reading `screen.c`/`videl.c`; `0x1C` with `Getrez` 2 is measured
+  together only on the oracle (cases 87 and 211), not on NewTOS.

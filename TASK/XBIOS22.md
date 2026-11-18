@@ -99,3 +99,114 @@ Owner 2026-11-12, second answer: "VgetSize : B" and "_VDO-Cookie ja" (_VDO cooki
 Superseded by the answer above: Still open: question 2 (`VgetSize`: A, B or C, and for B/C which byte count), and whether to publish `_VDO`
 (ADR-012 amendment, with [ARCH06](ARCH06.md)). The lead made no recommendation on these; the owner answers them
 separately.
+
+## Spec step 2 (researcher, 2026-11-18): the three points the decisions of 2026-11-12 left to the spec
+
+Written: `docs/api/xbios/58-vsetmode.md` (new), `docs/api/xbios/5b-vgetsize.md` (byte-count options),
+`docs/api/xbios/59-vgetmonitor.md` and `docs/api/xbios/04-getrez.md` (cross-references). Drafts below; no decision
+is taken here, `docs/MEMORY.md` and `docs/COMPATIBILITY.md` are not edited.
+
+### (a) The word `VsetMode(-1)` answers — recommendation `0x001C`
+
+`0x1C` = `VGA|80COL|TRUECOLOR` (bits 4, 3, 2-0 = 4): VERTICAL, COMPAT, OVERSCAN, PAL clear. Reasoning, field by
+field with what TeraDesk and EmuTOS conclude, is in `docs/api/xbios/58-vsetmode.md`. Short form:
+
+- It is the oracle's own word (case 211, falcontc): case 211 becomes EQUAL, no COMPATIBILITY row for the query.
+- It agrees with the other answers decided 2026-11-12: `VgetMonitor` 2 (VGA bit), `Getrez` 2 and `sshiftmod` 3
+  (COMPAT clear, `bios/screen.c:971-972`, `bios/videl.c:648-656`), a 16-bit truecolor VDI (bits 2-0 = 4, ADR-024).
+- It is a fixed point of `vfixmode` on a VGA monitor (`bios/videl.c:934-943`).
+- Its weakness is the same for every Falcon word: it names 640 columns; 1920x1080 is inexpressible; geometry comes
+  from VDI (`58-vsetmode.md`, option table: B `0x11C`, C `0x3C`, D keep `0x58`, E a non-Falcon word, each with its cost).
+- `VsetMode(mode != -1)` and `Vfixmode` keep the function number (owner decision); TeraDesk never calls
+  `VsetMode` with a mode other than -1 (it uses `shel_write(SHW_RESCHNG)`, `sdk/overlays/teradesk/video.c:407-408@shel_write`).
+
+### (b) The `VgetSize` byte count — recommendation B1, `size_bytes` (32-bpp `Physbase` screen)
+
+Options in `docs/api/xbios/5b-vgetsize.md`: **B1** one screen as `Physbase` shows it, `Host::screen().size_bytes`
+(8 294 400 at 1920x1080; 1 228 800 at the QEMU 640x480); **B2** `width*height*2` (4 147 200), the VDI device pixel.
+B1: the allocation a program makes for "a screen of this mode" is the memory it writes through `Physbase`
+(XRGB8888, `docs/api/xbios/02-physbase.md:231-246`), and a too-large buffer is harmless where a too-small one
+overruns. B2 only fits a program that builds a 16-bit memory MFDB itself. No program in the repository calls
+`VgetSize` (grep of `sdk/apps`, `sdk/overlays`, `programs`, `sdk/examples`, 2026-11-18; only the libc header
+defines it), so the choice is not forced by a user. One open question remains (not decidable from EmuTOS):
+the value before the framebuffer is up.
+
+### (c) `_VDO` — recommendation `0x00030000` (`VDO_FALCON`)
+
+**Value.** EmuTOS sets `VDO_FALCON` = `0x00030000` when the Videl is present (`bios/machine.c:363-367`,
+`include/cookie.h:67`); falcontc measures it (`docs/COMPATIBILITY.md` row 45: tt `0x00020000`, falcontc
+`0x00030000`). Options: **A `0x00030000`** (recommended): the Falcon the profile and the answers claim
+(`VsetMode(-1)` `0x1C`, `VgetMonitor` 2, `VgetRGB`); jar case 45 EQUAL on falcontc. **B `0xFFFFFFFF`**
+(`VDO_NOHARD`, EmuTOS's non-Atari value, `bios/machine.c:375`): TeraDesk's `vdo >> 16` is `0xFFFF` -> default
+branch (`video.c:570-574@default` of the overlay), it never calls `VsetMode`/`VgetMonitor`, which defeats the owner's
+decision to answer them. **C `0x00050000`** (TeraDesk's `ARA_VIDEO`, `video.c:94@ARA_VIDEO` of the overlay): the ARAnyM
+claim, withdrawn for `_MCH` in ADR-012 (2026-10-28). **D `0x00020000`** (TT): TeraDesk's TT branch never asks
+the Falcon calls.
+
+**What TeraDesk did, and what changed since 2026-10-29** (`measurements/measurement-2026-10-29-arch06/RUNINFO.TXT`,
+RESULTS 2 and 3):
+- Without `_VDO` (then and today) TeraDesk takes the ST branch. On 2026-10-29 that branch crashed on Overscan + OK
+  (Bus Error at the ACIA address `0xFFFC00`). Since then SDK07 patched it (overlay `sdk/overlays/teradesk/video.c:24-44@SDK07`,
+  `newtos_mch_nohard()`), so the ST branch is safe either way. TeraDesk also did not find a later-set `_VDO` before
+  SDK04 C6 (16-byte step); that is fixed (RUNINFO "INPUTS", TeraDesk row).
+- With `_VDO = 0x00030000` injected (RESULT 3): `VsetMode(-1)` -> `0x58`, `VgetMonitor` -> `0x59`; TeraDesk read
+  them as `falmode = 0x58` and `fmtype = 0x59` (garbage): Overscan ticked, "Doubleline" enabled, and OK without a
+  change raised the alert "A change of video mode will terminate all running applications" and an AES restart.
+  **That is what changes with the answers decided in 2026-11-12**: with `0x1C` and 2, `falmode & VM_STMODE == 0`,
+  `VM_80COL` set -> `currez = TT_MEDRES` (`video.c:202-209@VM_STMODE`), `fmtype == VGA_MON`; the dialog's rebuilt word is
+  `0x1C` again (64K colours -> `npc[16] = 4`, `:475,:620-621`; Overscan/Doubleline untouched), so
+  `newmode == falmode` and `newrez == currez` and OK raises no alert (`:694`). Derived from the source, not
+  measured; the tester repeats the 2026-10-29 Falcon-branch run.
+- What still holds: choosing another mode in the dialog and confirming calls `shel_write(SHW_RESCHNG, mode, 1)`
+  (`video.c:389-408@fal_mil`); NewTOS records the request and restarts the AES but never switches the mode
+  (`tos-api/src/aes/mod.rs:101-125@shel_write`, `tos-api/src/aes/shell.rs:484-492@SHW_RESCHNG`), so TeraDesk offers modes it cannot
+  honour and, after the restart, reads `0x1C` again. COMPATIBILITY entry for `VsetMode`/`Vfixmode` should say so.
+- The 2026-10-29 owner decision "`_VDO` bleibt weg" (`TASK/ARCH06.md`, last section) is superseded by the owner's
+  2026-11-12 "_VDO-Cookie ja"; the ARCH06 "design:hardware:videl" argument no longer holds for the cookie.
+
+**Other in-repo programs.** Only TeraDesk reads `_VDO` (`sdk/overlays/teradesk/video.c:181@find_cookie`, upstream
+`sdk/apps/teradesk/video.c:158`); the cookie probe `sdk/overlays/teradesk/tests/cookie-probe.c:69@_VDO` lists it.
+No other file in `sdk/`, `programs/`, `kernel/`, `tos-api/`, `tosdump/` reads it (`/usr/bin/grep -rl`, 2026-11-18;
+the gitignored local Applications tree is absent in this worktree). Gap closure: the programs on the standard image come from local sources
+(not re-mapped in this run; no program was found that asks for `_VDO` outside the one above). EmuTOS's own AES and
+desktop do not read `_VDO`; they call `VsetMode(-1)` directly (`aes/gemgsxif.c:184`, `desk/deskrez.c:159`).
+Risk not measurable by reading: a future port that trusts `_VDO = Falcon` may then touch Videl registers
+(`0xFFFF82xx`); none does today.
+
+**Draft: ADR-012 amendment (not applied to `docs/MEMORY.md`)**
+
+> *Amendment (date of landing, owner decision 2026-11-12, TASK/XBIOS22).* **`_VDO` is published** with the value
+> `0x00030000` (`VDO_FALCON`, `references/emutos/include/cookie.h:67`; EmuTOS sets it when the Videl is present,
+> `references/emutos/bios/machine.c:363-367`). Reason: NewTOS answers the Falcon video calls that describe the
+> screen (`VsetMode(-1)`, `VgetMonitor`, `VgetSize`, `VgetRGB`, TASK/XBIOS22) and is the Falcon030/TOS4 profile
+> (ADR-024); a program that gates those calls on `_VDO` (TeraDesk, `video.c`) must reach them. It claims a Falcon
+> *video description*, not Falcon hardware: `VsetMode(mode != -1)`, `Vfixmode` and the other Videl calls stay
+> unimplemented (ADR-017), `_SND`/`_FDC`/`_CPU`/`_FPU` stay absent, `_MCH` stays `0xFFFFFFFF`. This replaces the
+> 2026-10-28 amendment's "`_VDO` is decided after measuring" and the 2026-10-29 "stays absent" decision. Copies of
+> the old statement to change in the same commit: `tos-api/src/cookie.rs:216-222@seed_defaults` comment and the
+> `seed_defaults` set, `kernel/src/selftest_cookie.rs` (count 18), `docs/api/bios/_cookie-jar.md:51,141,151`,
+> `docs/COMPATIBILITY.md:1630,1632` (row 45: falcontc equal, tt still different), `docs/HARDWARE-PROFILE.md:424`,
+> `docs/analysis/deps/mapping.tsv` row `setvalue_vdo`, `docs/sdk/08-porting-checklist.md:69` (`vdo >> 16` is 3).
+
+### Is XBIOS23 then complete for one developer to build both tickets together?
+
+Yes, with these items the developer takes from the files, not from the owner: (1) `getrez` -> 2 and the selftest
+expecting 4 (`TASK/XBIOS23.md`); (2) rewrite of the "NewTOS behavior (settled — ADR-017 rev 2)" section of
+`docs/api/xbios/04-getrez.md` and removal of its round-trip criterion (the coherence note is in that file);
+(3) ADR-017 Revision 3 text from `TASK/XBIOS23.md` applied in the implementing commit, where it should also name
+the `VsetMode(-1)` word once the owner fixes it; (4) the dispatcher arms for 0x58 (query only), 0x59, 0x5B, 0x5E
+next to the catch-all (`tos-api/src/xbios/mod.rs:157@other`), tests per function (documented value, documented
+error; the error arm is "no error path" for 0x59 and `VgetSize`, `-1` for `VgetRGB`, see the spec files).
+Still open for XBIOS22 before code: the exact `VsetMode` word (a), B1/B2 (b), the `_VDO` value (c), and the
+`VgetSize`-before-framebuffer value. Nothing is missing from XBIOS23 itself.
+
+### Open points (spec step 2)
+
+- STOP (owner): `VsetMode(-1)` word (`0x1C` recommended); `VgetSize` byte count (B1 recommended); `_VDO` value
+  (`0x00030000` recommended) and the ADR-012 amendment text.
+- STOP: `VgetSize` before the framebuffer is up (`Host::screen()` = `None`).
+- Inferred: TeraDesk's behaviour with `0x1C`/2/`_VDO` = Falcon (read, not measured); needs the tester's
+  Falcon-branch run (the 2026-10-29 `vid-vdo` scenario, `measurements/measurement-2026-10-29-arch06/method/`).
+- Inferred: the oracle's `0x1C` came from NVRAM, not the built-in default (`bios/screen.c:491,529`).
+- Out of scope: EmuTOS's AES puts `VsetMode(-1)` into `intout[45]` of `v_opnwk` (`aes/gemgsxif.c:184`); NewTOS's
+  `v_opnwk` answer there is not checked.

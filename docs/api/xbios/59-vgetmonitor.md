@@ -92,3 +92,14 @@ and also call `VsetMode`, which the owner excluded (TASK/XBIOS22).
 
 Host tests (`TASK/XBIOS22.md` Work 3): the documented value for the chosen option; no error
 path exists to test (state that in the test).
+
+## Owner decision (2026-11-12) and update 2026-11-18
+
+Owner 2026-11-12: `VgetMonitor` answers 2 (VGA), equal to the oracle (option A); `_VDO` is published
+(draft value and text: `TASK/XBIOS22.md`, section "Spec step 2"). Edge case 2 above ("NewTOS omits `_VDO` on
+purpose") is therefore superseded once the developer lands the cookie: programs that gate on `_VDO` then
+reach `VsetMode(-1)` (`58-vsetmode.md`) and `VgetMonitor` and read 2 / `0x1C`.
+
+## Open points
+
+- None for the value (decided: 2). Edge case 2 stays as history until the cookie is published.
