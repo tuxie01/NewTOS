@@ -1,0 +1,37 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump bios tosdump/cases/bios-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/runs/main-default --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/scratch/base --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN`
+tosdump: command   cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/runs/main-default --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/scratch/base --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    bad47112adda1b499fe839dd631555f2acaa4c4d
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit bad47112adda1b499fe839dd631555f2acaa4c4d
+tosdump: features  (none)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (5 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (7 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 739752b12b80f187e5b48cda666e671edd5b19b3fc0100bab07705effc322e73
+tosdump: kernel ELF  sha256 1bcf9613784cd1204c12893a98b7bae372a360e222bffb0290f35b10d23abf80 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+tosdump: dumper build id bad4
+tosdump: DUMPBIOS.NAP sha256 f65fddadc3c56cfbd78721319258113c4bb66be917899640140d9871a7e59557
+tosdump: card.img.manifest: image_sha256 d138f8e4680ef515779cb793ca1d73ef30e93a970b1af70d3115da3bf6a298b0
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/scratch/base/tosdump-97885/card.img sha256 d138f8e4680ef515779cb793ca1d73ef30e93a970b1af70d3115da3bf6a298b0 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 afc077e6d1a858541da62656bdb01adce21d77ee252649e76bdce049e01f7108
+tosdump: BIOS.BIN 47072 bytes, sha256 8208f25c16f2c6217d122b692542488560725be23501f5341183cb460bac796e
+tosdump: BIOS.LOG 172 bytes, sha256 8d7bac1ee8099b2dcbd1861c176a8dd87819e0a066fbd447d4a8190634f54be8
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a3ceacd4986f7eaf1/base/tosdump/host/build/tosdiff sha256 38045b5bc1f0ee958ddbc89218237c89428114f96a9c6c9ade551ad47d092f16
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 147 records of 320 bytes, build bad4, case CRC 583C11E0
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 35 of 147 cases differ
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN: exit 1, 31 of 147 cases differ
+tosdump: total     54 s
+tosdump: result    run complete (differences above are findings, not failures)
+rc 0

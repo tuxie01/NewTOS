@@ -1,0 +1,1 @@
+tools/mkcard.sh <img> method/plain.inf ; tools/mkcard.sh <img> method/apitest.inf APITEST.NCP=<f> PTERMCH.NCP=<f>
