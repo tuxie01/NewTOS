@@ -66,3 +66,9 @@ gitignored inputs it does not link:
 - `cargo xtask land` did not remove the SND05 developer's scratch because
   the receipt's `Agent:` line was not a bare agent id; removed by hand with
   `cargo xtask scratch-clean`. Noted, no ticket (owner 2026-11-17).
+- `cargo xtask build` fails when `CARGO_TARGET_DIR` is set: the final
+  `kernel8.img` step looks for the kernel ELF under the default target
+  directory ("kernel ELF not found"), and `programs/build.sh` does not follow
+  the variable either. Seen by the V63 developer and the V63 tester
+  (`measurements/measurement-2026-11-18-v63-test/RUNINFO.TXT`, "OUT-OF-SCOPE
+  OBSERVATIONS"), who converted the ELF by hand. Noted, no ticket yet.
