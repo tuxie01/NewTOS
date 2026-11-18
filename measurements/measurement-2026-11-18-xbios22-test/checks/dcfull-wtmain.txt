@@ -1,0 +1,39 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask doc-check TASK/XBIOS22.md docs/COMPATIBILITY.md docs/DEVIATIONS.md docs/HARDWARE-PROFILE.md docs/MEMORY.md docs/api/bios/_cookie-jar.md docs/api/xbios/00-initmous.md docs/api/xbios/58-vsetmode.md docs/api/xbios/59-vgetmonitor.md docs/api/xbios/5b-vgetsize.md docs/api/xbios/5e-vgetrgb.md docs/api/xbios/_dispatcher.md docs/api/xbios/_dmasound-group.md docs/sdk/08-porting-checklist.md`
+docs/COMPATIBILITY.md:255: sdk/gemlib/gemlib-0.44.0/a_wind_get.c:355-358: missing
+docs/COMPATIBILITY.md:255: sdk/gemlib/gemlib-0.44.0/a_graf_xhandle.c:48-49: missing
+docs/COMPATIBILITY.md:397: sdk/gemlib/gemlib-0.44.0/a_wind_set_ptr_int.c:27-28: missing
+docs/COMPATIBILITY.md:482: sdk/cflib/cflib-21/purec.c:166,171: missing
+docs/COMPATIBILITY.md:592: sdk/zview/z-tools-04805b7/zview/zvdi/vdi.c:28: missing
+docs/COMPATIBILITY.md:2106: sdk/cflib/cflib-21/fsnorm.c:85-92: missing
+docs/HARDWARE-PROFILE.md:45: bcm2711/framebuffer.rs: missing
+docs/HARDWARE-PROFILE.md:45: bcm2711/mailbox.rs: missing
+docs/HARDWARE-PROFILE.md:45: qemu_virt/ramfb.rs: missing
+docs/HARDWARE-PROFILE.md:46: usb/hid.rs: missing
+docs/HARDWARE-PROFILE.md:47: bcm2711/pl011.rs: missing
+docs/HARDWARE-PROFILE.md:47: qemu_virt/pl011.rs: missing
+docs/HARDWARE-PROFILE.md:48: usb/hid.rs: missing
+docs/HARDWARE-PROFILE.md:49: bcm2711/emmc.rs: missing
+docs/HARDWARE-PROFILE.md:100: qemu_virt/ramfb.rs:80-81: missing
+docs/HARDWARE-PROFILE.md:130: framebuffer.rs:178-179: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:211: console.rs:91-107: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:216: bcm2711/pl011.rs: missing
+docs/HARDWARE-PROFILE.md:218: pl011.rs:29: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:220: pl011.rs:14-18: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:220: qemu_virt/pl011.rs:11: missing
+docs/HARDWARE-PROFILE.md:222: pl011.rs:132: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:225: pl011.rs:128-129: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:227: pl011.rs:135: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:230: pl011.rs:98-103: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:272: hid.rs:69-100: line 100 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:273: console.rs:109-133: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:280: drivers/usb/hid.rs:106-112: line 112 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:283: hid.rs:108: line 108 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:308: bcm2711/emmc.rs:16-18: missing
+docs/HARDWARE-PROFILE.md:402: init.rs:14-21,195-205: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:485: lib.rs:311-313: ambiguous (7 matches)
+docs/HARDWARE-PROFILE.md:485: desktop.rs:822,1124-1126: missing
+docs/MEMORY.md:1277: sdk/ldg/ldg-r133/demo/libs/ex_lib.c:66-69: missing
+docs/MEMORY.md:3198: Applications/: missing
+doc-check: 14 files, 1831 path cites and 283 ADR cites checked, 35 failures, 0 skipped (reference tree missing); 129 anchored line cites, 112 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+xtask: doc-check: 35 failures (see above)

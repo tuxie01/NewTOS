@@ -1,0 +1,32 @@
+43,44c43,44
+< bios-r1	BIOS	93	DIFF
+< bios-r1	BIOS	94	DIFF
+---
+> bios-r1	BIOS	93	EQUAL
+> bios-r1	BIOS	94	EQUAL
+127,130c127,130
+< bios-r1	BIOS	211	EQUAL
+< bios-r1	BIOS	212	EQUAL
+< bios-r1	BIOS	213	EQUAL
+< bios-r1	BIOS	214	EQUAL
+---
+> bios-r1	BIOS	211	DIFF
+> bios-r1	BIOS	212	DIFF
+> bios-r1	BIOS	213	DIFF
+> bios-r1	BIOS	214	DIFF
+190,191c190,191
+< bios-r1	BIOS-falcontc	93	DIFF
+< bios-r1	BIOS-falcontc	94	DIFF
+---
+> bios-r1	BIOS-falcontc	93	EQUAL
+> bios-r1	BIOS-falcontc	94	EQUAL
+274,275c274,275
+< bios-r1	BIOS-falcontc	211	DIFF
+< bios-r1	BIOS-falcontc	212	DIFF
+---
+> bios-r1	BIOS-falcontc	211	EQUAL
+> bios-r1	BIOS-falcontc	212	EQUAL
+277c277
+< bios-r1	BIOS-falcontc	214	DIFF
+---
+> bios-r1	BIOS-falcontc	214	EQUAL

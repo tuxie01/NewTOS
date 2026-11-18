@@ -1,0 +1,20 @@
+run apps2-tdapps 2026-11-18 02:23:55 CET
+5b020187a603eae643efbcd95f79085ed70451baf95b44324f29bea8c87f49b7  kernel8.img (kernel8-trace-apps2.img)
+5374b81ab002b77a5717871f8e1a81e88e4a1a230c85fb90a39286acc853d1b9  base card tdapps.img
+t=17.4s -> apps2-tdapps-desk.png {"return": {}}
+t=19.5s -> apps2-tdapps-pre.png {"return": {}}
+t=21.9s -> apps2-tdapps-q1.png {"return": {}}
+t=24.2s -> apps2-tdapps-q2.png {"return": {}}
+t=29.2s -> apps2-tdapps-qed.png {"return": {}}
+t=33.1s -> apps2-tdapps-back1.png {"return": {}}
+t=35.9s -> apps2-tdapps-z1.png {"return": {}}
+t=41.9s -> apps2-tdapps-zview.png {"return": {}}
+t=46.5s -> apps2-tdapps-back2.png {"return": {}}
+t=52.7s -> apps2-tdapps-quit.png {"return": {}}
+t=53.6s -> apps2-tdapps-hq.png {"return": {}}
+t=58.5s -> apps2-tdapps-end.png {"return": {}}
+t=61.7s -> apps2-tdapps-end2.png {"return": {}}
+MCHPROBE.LOG: not on the card
+SVCSEQ.LOG: not on the card
+clone after run 56feb6fe3c4d72ef708b6666a8c4c60dac95b8184503786d4b3675cd45ef0db3 (deleted)
+mdrive rc=0 fsck rc=0 EXC/PANIC: 0 lines: 227

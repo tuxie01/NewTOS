@@ -1,0 +1,28 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.04s
+     Running `target/debug/xtask doc-check 'TASK/XBIOS22-STATUS-UNFINISHED.MD TASK/XBIOS22.md docs/COMPATIBILITY.md docs/DEVIATIONS.md docs/HARDWARE-PROFILE.md docs/MEMORY.md docs/api/bios/_cookie-jar.md docs/api/xbios/00-initmous.md docs/api/xbios/58-vsetmode.md docs/api/xbios/59-vgetmonitor.md docs/api/xbios/5b-vgetsize.md docs/api/xbios/5e-vgetrgb.md docs/api/xbios/_dispatcher.md docs/api/xbios/_dmasound-group.md docs/sdk/08-porting-checklist.md '`
+xtask: doc-check: TASK/XBIOS22-STATUS-UNFINISHED.MD TASK/XBIOS22.md docs/COMPATIBILITY.md docs/DEVIATIONS.md docs/HARDWARE-PROFILE.md docs/MEMORY.md docs/api/bios/_cookie-jar.md docs/api/xbios/00-initmous.md docs/api/xbios/58-vsetmode.md docs/api/xbios/59-vgetmonitor.md docs/api/xbios/5b-vgetsize.md docs/api/xbios/5e-vgetrgb.md docs/api/xbios/_dispatcher.md docs/api/xbios/_dmasound-group.md docs/sdk/08-porting-checklist.md : No such file or directory (os error 2)
+docs rc=0
+docs/sdk/16-newtos-cc.md:94: sdk/libshare/libshare.a: missing
+docs/sdk/16-newtos-cc.md:95: sdk/windom/libwindom1.a: missing
+docs/sdk/16-newtos-cc.md:97: sdk/compiler-rt/libclang_rt.builtins.a: missing
+doc-check: 334 files, 23311 path cites and 733 ADR cites checked, 904 failures, 0 skipped (reference tree missing); 756 anchored line cites, 2173 unanchored line cites into NewTOS code on lines unchanged since a2abbfa77 (fixed when touched)
+xtask: doc-check: 904 failures (see above)
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask deps --check-mapping`
+docs/analysis/deps/mapping.tsv: 1968 rows, all resolve, every class is valid; every bios/, bdos/, vdi/, aes/ function has a row
+status-check: report [fix-commit-not-closed] TASK/MEM11.md is PARKED and 2 fix/feat commit(s) name it
+status-check: report [fix-commit-not-closed] TASK/PROC08.md is PARKED and 4 fix/feat commit(s) name it
+status-check: 733 checked, 0 rejected, 7 reported, 0 legacy (in tools/xtask/ticket-baseline.tsv)
+status-check: 656 of 656 Migrated lines match their owner-approved batch row (TOOL58)
+docs/HARDWARE-PROFILE.md:272: hid.rs:69-100: line 100 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:273: console.rs:109-133: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:280: drivers/usb/hid.rs:106-112: line 112 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:283: hid.rs:108: line 108 beyond end (71 lines) of kernel/src/drivers/usb/hid.rs
+docs/HARDWARE-PROFILE.md:308: bcm2711/emmc.rs:16-18: missing
+docs/HARDWARE-PROFILE.md:402: init.rs:14-21,195-205: ambiguous (2 matches)
+docs/HARDWARE-PROFILE.md:487: lib.rs:311-313: ambiguous (7 matches)
+docs/HARDWARE-PROFILE.md:487: desktop.rs:822,1124-1126: missing
+docs/MEMORY.md:1291: sdk/ldg/ldg-r133/demo/libs/ex_lib.c:66-69: missing
+docs/MEMORY.md:3212: Applications/: missing
+doc-check: 15 files, 1915 path cites and 298 ADR cites checked, 35 failures, 0 skipped (reference tree missing); 144 anchored line cites, 111 unanchored line cites into NewTOS code on lines unchanged since HEAD (fixed when touched)
+xtask: doc-check: 35 failures (see above)

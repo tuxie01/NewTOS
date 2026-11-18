@@ -1,0 +1,120 @@
+measurement-2026-11-18-xbios22-test -- tester run for TASK/XBIOS22 at developer commit 13b87ff10 (branch xbios22, base main a2abbfa77)
+==============================================================================================================================
+SCOPE  Falcon video queries VsetMode(-1) 0x58, VgetMonitor 0x59, VgetSize 0x5B, VgetRGB 0x5E, the published _VDO cookie, and TeraDesk's
+       behaviour with them. Tester (Sonnet), phase test. Nothing in the product was edited. No card, no Pi.
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2,
+         host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1).
+TREES  own detached worktrees, target-agents/agent-af8b8984f2ca7f4dc/wt (13b87ff10) and .../wtmain (main a2abbfa77, the comparison side);
+       scratch trees (own git repo roots, TOOL52) for selftest wiring and injector kernels under .../scratch/trees. Main tree untouched
+       except this directory. Clone size at the end of the run: see CLEANUP (25 GB before cleanup, mostly cargo targets).
+
+ACCEPTANCE CRITERION (reworded by the owner 2026-11-18, passed on by the lead; the lead writes it into TASK/XBIOS22.md after landing):
+  "No case equal in the full XBIOS run differs anew, except cases 211-214 against the tt reference, which the COMPATIBILITY entry
+   'XBIOS Falcon video' names as accepted (NewTOS claims the Falcon profile)." Any other newly differing case is a FAIL.
+
+VERDICT  PASS (1 point for the lead to confirm: TeraDesk alert reading, see TERADESK below).
+
+COMMANDS (board / outcome)   method/ holds the scripts; scratch kernels and cards were built from the two trees
+ 1  cargo xtask build --board rpi4 and --board qemu-virt (wt), then release builds of both boards in wt and wtmain   OK all
+ 2  method/lint.sh on wt and wtmain (build + clippy kernel/desktop/newdesk both boards + clippy tos-api --tests)       checks/lint-*/summary.txt
+      build warnings 159 / 159 on both boards both sides; clippy tos-api lib 73, kernel 121, both sides; desktop/newdesk 0; tests-target
+      lines differ only in the "(N duplicates)" label order. DELTA 0.
+ 3  cargo xtask test (wt)           2497 passed / 0 failed / 7 ignored  (checks/xtask-test.txt; developer states 2497/0/7; main baseline 2486/0/7: +11 = the new
+      tos-api/tests/xbios22_falcon_video.rs). Equal to the developer's claim, 0 failed.
+ 4  cargo xtask deps --check-mapping: 1968 rows, all resolve.   cargo xtask status-check: 0 rejected, 7 reported (pre-existing, other tickets, e.g.
+      MEM11, PROC08; checks/checks.txt).
+ 5  cargo xtask doc-check on the 14 docs the commit edited (not the receipt): 35 failures on wt and 35 on wtmain, the failure sets identical
+      (diff empty; checks/dcfull-*.txt). All 35 are legacy or missing gitignored inputs in a worktree (sdk/ sources: TOOL69). Commit adds none.
+ 6  FULL XBIOS run, method/run-all.sh (= measurement-2026-11-12-xbios-full): cargo xtask tosdump bios <table> on QEMU raspi4b, 7 tables, each
+      against tt and falcontc: all 7 exit 0, tosdiff --validate exit 0 for all.  xbios-full/ (summary.txt, per-case.tsv, tosdiff texts).
+ 7  same bios-r1 on main a2abbfa77 (attribution run): xbios-main-bios-r1/.
+ 8  cookie-jar table jar-r1 (3 references): jar/ (decoded.txt).
+ 9  cookie selftest, SCRATCH-wired (method/selftest-wire.py, scratch tree only, never in a branch), QEMU raspi4b: serial/st-cookie-rpi4.log
+      "Cookie jar PASS (20/20)" incl. "Getcookie(_VDO) = 0x00030000 (VDO_FALCON): OK".
+10  boot to the desktop, plain release kernels, same card, serial=on: raspi4b new vs main (serial/desk-rpi4-*.log, "desktop up (1 drives)",
+      0 EXC/PANIC both); qemu-virt (ramfb, headless) new vs main (serial/desk-virt-*.log, "desktop up", 0 EXC/PANIC both).
+11  APITEST via #Z (method/run-qmp.sh, card with APITEST.NCP + PTERMCH.NCP), raspi4b: new memprot on/off/strict and main on:
+      TOTAL 110 / 0 / 6 in all four (serial/api-*.log); per-test result lines of new = main. See OBSERVATIONS for 110/0/6 vs the 111/0/5 baseline.
+12  TeraDesk gate (method/series.sh + gen.py + the arch06 injector scripts, tools/inject-arm.py; bios-arg-trace kernels): runs/ (see TERADESK).
+
+FULL XBIOS RUN: cases whose verdict changed against measurements/measurement-2026-11-12-xbios-full (per-case list, both directions)
+ (checks/per-case-changes-vs-2026-11-12.txt; "tt" = reference BIOS, "ft" = BIOS-falcontc; case = line in bios-r1.tsv)
+  case  ref  function                    2026-11-12 -> now   cause                          named by COMPATIBILITY "XBIOS Falcon video"?
+  211   tt   VsetMode(-1)                EQUAL -> DIFF       this commit (0x58 -> 0x1C)      YES (differ against tt: ACCEPTED, "claims the Falcon")
+  212   tt   VgetMonitor                 EQUAL -> DIFF       this commit (0x59 -> 2)         YES (same sentence)
+  213   tt   VgetSize(0x1C)              EQUAL -> DIFF       this commit (0x5B -> 1228800)   YES (same sentence; case 213 also named for ft)
+  214   tt   VgetRGB(0,16,b0)            EQUAL -> DIFF       this commit (0x5E -> 0, table)  YES (same sentence)
+  211   ft   VsetMode(-1)                DIFF  -> EQUAL      this commit                     YES ("case 211 EQUAL on falcontc")
+  212   ft   VgetMonitor                 DIFF  -> EQUAL      this commit                     YES ("case 212 EQUAL")
+  214   ft   VgetRGB                     DIFF  -> EQUAL      this commit                     YES ("case 214 EQUAL")
+  213   ft   VgetSize(0x1C)              DIFF  -> DIFF       value 0x5B -> 1228800 (614400 expected by oracle)   YES (case 213 different by decision, ACCEPTED)
+  215   ft   Vfixmode(0x1C)              DIFF  -> DIFF       unchanged (0x5F vs 0x1C)        YES (case 215 ACCEPTED)
+  93,94 tt+ft  Setcolor(0,-1), Setcolor(1,-1)  DIFF -> EQUAL   NOT this commit: bios-r1 on main a2abbfa77 already has 93/94 EQUAL
+      (xbios-main-bios-r1: tt 30 DIFF cases = main; ft 35); between the two runs main moved (a5a4665cb ... a2abbfa77). Not in COMPATIBILITY, no regression.
+ Attribution run: bios-r1 new vs main a2abbfa77, DIFF case sets: tt differs by exactly {211,212,213,214} (new only); ft by exactly {211,212,214} (main only);
+   nothing else, in either direction. tt: 34 DIFF (main 30), ft: 32 (main 35).
+ Every other table (super, bconmap, chardev, flush, ptr, system), both references: DIFF rows identical to the 2026-11-12 run (per-case.tsv: no other line differs).
+ CRITERION: met. No other newly differing case. Cases 212/214 on ft equal as demanded; 211 and 215 as the entry says; 213 different by decision.
+ Raw values (xbios-full/bios-r1/tosdiff-*.txt): tt 211 oracle 0x58 / NewTOS 0x1C; 212 0x59 / 2; 213 0x5B / 0x12C000 (1228800 = 640x480x4, QEMU raspi4b);
+ 214 0x5E / 0 and capture 0xDE 0xAD.. vs the table; ft 213 614400 / 1228800; ft 215 0x1C / 0x5F.
+ Cookie _VDO (jar/): case 45 NewTOS 0x00030000 = falcontc and disk reference (EQUAL), tt 0x00020000 DIFF (ACCEPTED as the entry says); case 41 jar:* NewTOS 6 entries
+   "NTOS _MCH _IDT _AKP EdDI _VDO" (no _SND on QEMU). jar-r1 DIFF sets: tt 14, falcontc 13, disk 13, case 45 only on tt.
+
+TERADESK GATE (owner 2026-11-18): scenario vid-vdo of measurements/measurement-2026-10-29-arch06 repeated (headless QEMU raspi4b, scripted IKBD injector:
+Options -> Video options..., dialog open, Return = OK, Return again), kernels with bios-arg-trace (svc-seq-trace does not link on either side:
+"kernel image + stack overruns STRAM_OS_RESERVE", seen on the commit AND on main), TeraDesk from the main tree's sdk/apps/teradesk/build/dist (same binary all runs).
+Cards (tools/mkcard.sh): td = TeraDesk only; tdvdo = + AUTO\MCHVDO.NCP (injects _VDO 0x00030000 as in arch06); tdapps = td + icons/QED/zView.
+ runs/commit/vid-vdo-td            commit, no injection (kernel publishes _VDO)
+ runs/main/vid-vdo-td              main, no _VDO (what main really does)
+ runs/main/vid-vdo-tdvdo           main + injected _VDO (the arch06 vid-vdo scenario)
+ runs/commit/vid-vdo-tdvdo         commit + the injector program (sets the same value)
+ runs/{commit/vid-vdo-ext-td, main/vid-vdo-ext-tdvdo}   extended: Return x4, to follow the restart
+ Observed (serial + screendumps, viewed):
+ a) commit: start-up get_set_video: Getrez 4, Setexc(0x5A0) finds _VDO, VsetMode(-1) -> 0x1C, VgetMonitor -> 2 (biostrace 000006/7), repeated on opening the dialog.
+    main+injected: VsetMode -> 0x58, VgetMonitor -> 0x59 (function numbers). main without _VDO: Blitmode(-1) -> 0, no VsetMode (ST branch).
+ b) Dialog on the commit (runs/commit/vid-vdo-td/vid-vdo-td-hover.png): "VGA-40-column" / "VGA-80-column" (VGA-80-column set), ST-Low/ST-Medium selectable,
+    ST-High and TT-High greyed, Overscan greyed and unticked, "Doubleline" enabled, Colours 64K. This is coherent for 0x1C (VGA, 80 col, truecolor, no overscan bit).
+    main+injected (arch06): VGA-80-column set but Overscan TICKED (bit 0x40 of 0x58) -- incoherent for the Pi. main without _VDO: ST/TT buttons, TT-Medium set,
+    Overscan greyed, Blitter greyed, Colours 64K.
+ c) Return on the unchanged dialog: commit and main+injected both show the alert "A change of video mode will terminate all running applications. [OK|Cancel]"
+    (commit: after the 2nd Return, the 1st Return left Colours at 256 in vid-vdo-td-ok.png; main+injected shows the alert after the 1st Return). OK on the alert:
+    TeraDesk exits rc 0 -> "shel_write(SHW_RESCHNG) pending, restarting the AES" -> TeraDesk restarts and calls VsetMode/VgetMonitor again (commit: 0x1C/2, main+inj 0x58/0x59);
+    desktop after = byte-identical PNG on commit and main+injected (sha256 5148fde2f61b...). 0 EXC/PANIC, no crash, fsck_msdos -n rc 0 on every clone.
+    main WITHOUT _VDO: Return closes the dialog, NO alert, no restart (runs/main/vid-vdo-td/*-after.png).
+    => The alert is new compared with main's natural state (no _VDO), and equal to main with the arch06 injection. COMPATIBILITY "XBIOS Falcon video" documents it
+    ("TeraDesk offers Falcon modes it cannot honour ... restarts and reads 0x001C again"). The acceptance text says "no alert that main does not show": read literally
+    against main-without-_VDO this is an alert main does not show; read against the recorded vid-vdo scenario (injected _VDO) it is the same alert. THE LEAD DECIDES the reading.
+ d) QED and zView started from TeraDesk desktop icons (card tdapps, runs/commit/apps-tdapps, runs/main/apps-tdapps): QED shows its menu bar (qed Datei Bearbeiten ...),
+    Ctrl-Q returns to TeraDesk; zView shows its menu bar (zView File Edit View Help; 10 codec plug-ins exec'ed), Ctrl-Q returns. Identical on commit and main
+    (frames equal except one timing frame). First attempt without CODECS on the card gave zView's own alert "can't load the plugins or find the codecs folder" (my card, fixed).
+    TeraDesk exit (runs/{commit,main}/apps2-tdapps): Ctrl-Q -> "Quit / Shutdown Options" dialog -> Quit: "DESKTOP.NAP exited with rc=0", the shell falls back to the NEWDESK desktop,
+    "desktop up (1 drives)", 0 EXC/PANIC, on commit and main alike.
+ Not driven: the real mode change itself (shel_write only restarts the AES, ADR-017); TeraDesk with Overscan ticked on the commit (the ST-branch overscan Bus Error of arch06 needs no _VDO; not re-measured).
+
+DROVE: build/clippy both boards, full cargo test, full XBIOS run on both references + main attribution run, cookie jar case + scratch-wired cookie selftest, boot raspi4b and
+qemu-virt with pixel comparison to main (rpi4 desktop sha256 a3bd102e7f28.. equal; virt a 6985da3b3c38.. equal), APITEST x4, TeraDesk gate incl. QED/zView/quit.
+COULD NOT VERIFY / NOT DONE: VgetSize on 1920x1080 HDMI (8 294 400 expected by the COMPATIBILITY text) -- QEMU shows 640x480 = 1 228 800 only; VgetSize on qemu-virt;
+the INF "Save palette"/Overscan paths; an EmuTOS-equal APITEST baseline 111/0/5 (see OBSERVATIONS).
+REAL-PI4-ONLY (never claimed here): HDMI mode and real VgetSize at the Pi's mode, QUIRK-001 TTBR0 wedge, cache coherence, USB-HID interactive TeraDesk use, real monitor/EDID.
+
+OBSERVATIONS / OUT-OF-SCOPE
+ - APITEST: 110/0/6 here against the STATUS baseline 111/0/5, on the commit and on main, memprot on/off/strict identical; STATUS says 109 older, 111 newer APITEST.NCP builds:
+   the prebuilt sdk/apps/apitest/APITEST.NCP in the main tree (sha 7d19194c...) stalled at BC07 Bconin(0) on both sides and was replaced by a build of sdk/apps/apitest/build-apitest.sh
+   (2a4a192e...). The stalled runs are kept in serial/stale-apitest-binary/ (without PTERMCH.NCP: serial/apitest-without-ptermch/, 107/0/9 both sides). One more SKIP than the baseline;
+   same on main, so not this commit.
+ - qemu-virt mouse check (20 relative events): shot B equals shot A on commit and on main (pointer not moved by my QMP events); equal on both sides, not examined further.
+ - svc-seq-trace + bios-arg-trace kernel: link error "kernel image + stack overruns STRAM_OS_RESERVE" on main a2abbfa77 as well (arch06 built it at 8b11d2f4).
+ - tools/mkcard.sh fails to mount ("Volume on disk12s1 failed to mount") when TMPDIR points to the data volume (my first try, TMPDIR in target-agents); fine with the default TMPDIR.
+ - TOOL52: a scratch tree inside the repository path needs its own `git init` for cargo xtask build; done in scratch only.
+ - 25G in target-agents/agent-af8b8984f2ca7f4dc at the end (two worktrees 6.3 G + 2.7 G, scratch trees); the rm of the empty junk dir xt/run-api-main-on.d6H7 and of the scratch trees was left to xtask accept/scratch-clean.
+
+MANIFESTS (copies in manifests/, cards/; every one says verbatim: optional_missing none)
+ td, tdvdo, tdapps, plain, apitest (tools/mkcard.sh) and the tosdump cards of every table run (xbios-full/*/card.img.manifest, xbios-main-bios-r1, jar): 17 files
+ checked: "optional_missing none" 9 times in the tosdump manifests, plus the 5 mkcard manifests above.
+
+GITIGNORED OUTPUTS (path, size, sha256): checks/sha256-gitignored.txt (29 lines: kernels, ELF, probe/APITEST/PTERMCH, trace kernels, cards, TeraDesk dist, QED.NAP, BIOS.BIN, DUMPBIOS.NAP, tosdiff).
+ Kernels: k-wt-rpi4.img 9e785b38..., k-wtmain-rpi4.img 7286ecb9..., k-wt-virt.elf cdb235a3..., k-wtmain-virt.elf 06a3ff18..., k-st-rpi4.img (scratch-wired selftest) c52e20d9...
+ Clone: /Volumes/Daten/Development/PiRusTOS/target-agents/agent-af8b8984f2ca7f4dc (wt 6.3G, wtmain 2.7G, total 25G before cleanup).
+
+REPRODUCING COMMANDS (no FAIL): none needed. To repeat the changed-case list: cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out <d> --scratch <s>
+ --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN in each tree; TeraDesk: method/series.sh <scratch> td vid-vdo.
