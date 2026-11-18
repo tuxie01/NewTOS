@@ -1,0 +1,12 @@
+main exit 0
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+d exit 0
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+v16 exit 0
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)
+v32 exit 0
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: result    run complete (differences above are findings, not failures)

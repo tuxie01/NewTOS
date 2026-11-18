@@ -1,0 +1,108 @@
+case  main(pel,word)  default  v16  v32   comment
+   7  0,0000  0,0000  0,0000  0,0000    R1 fill pen 1 inside
+   8  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 1 outside (cleared)
+  12  0,F800  0,F800  0,F800  0,F800    R1 fill pen 2 inside
+  13  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 2 outside (cleared)
+  17  0,07C0  0,07C0  0,07C0  0,07C0    R1 fill pen 3 inside
+  18  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 3 outside (cleared)
+  22  0,001F  0,001F  0,001F  0,001F    R1 fill pen 4 inside
+  23  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 4 outside (cleared)
+  27  0,F81F  0,F81F  0,F81F  0,F81F    R1 fill pen 7 inside
+  28  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 7 outside (cleared)
+  32  0,8C51  0,8C51  0,8C51  0,8C51    R1 fill pen 9 inside
+  33  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 9 outside (cleared)
+  37  0,A815  0,A815  0,A815  0,A815    R1 fill pen 15 inside
+  38  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 15 outside (cleared)
+  42  0,8FC0  0,8FC0  0,8FC0  0,8FC0    R1 fill pen 100 inside
+  43  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 100 outside (cleared)
+  47  0,0000  0,0000  0,0000  0,0000    R1 fill pen 255 inside
+  48  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 fill pen 255 outside (cleared)
+  51  0,0000  0,0000  0,0000  0,0000    R1 line pen 1 at x=50
+  52  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 1 at x=70
+  53  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 1 at x=100
+  56  0,F800  0,F800  0,F800  0,F800    R1 line pen 2 at x=50
+  57  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 2 at x=70
+  58  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 2 at x=100
+  61  0,07DF  0,07DF  0,07DF  0,07DF    R1 line pen 5 at x=50
+  62  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 5 at x=70
+  63  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 5 at x=100
+  66  0,0555  0,0555  0,0555  0,0555    R1 line pen 13 at x=50
+  67  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 13 at x=70
+  68  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 line pen 13 at x=100
+  71  0,0000  0,0000  0,0000  0,0000    R1 text pen 1 probe (100,98)
+  72  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (101,98)
+  73  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,98)
+  74  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (103,98)
+  75  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (104,98)
+  76  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (105,98)
+  77  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (106,98)
+  78  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (107,98)
+  79  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (108,98)
+  80  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (109,98)
+  81  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (110,98)
+  82  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (111,98)
+  83  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,94)
+  84  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,95)
+  85  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,96)
+  86  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,97)
+  87  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,98)
+  88  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,99)
+  89  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 1 probe (102,100)
+  92  0,F800  0,F800  0,F800  0,F800    R1 text pen 2 probe (100,98)
+  93  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (101,98)
+  94  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,98)
+  95  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (103,98)
+  96  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (104,98)
+  97  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (105,98)
+  98  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (106,98)
+  99  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (107,98)
+ 100  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (108,98)
+ 101  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (109,98)
+ 102  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (110,98)
+ 103  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (111,98)
+ 104  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,94)
+ 105  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,95)
+ 106  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,96)
+ 107  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,97)
+ 108  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,98)
+ 109  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,99)
+ 110  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 2 probe (102,100)
+ 113  0,FFC0  0,FFC0  0,FFC0  0,FFC0    R1 text pen 6 probe (100,98)
+ 114  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (101,98)
+ 115  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,98)
+ 116  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (103,98)
+ 117  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (104,98)
+ 118  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (105,98)
+ 119  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (106,98)
+ 120  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (107,98)
+ 121  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (108,98)
+ 122  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (109,98)
+ 123  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (110,98)
+ 124  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (111,98)
+ 125  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,94)
+ 126  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,95)
+ 127  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,96)
+ 128  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,97)
+ 129  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,98)
+ 130  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,99)
+ 131  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R1 text pen 6 probe (102,100)
+ 136  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 recfl, v_clrwk, read inside
+ 137  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R3 never drawn, read
+ 141  0,FFFF  0,FFFF  0,FFFF  0,F800  * R5 seed fill-while-same on cleared: seed pixel
+ 142  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 seed fill-while-same on cleared: far pixel
+ 143  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 seed fill-while-same on cleared: corner
+ 149  0,F800  0,F800  0,F800  0,F800    R5 boundary fill probe 150,150
+ 150  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 boundary fill probe 110,110
+ 151  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 boundary fill probe 199,199
+ 152  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 boundary fill probe 99,150
+ 153  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 boundary fill probe 201,150
+ 159  0,FFFF  0,FFFF  0,FFFF  0,F800  * R5 same-fill-in-frame probe 150,150
+ 160  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 same-fill-in-frame probe 110,110
+ 161  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 same-fill-in-frame probe 199,199
+ 162  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 same-fill-in-frame probe 99,150
+ 163  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R5 same-fill-in-frame probe 201,150
+ 166  0,0000  0,0000  0,0000  0,0000    R4 XOR once on cleared
+ 170  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R4 XOR twice on cleared (restores)
+ 177  0,F800  0,F800  0,F800  0,F800    R4 red, XOR twice (restores red)
+ 182  0,FFFF  0,FFFF  0,FFFF  0,FFDF  * R4 XOR line twice
+ 185  0,0000  0,0000  0,0000  0,0000    R4 XOR line once

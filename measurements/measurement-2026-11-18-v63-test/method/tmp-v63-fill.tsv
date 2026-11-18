@@ -1,0 +1,48 @@
+# tmp-v63-fill.tsv -- tester temporary table (V63 run, never committed): flood-fill extent probes
+# opcode	sub	intin	ptsin	comment
++17	0	1	-	vsl_color black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame
++25	0	2	-	vsf_color red
++23	0	1	-	solid
++103	0	1	150,150	contourfill boundary 1
+105	0	-	150,150	F boundary 1 probe 150,150
+105	0	-	110,150	F boundary 1 probe 110,150
+105	0	-	190,150	F boundary 1 probe 190,150
+105	0	-	150,110	F boundary 1 probe 150,110
+105	0	-	150,190	F boundary 1 probe 150,190
+105	0	-	110,110	F boundary 1 probe 110,110
+105	0	-	199,199	F boundary 1 probe 199,199
+105	0	-	101,101	F boundary 1 probe 101,101
+105	0	-	99,150	F boundary 1 probe 99,150
+105	0	-	201,150	F boundary 1 probe 201,150
+105	0	-	100,150	F boundary 1 probe 100,150
+105	0	-	150,100	F boundary 1 probe 150,100
+105	0	-	150,201	F boundary 1 probe 150,201
++17	0	1	-	vsl_color black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame
++25	0	2	-	vsf_color red
++23	0	1	-	solid
++103	0	-1	150,150	contourfill while same
+105	0	-	150,150	F while same probe 150,150
+105	0	-	110,150	F while same probe 110,150
+105	0	-	190,150	F while same probe 190,150
+105	0	-	150,110	F while same probe 150,110
+105	0	-	150,190	F while same probe 150,190
+105	0	-	110,110	F while same probe 110,110
+105	0	-	199,199	F while same probe 199,199
+105	0	-	101,101	F while same probe 101,101
+105	0	-	99,150	F while same probe 99,150
+105	0	-	201,150	F while same probe 201,150
+105	0	-	100,150	F while same probe 100,150
+105	0	-	150,100	F while same probe 150,100
+105	0	-	150,201	F while same probe 150,201
++25	0	2	-	vsf_color red
++23	0	1	-	solid
++103	0	-1	150,150	contourfill -1 on cleared
+105	0	-	150,150	F cleared while-same probe 150,150
+105	0	-	151,150	F cleared while-same probe 151,150
+105	0	-	10,10	F cleared while-same probe 10,10
+105	0	-	300,300	F cleared while-same probe 300,300
+105	0	-	639,479	F cleared while-same probe 639,479
+105	0	-	0,0	F cleared while-same probe 0,0
+105	0	-	150,151	F cleared while-same probe 150,151

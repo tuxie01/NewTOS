@@ -1,0 +1,185 @@
+# tmp-v63-draw.tsv -- tester temporary table (V63 run, never committed): 32-plane device pixel, drawing and reads through v_get_pixel
+# every case runs after the dumper reset (v_clrwk, defaults); '+' lines are preludes
+# opcode	sub	intin	ptsin	comment
++25	0	1	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 1 inside
+105	0	-	40,40	R3 fill pen 1 outside (cleared)
++25	0	2	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 2 inside
+105	0	-	40,40	R3 fill pen 2 outside (cleared)
++25	0	3	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 3 inside
+105	0	-	40,40	R3 fill pen 3 outside (cleared)
++25	0	4	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 4 inside
+105	0	-	40,40	R3 fill pen 4 outside (cleared)
++25	0	7	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 7 inside
+105	0	-	40,40	R3 fill pen 7 outside (cleared)
++25	0	9	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 9 inside
+105	0	-	40,40	R3 fill pen 9 outside (cleared)
++25	0	15	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 15 inside
+105	0	-	40,40	R3 fill pen 15 outside (cleared)
++25	0	100	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 100 inside
+105	0	-	40,40	R3 fill pen 100 outside (cleared)
++25	0	255	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
+105	0	-	20,20	R1 fill pen 255 inside
+105	0	-	40,40	R3 fill pen 255 outside (cleared)
++17	0	1	-	vsl_color
++6	0	-	50,50,100,50	pline
+105	0	-	50,50	R1 line pen 1 at x=50
+105	0	-	70,50	R1 line pen 1 at x=70
+105	0	-	100,50	R1 line pen 1 at x=100
++17	0	2	-	vsl_color
++6	0	-	50,50,100,50	pline
+105	0	-	50,50	R1 line pen 2 at x=50
+105	0	-	70,50	R1 line pen 2 at x=70
+105	0	-	100,50	R1 line pen 2 at x=100
++17	0	5	-	vsl_color
++6	0	-	50,50,100,50	pline
+105	0	-	50,50	R1 line pen 5 at x=50
+105	0	-	70,50	R1 line pen 5 at x=70
+105	0	-	100,50	R1 line pen 5 at x=100
++17	0	13	-	vsl_color
++6	0	-	50,50,100,50	pline
+105	0	-	50,50	R1 line pen 13 at x=50
+105	0	-	70,50	R1 line pen 13 at x=70
+105	0	-	100,50	R1 line pen 13 at x=100
++22	0	1	-	vst_color
++8	0	65,66,67	100,100	v_gtext ABC
+105	0	-	100,98	R1 text pen 1 probe (100,98)
+105	0	-	101,98	R1 text pen 1 probe (101,98)
+105	0	-	102,98	R1 text pen 1 probe (102,98)
+105	0	-	103,98	R1 text pen 1 probe (103,98)
+105	0	-	104,98	R1 text pen 1 probe (104,98)
+105	0	-	105,98	R1 text pen 1 probe (105,98)
+105	0	-	106,98	R1 text pen 1 probe (106,98)
+105	0	-	107,98	R1 text pen 1 probe (107,98)
+105	0	-	108,98	R1 text pen 1 probe (108,98)
+105	0	-	109,98	R1 text pen 1 probe (109,98)
+105	0	-	110,98	R1 text pen 1 probe (110,98)
+105	0	-	111,98	R1 text pen 1 probe (111,98)
+105	0	-	102,94	R1 text pen 1 probe (102,94)
+105	0	-	102,95	R1 text pen 1 probe (102,95)
+105	0	-	102,96	R1 text pen 1 probe (102,96)
+105	0	-	102,97	R1 text pen 1 probe (102,97)
+105	0	-	102,98	R1 text pen 1 probe (102,98)
+105	0	-	102,99	R1 text pen 1 probe (102,99)
+105	0	-	102,100	R1 text pen 1 probe (102,100)
++22	0	2	-	vst_color
++8	0	65,66,67	100,100	v_gtext ABC
+105	0	-	100,98	R1 text pen 2 probe (100,98)
+105	0	-	101,98	R1 text pen 2 probe (101,98)
+105	0	-	102,98	R1 text pen 2 probe (102,98)
+105	0	-	103,98	R1 text pen 2 probe (103,98)
+105	0	-	104,98	R1 text pen 2 probe (104,98)
+105	0	-	105,98	R1 text pen 2 probe (105,98)
+105	0	-	106,98	R1 text pen 2 probe (106,98)
+105	0	-	107,98	R1 text pen 2 probe (107,98)
+105	0	-	108,98	R1 text pen 2 probe (108,98)
+105	0	-	109,98	R1 text pen 2 probe (109,98)
+105	0	-	110,98	R1 text pen 2 probe (110,98)
+105	0	-	111,98	R1 text pen 2 probe (111,98)
+105	0	-	102,94	R1 text pen 2 probe (102,94)
+105	0	-	102,95	R1 text pen 2 probe (102,95)
+105	0	-	102,96	R1 text pen 2 probe (102,96)
+105	0	-	102,97	R1 text pen 2 probe (102,97)
+105	0	-	102,98	R1 text pen 2 probe (102,98)
+105	0	-	102,99	R1 text pen 2 probe (102,99)
+105	0	-	102,100	R1 text pen 2 probe (102,100)
++22	0	6	-	vst_color
++8	0	65,66,67	100,100	v_gtext ABC
+105	0	-	100,98	R1 text pen 6 probe (100,98)
+105	0	-	101,98	R1 text pen 6 probe (101,98)
+105	0	-	102,98	R1 text pen 6 probe (102,98)
+105	0	-	103,98	R1 text pen 6 probe (103,98)
+105	0	-	104,98	R1 text pen 6 probe (104,98)
+105	0	-	105,98	R1 text pen 6 probe (105,98)
+105	0	-	106,98	R1 text pen 6 probe (106,98)
+105	0	-	107,98	R1 text pen 6 probe (107,98)
+105	0	-	108,98	R1 text pen 6 probe (108,98)
+105	0	-	109,98	R1 text pen 6 probe (109,98)
+105	0	-	110,98	R1 text pen 6 probe (110,98)
+105	0	-	111,98	R1 text pen 6 probe (111,98)
+105	0	-	102,94	R1 text pen 6 probe (102,94)
+105	0	-	102,95	R1 text pen 6 probe (102,95)
+105	0	-	102,96	R1 text pen 6 probe (102,96)
+105	0	-	102,97	R1 text pen 6 probe (102,97)
+105	0	-	102,98	R1 text pen 6 probe (102,98)
+105	0	-	102,99	R1 text pen 6 probe (102,99)
+105	0	-	102,100	R1 text pen 6 probe (102,100)
++25	0	2	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	recfl
++3	0	-	-	v_clrwk
+105	0	-	20,20	R3 recfl, v_clrwk, read inside
+105	0	-	5,5	R3 never drawn, read
++25	0	2	-	vsf_color
++23	0	1	-	solid
++103	0	-1	100,100	v_contourfill(-1) seed on cleared screen
+105	0	-	100,100	R5 seed fill-while-same on cleared: seed pixel
+105	0	-	300,300	R5 seed fill-while-same on cleared: far pixel
+105	0	-	0,0	R5 seed fill-while-same on cleared: corner
++17	0	1	-	vsl_color black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame
++25	0	2	-	vsf_color
++23	0	1	-	solid
++103	0	1	150,150	contourfill boundary 1
+105	0	-	150,150	R5 boundary fill probe 150,150
+105	0	-	110,110	R5 boundary fill probe 110,110
+105	0	-	199,199	R5 boundary fill probe 199,199
+105	0	-	99,150	R5 boundary fill probe 99,150
+105	0	-	201,150	R5 boundary fill probe 201,150
++17	0	1	-	vsl_color black
++6	0	-	100,100,200,100,200,200,100,200,100,100	frame
++25	0	2	-	vsf_color
++23	0	1	-	solid
++103	0	-1	150,150	contourfill while same
+105	0	-	150,150	R5 same-fill-in-frame probe 150,150
+105	0	-	110,110	R5 same-fill-in-frame probe 110,110
+105	0	-	199,199	R5 same-fill-in-frame probe 199,199
+105	0	-	99,150	R5 same-fill-in-frame probe 99,150
+105	0	-	201,150	R5 same-fill-in-frame probe 201,150
++32	0	3	-	XOR
++114	0	-	10,10,30,30	xor recfl
+105	0	-	20,20	R4 XOR once on cleared
++32	0	3	-	XOR
++114	0	-	10,10,30,30	xor recfl
++114	0	-	10,10,30,30	xor recfl again
+105	0	-	20,20	R4 XOR twice on cleared (restores)
++25	0	2	-	vsf_color
++23	0	1	-	solid
++114	0	-	10,10,30,30	red
++32	0	3	-	XOR
++114	0	-	10,10,30,30	xor
++114	0	-	10,10,30,30	xor
+105	0	-	20,20	R4 red, XOR twice (restores red)
++32	0	3	-	XOR
++17	0	1	-	
++6	0	-	50,60,100,60	xor line
++6	0	-	50,60,100,60	xor line
+105	0	-	70,60	R4 XOR line twice
++32	0	3	-	XOR
++6	0	-	50,60,100,60	xor line
+105	0	-	70,60	R4 XOR line once

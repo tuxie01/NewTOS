@@ -1,0 +1,95 @@
+measurement-2026-11-18-v63-test -- tester run for TASK/V63 at developer commit 7f78a667d (branch v63, descends from main fd0b002ec; compared with main fd0b002ec)
+==================================================================================================================================================
+SCOPE  The 32-plane device pixel (X byte unused, reads masked at planes()==32 in tos-api/src/vdi/contour.rs @pixelread) and the standing 16-plane baseline (ADR-038 points 4 and 11).
+       Tester (Sonnet), phase test. Nothing in the product was edited. No card, no Pi. All runs are QEMU (raspi4b and virt).
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2,
+         host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1; also the host_clang line of the card manifests).
+TREES  own detached worktrees /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a9aec45507eb228c7/wt (7f78a667d) and .../wtmain (main fd0b002ec); release kernels built
+       into per-board CARGO_TARGET_DIRs (tgt-wt-<board>, tgt-wtmain-<board>), objcopy'd to .../kern/. Agent dir at the end (du -sh): 11G (wt 6.3G, wtmain 2.7G).
+
+VERDICT  PASS (everything on QEMU; the real-Pi4-only items below are not claimed).
+
+TEMPORARY HARNESS CHANGES (my own tree only, never committed): (a) tools/xtask/src/tosdump.rs in wt reads env V62_APPEND as the QEMU -append string (default "serial=on"), the V62 patch,
+  method/tester-xtask-append.patch; the default path is the stock harness. (b) tosdump/cases/tmp-v63-draw.tsv and tmp-v63-fill.tsv (copies in method/): fills with 9 pens, lines, text,
+  v_clrwk, v_contourfill (seed on a cleared screen, boundary fill, fill-while-same in a frame), WM_XOR once/twice, each read back by v_get_pixel (opcode 105) through the real trap.
+
+COMMANDS (board / outcome)
+ 1  cargo xtask build --board qemu-virt / --board rpi4, both trees (method/lint.sh; checks/lint-wt, checks/lint-main): all exit 0. Build warnings 159 / 159 on both trees, both boards.
+      clippy kernel 121 + tos-api 73 on both boards and both trees; desktop/newdesk exit 0; clippy tos-api --tests: the same warning set on both trees (26 lines each; order differs, the new
+      test binary vdi_v63_device_pixel adds none). DELTA 0.
+ 2  cargo xtask test (wt, full, serial/host-test.log): exit 0, 2514 passed / 0 failed / 7 ignored (sum of the "test result" lines), 0 SKIPPED. Baseline 2507/0/7 (handover said 2507): +7 =
+      the 7 tests of tos-api/tests/vdi_v63_device_pixel.rs (run in that log). emutos_resolves_at_the_pin is in that run and ok.
+ 3  cargo xtask deps --check-mapping: 1968 rows, all resolve. status-check: 743 checked, 0 rejected, 7 reported (pre-existing). doc-check of TASK/V63.md, its receipt and the 4 spec files: 0 failures
+      (checks/checks.txt).
+ 4  Boot runs, release kernels, headless, QMP screendump, both boards, 7 configs each (method/boots.sh, run-qmp.sh; serial/{rpi4,virt}-*.log, screendumps/{rpi4,virt}-*.png):
+      main, default (no argument), vdiplanes=16, =32, =24, "vdiplanes=" (empty), =x. rpi4: raspi4b + plain card (tools/mkcard.sh), -append "serial=on [arg]"; virt: -M virt, flat image.
+      All 14: "desktop up", 0 EXC/PANIC. Serial vs main: default identical on rpi4 (virt differs only in the kernel size line, 3268608 -> 3272704 bytes, the code change); vdiplanes=16 adds exactly
+      "[vdi] VDI depth: 16 planes (vdiplanes=16, boot argument)", vdiplanes=32 adds exactly "[vdi] VDI depth: 32 planes (vdiplanes=32, boot argument)".
+      Screendumps: rpi4 PNG sha256 a3bd102e7f28.. and virt 6985da3b3c38.. IDENTICAL for all 7 configs of each board, main included (same hashes as the V62 run). Viewed (Read): rpi4-v32-a.png
+      (640x480: menu bar Desk File View Options, four Hard disk icons, Trash, Printer, green desktop, arrow) and virt-v32-a.png (1920x1080: menu bar, green dither desktop, Trash and Printer
+      icons, arrow). The 32-plane desktop is pixel-identical to the default one: the desktop paints pens (no cleared-background pixel left visible), so the masked read changes nothing visible.
+ 5  Full XBIOS + VDI + raster table runs, cargo xtask tosdump on QEMU raspi4b, 4 configs x 16 tables (method/run-tables.sh, tables-all.sh; checks/tables-run.txt, checks/table-compare.txt):
+      configs main (--tree wtmain, stock), default (wt, stock), v16 (wt, vdiplanes=16), v32 (wt, vdiplanes=32; informational for the 32 reads).
+      DEFAULT AND v16 AGAINST MAIN: in all 16 tables tosdiff main.BIN vs config.BIN: 0 cases differ (bios-r1 147, super 9, bconmap 1, chardev 23, flush 207, ptr 9, system 43, vdi-all 182,
+        vdi-v18 19, t2 32, t3 2, a131-palette 48, vdi-raster 59, raster-screen 62, v18-raster 17, v18-t2-raster 26); the per-reference tosdiff reports (EMUTOS-1a7484ab-*, tt and falcontc)
+        equal main's in every table. Raw bytes: only the 4 header bytes (dumper build id) differ, plus in bios-r1 the same 3 body bytes (offsets 16710-16712) that differ at default and v32 alike
+        against main (a run-to-run cell, seen in V62 too, 0 cases differ by tosdiff). => no verdict changed; the bar is met for no argument and for vdiplanes=16.
+      v32 vs main (informational): all tables as main except: vdi-all 6 cases (34, 250, 252: vq_extnd 1 intout[4] 16->32 (V62); 54, 160, 161: v_get_pixel on a cleared pixel intout[1]
+        0xFFFF -> 0xFFDF), vdi-v18 4 cases and vdi-v18-t2 4 cases (all v_get_pixel on a cleared pixel, intout[1] 0xFFFF -> 0xFFDF) (checks/v32-vs-main-diffs.txt). 0xFFDF is the white pen read
+        through the mask (spec _color-pixel-input.md interim answer, receipt "what a vdiplanes=32 boot does now"); not a defect. vdi-raster-screen at v32: the dumper's own guard refuses
+        (table 16 planes vs workstation 32, ADR-038 point 13 (iv)), no RASTER.BIN; the kernel booted on.
+ 6  AES dumper aes-r1 (method/run-aes.sh, checks/aes-run.txt): default and vdiplanes=16 identical to main in raw bytes (0 differ); vdiplanes=32 differs in exactly one cell per record, global[10]
+      (ap_planes) 16 -> 32 (95 records, V62's change). All four against the oracle: 95 of 95 differ in every config incl. main (pre-existing; the AES table is not a gate here).
+ 7  FILLS, LINES, TEXT, CLEAR, FILL, XOR through the real trap at vdiplanes=32 (method/run-draw.sh, run-fill.sh; checks/draw-pixels.txt, checks/fill-pixels.txt; 4 configs main/default/v16/v32):
+      main = default = v16 in every one of the 107 + 31 cases. v32 differs from them ONLY on the cleared-background reads, 0xFFFF -> 0xFFDF; every drawn pixel is bit-identical:
+        - fills with pens 1,2,3,4,7,9,15,100,255 (cases 7..47), lines with pens 1,2,5,13, text with pens 1,2,6 (cases 71..131): the drawn pixel reads the same word as at default (0000, F800, 07C0,
+          001F, F81F, 8C51, A815, 8FC0, 07DF, 0555, FFC0, ...), i.e. the pen's colour.
+        - v_clrwk after a red recfl (136) and a never-drawn pixel (137): 0xFFDF at 32 = the white pen read masked (pen 0 in the 16-bit word); 0xFFFF at 16 (unmasked EmuTOS read). The pixel is
+          read through v_get_pixel, the answer shape unchanged in this slice (lead's point 2).
+        - v_contourfill(-1) on a freshly cleared screen (141, and fill table 42): the seed pixel reads F800 (red) at 32; at default, v16 and main the call draws nothing (FFFF), as EmuTOS does.
+          Fill-while-same in a black frame (159) and boundary fill (149): same, seed pixel red at 32 (boundary fill red at all configs).
+          NOTE: in this harness the call painted the seed pixel only, at every config including main (probes elsewhere in the frame read white): the dumper's v_contourfill extent is one pixel,
+          so the REGION extent of the masked probes is not shown by this run; it is shown only by the host test the_flood_fill_ignores_x_noise_at_32_planes (vdi_v63, in the 2514 run).
+        - WM_XOR: XOR once on a cleared pixel reads 0000 (all 32 bits complemented), twice restores (170: FFDF at 32 = cleared white, FFFF at 16); red + XOR twice reads red again (177, all configs);
+          XOR line once 0000, twice restores (182, 185).
+ 8  VDIDRAW.NAP (tosdump/build-vdidraw-newtos.sh, #Z autorun on a mkcard card, vdidraw.img.manifest), raspi4b, main/default/v16/v32, screendump during the 60 s hold, two capture times
+      (method/vdidraw-runs.sh at +30 s, vdidraw-runs2.sh at +50 s): all 8 PNG sha256 ec4eef14bd6a.. identical, v32 included. Viewed (draw2-main-a.png): cells 1..9 of the sheet (v_pline lines, dash
+      types, zigzag, thick line, arrow, captions) black on white, 640x480. First attempt (screendump after the desktop came back, plain desktop) kept in serial/vdidraw-first-attempt-late-dump/, not evidence.
+      The sheet at the capture time carries cells 1-9 only (no contourfill/XOR cell yet); those are covered by item 7.
+ 9  APITEST (sdk/apps/apitest/build-apitest.sh into scratch, card by tools/mkcard.sh with apitest.inf #Z autorun, apitest.img.manifest), raspi4b: main, default, vdiplanes=16, vdiplanes=32:
+      TOTAL 110 / 0 / 6 in all four (serial/api-*.log), equal to the baseline 110/0/6; serial logs identical to main except the one [vdi] line.
+10  Card integrity after a vdiplanes=32 boot: APITEST card clone booted with vdiplanes=32 to TOTAL (110/0/6), killed, FAT partition dd'ed out (63 + 130977 sectors), fsck_msdos -n: clean
+      (checks/fsck-v32.txt, "4 files, 65164 KiB free"). Clone deleted. No crash, no memory corruption seen at 32 in any run (0 EXC/PANIC in all serial logs).
+11  Kernel selftests: the default boot logs of this build carry no PASS lines (selftests are not wired into a boot path); default vs main serial logs identical on rpi4, the standing baseline.
+
+DROVE: builds both boards, clippy delta, full cargo xtask test (incl. the 7 new tests), mapping/status/doc-check, 14 boots + screendumps (viewed) on raspi4b and virt incl. invalid
+  arguments, 16 tosdump tables x 4 configs against the pinned references with per-case change lists against main, AES dumper at 32, drawing/clear/fill/XOR read-back through the trap at 32
+  (138 cases x 4 configs), VDIDRAW screendumps x 8, APITEST x 4, fsck after a 32-plane boot.
+COULD NOT VERIFY / NOT DONE: the REGION extent of v_contourfill at 32 on the booted kernel (the harness' contourfill paints one pixel at every config incl. main, see item 7; covered only by the
+  host test); vro_cpyfm/vrt_cpyfm with memory forms at 32 (V65, not judged); v_get_pixel's wide answer shape (V65); the interactive desktop (no input on raspi4b); a qemu-virt tosdump run (harness
+  is raspi4b only); the drawing result visible on screen at 32 beyond the identical desktop and VDIDRAW sheet.
+REAL-PI4-ONLY (never claimed here): cmdline.txt vdiplanes path through the VideoCore mailbox on silicon, HDMI mode and real framebuffer at 32, QUIRK-001 TTBR0 wedge, cache coherence, USB-HID interactive
+  desktop use, real monitor/EDID.
+REPRODUCING COMMANDS (no FAIL): host: cargo xtask test; boot: qemu-system-aarch64 -M raspi4b -no-reboot -display none -append "serial=on vdiplanes=32" -kernel <release kernel8.img> -drive file=<card>,if=sd,format=raw
+  (virt: -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -append "vdiplanes=32" -kernel <objcopy -O binary image>); tables: method/run-tables.sh <cfg> <tree> <append|->; draw: method/run-draw.sh.
+
+OUT-OF-SCOPE OBSERVATIONS
+ - cargo xtask build --release ignores CARGO_TARGET_DIR for the final kernel8.img path (errors "kernel ELF not found" for rpi4 with a foreign target dir); I objcopy'd the ELFs myself (rust-objcopy -O binary)
+   and checked the "vdiplanes" string count (3 in all four images).
+ - The dumper's v_contourfill paints only the seed pixel (all configs incl. main); fill extent could not be examined through tosdump. Not caused by V63.
+ - The handover's host-test baseline 2507/0/7 is met (2514 = +7 new tests).
+
+IMAGE MANIFESTS (copies in this directory; optional_missing lines verbatim): plain.img.manifest "optional_missing none"; apitest.img.manifest "optional_missing none"; vdidraw.img.manifest "optional_missing none".
+  host_clang in each: Apple clang version 21.0.0 (clang-2100.4.1.1).
+
+GITIGNORED OUTPUTS CITED (path under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a9aec45507eb228c7/, sha256):
+  kern/wt-rpi4.img     1599760 B  b15a7d2452e320fe77bfc3532c5cbbb8e838b3fb3a46f40b35dfac93094889b1
+  kern/wt-virt.img     1504864 B  f142f18195c110795626c09d72299c8018711fb803d462dfa2873010bd39ac27
+  kern/wtmain-rpi4.img 1599760 B  070d910b33a47de12c9b780ec5715ed1880bad9aaca9669b944c0bd520d6684f
+  kern/wtmain-virt.img 1500768 B  a24d534256413941fa795a896a2f072c64f246b00d959d19f29584407f6c67ec
+  scratch/APITEST.NCP  2a4a192e2f390d2bfb3e987391eecc4526a3dbd76ac8fd4d647351bc71cc22ba
+  scratch/VDIDRAW.NAP  754bcc843bfa1bb130c132de79f15031927f4ee45026f09dc799b5cc7fa46145
+  scratch/cards/plain.img   (64 MiB) 4770c458e893ca43b13a4da53915bec6cb219d582b9e5065ad66a86bee6360a2
+  scratch/cards/apitest.img (64 MiB) f6d1bc681a30688c0badc8e038166f602b12f02d3bf599906e79f5eb0b7c832f
+  scratch/cards/vdidraw.img (64 MiB) 57708d8fa3ff691ea4ce62d612331c34691737c8a7259244aed2be0e524faee7
+  runs/<cfg>/<table>/ (tosdump outputs, BIN files compared in checks/*) ; wt 6.3G, wtmain 2.7G, whole agent dir 11G (du -sh).

@@ -1,0 +1,4 @@
+main aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+default aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+v16 aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 16
+v32 aes-r1 exit 0 exit 1, 95 of 95 cases differ | ap_version 0340, ap_count 1, ap_id 0, ap_planes 32

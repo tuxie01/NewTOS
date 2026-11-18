@@ -1,0 +1,8 @@
+shotA {'return': {}}
+run draw-main: 59 serial lines; end: 1; desktop up: 0; EXC/PANIC: 0
+shotA {'return': {}}
+run draw-default: 59 serial lines; end: 1; desktop up: 0; EXC/PANIC: 0
+shotA {'return': {}}
+run draw-v16: 60 serial lines; end: 1; desktop up: 0; EXC/PANIC: 0
+shotA {'return': {}}
+run draw-v32: 60 serial lines; end: 1; desktop up: 0; EXC/PANIC: 0

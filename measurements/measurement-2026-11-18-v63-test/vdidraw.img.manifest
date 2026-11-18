@@ -1,0 +1,12 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a9aec45507eb228c7/scratch/cards/vdidraw.img
+image_sha256 57708d8fa3ff691ea4ce62d612331c34691737c8a7259244aed2be0e524faee7
+size_mib 64
+created 2026-11-18T14:28:32Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 068793029d8880ee3c801609e1251f590065ed2e518a974a6473cf2a629f58a5 395 C:\NEWDESK.INF
+file 754bcc843bfa1bb130c132de79f15031927f4ee45026f09dc799b5cc7fa46145 257856 C:\VDIDRAW.NAP
