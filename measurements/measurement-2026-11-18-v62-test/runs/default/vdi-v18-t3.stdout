@@ -1,0 +1,36 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/xtask tosdump vdi tosdump/cases/vdi-v18-t3.tsv --tree /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/runs/default/vdi-v18-t3 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/scratch/ts-default --reference tosdump/reference/EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN`
+tosdump: command   cargo xtask tosdump vdi tosdump/cases/vdi-v18-t3.tsv --tree /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/runs/default/vdi-v18-t3 --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/scratch/ts-default --reference tosdump/reference/EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    03f22a623a6c3e115d58680776f296a34d7475e3
+tosdump: dirty     1 path(s) in git status --porcelain
+tosdump:    M tools/xtask/src/tosdump.rs
+tosdump: harness commit 03f22a623a6c3e115d58680776f296a34d7475e3
+tosdump: features  (none)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/tosdump/cases/vdi-v18-t3.tsv sha256 a937960293e82fc98699f5c5d770b58206bb453c0f5b7975517e748edbaf69e7
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (7 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (7 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 a80aa45568ae84bfd4f57f83ee166747adcd9d8fc6f8a561d3f000f1eb3c7a67
+tosdump: kernel ELF  sha256 51b1f6745aab964d7b9d6d0b1a3e5639743dc12f54e40d64bb002ab1f53eba07 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPVDI.NAP (tosdump/build-dumpvdi-newtos.sh) in the measured tree …
+tosdump: dumper build id 03f2
+tosdump: DUMPVDI.NAP sha256 7df9f972ac041e27901b79314662f93e44168b331472a24721026229d480b4d3
+tosdump: card.img.manifest: image_sha256 fa691607ae84f5ad639174a9f24376032693dfd8c7f37d056089a27b8b17006a
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/scratch/ts-default/tosdump-91255/card.img sha256 fa691607ae84f5ad639174a9f24376032693dfd8c7f37d056089a27b8b17006a (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPVDI.NAP, rc=0
+tosdump: card after the run sha256 9fd9d644ccb1f5bf01a15abf6dce19e23843e4f7b2f14b7acfd86a3d1b1ec246
+tosdump: VDI.BIN 3216 bytes, sha256 3d40a77d3433bf4eb210670e52c697169a49b556a21e71ae359f86557fdef816
+tosdump: VDI.LOG 360 bytes, sha256 fbab67411207a3bc8b0c2c72f002ad58df354e3c975dc34fdf6dd56c443ca2f9
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/tosdump/host/build/tosdiff sha256 6810b37a8be29d8d85dfe3961dbbc0520f6cc326bce70411ef8712d4643d679b
+tosdump: tosdiff --validate: exit 0 VDI.BIN: area VDI, 2 records of 1592 bytes, build 03f2, case CRC AE9CB4E7
+tosdump: tosdiff EMUTOS-1a7484ab-VDI-v18t3-falcontc.BIN vs NEWTOS.BIN: exit 1, 1 of 2 cases differ
+tosdump: total     35 s
+tosdump: result    run complete (differences above are findings, not failures)

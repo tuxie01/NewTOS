@@ -1,0 +1,34 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/xtask tosdump rast tosdump/cases/vdi-raster-screen.tsv --tree /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/runs/v32/vdi-raster-screen --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/scratch/ts-v32 --reference tosdump/reference/EMUTOS-1a7484ab-RASTER-screen-falcontc.BIN`
+tosdump: command   cargo xtask tosdump rast tosdump/cases/vdi-raster-screen.tsv --tree /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/runs/v32/vdi-raster-screen --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/scratch/ts-v32 --reference tosdump/reference/EMUTOS-1a7484ab-RASTER-screen-falcontc.BIN
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    03f22a623a6c3e115d58680776f296a34d7475e3
+tosdump: dirty     1 path(s) in git status --porcelain
+tosdump:    M tools/xtask/src/tosdump.rs
+tosdump: harness commit 03f22a623a6c3e115d58680776f296a34d7475e3
+tosdump: features  (none)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/tosdump/cases/vdi-raster-screen.tsv sha256 1cf591e37362bdda3bbb7e12bc1f24331c1a56e2d67e6759ba6eecc38e85e365
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (7 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (7 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 a80aa45568ae84bfd4f57f83ee166747adcd9d8fc6f8a561d3f000f1eb3c7a67
+tosdump: kernel ELF  sha256 51b1f6745aab964d7b9d6d0b1a3e5639743dc12f54e40d64bb002ab1f53eba07 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPRAST.NAP (tosdump/build-dumprast-newtos.sh) in the measured tree …
+tosdump: dumper build id 03f2
+tosdump: DUMPRAST.NAP sha256 70046c3c2cfbad2dc72516607ce5361b1590b0c98b6e270f7a17264192b6a234
+tosdump: card.img.manifest: image_sha256 0fbd22c80d29d044ae2ffae5d4d30672156a3043fad253f95b076bcc1ab8f058
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/scratch/ts-v32/tosdump-93961/card.img sha256 0fbd22c80d29d044ae2ffae5d4d30672156a3043fad253f95b076bcc1ab8f058 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPRAST.NAP, rc=1
+tosdump: card after the run sha256 fbc43d4cf5b0d8f25da5f3bc50ead4f893db3273dd7318cb47d3ac67f631467e
+tosdump: RASTER.BIN MISSING on the card
+tosdump: RASTER.LOG 458 bytes, sha256 f20f27f9e1650b37a6cc8c8576105c1f9ebcdc5124620a22e8737be36b2ee843
+tosdump: total     33 s
+tosdump: result    FAILED: DUMPRAST.NAP exited with rc=1; no RASTER.BIN from the run
+xtask: tosdump: DUMPRAST.NAP exited with rc=1; no RASTER.BIN from the run

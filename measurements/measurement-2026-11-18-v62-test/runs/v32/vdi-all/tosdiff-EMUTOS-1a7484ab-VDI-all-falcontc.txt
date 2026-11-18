@@ -1,0 +1,12 @@
+EMUTOS-1a7484ab-VDI-all-falcontc.BIN vs NEWTOS.BIN -- area VDI, 182 cases from vdi-all.tsv
+
+case 34  opcode 102  vq_extnd 1 clipping and extended info
+    intout[4]              EMUTOS-1a7484ab-VDI-all-falcontc.BIN = 0x0010 (16)   NEWTOS.BIN                           = 0x0020 (32)
+
+case 250  opcode 102  vq_extnd 1 after vs_clip on
+    intout[4]              EMUTOS-1a7484ab-VDI-all-falcontc.BIN = 0x0010 (16)   NEWTOS.BIN                           = 0x0020 (32)
+
+case 252  opcode 102  vq_extnd 1 after vs_clip off
+    intout[4]              EMUTOS-1a7484ab-VDI-all-falcontc.BIN = 0x0010 (16)   NEWTOS.BIN                           = 0x0020 (32)
+
+3 of 182 cases differ

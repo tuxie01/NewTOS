@@ -1,0 +1,7 @@
+ 27M	kern
+128M	scratch
+2,7G	wt
+2,7G	wtmain
+250M	tgt-wt
+250M	tgt-wtmain
+9,7G	.

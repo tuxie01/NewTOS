@@ -1,0 +1,3 @@
+EMUTOS-1a7484ab-XBIOS-ptr.BIN vs NEWTOS.BIN -- area BIOS, 9 cases from xbios-ptr-r1.tsv
+
+0 of 9 cases differ

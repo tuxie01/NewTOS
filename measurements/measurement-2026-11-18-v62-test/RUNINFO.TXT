@@ -1,0 +1,87 @@
+measurement-2026-11-18-v62-test -- tester run for TASK/V62 at developer commit 03f22a623 (branch v62, descends from main 9969cff27; compared with main 9969cff27)
+==================================================================================================================================================
+SCOPE  Boot argument vdiplanes=<16|32> (absent/invalid = 16, invalid with a boot line) and the VDI depth as a boot-time value: backend planes(), the vq_extnd gate,
+       the vq_extnd / device-table answers and ap_planes (ADR-038 points 1-3). CHUNKY_PLANES (V65) and the EdDI gate/constant (V66) stay 16 by the ticket's slice cut.
+       Tester (Sonnet), phase test. Nothing in the product was edited. No card, no Pi. All runs are QEMU (raspi4b and virt).
+MACHINE  Ingo's Mac mini ("scutil --get ComputerName": Ingo’s Mac mini), macOS 27.0.1, Claude Code 2.1.327, QEMU 11.0.2,
+         host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1; also host_clang line of the card manifests).
+TREES  own detached worktrees /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/wt (03f22a623) and .../wtmain (main 9969cff27); release kernels for the boot
+       runs built into separate CARGO_TARGET_DIR dirs (tgt-wt, tgt-wtmain), copied to .../kern/. Agent dir size at the end (du -sh): 9.9G (wt 2.7G, wtmain 2.7G, scratch 128M, tgt-* 250M each).
+
+VERDICT  PASS (everything on QEMU; the real-Pi4-only items below are not claimed).
+
+TEMPORARY HARNESS CHANGE (my own tree only, never committed, method/tester-xtask-append.patch): tools/xtask/src/tosdump.rs in wt reads the env V62_APPEND as the QEMU -append string
+  (default "serial=on" as before) so cargo xtask tosdump can boot with vdiplanes=. Second temporary file: wt/tosdump/cases/tmp-v62-scrninfo.tsv (copy in method/): vq_extnd 0, vq_extnd 1
+  and vq_scrninfo (opcode 102, CONTRL[5]=1, INTIN[0]=2). The default (no V62_APPEND) path is the stock harness.
+
+COMMANDS (board / outcome)
+ 1  cargo xtask build --board qemu-virt / --board rpi4, both trees (method/lint.sh, checks/lint-wt, checks/lint-main): all exit 0. Build warnings 159 / 159 on both trees, both boards.
+      clippy kernel 121 + tos-api 73 on both boards, both trees; desktop/newdesk 0; clippy tos-api --tests: same warning set on both trees (the new test file adds none). DELTA 0.
+ 2  cargo xtask test (wt, full; serial/host-test.log): exit 0, 2507 passed / 0 failed / 7 ignored (sum of the "test result" lines), 0 SKIPPED. Baseline 2501/0/7: +6 =
+      vdi_v62_planes_setting (5) + kernel_bootargs::tests::vdiplanes_accepts_16_and_32_only (1), both ok. The pin test (emutos_resolves_at_the_pin) is in that run and green.
+ 3  cargo xtask deps --check-mapping: 1968 rows, all resolve. status-check: 743 checked, 0 rejected, 7 reported (pre-existing). doc-check TASK/V62.md + receipt: 0 failures (checks/checks.txt).
+ 4  Boot runs, release kernels, headless, QMP screendump, both boards, 7 configs each (method/boots.sh, method/run-qmp.sh; serial/{rpi4,virt}-*.log, screendumps/*.png):
+      main, default (no argument), vdiplanes=16, =32, =24, "vdiplanes=" (empty), =x.  rpi4: raspi4b, plain card (tools/mkcard.sh), -append "serial=on [arg]".
+      virt: -M virt, flat image (rust-objcopy -O binary, as cargo xtask run does), -append "[arg]".
+      All 14: "desktop up", 0 EXC/PANIC.
+      Serial vs main (addresses/ticks masked): default = identical on both boards (no new line); vdiplanes=16 adds exactly
+        "[vdi] VDI depth: 16 planes (vdiplanes=16, boot argument)"; vdiplanes=32 adds exactly "[vdi] VDI depth: 32 planes (vdiplanes=32, boot argument)";
+        =24, empty, =x each add exactly "[vdi] VDI depth: 16 planes (vdiplanes: INVALID boot argument ignored, default)". Nothing else differs.
+      Screendumps: rpi4 PNG sha256 a3bd102e7f28.. identical for all 7 configs (equal to the hash of the XBIOS22/XBIOS23 runs); virt PNG sha256 6985da3b3c38.. identical for all 7.
+      Viewed (Read): virt-v32-a.png (1920x1080: menu bar Desk File View Options, green dither desktop, Trash and Printer icons, arrow pointer) and rpi4-v32-a.png (640x480: menu bar,
+      4 Hard disk + Trash + Printer icons, green desktop, arrow). The 32-plane boot looks exactly like the default: the drawing is still the 16-bit seam (V63+), as the receipt says.
+      First virt attempt used the ELF with -kernel: it gets no DTB ("[mm] no DTB"), so -append never reached the kernel; those logs are kept in serial/virt-elf-no-dtb/ and are not evidence.
+ 5  FULL XBIOS + VDI + raster table runs, cargo xtask tosdump on QEMU raspi4b, 4 configs x 16 tables (method/run-tables.sh; runs/<cfg>/<table>.stdout, tosdiff reports):
+      configs: main (--tree wtmain, stock), default (wt, stock), v16 (wt, serial=on vdiplanes=16), v32 (wt, serial=on vdiplanes=32; informational).
+      tables: bios-r1, super-r1, xbios-{bconmap,chardev,flush,ptr,system}-r1 (dumper bios, each against tt and falcontc), vdi-all (tt + falcontc), vdi-v18, vdi-v18-t2, vdi-v18-t3
+      (falcontc), vdi-a131-palette (tt + falcontc), vdi-raster (tt), vdi-raster-screen, vdi-v18-raster, vdi-v18-t2-raster (falcontc; dumper rast). checks/table-verdicts.txt.
+      RESULT default and v16 against main:
+        - tosdiff against every reference: the per-reference reports are identical to main in all 16 tables (checks/table-compare.txt, column "vs-refs-report": same everywhere).
+          Per-table cases-differ-from-oracle counts are equal main/default/v16 (e.g. bios-r1 35 tt / 31 falcontc, vdi-all 13 tt / 0 falcontc, xbios-flush 3/3, system 9/9).
+        - tosdiff main.BIN vs config.BIN on the table: 0 cases differ for every table with a per-case comparator (bios, super, xbios-*, vdi-all, vdi-v18*, a131).
+        - raw bytes (checks/raw-bytes.txt): in every table the only bytes differing main vs default and main vs v16 are offsets 13-16 (the dumper build id, "03f2"); two exceptions both
+          explained: bios-r1 has 3 more bytes (offsets 16710-16712) that also differ between default and v16 (run-to-run cell, 0 cases differ by tosdiff, not caused by the argument);
+          aes-r1 differs in 99 bytes main vs default (95 address cells byte 6, i.e. the kernel image shifts addresses, as documented for V50/V59), and default vs v16 differ in 0 bytes.
+        => no verdict changed in any table; the "no changed verdict" bar is met for no argument and for vdiplanes=16.
+      v32 vs main (informational): all tables as main except vdi-all: exactly 3 cases differ, 34, 250, 252 (vq_extnd 1 variants): intout[4] 16 -> 32, nothing else
+        (so DEV_TAB[13]/[35]/[39] of vq_extnd 0 and INQ_TAB[5] unchanged: 256 / 1 / 0 and 0). Against falcontc that is 3 of 182 differing (default 0 of 182): the intended change.
+        vdi-raster-screen at v32: the dumper refuses ("table declares screen 640x480 at 16 planes; workstation reports 640x480 at 32 planes -- screen mismatch: refusing to run the table",
+        rc=1, no RASTER.BIN; runs/v32/vdi-raster-screen/RASTER.LOG). This is the dumper's own guard (tosdump caps at 16 planes, ADR-038 point 13 (iv), a later slice), not a crash; the kernel
+        booted on to "desktop up". It is also a program reading 32 planes through the trap.
+ 6  appl_init at 32: AES dumper table aes-r1 (dumper aes, method/run-aes.sh), LOG line "ap_version 0340, ap_count 1, ap_id 0, ap_planes N" (runs/<cfg>/aes-r1/AES.LOG):
+      main 16, default 16, vdiplanes=16 16, vdiplanes=32 32. (ap_planes = global[10] from appl_init.)
+ 7  vq_extnd and vq_scrninfo at 32, temporary table tmp-v62-scrninfo.tsv via cargo xtask tosdump vdi (method/run-si.sh; runs/si-{d,v16,v32}): default vs vdiplanes=16: 0 of 3 cases differ.
+      vdiplanes=32 vs default: case "vq_extnd 1": intout[4] 16 -> 32 only. case "vq_scrninfo" (CONTRL[5]=1, INTIN[0]=2): at default/16 the EdDI table (contrl[4]=272 words, intout[0]=2,
+      intout[4]=0x8000); at 32 it falls through to the plain INQ_TAB answer: contrl[4]=45, contrl[2]=6, intout[4]=32, intout[0]=4, intout[1]=1 ... i.e. the EdDI gate is not widened, as the ticket
+      says ("what vq_scrninfo answers at 32 until V66: the plain vq_extnd answer"). Not a defect; recorded for V66.
+ 8  APITEST (build by sdk/apps/apitest/build-apitest.sh into scratch, PTERMCH.NCP from measurements/measurement-2026-10-16-proc06/bin, card by tools/mkcard.sh with apitest.inf #Z autorun),
+      raspi4b: main, default, vdiplanes=16, vdiplanes=32: TOTAL 110 / 0 / 6 in all four (serial/api-*.log); the serial logs are identical to main except the one [vdi] line (16/32 runs).
+      Baseline 110/0/6 met; the 6 SKIPs are the known key-needing ones, same on main.
+ 9  Card integrity after a vdiplanes=32 boot: APITEST card clone booted with vdiplanes=32 to TOTAL, killed, FAT partition dd'ed out, fsck_msdos -n: clean (checks/fsck-v32.txt, "4 files, 65164 KiB free").
+      No filesystem code is in the change; this covers the stop condition only.
+ 10 Kernel selftests: the default boot logs of this build carry no PASS lines (they are not wired into a boot path); default vs main serial logs are identical, which is the standing baseline here.
+
+DROVE: builds both boards, clippy delta, full cargo xtask test, mapping/status/doc-check, boots on raspi4b and virt with 7 argument configs each incl. invalid values, screendump equality and
+  viewing, 16 tosdump tables x 4 configs against pinned references with per-case change lists against main and raw-byte comparison, appl_init ap_planes at 32 (AES dumper), vq_extnd and
+  vq_scrninfo at 32 through the real trap (dumper), APITEST x4 (110/0/6), fsck after a 32-plane boot.
+COULD NOT VERIFY / NOT DONE: the drawing result at 32 planes (not in this slice); vq_scrninfo in the shipped tosdump tables (no case exists, a temporary table was used); a separate qemu-virt
+  tosdump run (the tosdump harness is raspi4b only); TeraDesk / QED scenarios (not in this handover's retest list); the interactive desktop (no input on raspi4b).
+REAL-PI4-ONLY (never claimed here): the cmdline.txt path through the VideoCore mailbox on silicon (QEMU raspi4b answers the same tag with -append), HDMI mode and real framebuffer at 32,
+  QUIRK-001 TTBR0 wedge, cache coherence, USB-HID interactive desktop use, real monitor/EDID.
+REPRODUCING COMMANDS (no FAIL): host: cargo xtask test; boot: qemu-system-aarch64 -M raspi4b -no-reboot -display none -append "serial=on vdiplanes=32" -kernel <release kernel8.img> -drive file=<card>,if=sd,format=raw
+  (virt: -M virt,gic-version=2 -cpu cortex-a72 -m 272M -device ramfb -append "vdiplanes=32" -kernel <objcopy -O binary image>); tables: method/run-tables.sh <cfg> <tree> <append|->.
+
+OUT-OF-SCOPE OBSERVATIONS
+ - Developer's own list stands (harness MACHINE_EXCLUDED substitute for INQ_TAB[5] is PLANES != 16; spec 100-v_opnvwk.md section 4 wording vs the ticket's EdDI settlement; COMPATIBILITY has
+   no 32-plane section yet). I did not touch them.
+ - cargo xtask build ignores CARGO_TARGET_DIR for the final kernel8.img path (it names wt/target/.../kernel8.img even when the ELF went to the env dir); I copied the image right after each build
+   and verified by the "vdiplanes" string count (3 in the branch images, 0 in main's).
+ - A zsh word-splitting slip in my own first scrninfo loop started one QEMU with an empty -append; killed by PID, no result kept, rerun with method/run-si.sh.
+
+MANIFESTS (copies in this directory and runs/<cfg>/<table>/card.img.manifest): plain.img.manifest, apitest.img.manifest (tools/mkcard.sh); optional_missing for both: "optional_missing none".
+  Every tosdump card manifest (runs/*/*/card.img.manifest): see those files; the stdout of each run quotes "card.img.manifest: optional_missing none".
+  host_clang in the manifests: Apple clang version 21.0.0 (clang-2100.4.1.1).
+
+GITIGNORED OUTPUTS (path, size, sha256): checks/sha256-gitignored-small.txt (release kernels wt/wtmain rpi4 .img and virt .elf/.img, APITEST.NCP, plain/apitest card images, the vdi-all and v32 scrninfo BINs);
+  sizes in checks/sizes.txt. Key hashes: wt-rpi4.img a80aa455.. , wtmain-rpi4.img 2728c029.. , wt-virt.img f3e0da1c.. , wtmain-virt.img ebb910fb.. , APITEST.NCP 11a8c2e8.. ,
+  VDI.BIN (vdi-all) main 83fc8f28.. / default 8f565cb6..; paths under /Volumes/Daten/Development/PiRusTOS/target-agents/agent-ac5b7442f64fdf0de/ (kern/, scratch/, runs/). Full hashes in the file.

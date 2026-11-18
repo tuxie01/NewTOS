@@ -1,0 +1,4 @@
+VDI.BIN: area VDI, 3 records of 1592 bytes, build 03f2, case CRC 03545E4F
+VDI.BIN: format 3, pointer 8 bytes, least significant word first
+VDI.BIN: matches tmp-v62-scrninfo.tsv (3 cases)
+VDI.BIN: accepted

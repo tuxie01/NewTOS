@@ -1,0 +1,51 @@
+bios-r1 main-vs-default: [0 of 147 cases differ] rawdiff vs-refs-report: same same 
+bios-r1 main-vs-v16: [0 of 147 cases differ] rawdiff vs-refs-report: same same 
+bios-r1 main-vs-v32: [0 of 147 cases differ] rawdiff vs-refs-report: same same 
+super-r1 main-vs-default: [0 of 9 cases differ] rawdiff vs-refs-report: same same 
+super-r1 main-vs-v16: [0 of 9 cases differ] rawdiff vs-refs-report: same same 
+super-r1 main-vs-v32: [0 of 9 cases differ] rawdiff vs-refs-report: same same 
+xbios-bconmap-r1 main-vs-default: [0 of 1 cases differ] rawdiff vs-refs-report: same same 
+xbios-bconmap-r1 main-vs-v16: [0 of 1 cases differ] rawdiff vs-refs-report: same same 
+xbios-bconmap-r1 main-vs-v32: [0 of 1 cases differ] rawdiff vs-refs-report: same same 
+xbios-chardev-r1 main-vs-default: [0 of 23 cases differ] rawdiff vs-refs-report: same same 
+xbios-chardev-r1 main-vs-v16: [0 of 23 cases differ] rawdiff vs-refs-report: same same 
+xbios-chardev-r1 main-vs-v32: [0 of 23 cases differ] rawdiff vs-refs-report: same same 
+xbios-flush-r1 main-vs-default: [0 of 207 cases differ] rawdiff vs-refs-report: same same 
+xbios-flush-r1 main-vs-v16: [0 of 207 cases differ] rawdiff vs-refs-report: same same 
+xbios-flush-r1 main-vs-v32: [0 of 207 cases differ] rawdiff vs-refs-report: same same 
+xbios-ptr-r1 main-vs-default: [0 of 9 cases differ] rawdiff vs-refs-report: same same 
+xbios-ptr-r1 main-vs-v16: [0 of 9 cases differ] rawdiff vs-refs-report: same same 
+xbios-ptr-r1 main-vs-v32: [0 of 9 cases differ] rawdiff vs-refs-report: same same 
+xbios-system-r1 main-vs-default: [0 of 43 cases differ] rawdiff vs-refs-report: same same 
+xbios-system-r1 main-vs-v16: [0 of 43 cases differ] rawdiff vs-refs-report: same same 
+xbios-system-r1 main-vs-v32: [0 of 43 cases differ] rawdiff vs-refs-report: same same 
+vdi-all main-vs-default: [0 of 182 cases differ] rawdiff vs-refs-report: same same 
+vdi-all main-vs-v16: [0 of 182 cases differ] rawdiff vs-refs-report: same same 
+vdi-all main-vs-v32: [3 of 182 cases differ] rawdiff vs-refs-report: CHG same 
+vdi-v18 main-vs-default: [0 of 19 cases differ] rawdiff vs-refs-report: same 
+vdi-v18 main-vs-v16: [0 of 19 cases differ] rawdiff vs-refs-report: same 
+vdi-v18 main-vs-v32: [0 of 19 cases differ] rawdiff vs-refs-report: same 
+vdi-v18-t2 main-vs-default: [0 of 32 cases differ] rawdiff vs-refs-report: same 
+vdi-v18-t2 main-vs-v16: [0 of 32 cases differ] rawdiff vs-refs-report: same 
+vdi-v18-t2 main-vs-v32: [0 of 32 cases differ] rawdiff vs-refs-report: same 
+vdi-v18-t3 main-vs-default: [0 of 2 cases differ] rawdiff vs-refs-report: same 
+vdi-v18-t3 main-vs-v16: [0 of 2 cases differ] rawdiff vs-refs-report: same 
+vdi-v18-t3 main-vs-v32: [0 of 2 cases differ] rawdiff vs-refs-report: same 
+vdi-a131-palette main-vs-default: [0 of 48 cases differ] rawdiff vs-refs-report: same same 
+vdi-a131-palette main-vs-v16: [0 of 48 cases differ] rawdiff vs-refs-report: same same 
+vdi-a131-palette main-vs-v32: [0 of 48 cases differ] rawdiff vs-refs-report: same same 
+vdi-raster main-vs-default: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 118 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-raster main-vs-v16: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 118 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-raster main-vs-v32: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 118 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-raster-screen main-vs-default: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 124 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-raster-screen main-vs-v16: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 124 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-raster-screen main-vs-v32: [tosdiff: runs/v32/vdi-raster-screen/RASTER.BIN: cannot open] rawdiff vs-refs-report: CHG 
+vdi-v18-raster main-vs-default: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 34 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-v18-raster main-vs-v16: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 34 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-v18-raster main-vs-v32: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 34 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-v18-t2-raster main-vs-default: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 52 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-v18-t2-raster main-vs-v16: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 52 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+vdi-v18-t2-raster main-vs-v32: [kept check, RASTER.BIN: format 3; contrl_mfdb against contrl_before_mfdb, 52 cells checked, 0 changed by the call] rawdiff vs-refs-report: same 
+aes-r1 main-vs-default: [address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 95 address cells checked, 0 not < 0x80000000] rawdiff vs-refs-report: same 
+aes-r1 main-vs-v16: [address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 95 address cells checked, 0 not < 0x80000000] rawdiff vs-refs-report: same 
+aes-r1 main-vs-v32: [address check, AES.BIN: format 3, pointer 8 bytes, least significant word first; 95 address cells checked, 0 not < 0x80000000] rawdiff vs-refs-report: same 

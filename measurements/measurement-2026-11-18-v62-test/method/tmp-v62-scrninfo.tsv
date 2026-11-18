@@ -1,0 +1,5 @@
+# tmp-v62-scrninfo.tsv -- tester temporary table (V62 run, never committed): vq_extnd 0/1 and vq_scrninfo (opcode 102, CONTRL[5]=1, INTIN[0]=2)
+# opcode	sub	intin	ptsin	comment
+102	0	0	-	vq_extnd 0 SIZ_TAB and DEV_TAB
+102	0	1	-	vq_extnd 1 extended info
+102	1	2	-	vq_scrninfo EdDI call

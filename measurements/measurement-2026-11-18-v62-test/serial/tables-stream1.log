@@ -1,0 +1,34 @@
+main bios-r1 exit 0 exit 1, 35 of 147 cases differ;exit 1, 31 of 147 cases differ;
+main super-r1 exit 0 exit 0, 0 of 9 cases differ;exit 0, 0 of 9 cases differ;
+main xbios-bconmap-r1 exit 0 exit 1, 1 of 1 cases differ;exit 1, 1 of 1 cases differ;
+main xbios-chardev-r1 exit 0 exit 1, 1 of 23 cases differ;exit 1, 2 of 23 cases differ;
+main xbios-flush-r1 exit 0 exit 1, 3 of 207 cases differ;exit 1, 3 of 207 cases differ;
+main xbios-ptr-r1 exit 0 exit 0, 0 of 9 cases differ;exit 0, 0 of 9 cases differ;
+main xbios-system-r1 exit 0 exit 1, 9 of 43 cases differ;exit 1, 9 of 43 cases differ;
+main vdi-all exit 0 exit 1, 13 of 182 cases differ;exit 0, 0 of 182 cases differ;
+main vdi-v18 exit 0 exit 0, 0 of 19 cases differ;
+main vdi-v18-t2 exit 0 exit 0, 0 of 32 cases differ;
+main vdi-v18-t3 exit 0 exit 1, 1 of 2 cases differ;
+main vdi-a131-palette exit 0 exit 1, 32 of 48 cases differ;exit 0, 0 of 48 cases differ;
+main vdi-raster exit 0 exit 1, 1 of 59 cases differ;
+main vdi-raster-screen exit 0 exit 0, 0 of 62 cases differ;
+main vdi-v18-raster exit 0 exit 0, 0 of 17 cases differ;
+main vdi-v18-t2-raster exit 0 exit 1, 6 of 26 cases differ;
+main DONE
+default bios-r1 exit 0 exit 1, 35 of 147 cases differ;exit 1, 31 of 147 cases differ;
+default super-r1 exit 0 exit 0, 0 of 9 cases differ;exit 0, 0 of 9 cases differ;
+default xbios-bconmap-r1 exit 0 exit 1, 1 of 1 cases differ;exit 1, 1 of 1 cases differ;
+default xbios-chardev-r1 exit 0 exit 1, 1 of 23 cases differ;exit 1, 2 of 23 cases differ;
+default xbios-flush-r1 exit 0 exit 1, 3 of 207 cases differ;exit 1, 3 of 207 cases differ;
+default xbios-ptr-r1 exit 0 exit 0, 0 of 9 cases differ;exit 0, 0 of 9 cases differ;
+default xbios-system-r1 exit 0 exit 1, 9 of 43 cases differ;exit 1, 9 of 43 cases differ;
+default vdi-all exit 0 exit 1, 13 of 182 cases differ;exit 0, 0 of 182 cases differ;
+default vdi-v18 exit 0 exit 0, 0 of 19 cases differ;
+default vdi-v18-t2 exit 0 exit 0, 0 of 32 cases differ;
+default vdi-v18-t3 exit 0 exit 1, 1 of 2 cases differ;
+default vdi-a131-palette exit 0 exit 1, 32 of 48 cases differ;exit 0, 0 of 48 cases differ;
+default vdi-raster exit 0 exit 1, 1 of 59 cases differ;
+default vdi-raster-screen exit 0 exit 0, 0 of 62 cases differ;
+default vdi-v18-raster exit 0 exit 0, 0 of 17 cases differ;
+default vdi-v18-t2-raster exit 0 exit 1, 6 of 26 cases differ;
+default DONE
