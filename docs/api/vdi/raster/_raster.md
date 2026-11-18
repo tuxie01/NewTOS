@@ -1002,3 +1002,126 @@ are tied to the Falcon-truecolor plane/colour model
 (`vdi_backend.rs:33,40`), independent of resolution — not the "16-colour
 CLUT model" this note previously named (see the corrected "screen MFDB"
 table above).
+
+---
+
+## 32-plane setting: the device pixel (ADR-038 point 4 and 11, V63)
+
+Spec gate of TASK/V63 (researcher, 2026-11-18). **Contract source:** ADR-038 in
+`docs/MEMORY.md`; where EmuTOS has a 16-plane rule the rule is cited and the 32-plane
+rule is its mechanical generalisation. EmuTOS has no path above 16 planes
+(`references/emutos/vdi/vdi_defs.h:22`), so at 32 planes the ADR is the contract
+(ADR-038 point 12) and the oracle cannot decide. At 16 planes nothing in this file above
+changes. Labels: **[C]** read in the source cited, **[I]** inferred, **[D]** ADR-038
+design choice. This section covers what V63 owns (the pixel word, its X byte, the clear
+value, the logic operations, the read masks); the boundary to V64, V65 and V66 is
+§4.
+
+### 1. The rules V63 implements
+
+| # | Rule at 32 planes | EmuTOS 16-plane rule it generalises | ADR-038 |
+|---|---|---|---|
+| R1 | The device pixel is one 32-bit integer `0xXXRRGGBB`, 8 bits per gun, **equal to the store word** (little-endian bytes B, G, R, X). **The X byte (bits 31..24) is unused.** | The device pixel is the 16-bit store word `RRRRRGGGGGOBBBBB`; bit 5 is the one bit that is no gun (`references/emutos/vdi/vdi_fill.c:26`, `references/emutos/vdi/vdi_defs.h:153-158`) **[C]** | point 4, amends ADR-024 point 3 (point 12) |
+| R2 | **A pen writes X = 0:** a drawn pixel is `0x00RRGGBB`. | A pen word never carries `OVERLAY_BIT`: `(r<<11)\|(g<<6)\|b`, `references/emutos/vdi/vdi_col.c:601-614` **[C]**; fills, lines, text, marks and `vrt_cpyfm` read `palette[color]` (`references/emutos/vdi/vdi_line.c:460`, `references/emutos/vdi/vdi_textblit.c:765,1043`, `references/emutos/vdi/vdi_raster.c:1235`) **[C]** | point 4 ("pens write it 0") |
+| R3 | **`v_clrwk` writes a constant, not a pen:** every byte `0xff` is allowed (the pixel `0xFFFFFFFF`), clip ignored, the whole visible screen. Because X is unused, `0x00FFFFFF` is equally conforming (§3). | `memset(v_bas_ad, 0xff, size)` under `TRUECOLOR_MODE`, the word `0xFFFF` (`references/emutos/vdi/vdi_control.c:610-618`) **[C]** | point 4 ("`v_clrwk` may fill every byte `0xff`") |
+| R4 | **Logic operations act bitwise on all 32 bits**, X included: `WM_XOR` complements the whole stored pixel and ignores the pen; the sixteen `vro_cpyfm` operations are the bitwise table on 32 bits (`ALL_BLACK` writes `!0`, `ALL_WHITE` writes 0). X after an operation is noise (R5). | `*work = ~temp`, `*addr = ~*addr` (`references/emutos/vdi/vdi_line.c:494,501,1670,1730`), `*q = ~*q` (`references/emutos/vdi/vdi_textblit.c:806,1120`); the sixteen operations on `UWORD` (`references/emutos/vdi/vdi_raster.c:1007-1215`, `ALL_BLACK` `*q = 0xffff` at `:1213`) **[C]** | points 4, 5, 11 ("bitwise on all 32 bits") |
+| R5 | **Every read ignores X.** The value a read path works with is `store & 0x00FFFFFF`. A cleared screen therefore reads as the pixel of a white pen (`0x00FFFFFF`): through `v_get_pixel` and through the flood fill, seed read included. | EmuTOS masks the overlay bit on the screen side of the flood fill (`references/emutos/vdi/vdi_fill.c:702-709,755`) and returns it unmasked from `pixelread` (`references/emutos/vdi/vdi_fill.c:671-681`) **[C]** | point 4 ("every read masks it off ... so a cleared screen reads as the white pen"; "X noise is ignored on read") |
+| R6 | **At 16 planes none of R1-R5 applies**: the overlay bit stays, in the X byte as today, and the reads stay unmasked as above. Every mask of R5 is gated on the 32-plane setting (`backend.planes() == 32`). | the whole of ADR-024 | point 1, acceptance of TASK/V63 |
+
+R5's seed-fill clause is **inferred [I]** and differs from the 16-plane behaviour:
+EmuTOS reads the seed pixel unmasked (`search_color = pixelread(xleft, oldy)`,
+`references/emutos/vdi/vdi_fill.c:972`) and compares it with masked screen words
+(`:755,763`), so a seed pixel with the overlay bit set (a cleared background) never
+equals and the fill draws nothing; NewTOS reproduces that at 16 planes
+(`tos-api/src/vdi/contour.rs:474@pixelread`). The ADR says X noise is "ignored on read"
+and a cleared screen "reads as the white pen", which taken for every read gives a seed
+read that is masked too. ADR-038 does not name the seed read separately (Open points).
+
+### 2. Where V63 acts: the sites, by file and function
+
+Verdict per site: **change** = V63 edits it; **keep** = the code already meets the rule
+(read in this run, not executed) and V63 adds only tests and comment text; **other
+slice** = see §4.
+
+| Site | Rule | Verdict |
+|---|---|---|
+| `kernel/src/vdi_backend.rs:282@pel_to_rgb`: pen to pixel for every draw path (`:606`, `:625`, `:629`, `:670`, `:704`, `:736`, `:775`, `:901`, all `Self::pel_to_rgb`): `word_to_device(ACTIVE_PALETTE[pen])` | R2 | **keep.** The palette words never have bit 5 set (`pack555`, `kernel/src/vdi_backend.rs:168@pack555`; the workstation side `tos-api/src/vdi/vwk.rs:262@pack_color16`), so `word_to_device` writes X = 0 **[C]**. The pen's 5-bit quantisation is V64's. |
+| `kernel/src/vdi_backend.rs:408@xor_pixel`: `!v` on the whole `u32` | R4 | **keep.** Complements all 32 bits, X included **[C]**. |
+| `kernel/src/raster_copy.rs:92@raster_op`: the sixteen operations on `u32`, used by screen-to-screen `copy_rect` | R4 | **keep** **[C]** (`:109`: `ALL_BLACK` is `!0`). |
+| `tos-api/src/vdi/workstation.rs:431@v_clrwk` with `backend.clear_screen_word(0xFFFF)` (`:433`) and `kernel/src/vdi_backend.rs:558@clear_screen_word` (`fb.clear(self.rgb565_to_device(word))`) | R3 | **keep.** `word_to_device(0xFFFF)` is `0xFFFFFFFF` (`kernel/src/vdi_backend.rs:200@word_to_device`: X `0xFF` because bit 5 is set, guns `0xFF`) **[C]**, i.e. the "every byte `0xff`" fill of R3 with no change. The `u16` argument stays (ADR-038 point 11: the `u16` seam stays for the 16-plane setting). |
+| `tos-api/src/vdi/contour.rs:162@pixelread`: `device_to_rgb565(get_device_pixel_wrapped(x, y))` for `planes() > 8` | R5, R6 | **change.** At 32 planes mask the raw store word with `0x00FFFFFF` before it is converted; at 16 planes it stays as it is (unmasked: `v_get_pixel` after `v_clrwk` is `0xFFFF`, `docs/api/vdi/workstation/03-v_clrwk.md`). This one function is the read of `v_get_pixel` (`tos-api/src/vdi/inquiry.rs:190@v_get_pixel`), of the flood-fill seed (`tos-api/src/vdi/contour.rs:474@pixelread`) and of every span probe (`tos-api/src/vdi/contour.rs:252@color`), so one mask covers all three. Whether the mask lives here or in a raster-backend method is the developer's (internal). |
+| `tos-api/src/vdi/contour.rs:252@color` (`c & !OVERLAY_BIT`) | R5 | **keep.** After the change above bit 5 of the word is 0 at 32 planes; the mask is harmless there and needed at 16. |
+| `tos-api/src/vdi/contour.rs:489@palette` (`search_color` from the physical workstation's pen word) | R2 | **keep** (pen word, X-free). |
+| `tos-api/src/vdi/inquiry.rs:190@v_get_pixel` | R5 | **keep for V63** (it only forwards `pixelread`); its answer shape is V65 (§3, §4). |
+| `kernel/src/vdi_backend.rs:531@read_pixel` (palette modes; reached only at `planes() <= 8` by `pixelread`, `tos-api/src/vdi/contour.rs:164@pixelread`, and directly by `tos-api/src/aes/menu.rs:2729@read_pixel`) | R5 | **keep.** It already masks `& 0x00FFFFFF` and compares through `word_to_device(..) & 0x00FFFFFF` **[C]**. |
+| `tos-api/src/vdi/backend.rs:393@get_device_pixel_wrapped`, `kernel/src/vdi_backend.rs:910@get_device_pixel` | R1, R5 | **keep raw.** They return the whole store word including X; the mouse save-under holds raw words (`tos-api/src/vdi/mouse.rs`) and needs them. The mask is applied by the readers (`pixelread`), not here. |
+| `kernel/src/hal/framebuffer.rs:61@pixels` and the module doc above it (`:14-27`): "X is owned by the VDI backend ... `OVERLAY_BIT`" | R1 | **comment only.** No code: the store is XRGB8888 with alpha "ignored" (`kernel/src/drivers/bcm2711/framebuffer.rs:60@ALPHA_MODE_IGNORED`) at both settings. The doc must say X carries the overlay bit at 16 planes and is unused at 32. |
+| `kernel/src/vdi_backend.rs:200@word_to_device`, `:213@device_to_word` | R1 | **keep** (16-bit seam, §4). |
+
+**Consequence for the size of the slice [I]:** apart from the read mask at 32 planes
+(`pixelread`) and the comment text, the pixel-write sites already produce the V63
+pixel, because the store at 16 planes is a bitwise expansion whose pen pixels have X = 0
+and whose clear pixel has X = `0xFF`. The slice is chiefly the read mask plus the tests that pin R1-R6
+at 32 planes (a test backend at `planes() == 32` whose store holds X noise).
+
+### 3. What a pen's pixel is in V63, before V64, and what V63 leaves open
+
+- **A pen's pixel before V64.** Pens still hold 5-bit pseudo-palette words
+  (`kernel/src/vdi_backend.rs:145@ACTIVE_PALETTE`, `tos-api/src/vdi/vwk.rs:219@palette`) and
+  `pel_to_rgb` expands them by gun replication `c8 = (c5 << 3) | (c5 >> 2)`
+  (`kernel/src/vdi_backend.rs:200@word_to_device`, `expand5to8`). So in V63 a pen's pixel at 32
+  planes is **`0x00` followed by the 16-plane pen's expanded guns**: the same 24 colour
+  bits as at 16 planes, X = 0 **[C]**. White is `0x00FFFFFF` (5-bit 31 expands to
+  `0xFF`) and equals the masked cleared screen **[C]**. V64 replaces the quantisation
+  (`q = (c * 255 + 500) / 1000`, ADR-038 point 4) and nothing in V63 pre-empts it.
+- **The clear value.** R3 allows `0xFFFFFFFF` (what the unchanged path writes) and
+  `0x00FFFFFF`. No V63 read path can tell them apart (R5); the display shows white for
+  both. The developer's test must not assert the X byte of a cleared pixel; it asserts what
+  a masked read returns and the colour. A raw read of the store (for instance through
+  `Physbase`) is outside the contract of X (R1).
+- **`v_get_pixel` between V63 and V65 [I].** The answer shape is V65's (ADR-038
+  point 7: `INTOUT[0]` high word, `INTOUT[1]` low word). V63 does not change it, so until V65 the
+  call at 32 planes returns what the unchanged code returns for the masked read:
+  `INTOUT[0] = 0`, `INTOUT[1] =` the 16-bit word `device_to_rgb565` makes of the masked pixel
+  (`tos-api/src/vdi/inquiry.rs:201@set_intout`: truecolor branch for `planes() > 8`). In V63 that word is
+  lossless for every pixel a VDI path wrote (5-bit-replicated guns, first bullet) and
+  loses the low 3 bits of a gun otherwise. With the mask, a cleared screen answers `0xFFDF` =
+  the pen-0 pixel of the default palette (not `0xFFFF` as at 16 planes). This interim answer
+  is not a contract and V65 replaces it.
+
+### 4. The boundary to V64, V65 and V66
+
+| Item | Slice | Why not V63 |
+|---|---|---|
+| Pen quantisation with 8 bits per gun: `ACTIVE_PALETTE` (`kernel/src/vdi_backend.rs:145@ACTIVE_PALETTE`, `u16`), `vdi2fivebits`, `pack555` (`kernel/src/vdi_backend.rs:157@vdi2fivebits`, `:168@pack555`), `set_color` (`kernel/src/vdi_backend.rs:469@set_color`), `set_active_palette`, the workstation pseudo-palette `palette: [u16; 256]`, `set_color16`, `pack_color16` (`tos-api/src/vdi/vwk.rs:256@set_color16`), `vq_color` | **V64** | ADR-038 point 4 pen rule; TASK/V64.md scope |
+| Width of the flood-fill compare and of `search_color` (`u16`, `tos-api/src/vdi/contour.rs:199@search_color`) and of `pixelread`'s return | **V64** at the latest | While every pixel is 5-bit-replicated, comparing the 16-bit projection equals comparing 24 bits. Once pens carry 8 bits per gun, two pens that differ in the low 3 bits of a gun project to the same word, so the compare must be on the masked 24-bit pixel (R5: the value a read works with is `store & 0x00FFFFFF`). TASK/V64.md does not name this; the lead decides (Open points). V63 may widen it already; nothing in V63 requires it. |
+| `RasterBackend::read_pixel`'s reverse map through the 5-bit palette | **V64** | it follows the pens |
+| `pel_to_device16` (`tos-api/src/vdi/backend.rs:138@pel_to_device16`, used by `vrt_cpyfm`'s memory destination, `tos-api/src/vdi/raster.rs:671@pel_to_device16`): the pen as a memory-MFDB word | **V65** (value from V64) | a memory-MFDB pixel; stays the 16-bit word at the 16-plane setting (ADR-038 point 11) |
+| `device_to_rgb565`, `rgb565_to_device`, `read_row_rgb565`, `write_row_rgb565` and their users in `screen_to_mem`/`mem_to_screen`, `bb_save`/`bb_restore`, `blit_device_mem` (`tos-api/src/vdi/raster.rs:904@screen_to_mem`, `:956@mem_to_screen`, `:1324@bb_save`) | **V65** | memory MFDB, save buffers. Until V65 they still turn bit 31 of a store word into bit 5 of the 16-bit word, so a memory copy of a cleared screen still carries the overlay bit; whether a 32-plane read masks X there is V65's |
+| `v_get_pixel` answer shape (high word first) | **V65** | ADR-038 point 7 |
+| `CHUNKY_PLANES`, the plane cap of `vro_cpyfm`/`vrt_cpyfm`, `vr_trnfm` standard form, 16-plane memory MFDB refused at 32 | **V65** | ADR-038 points 5, 6; `docs/api/vdi/workstation/100-v_opnvwk.md` §2 |
+| The `vq_scrninfo` table and `[13] = 8`, `[96..103] = 24..31` (X unused as seen by a program) | **V66** | ADR-038 point 8 |
+| VT52 cell writer (`tos-api/src/vdi/escape.rs:273@write_row_rgb565`) | not named by V64/V65/V66 | uses the 16-bit row seam; out of scope here (Open points) |
+
+**Can V63 be built without a part of V64 or V65?** Yes. The one place where it touches
+a V65 item is `v_get_pixel`, and there the slice changes only the read mask under
+`pixelread` and leaves the answer shape as it is (§3, interim). It touches no V64 item.
+
+### Open points
+
+- **Inferred (R5, seed read):** the flood-fill seed read is masked at 32 planes although
+  EmuTOS reads it unmasked at 16 planes (`references/emutos/vdi/vdi_fill.c:972`), so a
+  `v_contourfill` with `INTIN[0] < 0` on a freshly cleared screen fills at 32 planes and
+  draws nothing at 16. ADR-038 point 4 names `v_get_pixel` and "flood fill" as reads that
+  mask, without separating the seed. The lead confirms or reverses; the code change is the
+  same one `pixelread` mask either way unless the seed is read raw.
+- **Inferred (§3):** the interim answer of `v_get_pixel` at 32 planes between V63 and V65.
+  ADR-038 gives the final shape only. If the lead prefers the final shape in V63, point 7 moves
+  from V65 into this slice.
+- **Inferred (R3):** `0xFFFFFFFF` or `0x00FFFFFF` as the cleared pixel is left to the
+  developer by the ADR ("may fill"); both read as the white pen.
+- **For V64's ticket:** the flood-fill compare width (§4) is not in `TASK/V64.md`.
+- **Out of scope observation:** the VT52 cell writer (`tos-api/src/vdi/escape.rs:273@write_row_rgb565`)
+  uses the 16-bit seam and has no slice in V63-V66; the AES `tos-api/src/aes/menu.rs:2729@read_pixel`
+  call reverse-maps through the palette (affected by V64's palette width).
+- **Not executed:** all "keep" verdicts are reading of the code, not a run.

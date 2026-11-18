@@ -558,8 +558,10 @@ EmuTOS stays the contract and nothing in this file above changes. Labels:
 ### 2. `planes()` becomes a boot-time value
 
 Today the constant 16 is held in three independent places (ADR-038 Context;
-`docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1). V62 makes two of them follow
-the setting (backend `planes()`, EdDI per §4); `CHUNKY_PLANES` follows with V65:
+`docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1). V62 makes **one** of them follow
+the setting, the backend `planes()`, and the `vq_extnd` gate (§3). The other two follow
+with later slices (TASK/V62.md, "Slice cut corrected"): `CHUNKY_PLANES` with V65, the EdDI
+constant and gate with V66 (§4):
 
 | Place | Today | At the setting |
 |---|---|---|
@@ -598,12 +600,12 @@ no separate workstation-open value set.
 The gate (`tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`) answers the 273-word table
 only when `backend.planes() == DEVICE_PLANES` (16) and otherwise lets the call fall
 through to plain `vq_extnd` (mode `INTIN[0] != 0`, so `INQ_TAB`) **[C]**. ADR-038
-point 8 gives the 32-plane table (values there) but belongs to V66
-(`TASK/V66.md` scope). So after V62 and before V66 a `vdiplanes=32` boot **answers
-the EdDI call with `INQ_TAB`** (the existing fall-through), unless V62 widens the
-gate; ADR-038 and the V62 ticket do not say which **[I]**; V62's receipt must state
-what a 32-plane boot shows (TASK/V62 acceptance). At 16 planes the table and the gate
-are unchanged.
+point 8 gives the 32-plane table (values there); it belongs to V66 (`TASK/V66.md`
+scope), and so do the EdDI constant `DEVICE_PLANES` and its gate. **V62 does not widen the
+gate** (TASK/V62.md, "Spec gate ... and the slice boundary", point 1). So after V62 and
+before V66 a `vdiplanes=32` boot **answers the EdDI call with `INQ_TAB`** (the existing
+fall-through; `INQ_TAB[4] = 32`, §3); V62's receipt states it. The 32-plane gate and constant
+follow the setting with V66. At 16 planes the table and the gate are unchanged.
 
 ### 5. What V62 does not decide
 
@@ -616,10 +618,9 @@ XBIOS words (V68) follow their own slices.
 - **Inferred:** the exact `numeric_setting` call for `vdiplanes=` (prefix, `max`) and
   that every `Given(n)` other than 16/32 is treated as invalid (§1); no line of
   ADR-038 spells the mapping out.
-- **Needs a decision (not a value V62 needs):** whether a 32-plane boot before V66
-  answers `vq_scrninfo` with the `INQ_TAB` fall-through or widens the gate (§4).
-  Both are consistent with ADR-038; V62's acceptance asks only that the receipt
-  says what the boot shows.
+- **Settled (TASK/V62.md, "Spec gate ... and the slice boundary"):** a 32-plane boot
+  before V66 answers `vq_scrninfo` with the `INQ_TAB` fall-through; the gate and the EdDI
+  constant follow the setting with V66, not V62 (§2, §4).
 - **Not traced:** the order inside `kernel/src/lib.rs` between reading the boot
   arguments and the first `planes()` use (§1).
 - The text of the invalid-value boot line is not fixed by any source (§1).

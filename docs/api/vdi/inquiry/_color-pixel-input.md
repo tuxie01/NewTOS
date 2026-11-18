@@ -251,3 +251,31 @@ so `vq_key_s` reports *less* than a raw `Kbshift`.
   `mode−1` return and the `Kbshift & 0x0f` mask exactly. `gshift_s` maps
   to the same shift-state source as BIOS `Kbshift` (native keyboard
   driver, see [MEMORY: keyboard via Atari IKBD]).
+
+---
+
+## 32-plane setting: `v_get_pixel` read mask (ADR-038 point 4, V63)
+
+Spec gate of TASK/V63 (researcher, 2026-11-18). At 32 planes ADR-038 is the contract
+(no EmuTOS path above 16 planes, `references/emutos/vdi/vdi_defs.h:22`); the text above
+is the 16-plane contract and is unchanged. Rules and sites:
+[`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting: the device pixel
+(ADR-038 point 4 and 11, V63)".
+
+- **V63 (read mask).** At 32 planes the pixel `v_get_pixel` reads is the store word with
+  the X byte masked off, `store & 0x00FFFFFF`; at 16 planes it stays unmasked (`pixelread`
+  returns the whole word, `references/emutos/vdi/vdi_fill.c:671-681`). The one change is in
+  `tos-api/src/vdi/contour.rs:162@pixelread`, which `v_get_pixel`
+  (`tos-api/src/vdi/inquiry.rs:190@v_get_pixel`) and the flood fill share.
+- **Interim answer until V65 [I].** The answer shape is V65's. Until then at 32 planes the
+  call answers as the unchanged truecolor branch does for the masked pixel:
+  `INTOUT[0] = 0`, `INTOUT[1] =` the 16-bit word of the masked pixel. A cleared screen then
+  answers `0xFFDF` (the pen-0 word), not `0xFFFF`. Not a contract; V65 replaces it by
+  `INTOUT[0]` = high word, `INTOUT[1]` = low word of the pixel (ADR-038 point 7, widening
+  `references/emutos/vdi/vdi_fill.c:1104-1110`).
+- **Boundary:** the shape of the answer, memory MFDB and the 16-bit seam are V65; pen
+  quantisation (the 8-bit values the pixel holds) is V64.
+
+### Open points
+
+- Inferred: the interim answer above; the lead may move ADR-038 point 7 into V63.

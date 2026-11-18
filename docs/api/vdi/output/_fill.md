@@ -381,3 +381,30 @@ The fill order and its limit are observable, so they are contract:
   as specified above (TASK/V21; a 4096-entry seed stack that dropped
   seeds left pockets unfilled, VDI-DRAW-008). `REV_MAP_COL`/`MAP_COL`
   translate between VDI colour index and PEL as elsewhere.
+
+---
+
+## 32-plane setting: pen pixel and flood-fill reads (ADR-038 point 4, V63)
+
+Spec gate of TASK/V63 (researcher, 2026-11-18). At 32 planes ADR-038 is the contract
+(no EmuTOS path above 16 planes, `references/emutos/vdi/vdi_defs.h:22`); the text above is
+the 16-plane contract and is unchanged. Rules R1-R6 and the site list:
+[`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting: the device pixel
+(ADR-038 point 4 and 11, V63)". For fills, lines, markers and text:
+
+- **Pen to pixel.** A pen writes `0x00RRGGBB`, X = 0, as a pen word has no overlay bit
+  (EmuTOS `palette[color]`, `references/emutos/vdi/vdi_line.c:460`,
+  `references/emutos/vdi/vdi_textblit.c:765,1043`; `set_color16`,
+  `references/emutos/vdi/vdi_col.c:601-614`). Every draw path takes the pen's pixel from
+  `kernel/src/vdi_backend.rs:282@pel_to_rgb`; no change is needed there in V63. Before V64 the
+  guns are the 5-bit-replicated values of 16 planes; V64 changes the quantisation.
+- **Logic modes** (`WM_XOR` and the rest) act bitwise on the 32-bit pixel (R4); XOR
+  ignores the pen (EmuTOS `vdi_line.c:494,501,1670,1730`).
+- **Flood fill reads.** Every read ignores the X byte (R5): the seed read and each span
+  probe go through `tos-api/src/vdi/contour.rs:162@pixelread`, which masks at 32 planes
+  only. The compare width follows V64 (`_raster.md` §4).
+
+### Open points
+
+- Inferred: the seed read is masked at 32 planes, unlike EmuTOS at 16
+  (`references/emutos/vdi/vdi_fill.c:972`); see `_raster.md` Open points.

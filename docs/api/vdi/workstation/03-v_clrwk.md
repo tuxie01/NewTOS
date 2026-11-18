@@ -140,3 +140,35 @@ No inputs, no outputs, no return value, no error path — always succeeds.
 
 - **1080p later.** Clears whatever geometry the `RasterBackend` reports;
   no dependency on the fixed 640×480 mode.
+
+---
+
+## 32-plane setting (ADR-038 point 4, V63)
+
+Spec gate of TASK/V63 (researcher, 2026-11-18). At 32 planes ADR-038 is the contract
+(EmuTOS has no path above 16 planes, `references/emutos/vdi/vdi_defs.h:22`); the
+16-plane text above is unchanged. The rules and the site list are in
+[`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting: the device pixel
+(ADR-038 point 4 and 11, V63)"; the part that concerns `v_clrwk`:
+
+- **The fill is a constant, not a pen**, as at 16 planes (EmuTOS `memset(v_bas_ad,
+  0xff, size)` under truecolor, `references/emutos/vdi/vdi_control.c:610-618`). At 32
+  planes the cleared pixel is `0xFFFFFFFF`, or `0x00FFFFFF`: the X byte is unused
+  (ADR-038 point 4, "`v_clrwk` may fill every byte `0xff`"), so both are conforming and the
+  developer may take either **[D]**.
+- **No change to the call.** `tos-api/src/vdi/workstation.rs:431@v_clrwk` calls
+  `clear_screen_word(0xFFFF)` under `planes() > 8` and the kernel writes
+  `rgb565_to_device(0xFFFF)` = `0xFFFFFFFF` (`kernel/src/vdi_backend.rs:558@clear_screen_word`,
+  `:200@word_to_device`) **[C]**: the unchanged path already is the first choice.
+- **What a program sees:** the display is white; every read ignores X (R5), so the cleared
+  screen reads as the pixel of a white pen, `0x00FFFFFF`, which is the pixel of pen 0 in the
+  default palette (V63: 5-bit-replicated white, `0xFF` per gun). At 16 planes it still reads
+  `0xFFFF`, not the pen-0 word `0xFFDF` (§ "NewTOS implementation notes").
+- Clip ignored, whole visible screen, no error path: unchanged.
+
+### Open points
+
+- Inferred: the two admissible cleared pixels are not told apart by any V63 read path
+  (`_raster.md` R3/R5); a raw read of the store is outside the contract of the X byte.
+- Out of scope: the 16-plane text of this file cites kernel line ranges that have since
+  moved ("Pi / BCM2711 binding", cache clean); not corrected here.
