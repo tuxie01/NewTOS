@@ -1,6 +1,6 @@
 # XBIOS23 — `Getrez` must report the correct code; today a fixed `TT_MEDIUM` (4)
 
-Status: IMPLEMENTED (2026-11-18) | Priority: P2 | Commit: self | Missing: tester run of bios-r1 case 87 on the branch kernel (EQUAL on falcontc) and the full XBIOS run (no new difference), boot selftest line
+Status: DONE (2026-11-18) | Priority: P2 | Commit: 8a6225eec | Receipt: XBIOS23-STATUS-DONE.MD
 
 Type: research (spec and ADR-017 amendment), then developer. Owner decision 2026-11-12 ("Müssen wir fixen das es
 korrekt ist": we have to fix it so it is correct), from the full XBIOS run
