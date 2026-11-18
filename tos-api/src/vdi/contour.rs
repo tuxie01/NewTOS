@@ -158,10 +158,13 @@ static QUEUE: SeedQueue = SeedQueue(UnsafeCell::new([Segment { y: EMPTY, xleft: 
 /// 16-pixel groups). Only an index outside the logical screen's store reads
 /// 0, where EmuTOS reads foreign memory (user decision B, TASK/V24;
 /// `docs/COMPATIBILITY.md`). `v_contourfill` reads inside its search
-/// bounds only, so the run-on never reaches it.
+/// bounds only, so the run-on never reaches it. At 32 planes the X byte of
+/// the store word is unused and masked off (`0x00FF_FFFF`, ADR-038 point 4,
+/// `_raster.md` R5): `v_get_pixel`, the seed and every span probe; at 16 unmasked.
 pub(super) fn pixelread(backend: &dyn RasterBackend, x: i16, y: i16) -> u16 {
     if backend.planes() > 8 {
-        backend.device_to_rgb565(backend.get_device_pixel_wrapped(x, y))
+        let px = backend.get_device_pixel_wrapped(x, y);
+        backend.device_to_rgb565(if backend.planes() == 32 { px & 0x00FF_FFFF } else { px })
     } else {
         // A palette backend reports PELs per `(x, y)` only; its store is
         // taken as `width` pixels per row, which is `v_lin_wr` of a planar
@@ -470,7 +473,7 @@ pub fn v_contourfill(pb: &Vdipb, vwk: &Vwk, backend: &dyn RasterBackend) {
         // equals any masked screen word and the fill draws nothing. The
         // asymmetry is observable on NewTOS as on a Falcon since the kernel
         // keeps `OVERLAY_BIT` in the device pixel's X byte (VDI-OVL-001,
-        // closed by V11/V12, 2026-09-21).
+        // closed by V11/V12, 2026-09-21). At 32 planes the seed read masks X (V63).
         (pixelread(backend, sx, sy), true)
     } else {
         // `>= numcolors` guard (silent no-op, `vdi_fill.c:976-977`).

@@ -22,13 +22,13 @@
 //! `0x0004_8007` = 2 in the allocate message, `docs/hardware/mailbox-
 //! framebuffer.md` §3c; since 2026-09-21 — before that no alpha-mode tag was
 //! sent and the byte's treatment rested on an undocumented default). The
-//! byte is owned by the VDI backend
-//! (`crate::vdi_backend`), which keeps the one bit of the 16-bit Falcon
-//! screen word that carries no colour there: `OVERLAY_BIT` (bit 5,
-//! EmuTOS `vdi/vdi_fill.c:26`), replicated into all eight X bits — `0xFF`
-//! when the word has the bit set, `0x00` when clear (V11/V12,
-//! 2026-09-21). Everything that writes this framebuffer outside the VDI
-//! packs its colours with [`rgb`], i.e. with the bit clear.
+//! byte is owned by the VDI backend (`crate::vdi_backend`). At 16 planes it
+//! keeps the one bit of the 16-bit Falcon screen word that carries no
+//! colour: `OVERLAY_BIT` (bit 5, EmuTOS `vdi/vdi_fill.c:26`), replicated into
+//! all eight X bits — `0xFF` set, `0x00` clear (V11/V12, 2026-09-21). At
+//! 32 planes the store word is the device pixel and X is unused: pens write
+//! 0, every VDI read masks it off (ADR-038 point 4, TASK/V63). Everything
+//! outside the VDI packs its colours with [`rgb`], i.e. with X = 0.
 
 /// Pack a plain RGB colour into the framebuffer pixel format: X = 0x00,
 /// the VDI overlay bit clear (see the module doc).
