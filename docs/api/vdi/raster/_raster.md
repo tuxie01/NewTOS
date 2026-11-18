@@ -1125,3 +1125,124 @@ a V65 item is `v_get_pixel`, and there the slice changes only the read mask unde
   uses the 16-bit seam and has no slice in V63-V66; the AES `tos-api/src/aes/menu.rs:2729@read_pixel`
   call reverse-maps through the palette (affected by V64's palette width).
 - **Not executed:** all "keep" verdicts are reading of the code, not a run.
+
+---
+
+## 32-plane setting: pens, and every place a pen becomes a pixel (ADR-038 point 4, V64)
+
+Spec gate of TASK/V64 (researcher, 2026-11-18). **Contract source:** ADR-038 in
+`docs/MEMORY.md` (points 4 and 11); at 32 planes the ADR is the contract, the oracle
+cannot decide (ADR-038 point 12). Each rule below names the EmuTOS 16-plane rule it
+generalises. Labels: **[C]** read in the source cited, **[I]** inferred, **[D]** ADR-038
+design choice, **[calc]** computed in this run by arithmetic over the formula (not a
+run of the kernel). The pixel word, X byte, clear value and read mask are V63's
+(section "32-plane setting: the device pixel" above, R1-R6); the memory-MFDB forms and
+the answer shape of `v_get_pixel` are V65.
+
+### 1. The 16-plane path, which this slice does not touch (ADR-038 point 11)
+
+| What | EmuTOS (16 planes) | NewTOS (stays as it is under `planes() == 16`) |
+|---|---|---|
+| pen to 5-bit gun, `(c*31+500)/1000` | `vdi2fivebits`, `references/emutos/vdi/vdi_col.c:588-591` [C] | `tos-api/src/vdi/vwk.rs:239@vdi2fivebits`; `kernel/src/vdi_backend.rs:161@vdi2fivebits` |
+| pen to pseudo-palette word `(r<<11)\|(g<<6)\|b` | `set_color16`, `references/emutos/vdi/vdi_col.c:601-614` [C] | `tos-api/src/vdi/vwk.rs:256@set_color16`, `:262@pack_color16`; `kernel/src/vdi_backend.rs:168@pack555` |
+| `vs_color` truecolor path | `vs_color16`, `references/emutos/vdi/vdi_col.c:620-649`, selected by `TRUECOLOR_MODE` at `:661-666` [C] | `tos-api/src/vdi/attributes.rs:492@vs_color` |
+| 5-bit gun to `vq_color` value `((c&0x1f)*1000+16)/31` | `fivebits2vdi`, `references/emutos/vdi/vdi_col.c:804-807` [C] | `tos-api/src/vdi/vwk.rs:246@fivebits2vdi`, `:273@actual16` |
+| `vq_color` truecolor path | `vq_color16`, `references/emutos/vdi/vdi_col.c:813-838`, selected at `:862-868`, after the range check `:854-860` [C] | `tos-api/src/vdi/inquiry.rs:93@vq_color` |
+| per-workstation seed of the tables | `init_wk`, `references/emutos/vdi/vdi_control.c:354-363` (`l < 255`) [C] | `tos-api/src/vdi/workstation.rs:250@planes` |
+
+At 16 planes every line of the right column keeps its behaviour: the 5-bit functions
+are not edited, only a 32-plane branch is added beside them **[I]**. The truecolor gate
+`planes() > 8` stays true at 32 (ADR-038 point 3; `references/emutos/vdi/vdi_defs.h:22`),
+so the 32-plane rule is selected by `planes() == 32` inside that branch, as V63's
+rule R6 does for the masks.
+
+### 2. The rules at 32 planes
+
+| # | Rule | EmuTOS rule it generalises | ADR-038 |
+|---|---|---|---|
+| P1 | **`vs_color` request.** Index range, silent no-op outside `0 <= idx < numcolors` (256), is unchanged. The request `(INTIN[1..3])` is stored **raw and unclamped** in the calling workstation's `req_col`; only the copy that makes the pixel is clamped to 0..1000. | `vs_color16` stores `*intin` into `req_col` before the clamp, `references/emutos/vdi/vdi_col.c:634-646` [C] | point 4 ("last-requested values") |
+| P2 | **Quantisation.** `q = (c * 255 + 500) / 1000` per gun, `c` clamped to 0..1000, integer (truncating) division. [calc] `q(0) = 0`, `q(1000) = 255`, `q(1) = 0`, `q(2) = 1`, `q(500) = 128`, `q(999) = 255`; `q` is monotone non-decreasing over 0..1000. | `divu(col*31+500, 1000)`, `references/emutos/vdi/vdi_col.c:588-591` [C], with 255 for 31 | point 4 **[I]** in the ADR |
+| P3 | **The pen's pixel** is `0x00RRGGBB` with `R = q(r)`, `G = q(g)`, `B = q(b)`; X = 0 (V63 R2). There is no green LSB and no overlay position: all 24 bits are colour. | `(r<<11)\|(g<<6)\|b`, bit 5 never set, `references/emutos/vdi/vdi_col.c:613` and the comment at `:599` [C] | point 4 |
+| P4 | **`vq_color`, "set" value (`INTIN[1] == 0`).** The last-requested triple of the calling workstation, raw and unclamped, exactly as at 16 (a request of `-50, 1500, 0` comes back unchanged). Range check as today: an index outside 0..255 gives `INTOUT[0] = -1` and `INTOUT[1..3] = 0`. | `vq_color16` flag 0, `references/emutos/vdi/vdi_col.c:821-826` [C]; range check `:854-860` [C] | point 4 |
+| P5 | **`vq_color`, "realised" value (`INTIN[1] != 0`).** Per gun `a = (q * 1000 + 127) / 255`, `q` the gun byte of the pen's stored pixel. [calc] `a(0) = 0`, `a(255) = 1000`, `a(1) = 4`, `a(128) = 502`, `a(254) = 996`; `q(a(q)) = q` for every `q` 0..255; `\|a(q(c)) - c\| <= 2` for every `c` 0..1000. | `fivebits2vdi`, `references/emutos/vdi/vdi_col.c:804-807`, and the read at `:832-837` [C] | point 4 **[I]** |
+| P6 | **The default palette at 32 planes.** The 256 pens, their default *requested* triples (VDI 0..1000) and the default pen set are those of 16 planes: pens 0..15 `VIDEL_PALETTE1`, pens 16..255 `VIDEL_PALETTE2` (`kernel/src/vdi_backend.rs:56@VIDEL_PALETTE1`, `:70@VIDEL_PALETTE2`, seeded `:236@ensure_palette_init`), verbatim EmuTOS `videl_palette1`/`videl_palette2` (`references/emutos/vdi/vdi_col.c:130-199`) [C]. Each workstation copies them at open and builds the pens of 0..254 from them, **pen 255 left at pixel 0** (`tos-api/src/vdi/workstation.rs:250@planes`, EmuTOS `l < 255`, `references/emutos/vdi/vdi_control.c:360`) [C]. The pixel of a default pen is `q` of the triple: pen 0 `0x00FFFFFF`, pen 1 `0x00000000`, pen 2 `0x00FF0000`, pen 8 (733) `0x00BBBBBB`, pen 9 (533) `0x00888888`, pen 10 (667,0,0) `0x00AA0000` [calc]. | `init_wk` seeding, `references/emutos/vdi/vdi_control.c:354-363` [C] | point 3 ("the 256 pens, their default values and the default pen set stay") |
+| P7 | **Default pens are exactly representable.** Every component of the 256 default triples is one of the 16 values 0, 67, 133, 200, 267, 333, 400, 467, 533, 600, 667, 733, 800, 867, 933, 1000, and [calc] `a(q(c)) = c` for each. So at 32 planes `vq_color(flag != 0)` of an untouched pen equals its flag 0 answer, pen 255 included (requested `(0,0,0)`, pixel 0). At 16 planes it does not (`a5(q5(67)) = 65`, `a5(q5(133)) = 129`, ...) [calc]. | the 16-plane values are the existing behaviour | point 4 |
+| P8 | **Which workstation.** A draw resolves a pen through the *drawing* workstation's table (`tos-api/src/vdi/mod.rs:497@set_active_palette`); `vq_color` and `vs_color` read and write the *calling* workstation's own table; the flood-fill search colour for a pen index reads the *physical* workstation's table (F3 below). All three as at 16. | `references/emutos/vdi/vdi_line.c:459-460`; `vdi_col.c:620-649,813-838`; `vdi_fill.c:978-985` [C] | point 4 |
+| P9 | **Against 16 planes (acceptance (ii)).** Project a 32-plane pen pixel to 16 bits by the top 5 bits of each gun (`kernel/src/vdi_backend.rs:213@device_to_word`). [calc] For every request `c` 0..1000, `\|(c*31+500)/1000 - ((c*255+500)/1000 >> 3)\| <= 1`; the maximum 1 occurs (`c = 17`: 1 against 0). Compared as 8-bit values, a 16-plane pen pixel (5-bit replicated) and the 32-plane one differ by at most 5 [calc]. The overlay bit (word bit 5) is not a gun and differs on a cleared screen by V63's design (R5/R6): compare guns, not words. | none (own design) | point 13 (ii) |
+
+### 3. Where a pen index becomes a device pixel: the change set
+
+Verdict: **V64** = this slice edits it; **V65** = another slice; **decide** = no slice
+is named for it (Open points).
+
+| Site | Today (read, not run) | At 32 planes | Slice |
+|---|---|---|---|
+| `tos-api/src/vdi/vwk.rs:219@palette` `VwkExt.palette: [u16; 256]` | 5-bit pseudo-palette word per pen | must hold the 24-bit pen pixel (or three gun bytes); the width is the developer's | V64 |
+| `tos-api/src/vdi/vwk.rs:239@vdi2fivebits`, `:246@fivebits2vdi`, `:256@set_color16`, `:262@pack_color16`, `:273@actual16`, free `:287@pack_color16` | 5-bit quantise / pack / read back | 8-bit counterparts per P2, P3, P5; the 16-plane ones stay | V64 |
+| `tos-api/src/vdi/attributes.rs:492@vs_color` | raw into `req_col`, clamped copy into `set_color16` | P1 | V64 |
+| `tos-api/src/vdi/inquiry.rs:93@vq_color` | flag 0 `req_col`, flag != 0 `actual16` | P4, P5 | V64 |
+| `tos-api/src/vdi/workstation.rs:250@planes` `init_wk` seed | `set_color16` for pens 0..254 from `query_color` | seed with the 8-bit rule, pen 255 stays 0 (P6) | V64 |
+| `tos-api/src/vdi/backend.rs:126@set_active_palette` (`&[u16; 256]`) and its caller `tos-api/src/vdi/mod.rs:497@set_active_palette` | hands the drawing workstation's table to the backend before each op | the signature cannot carry 8-bit pens; six test doubles implement it too (`tos-api/src/vdi/contour.rs:587@set_active_palette`, `tos-api/src/vdi/raster.rs:1801@set_active_palette`, `tos-api/src/vdi/text.rs:1520@set_active_palette`, `tos-api/src/aes/window.rs:6546@set_active_palette`, `:6908@set_active_palette`, `tos-api/src/aes/menu.rs:2815@set_active_palette`) | V64 |
+| `kernel/src/vdi_backend.rs:145@ACTIVE_PALETTE` (`AtomicU16`), `:236@ensure_palette_init`, `:161@vdi2fivebits`, `:168@pack555` | active table and lazily seeded default, 5-bit | 8-bit pen pixels, same defaults (P6) | V64 |
+| `kernel/src/vdi_backend.rs:282@pel_to_rgb` (every fill, line, text, mark path) | `word_to_device(ACTIVE_PALETTE[pen])` (5-bit guns replicated) | the pen's stored pixel, X = 0 | V64 |
+| `kernel/src/vdi_backend.rs:469@set_color` (device-global `REQ_COL` and `ACTIVE_PALETTE`) | `pack555` | only caller: the palette-mode branch of `vs_color` (`tos-api/src/vdi/attributes.rs:521@set_color`), unreachable at `planes() > 8`; keep the two tables consistent | V64 |
+| `kernel/src/vdi_backend.rs:485@query_color`, `:153@REQ_COL` (10 bits per gun, `r<<20\|g<<10\|b`) | requested triples, 0..1000 | **no change** (a request needs no more than 10 bits) | none |
+| `kernel/src/vdi_backend.rs:531@read_pixel` and trait `tos-api/src/vdi/backend.rs:177@read_pixel` | masks the pixel to 24 bits, then the nearest active pen by squared RGB distance, first minimum wins (`d < best_d`) | compare against the 24-bit pen pixels; same tie rule | V64 ("follows the pens", TASK/V64.md) |
+| `tos-api/src/vdi/contour.rs:164@pixelread`, `:202@search_color`, `:255@color`, `:477@pixelread`, `:492@palette` | `u16` words | section 4 | V64 |
+| `tos-api/src/vdi/escape.rs:234@word` (VT52 cell colours: `phys.ext.palette[...]`) with `:257@cell_xfer` and the 16-bit row writer | the console's two colours are 16-bit pseudo-palette words | at 32 the cell colour is a pen's pixel and `ext.palette` is no longer a `u16` table, so this site must change or break | **decide** |
+| `kernel/src/vdi_backend.rs:501@pel_to_device16` and its user `tos-api/src/vdi/raster.rs:671@pel_to_device16` (`vrt_cpyfm` into a memory MFDB) | the pen as a 16-bit memory word | the pen's 32-bit pixel as a memory pixel; the value comes from V64 | V65 |
+| `tos-api/src/aes/resource.rs:3075@live` (`CiconDevice` palette built by `pack_color16`) | colour-icon device form from 16-bit pen words | follows the MFDB form of ADR-038 point 10 | V65 |
+| `tos-api/src/aes/menu.rs:2729@read_pixel` (`selftest_menu_sr_residue`), `kernel/src/selftest_raster.rs:38@read_pixel` | background compare through the reverse map | only self-tests; no production caller found by grep | none |
+| `v_clrwk` (`kernel/src/vdi_backend.rs:558@clear_screen_word`), `xor_pixel` | constants / bitwise, no pen | V63 | V63 |
+
+**Pixel to pen.** EmuTOS has none in truecolor: `v_get_pixel` answers `INTOUT[0] = 0`,
+`INTOUT[1] =` the word, and `REV_MAP_COL` is used only on the palette path
+(`references/emutos/vdi/vdi_fill.c:1104-1114`) [C]. So at 16 and 32 planes `v_get_pixel`
+returns no pen index; the only reverse map is `read_pixel` above, reached at more than
+8 planes only by the self-tests (grep over `tos-api/src`, `kernel/src`, `programs`).
+The flood fill's search colour does not use it either (section 4).
+
+### 4. Flood fill at 32 planes (the items moved from V63)
+
+Sites: `tos-api/src/vdi/contour.rs:164@pixelread`, `:202@search_color`, `:255@color`,
+`:477@pixelread`, `:492@palette`. EmuTOS reference: `pixelread` `references/emutos/vdi/vdi_fill.c:671-681`,
+`end_pts16` `:746-767`, `contourfill` `:948-1070` [C].
+
+| # | Rule at 32 planes | At 16 planes (unchanged) |
+|---|---|---|
+| F1 | `pixelread` returns the **masked 24-bit pixel** `store & 0x00FFFFFF` as a 32-bit value; no 16-bit projection on this path. This is V63 R5 with the width widened. | the 16-bit word, whole (`vdi_fill.c:671-681`), `u16` |
+| F2 | The compare in `end_pts`/`search_to_*` is **equality of those 24-bit values**. The `& !OVERLAY_BIT` of `tos-api/src/vdi/contour.rs:255@color` (`OVERLAY_BIT = 0x0020`, `:80@OVERLAY_BIT`) **must not be applied**: in a 24-bit pixel `0x20` is a bit of blue, and masking it would make two pens that differ only in blue bit 5 compare equal **[I]**. | the mask stays (`vdi_fill.c:709,733,755`) |
+| F3 | `search_color`: for `INTIN[0] < 0` the masked pixel at the seed (`pixelread`, V63 R5); for a pen `INTIN[0] >= 0` the **pen's pixel `0x00RRGGBB` from the physical workstation's table** (`MAP_COL` folded, `tos-api/src/vdi/contour.rs:492@palette`); `INTIN[0] >= numcolors` and a seed outside the clip stay silent no-ops. | `phys_work.ext->palette[search_color]`, `vdi_fill.c:978-985`; guards `:965-967,976-977` [C] |
+| F4 | The span draw is unchanged: pen `fill_color` through `pel_to_rgb`. The queue sentinels (`EMPTY = 0xFFFF`, `DOWN_FLAG = 0x8000`, `tos-api/src/vdi/contour.rs:85@EMPTY`) are `y` values of the seed queue, not pixels, and stay 16-bit (`vdi_fill.c:29-30`). | same |
+| F5 | `v_get_pixel` in V64 keeps the interim of V63 (`_color-pixel-input.md`): `INTOUT[0] = 0`, `INTOUT[1] =` the 16-bit projection (P9) of the masked pixel, now computed from the 24-bit value. The final shape (high word, low word) is V65's **[I]**. | `INTOUT[0] = 0`, `INTOUT[1] = pel` (`vdi_fill.c:1104-1110`) |
+
+**Test pens for "stops at a pen that differs only in the low 3 bits of a gun" [calc].**
+Requests `(17, 0, 0)` and `(25, 0, 0)` give the same 16-plane word (5-bit red 1 for both:
+`(17*31+500)/1000 = 1`, `(25*31+500)/1000 = 1`), so at 16 planes the two pens are one
+colour; at 32 planes the pixels are `0x00040000` and `0x00060000` (`q(17) = 4`, `q(25) = 6`),
+which differ in bits 0..2 of red only. A boundary fill with the first pen as boundary
+(`INTIN[0] = pen`) and the second as the interior, or a fill-while-same
+(`INTIN[0] = -1`) over a region of the first pen bordered by the second, separates them
+at 32 planes and does not at 16.
+
+### Open points
+
+- **Question (V64 or other slice): VT52 console colours.** `tos-api/src/vdi/escape.rs:234@word`
+  reads `phys.ext.palette[...]` as a 16-bit word and writes it through the 16-bit row seam
+  (`tos-api/src/vdi/escape.rs:257@cell_xfer`). It is a pen-to-pixel site, so changing
+  `VwkExt.palette` breaks it, but no ticket V63-V66 names it (V63's section 4 lists it as "not
+  named"). My reading: V64 carries the colour source (the 8-bit pen pixel), V65 the row writer.
+  Needs the lead's decision.
+- **Inferred:** P2/P5 are ADR-038's own formulas, labelled **[I]** by the ADR. The `+127` of
+  P5 is `floor(255/2)`; EmuTOS's `+16` is `ceil(31/2)`; fVDI's cited line
+  (`references/fvdi/fvdi/drivers/aranym/palette.c:195`) uses `1 << (bits-1)` = 128. [calc] `+127`
+  and `+128` give identical results for every `q` 0..255, so the contract is the same either way.
+- **Inferred:** F2 (the overlay-bit mask must not run on a 24-bit pixel) and F5 (the interim
+  `v_get_pixel` answer stays in V64) are my readings of ADR-038 point 4 and of V63's split;
+  the lead confirms F5 (the alternative is to move ADR-038 point 7 into V64).
+- **Not executed:** every "today" column is reading of the code; every **[calc]** is arithmetic
+  over the formulas, not a run of NewTOS. Nothing was measured; at 32 planes the oracle cannot
+  measure.
+- **Not traced:** whether any XBIOS palette call (`Setcolor`, `Setpalette`, `VsetRGB`) reaches the
+  VDI palette; the grep over `tos-api/src`, `kernel/src` and `programs` found no caller of
+  `RasterBackend::set_color` other than `vs_color`'s palette branch.

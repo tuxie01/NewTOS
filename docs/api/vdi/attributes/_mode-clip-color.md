@@ -205,3 +205,23 @@ setters, is stricter in the *other* direction: it returns **1** (pen 1, not
   **raw** request so `vq_color` round-trips exactly like EmuTOS.
 - Clip bounds come from the device's `xres`/`yres` (`vwk->device`), not a
   global — multi-screen safe (ADR-011).
+
+## 32-plane setting: `vs_color` (ADR-038 point 4, V64)
+
+Spec gate of TASK/V64 (researcher, 2026-11-18). Everything above is the 16-plane contract
+and stays. At 32 planes ADR-038 is the contract; the rules P1-P9, the default palette and
+the full change set are in [`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting:
+pens, and every place a pen becomes a pixel (ADR-038 point 4, V64)". For `vs_color`:
+
+- The index check (`0 <= colnum < numcolors`, silent no-op outside) and the raw, unclamped
+  store of the request in the calling workstation's `req_col` are the 16-plane rule
+  (`references/emutos/vdi/vdi_col.c:634-646`).
+- The clamped copy (0..1000) becomes the pen's pixel `0x00RRGGBB` with `q = (c * 255 + 500) / 1000`
+  per gun (ADR-038 point 4, the EmuTOS rule `vdi_col.c:588-591` with 255 for 31).
+- The 16-plane path (`vs_color16`, `references/emutos/vdi/vdi_col.c:620-649`; NewTOS
+  `tos-api/src/vdi/attributes.rs:492@vs_color`) is not changed.
+
+### Open points
+
+- Inferred: the formula is ADR-038's own ([I] there); see the Open points of the section in `_raster.md`.
+

@@ -408,3 +408,20 @@ the 16-plane contract and is unchanged. Rules R1-R6 and the site list:
 
 - Inferred: the seed read is masked at 32 planes, unlike EmuTOS at 16
   (`references/emutos/vdi/vdi_fill.c:972`); see `_raster.md` Open points.
+
+## 32-plane setting: flood-fill compare width (ADR-038 point 4, V64)
+
+Spec gate of TASK/V64 (researcher, 2026-11-18). Rules F1-F5 and the test pens are in
+[`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting: pens, and every place a pen
+becomes a pixel (ADR-038 point 4, V64)", section 4. In short, at 32 planes:
+
+- `pixelread` returns the masked 24-bit pixel as a 32-bit value; the compare in
+  `end_pts`/`search_to_*` is equality of 24-bit pixels; the `OVERLAY_BIT` mask
+  (`tos-api/src/vdi/contour.rs:255@color`) is not applied, because `0x20` is a blue bit there.
+- `search_color` is the masked seed pixel (`INTIN[0] < 0`) or the pen's `0x00RRGGBB` from the
+  *physical* workstation's table (`references/emutos/vdi/vdi_fill.c:978-985`).
+- At 16 planes all of it stays as above (`u16` words, overlay bit masked on the screen side).
+
+### Open points
+
+- Inferred: F2, the overlay mask not running on a 24-bit pixel (`_raster.md`).

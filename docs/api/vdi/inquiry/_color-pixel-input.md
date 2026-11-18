@@ -279,3 +279,24 @@ is the 16-plane contract and is unchanged. Rules and sites:
 ### Open points
 
 - Inferred: the interim answer above; the lead may move ADR-038 point 7 into V63.
+
+## 32-plane setting: `vq_color` and `v_get_pixel` (ADR-038 point 4, V64)
+
+Spec gate of TASK/V64 (researcher, 2026-11-18). Rules P1-P9, the default palette and the
+change set: [`../raster/_raster.md`](../raster/_raster.md) § "32-plane setting: pens, and every
+place a pen becomes a pixel (ADR-038 point 4, V64)". For the two calls here:
+
+- **`vq_color`, flag 0 ("set").** The last-requested triple of the calling workstation, raw
+  and unclamped, as at 16 planes (`references/emutos/vdi/vdi_col.c:821-826`). The range check
+  (`INTOUT[0] = -1`, `INTOUT[1..3] = 0`, `vdi_col.c:854-860`) is unchanged.
+- **`vq_color`, flag != 0 ("realised").** Per gun `(q * 1000 + 127) / 255`, `q` the gun byte
+  of the pen's stored pixel (ADR-038 point 4, the EmuTOS rule `vdi_col.c:804-807` with 255 for
+  31). At 32 planes every default pen reads back as requested (P7); at 16 planes the 5-bit
+  rule stays (`tos-api/src/vdi/inquiry.rs:93@vq_color`, `tos-api/src/vdi/vwk.rs:246@fivebits2vdi`).
+- **`v_get_pixel`.** No pen index at more than 8 planes in EmuTOS (`vdi_fill.c:1104-1114`) and
+  none here. In V64 the interim of V63 stays (`INTOUT[0] = 0`, `INTOUT[1] =` the 16-bit
+  projection of the masked 24-bit pixel); the wide answer is V65's.
+
+### Open points
+
+- Inferred: the interim `v_get_pixel` answer stays in V64 (the lead confirms; `_raster.md` F5).
