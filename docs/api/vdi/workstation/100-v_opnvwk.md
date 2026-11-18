@@ -558,17 +558,18 @@ EmuTOS stays the contract and nothing in this file above changes. Labels:
 ### 2. `planes()` becomes a boot-time value
 
 Today the constant 16 is held in three independent places (ADR-038 Context;
-`docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1). V62 makes each follow the
-setting:
+`docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1). V62 makes two of them follow
+the setting (backend `planes()`, EdDI per §4); `CHUNKY_PLANES` follows with V65:
 
 | Place | Today | At the setting |
 |---|---|---|
 | kernel raster backend `RasterBackend::planes()` (`kernel/src/vdi_backend.rs:44@PLANES`, trait method `kernel/src/vdi_backend.rs:465@planes`) | `PLANES = 16` | 16 or 32 [C: ADR-038 point 3] |
-| `tos-api` raster, `CHUNKY_PLANES` (`tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES`): the stamp of `device_mem` (`:213@CHUNKY_PLANES`) and the plane cap of `vro_cpyfm`/`vrt_cpyfm` (`:560@CHUNKY_PLANES`, `:821@CHUNKY_PLANES`) | 16 | the setting's depth (ADR-038 point 5: "the cap is raised to the setting's depth"); the EmuTOS rule it generalises is `plane_ct <= 16` (`references/emutos/vdi/vdi_raster.c:963`, under `CONF_WITH_VDI_16BIT`, on in the default config `references/emutos/include/config.h:62-63`) [C] |
+| `tos-api` raster, `CHUNKY_PLANES` (`tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES`): the stamp of `device_mem` (`:213@CHUNKY_PLANES`) and the plane cap of `vro_cpyfm`/`vrt_cpyfm` (`:560@CHUNKY_PLANES`, `:821@CHUNKY_PLANES`) | 16 | **V62: stays 16 at both settings. V65: follows the setting's depth** (ADR-038 point 5: "the cap is raised to the setting's depth"; EmuTOS rule generalised: `plane_ct <= 16`, `references/emutos/vdi/vdi_raster.c:963`, under `CONF_WITH_VDI_16BIT`, on in the default config `references/emutos/include/config.h:62-63`) [C]. **Reason (verified in code):** a memory MFDB's row is `fd_wdwidth * fd_nplanes` WORDs (`mem_stride_px`, `tos-api/src/vdi/raster.rs:231@mem_stride_px`), and `device_mem` builds the AES save-buffer MFDB with `nplanes = CHUNKY_PLANES` (`tos-api/src/vdi/raster.rs:213@CHUNKY_PLANES`, used by `bb_save`/`bb_restore`/`blit_device_mem`, `:1324@bb_save`, `:1340@bb_restore`, `:1369@blit_device_mem`). The buffers are sized `bb_save_words(w, h) = mem_wdwidth(w) * 8 * h` `u32` words, i.e. `wdwidth * 16` 16-bit words per row (`tos-api/src/vdi/raster.rs:1296@bb_save_words`; `gsx_mcalc`, `tos-api/src/aes/gsxif.rs:354-359@bb_save_words`). Stamping 32 doubles the row stride over those 16-bit buffers; V65 changes the buffers to 32-bit together with the cap (ADR-038 points 5 and 10) **[I: derived from the lines read, not run]** |
 | EdDI, `DEVICE_PLANES` (`tos-api/src/vdi/eddi.rs:52@DEVICE_PLANES`) and its gate (`tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`) | 16 | see §4 |
 
 V63-V67 own the drawing, MFDB, pen and AES changes that follow; what V62 does to
-a 32-plane boot is limited to the answers of §3 and the three constants.
+a 32-plane boot is limited to the answers of §3 and the backend constant
+(`CHUNKY_PLANES` stays 16, so the MFDB copy paths keep their 16-plane behaviour).
 
 ### 3. Values V62 must produce
 
