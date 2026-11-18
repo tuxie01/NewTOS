@@ -288,6 +288,7 @@ extern "C" fn kernel_main_rust(dtb_phys: usize, entry_el: u64) -> ! {
     let mdlimit = boot_switch(dtb, bootargs::Setting::Default, |args: &[u8]| {
         bootargs::numeric_setting(args, bootargs::MDLIMIT, u32::MAX)
     });
+    apply_vdi_planes(boot_switch(dtb, bootargs::Setting::Default, bootargs::vdi_planes)); // V62
     // INPUT01: where the keyboard/mouse pump runs. Default: also from the
     // timer interrupt while a program runs at EL0 (pointer motion only);
     // `input=aes` keeps it in the trap-side pump sites only (the behaviour
@@ -1363,3 +1364,31 @@ pub mod raster_line;
 /// The frame tick: EmuTOS' VBL pointer redraw `vb_draw`, once per frame of
 /// the `Vsync` frame clock (TASK/V55).
 pub mod vbl;
+
+/// V62: set the VDI device depth from the boot argument `vdiplanes=<16|32>`
+/// (ADR-038 point 2; `docs/api/vdi/workstation/100-v_opnvwk.md`, section
+/// "32-plane setting"). Absent: 16, and no boot line, so a boot without the
+/// argument prints what it printed before. Given: that depth, with a line.
+/// Invalid (not 16 or 32): 16, with a line in the wording of the `mdlimit`
+/// line ([`bring_up_bdos_pools`]). Called by `kernel_main_rust` right after
+/// `mdlimit`, before `init_framebuffer` and `host_env::install` publish the
+/// backend, so no `planes()` answer precedes it.
+fn apply_vdi_planes(setting: bootargs::Setting) {
+    let planes = match setting {
+        // `vdi_planes` gives `Given` only for 16 and 32.
+        bootargs::Setting::Given(n) => {
+            let n = n as u16;
+            kprintln!("[vdi] VDI depth: {} planes (vdiplanes={}, boot argument)", n, n);
+            n
+        }
+        bootargs::Setting::Default => bootargs::VDI_PLANES_DEFAULT,
+        bootargs::Setting::Invalid => {
+            kprintln!(
+                "[vdi] VDI depth: {} planes (vdiplanes: INVALID boot argument ignored, default)",
+                bootargs::VDI_PLANES_DEFAULT
+            );
+            bootargs::VDI_PLANES_DEFAULT
+        }
+    };
+    vdi_backend::set_planes(planes);
+}

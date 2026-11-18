@@ -326,8 +326,9 @@ pub fn vq_extnd(pb: &Vdipb, vwk: &crate::vdi::vwk::Vwk, backend: &dyn RasterBack
         // Video lookup table present: 0 for truecolor (v_planes==16) or a
         // mono monitor, 1 otherwise (vdi_control.c:211-213). The colour-only
         // framebuffer never reports MON_MONO, so this reduces to the
-        // truecolor test.
-        inq[5] = if planes == 16 { 0 } else { 1 };
+        // truecolor test; NewTOS's 32-plane setting has no table either
+        // (ADR-038 point 3, `docs/api/vdi/workstation/102-vq_extnd.md`, V62).
+        inq[5] = if planes == 16 || planes == 32 { 0 } else { 1 };
         inq[19] = i16::from(vwk.clip); // live clip flag
         for (i, &v) in inq.iter().enumerate() {
             pb.set_intout(i, v);

@@ -40,8 +40,8 @@ const NUM_COLORS: u16 = 256;
 /// (`vdi_control.c:210`). Under Falcon truecolor this is **16**
 /// (`bios/videl.c:320-341`, `get_videl_bpp` SPS_HICOLOR → 16), *not*
 /// `log2(NUM_COLORS)` — the two only coincide in the palette modes
-/// (`vdi/vdi_defs.h:22`, `TRUECOLOR_MODE (v_planes > 8)`).
-const PLANES: u16 = 16;
+/// (`vdi/vdi_defs.h:22`, `TRUECOLOR_MODE (v_planes > 8)`). V62: 16, or 32 by [`set_planes`].
+static PLANES: AtomicU16 = AtomicU16::new(crate::bootargs::VDI_PLANES_DEFAULT);
 
 /// EmuTOS' `videl_palette1` (`vdi/vdi_col.c:130-136`): the Falcon default
 /// palette for pens 0..15, as VDI `(r, g, b)` triples in the 0..=1000
@@ -463,7 +463,7 @@ impl RasterBackend for VdiScreen {
     }
 
     fn planes(&self) -> u16 {
-        PLANES
+        PLANES.load(Ordering::Relaxed)
     }
 
     fn set_color(&self, index: u16, r: u16, g: u16, b: u16) {
@@ -1113,4 +1113,18 @@ fn kernel_surface(fb: &dyn Framebuffer) -> raster_kernel::Surface {
 #[inline]
 fn kernel_area(x0: i32, y0: i32, x1: i32, y1: i32) -> raster_kernel::Area {
     raster_kernel::Area { x: x0 as usize, y: y0 as usize, w: (x1 - x0 + 1) as usize, h: (y1 - y0 + 1) as usize }
+}
+
+/// Set the VDI device depth (`v_planes`, [`PLANES`]) for the rest of the boot
+/// (TASK/V62, ADR-038 point 2): `planes` is 16 or 32, decided from the boot
+/// arguments by [`crate::bootargs::vdi_planes`]. Called once by
+/// `kernel_main_rust` before `init_framebuffer`, so no
+/// [`RasterBackend::planes`] answer is read before it. Only the answers follow
+/// the setting in V62; the device pixel stays the 16-bit word of ADR-024 until
+/// TASK/V63-V67.
+pub fn set_planes(planes: u16) {
+    debug_assert!(
+        planes == crate::bootargs::VDI_PLANES_DEFAULT || planes == crate::bootargs::VDI_PLANES_WIDE
+    );
+    PLANES.store(planes, Ordering::Relaxed);
 }

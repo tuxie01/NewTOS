@@ -1569,7 +1569,7 @@ build_vwk_chain	vdi/vdi_control.c	-	-	design:ADR-030@docs/MEMORY.md:2909	links t
 get_vwk_by_handle	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	resolve	mapped	handle range check and table lookup; NewTOS also checks the slot's in_use flag
 init_wk	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	fills the Vwk from INTIN[1..10] and DEV_TAB/SIZ_TAB into INTOUT/PTSOUT; no mouse init (that is v_opnwk's vdimouse_init only, V53)
 update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	init_wk	mapped	DEV_TAB[0,1,3,4,13,35,39] and the INQ_TAB patches are built inline in init_wk and vq_extnd; BYTES_LIN/v_lin_wr/mcs_ptr are line-A planar state with no NewTOS counterpart
-update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	same DEV_TAB/INQ_TAB patches recomputed per call (INQ_TAB[4] = planes, [5] = 0 for 16 planes)
+update_rez_dependent	vdi/vdi_control.c	tos-api/src/vdi/workstation.rs	vq_extnd	mapped	same DEV_TAB/INQ_TAB patches recomputed per call (INQ_TAB[4] = planes, [5] = 0 for 16 planes and for the 32-plane setting of ADR-038, V62)
 validate_color_index	vdi/vdi_control.c	tos-api/src/vdi/vwk.rs	validate_color_index	mapped	out-of-range index becomes pen 1; EmuTOS applies MAP_COL afterwards, NewTOS folds it to identity
 vdi_vs_clip	vdi/vdi_control.c	tos-api/src/vdi/attributes.rs	vs_clip	mapped	opcode 129
 vdi_vswr_mode	vdi/vdi_control.c	tos-api/src/vdi/attributes.rs	vswr_mode	mapped	opcode 32

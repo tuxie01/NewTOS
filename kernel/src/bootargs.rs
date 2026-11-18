@@ -147,6 +147,40 @@ pub fn has_token(args: &[u8], token: &[u8]) -> bool {
         .any(|t| t == token)
 }
 
+/// The VDI device depth (TASK/V62, ADR-038 point 2): `vdiplanes=<16|32>`,
+/// the plane count `v_planes` the VDI and AES report (`vq_extnd`
+/// `INQ_TAB[4]`, `ap_planes`). Absent = [`VDI_PLANES_DEFAULT`]; every other
+/// value is [`Setting::Invalid`] and keeps the default, with a boot line
+/// ([`vdi_planes`]). A boot argument like [`MDLIMIT`], not a call: a
+/// program cannot change the depth, and there is no run-time switch.
+/// Specification: `docs/api/vdi/workstation/100-v_opnvwk.md`, section
+/// "32-plane setting and the boot argument `vdiplanes`".
+pub const VDIPLANES: &[u8] = b"vdiplanes=";
+
+/// The default VDI depth: 16 planes, the Falcon truecolor workstation of
+/// ADR-024.
+pub const VDI_PLANES_DEFAULT: u16 = 16;
+
+/// The second VDI depth: 32 planes over the 32-bpp store (ADR-038 point 1).
+pub const VDI_PLANES_WIDE: u16 = 32;
+
+/// What the boot arguments say about the VDI depth ([`VDIPLANES`]).
+///
+/// [`numeric_setting`] with the prefix `vdiplanes=`; of the numbers it
+/// accepts only 16 and 32 are depths ([`VDI_PLANES_DEFAULT`],
+/// [`VDI_PLANES_WIDE`]), so every other number is [`Setting::Invalid`] as
+/// well (ADR-038 point 2: "any other value counts as `Setting::Invalid`").
+/// `Given(n)` therefore always holds 16 or 32.
+pub fn vdi_planes(args: &[u8]) -> Setting {
+    match numeric_setting(args, VDIPLANES, u32::from(VDI_PLANES_WIDE)) {
+        Setting::Given(n) if n == u32::from(VDI_PLANES_DEFAULT) || n == u32::from(VDI_PLANES_WIDE) => {
+            Setting::Given(n)
+        }
+        Setting::Given(_) => Setting::Invalid,
+        other => other,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -273,5 +307,34 @@ mod tests {
     fn stops_at_the_first_nul() {
         assert!(has_token(b"serial=on\0garbage", SERIAL_ON));
         assert!(!has_token(b"quiet\0serial=on", SERIAL_ON));
+    }
+
+    /// The result table of `docs/api/vdi/workstation/100-v_opnvwk.md`
+    /// ("32-plane setting", §1): absent = `Default`, 16 and 32 are
+    /// `Given`, everything else is `Invalid` (TASK/V62, ADR-038 point 2).
+    #[test]
+    fn vdiplanes_accepts_16_and_32_only() {
+        assert_eq!(vdi_planes(b"serial=on memprot=on"), Setting::Default);
+        assert_eq!(vdi_planes(b""), Setting::Default);
+        assert_eq!(vdi_planes(b"vdiplanes=16"), Setting::Given(16));
+        assert_eq!(vdi_planes(b"serial=on vdiplanes=32\r\n"), Setting::Given(32));
+        // Not a number.
+        assert_eq!(vdi_planes(b"vdiplanes="), Setting::Invalid);
+        assert_eq!(vdi_planes(b"vdiplanes=abc"), Setting::Invalid);
+        assert_eq!(vdi_planes(b"vdiplanes=32x"), Setting::Invalid);
+        assert_eq!(vdi_planes(b"vdiplanes=-16"), Setting::Invalid);
+        // A number, but not a depth: below and above 32 alike.
+        for bad in [&b"vdiplanes=0"[..], b"vdiplanes=1", b"vdiplanes=4", b"vdiplanes=8", b"vdiplanes=15",
+            b"vdiplanes=24", b"vdiplanes=31", b"vdiplanes=33", b"vdiplanes=64", b"vdiplanes=99999999999"]
+        {
+            assert_eq!(vdi_planes(bad), Setting::Invalid, "{}", core::str::from_utf8(bad).unwrap());
+        }
+        // Leading zeros are digits (`numeric_setting`): 032 is 32.
+        assert_eq!(vdi_planes(b"vdiplanes=032"), Setting::Given(32));
+        // The first token decides; another prefix is not this one.
+        assert_eq!(vdi_planes(b"vdiplanes=32 vdiplanes=16"), Setting::Given(32));
+        assert_eq!(vdi_planes(b"vdiplanes=8 vdiplanes=32"), Setting::Invalid);
+        assert_eq!(vdi_planes(b"xvdiplanes=32"), Setting::Default);
+        assert_eq!(vdi_planes(b"quiet\0vdiplanes=32"), Setting::Default);
     }
 }
