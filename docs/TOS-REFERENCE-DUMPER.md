@@ -1296,6 +1296,160 @@ dumps `sp..sp+20` on entry shows all six as `lrwabs` receives them:
 `measurements/measurement-2026-10-28-tool08/RUNINFO.TXT`, which has the probe
 (a copy of `tools/hatari-oracle.sh`, the script itself is unchanged).
 
+### The 32-plane setting: tosdump at `vdiplanes=32` (added 2026-11-18, V69 spec gate)
+
+Spec gate of `TASK/V69.md` (researcher, 2026-11-18); ADR-038 point 13 (iii) and (iv). **Nothing in this section is built.**
+Labels: **[C]** read in the source cited, **[I]** inferred, **[D]** a proposal the developer may change if the result keeps the
+stated properties, **[calc]** arithmetic over a formula of the landed specs. The contract is ADR-038 (`docs/MEMORY.md`) and the
+32-plane sections of `docs/api/vdi/raster/_raster.md` (V63 R1-R6, V64 P1-P9, V65 sections 2-6, V67 I1-I11) and
+`docs/api/vdi/eddi-vq_scrninfo-32.md`; EmuTOS has no 32-plane path (`references/emutos/vdi/vdi_defs.h:22`), so **no value below is
+an oracle value**: every 32-plane table, dump, reference and report is labelled "NewTOS contract", never "oracle" (ADR-038 point 13).
+
+**How a run at 32 is started.** `cargo xtask tosdump <dumper> <table> --out <dir> --bootargs vdiplanes=32` (TASK/V68.md,
+`tools/xtask/src/tosdump.rs:301@bootargs`): the QEMU `-append` is `serial=on vdiplanes=32`, the default run is unchanged. The
+dumper opens its workstation after the depth is fixed at boot (ADR-038 point 2).
+
+#### What stays as it is (the 16-plane regression bar)
+
+The 16-plane tables stay oracle tables, compared against `tosdump/reference/EMUTOS-1a7484ab-*` unchanged. The properties that keep
+that true **[D]**:
+
+1. **Gate by declaration.** A table is a *32-plane table* ("wide") if and only if it declares `!screen <TAB> w,h,32`. Every other
+   table parses with today's rules: `!screen` planes 1..16, `fd_nplanes` 1..16, the bound `fd_h * fd_wdwidth * 16 <= 512`, the
+   readback of `INTOUT[1]` only. Nothing of the wide mode is reachable from an existing file; the table CRC is over the raw file
+   bytes (`tosdump/core/cases.h`, `td_rast_case_table.crc`), so no existing table's CRC changes and the frozen references stay valid.
+2. **Own area for the wide record.** A wide table's dump has header area 7 (name `VDI-RASTER32`) and its own record size (below);
+   area 6 and its 3696-byte record are untouched. The comparator already refuses two dumps whose area or record size differ
+   (section 3, "File header"), so a 16-plane reference and a 32-plane run can never be compared by mistake.
+3. **The dumper's declared-depth check stays.** `tosdump/core/dumprast.c:128@planes` refuses the whole run when the workstation's
+   plane count differs from the table's `!screen` planes. It needs **no change**: a 16-plane table at 32 still refuses (what V66/V67
+   recorded as "exit 1", not a defect), a 32-plane table at 16 refuses likewise.
+4. **The gate of the change is the V66/V67 method:** run the nine VDI and raster tables plus `aes-r1` and `bios-r1` before and after the change, default
+   and `vdiplanes=16`, and require identical "X of Y cases differ" lines, identical tosdiff report texts, and payload bytes identical
+   past the 32-byte header (`measurements/measurement-2026-11-18-v67-test/RUNINFO.TXT` item 6 did exactly this).
+
+#### A.1 Where tosdump caps at or assumes 16 planes: the change-set
+
+| # | Site (anchor) | What it assumes today | What it needs at 32 |
+|---|---|---|---|
+| 1 | `tosdump/core/cases.c:2547@planes` (`parse_rast_directive`, message `:2548`) | `!screen` planes `1..16` | accept `1..16` as today **and** exactly `32`; set a `wide` flag on `struct td_rast_screen` (`tosdump/core/cases.h:654@td_rast_screen`) |
+| 2 | `tosdump/core/cases.c:2176@nplanes` (`parse_mfdb`) | `fd_nplanes > 16` refused ("past the plane cap the VDI itself applies, `vdi_raster.c:963`") | in a wide table `1..32` (so a 16-plane or 12-plane memory form can be written as a **refusal case**, section A.2); in a non-wide table unchanged |
+| 3 | `tosdump/core/cases.c:2191@TD_RAST_BUF_WORDS` (the geometry bound `fd_h * fd_wdwidth * 16L`) | one WORD per pixel bounds both machines' readings (planar `fd_nplanes <= 16` words per 16 pixels, chunky 16-bit 1 word) | wide: a 32-plane pixel is 2 WORDs, so the bound is `fd_h * fd_wdwidth * 32 <= 1024` (the wide buffer) |
+| 4 | `tosdump/core/cases.c:2257@capped` (comment in `check_copy_rects`, `vr_trnfm`): "fd_nplanes is capped at 16 ... the transformed form fits either buffer by construction" | the transform writes `fd_nplanes` planes of `fd_h * fd_wdwidth` words | wide: `vr_trnfm` at 32 planes moves `planesize * 32` words = `fd_h * fd_wdwidth * 32`, which the item-3 bound covers; update the comment, no new code [I] |
+| 5 | `tosdump/core/cases.c:2369@TD_RAST_READ_W` and `tosdump/core/cases.h:641@TD_RAST_READ_W` | readback rectangle at most 32 x 16 pixels, one WORD each (512 words) | wide: the same 32 x 16 pixels, **two** WORDs each (1024 words), see "The wide record and the readback" below |
+| 6 | `tosdump/core/runner_rast.c:119@run_readback` (`:137@pre_intout`: `buf_b[r*32 + col] = pre_intout[1]`) | stores `INTOUT[1]` only; the comment (`:112-118`) says the word is the 16-bit screen word | wide: store `INTOUT[0]` and `INTOUT[1]` (high word, low word, ADR-038 point 7) |
+| 7 | `tosdump/core/tosdump.h:277@TD_RAST_BUF_WORDS` (512) and `:283@TD_RAST_RECORD_SIZE` (3696), offsets `:290-299` | two buffers of 512 WORDs, record 3696 bytes | a second constant set for the wide record: buffers of 1024 WORDs, record **5744** bytes, `BUF_A` at 1636, `BUF_B` at 3684, reserved at 5732 [calc]; the 16-plane constants stay |
+| 8 | `tosdump/core/record.h:116@buf_a` (`struct td_raster_arrays`) | `int16_t buf_a[512]`, `buf_b[512]` | a wide frame type with 1024-word buffers, or a union sized for the larger; `td_rast_fill` (`tosdump/core/runner_rast.c:190@td_rast_fill`) already takes the word count |
+| 9 | `tosdump/core/record.c:477@buf_a` (`td_raster_record_write`), `:569@buf_a` (`td_raster_fields`), `:110@td_area_record_size`, `:122@td_area_name`, `:574@td_area_fields` | area 6 only | a wide writer, a wide field table (`buf_a`/`buf_b` 1024 WORDs), area 7 in the three switches |
+| 10 | `tosdump/core/dumprast.c:37@records` (static `TD_RAST_MAX_CASES * TD_RAST_RECORD_SIZE`) and `:139@bytes`, `td_dump_write(... TD_AREA_RASTER ...)` | one record size | size for the larger (64 x 5744 = 367 616 bytes against 236 544 [calc]); area and record size chosen by the table's wide flag |
+| 11 | `tosdump/core/tosdump.h:247@RGB565` (comment "NewTOS stores every memory MFDB as one 16-bit RGB565 word") and `tosdump/core/cases.h:563@Sixteen` (guard 3 and the `CONF_WITH_VDI_16BIT` plane limit) | text | text only: say "at the 16-plane setting" |
+| 12 | `tosdump/host/tosdiff.c:617@kept_pairs`, `:736@is_call_area` (area switches), `tosdump/host/casecheck.c`, `tosdump/host/layoutcheck.c`, `tosdump/Makefile` | areas 1-6 | area 7: the `contrl_mfdb` kept pair, the layout check of the wide record, the host case check accepting a wide table |
+| 13 | `tools/xtask/src/tosdump.rs:105@Dumper` (`DUMPRAST.NAP`, area `"RASTER"`) | one raster area name | the output file name and the reference matching must carry the wide area; **to be read by the developer**: not read beyond the dumper table in this gate |
+| 14 | tests: `tosdump/tests/test_cases_rast.c:139@REJECT`, `:305@screen`, `:370@GEOMETRY` (the 17-plane refusals), `tosdump/tests/test_runner_rast.c:27@TD_RAST_BUF_WORDS`, `tosdump/tests/test_record.c:726@TD_RAST_OFF_BUF_A` | pin the 16 cap and 512 buffers | keep them (non-wide stays) and add the wide counterparts: `!screen ...,32` accepted, `...,17` and `...,33` still refused, bound at 1024, readback pairs, record offsets |
+| 15 | probes: `tosdump/probes/icprobe.c:185@fd_nplanes`, `tosdump/probes/vdprobe.c:164@fd_nplanes`, `tosdump/probes/wkprobe.c:189@fd_nplanes` | `grab()` copies the screen into a 16-plane memory MFDB | section A.3 (icprobe is named by the ticket; vdprobe and wkprobe have the identical `grab`, `uint16_t rbuf`, and stay 16-plane until someone asks) |
+| 16 | `tosdump/core/scrninfo.c` (`SCRNINFO.NAP`) | already reads the 32-plane device form (comment `:220` "largest device form is 32 planes") | nothing; it ran at both depths in V66 |
+
+Not a cap, listed so nobody looks for it: `tosdump/core/runner_rast.c:142@td_rast_planes` reads `INTOUT[4]` of `vq_extnd(1)` and is right at
+both depths; `td_reset_vdi` in `tosdump/core/runner.c` has no depth term [C].
+
+#### A.2 Which tables can run at 32, and what they expect
+
+"Runs at 32" = the dumper completes (no refusal by its own guard); V66 and V67 recorded every table below completing at 32 with no EXC/PANIC
+(`measurements/measurement-2026-11-18-v67-test/RUNINFO.TXT` item 6; V68 for `bios-r1`). "Differs at 32" counts are the V66/V67
+`tosdiff` counts of the NewTOS-32 run against the falcontc reference: **measured, informational**; per-case content was not kept (the scratch
+dumps are gone), so the per-case column is a reading of the table, not of a dump.
+
+| Table | Dumper | Cases | 16-plane role (unchanged) | At 32 |
+|---|---|---|---|---|
+| `vdi-raster-screen.tsv` (falcontc) | raster | 67 lines, `!screen 640,480,16` | the main raster oracle table | **refuses** (declares 16). A 32-plane **twin `vdi-raster-screen32.tsv`** [D], `!screen 640,480,32`, derived line by line: every `16` MFDB column becomes `32`, buffers sized to the wide form, expected words below. Labelled NewTOS contract |
+| `vdi-raster.tsv` (memory only) | raster | 63 lines | oracle table; 26 lines are 16/16 memory forms, the rest planar 1/2/4/8 | **runs, informational**: the planar lines are depth-independent (V65 section 2) and expected equal to the NewTOS 16-plane run; the 16/16 lines are **refusals** at 32 (O5): destination, `INTOUT`, `PTSOUT` untouched, `fd_stand` unwritten. A 32-plane twin `vdi-raster32.tsv` [D] re-states the 16/16 group at 32 and adds the refusal group |
+| `vdi-v18-raster.tsv`, `vdi-v18-t2-raster.tsv` | raster | 17, 26 | V18 oracle tables; the second holds 16/16, 12/12, 9/9, 15/15 plane forms | **runs, informational**: 1..8 planes as at 16, 9..31 planes refused (inferred, `_raster.md` V65 question 1), 16 planes refused. Their 32-plane twins are folded into `vdi-raster32.tsv` [D] |
+| `vdi-a131-palette.tsv` | vdi | 50 lines (16 pens x requested, realised, pixel, plus preludes) | oracle table | **runs**; use it **as it is** as a NewTOS-contract table at 32 (no twin): the 16 "requested" cases equal the 16-plane answer; the 16 "realised" cases equal the request (P7); the 16 pixel cases answer `{R, GGBB}` of the pen list below. 23 of 48 differ against the Falcon reference at 32 (V66), consistent with 16 pixel cases plus 7 realised cases [I] |
+| `vdi-all.tsv` (and its older splits `vdi-r1.tsv`, `vdi-r2.tsv`, `vdi-r3.tsv`) | vdi | 185 | oracle table | **runs, informational**: 6 of 182 differ against falcontc at 32 (V66). By opcode the candidates are `vq_extnd 1` (102, `INTOUT[4]` = 32), `v_get_pixel` (105, lines 54, 160, 161, 270, 272 of the table) and `vq_color` realised (26); which six is a reading, not a dump: the developer's first step is to list them from a run [I] |
+| `vdi-v18.tsv`, `vdi-v18-t2.tsv`, `vdi-v18-t3.tsv` | vdi | 26, 38, 3 | `v_get_pixel` and attribute scenes | **runs, informational**: 11 / 5 / 1 differ (V66); the `v_get_pixel` answers change shape by ADR-038 point 7 |
+| `aes-r1.tsv` and the other AES tables | aes | 95 ... | oracle | **runs**; the only depth term is `ap_planes` = 32 (ADR-038 points 3 and 10; V66 recorded it) |
+| `bios-r1.tsv`, `xbios-*.tsv`, `gemdos-*.tsv`, `jar-r1.tsv`, `super-r1.tsv`, `bios-r2*.tsv` | bios | many | oracle | depth-independent: `bios-r1.tsv` measured 0 of 147 differ between default and 32 (V68). The others were not run at 32 [I] |
+
+**Tables that make no sense at 32 and stay 16-plane only:** `vdi-raster-screen.tsv` (declares 16), the 16-plane memory-form lines of
+`vdi-raster.tsv`, `vdi-v18-raster.tsv`, `vdi-v18-t2-raster.tsv` as oracle content, and the probes' 16-plane `grab()` (A.3). They keep their
+role at the default setting; at 32 they are informational runs whose differences are classified, never counted as failures.
+
+**The expected values at 32, "NewTOS contract"** (all from the landed specs; no run produced them):
+
+| What | At 32 | Source |
+|---|---|---|
+| `vq_extnd(1)` `INTOUT[4]`, `[5]`; `DEV_TAB[13]`, `[35]`, `[39]` | 32; 0; 256, 1, 0 | ADR-038 point 3 |
+| pen pixel, quantisation | `0x00RRGGBB`, each gun `q = (c * 255 + 500) / 1000` | `_raster.md` V64 P2, P3 |
+| default pens 0..15, pixel | 0 `FFFFFF`, 1 `000000`, 2 `FF0000`, 3 `00FF00`, 4 `0000FF`, 5 `00FFFF`, 6 `FFFF00`, 7 `FF00FF`, 8 `BBBBBB`, 9 `888888`, 10 `AA0000`, 11 `00AA00`, 12 `0000AA`, 13 `00AAAA`, 14 `AAAA00`, 15 `AA00AA`; pen 16 `FFFFFF`, pen 255 `000000` | `videl_palette1`/`2` triples (`references/emutos/vdi/vdi_col.c:129-135`) through P2 [calc]: 667 -> 170 = `AA`, 733 -> 187 = `BB`, 533 -> 136 = `88`; V64 P6 (pen 255 left at 0) |
+| `vq_color` flag 0 | the last request, raw, unclamped | V64 P4 |
+| `vq_color` flag 1 | `(q * 1000 + 127) / 255` per gun; for the 256 default pens equal to the request | V64 P5, P7 [calc]: `a(170) = 667`, `a(187) = 733`, `a(136) = 533`, `a(255) = 1000` |
+| `v_get_pixel` | `INTOUT[0]` = `0x00RR` (high word of the masked 24-bit pixel), `INTOUT[1]` = `0xGGBB`; X masked | V65 section 6 (ADR-038 point 7); a cleared screen answers `{0x00FF, 0xFFFF}`, the same as pen 0 (R5) |
+| memory pixel (device form) | `fd_stand = 0`, 32-bit native-endian `0xXXRRGGBB`, row `fd_wdwidth * 16` pixels; on AArch64 the WORD array holds each pixel as **low word, high word** | V65 section 3 |
+| logic ops, memory | bitwise on all 32 bits (X included), `ALL_WHITE` 0, `ALL_BLACK` `0xFFFFFFFF`, `D_ONLY` nothing | V63 R4, V65 section 3 |
+| `vrt_cpyfm` to a 32-plane memory form | the pen's `0x00RRGGBB` for set bits (`MD_REPLACE`: and the background pen for clear bits; `MD_TRANS`: set bits only; `MD_XOR`: complement of the destination, 32 bits; `MD_ERASE`: clear bits only) | V65 section 4 |
+| `vr_trnfm` at 32 | plane `p` holds bit `31 - p`; `planesize * 32` words; in place; `fd_stand` of the destination not written; identity round trip bit for bit | V65 section 5 |
+| refusals at 32 | a memory form of 9..31 planes (16 included), or of more than 32: silent no-op, destination, `INTOUT`, `PTSOUT` and `fd_stand` untouched; for `vr_trnfm` the 9..31 no-op is **inferred** (V65 question 2) | V65 section 2 (ADR-038 point 5, O5) |
+| `vq_scrninfo` | the 273-word table of ADR-038 point 8 | `docs/api/vdi/eddi-vq_scrninfo-32.md`; `SCRNINFO.NAP` already checks it |
+| `ap_planes` | 32 | ADR-038 points 3, 10 |
+
+**A rule for every 32-plane raster case that touches the screen [D].** X of an unpainted screen pixel is implementation-defined
+(`v_clrwk` may fill `0xFF` or `0x00FFFFFF`, V63 R3), and a raw `Screen -> Memory` copy carries it (V65 section 3): "a test never asserts X".
+So a case whose source is the screen must **paint the source rectangle first** with a prelude pen (a pen writes X = 0, R2) or read the
+result back through `v_get_pixel` (which masks); a memory result whose X depends on an unpainted pixel must not be a case. Memory-to-memory
+cases are exact in all 32 bits (the fill pattern included). Without this rule a frozen 32-plane dump would pin one implementation's X.
+
+#### The wide record and the readback [D]
+
+- Area 7, record 5744 bytes, field layout of the 3696-byte record up to `INTOUT`/`PTSOUT`/MFDBs (offsets 0..1635 identical), then `buf_a` and `buf_b`
+  of 1024 WORDs, 12 reserved bytes. Header format version stays 3. The pointer-width/word-order row of `tosdump/profiles.tsv` is the NewTOS row
+  (`xtask-tosdump`: 8, 2): only NewTOS writes a wide dump.
+- Fill: `td_rast_fill(buf, 1024, seed)` unchanged in rule (a pure function of seed and index); a 32-bit pixel is the pair of words `(2k, 2k+1)`.
+- **Readback (wide):** for the pixel `(row, col)` of the rectangle, `buf_b[2 * (row * 32 + col)] = INTOUT[0]` (high word) and `[+1] = INTOUT[1]` (low word),
+  the order the VDI answers in, independent of the machine's WORD order. 32 x 16 pixels fill the 1024 words. A readback may not name buffer B (unchanged rule).
+- Check of the wide mode against the contract: the dump is **a regression baseline, not an expectation**. An expectation needs the
+  values of the table above laid beside each case; the proposal [D] is a small host script in the style of `tosdump/probes/gcprobe-trace-check.py`
+  (expected words in the table's header comment, computed from the formulas, compared with the recorded words), and the frozen baseline
+  (`tosdump/reference/NEWTOS32-<build>-<AREA>-<table>.BIN`, never `EMUTOS-`) only after that script passes.
+- **Where "NewTOS contract" is written [D]:** (a) the first comment line of every wide table; (b) one `td_log` line of the dumper when a wide table runs
+  ("table declares a 32-plane screen: NewTOS contract (ADR-038), no oracle"); (c) the baseline's name prefix `NEWTOS32-`; (d) area 7's name in the header.
+
+#### A.3 The wide variant of `icprobe.c` and of the 16-bit readback (from the V67 gate)
+
+`tosdump/probes/icprobe.c` records a G_CICON from `rsrc_load` to the screen as BIG-ENDIAN WORD rows (`ICPR`, version 1,
+`tosdump/probes/icprobe.c:48@VERSION`). The 16-bit places:
+
+| Place | 16-plane | Wide (32) variant [D] |
+|---|---|---|
+| `grab()` (`tosdump/probes/icprobe.c:176@grab`): `static uint16_t rbuf[RB_MAXW * RB_MAXH]` (`:166@rbuf`, 614 400 bytes), `mem_mfdb.fd_nplanes = 16` (`:185@fd_nplanes`) | `vro_cpyfm S_ONLY` screen to a 16-plane form, row `fd_wdwidth * 16` words | read `vq_extnd(1)` `INTOUT[4]` once; at 32: a 32-plane form, `rbuf` 1 228 800 bytes (`uint32_t[640*480]`), row `fd_wdwidth * 16` pixels; the record's pixel is the **masked** `0x00RRGGBB` (X is never recorded) as two WORDs, high then low |
+| the `I<t>.<o>` / `S<t>.<o>` cases (`:264@rec_words`, `:268@rec_words`): `rec_words(c->col_data, w, h)` reads `w * h` WORDs | the 16-plane device form, one WORD per pixel | at 32 `col_data` holds `w * h` 32-bit pixels (V67 I6, I8); read `w * h` 32-bit values and record each as (high, low) |
+| the row buffer `wbuf[2048]` (`:127@wbuf`) | `2 * w` bytes per row, at most 1280 at 640 wide | **overrun** at 32: a 640-pixel row is 2560 bytes. The wide variant must grow `wbuf` to at least `4 * RB_MAXW` (the `T` cases take `w` up to 640) |
+| `PENS` (`:211@pens`), `M<t>.<o>` | 6 WORDs and 1-plane mask rows | unchanged |
+| `tosdump/probes/icprobe-compare.py` (`:29@words`: `struct.unpack(">%dH", w*h)`; `:43@px`: RGB565 PNG) | words, RGB565 | read the file version (header bytes 4-5, `VERSION 2` for wide), 2 WORDs per pixel for `I`, `S`, `T` cases; PNG from 24 bits |
+
+Two properties of the wide variant **[D]**:
+
+1. **No oracle for it.** At 32 only NewTOS runs the probe; the compare script has no second side. What it can check is the **index rule of V67 I3**
+   against a 16-plane run of the same resource: each 32-bit pixel of an `I` or `S` case must be the 8-bit quantisation `q(c)` per gun of the
+   requested triple (the `PENS` case, flag 0) of a pen whose 5-bit quantisation equals the 16-bit word recorded at the same position in the 16-plane run
+   (set membership, no tolerance: the default pens are exactly representable, V64 P7). That compares the 32-plane icon form with the oracle's through the
+   palette, not through bytes.
+2. **The `T` cases (the drawn tree read back)** are checked by the same membership rule against the 16-plane run; V67 measured the same top 5 bits and a
+   largest step of 4 for AES pen colours, so equality of the 5-bit projection is the weaker, cheaper check.
+
+The same `grab()` shape is in `tosdump/probes/vdprobe.c:164@fd_nplanes` and `tosdump/probes/wkprobe.c:189@fd_nplanes`; they stay 16-plane
+probes (their reference is Hatari's Falcon at 16), and a wide variant of either is a separate ticket if wanted.
+
+#### Open points (this section)
+
+STOP-blocks:
+
+1. `tools/xtask/src/tosdump.rs` was read only at the dumper table (`:105`) and the `--bootargs` code: whether the output file name `RASTER.BIN`, the `--reference` check and the report need to know area 7 is not read. Needed before change-set row 13 is final.
+2. Which six of `vdi-all.tsv`'s 182 cases, and which seven realised cases of `vdi-a131-palette.tsv`, differ at 32 is **not known per case** (V66 recorded counts, the dumps are gone): the developer's first step is a run at 32 and a per-case list against the rules of the table above.
+
+Inferred: the 9..31-plane `vr_trnfm` no-op; the 5744-byte record and the 1024-word buffers (arithmetic; another split is allowed as long as the 16-plane record is untouched); the `NEWTOS32-` prefix and the log wording; the membership comparator of A.3.
+
+Out-of-scope observations: `tosdump/probes/vdprobe.c` and `wkprobe.c` copy `icprobe`'s `grab()`; the `wbuf[2048]` overrun at 32 applies to them if they are ever widened. The header table in section 3 ("File header") lists areas 1-6 only; area 7 is added when the record exists.
+
 ---
 
 ## 7. Programs to build
