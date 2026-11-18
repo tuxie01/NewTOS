@@ -280,3 +280,30 @@ derived from `num_colors` (16) "until a truecolor path is adopted" — the
 truecolor VDI is already the live model (`vdi_backend.rs:33,40`,
 `NUM_COLORS = 256` / `PLANES = 16`, distinct constants); see the "resolved
 2026-09-04" section above.
+
+---
+
+## 32-plane setting (ADR-038 point 3, V62)
+
+With the boot argument `vdiplanes=32` the mode-1 answer changes in exactly two
+words; at the default (no argument, `vdiplanes=16`) nothing above changes. The full
+value table with sources, the boot argument and the EdDI gate are in
+[`100-v_opnvwk`, "32-plane setting"](100-v_opnvwk.md#32-plane-setting-and-the-boot-argument-vdiplanes-adr-038-v62).
+
+| Word | 16 planes | 32 planes | Source |
+|---|---|---|---|
+| `INQ_TAB[4]` | 16 | **32** | `INQ_TAB[4] = v_planes` (`references/emutos/vdi/vdi_control.c:210`); `tos-api/src/vdi/workstation.rs:325@inq`; ADR-038 point 3 |
+| `INQ_TAB[5]` | 0 | **0** | EmuTOS writes 0 only for `v_planes == 16` or a mono monitor (`references/emutos/vdi/vdi_control.c:211-213`), which at 32 would give 1; ADR-038 point 3 fixes 0 **[D]**; the gate to change is `tos-api/src/vdi/workstation.rs:330@planes` |
+
+Mode 0 returns the `DEV_TAB` words `[13] = 256`, `[35] = 1`, `[39] = 0` at both
+depths (table in the file above). The spec text "`INQ_TAB[5]`: 0 if 16-plane" in
+the table above is the EmuTOS rule at 16 planes; the NewTOS rule is "0 for every
+truecolor depth (16 and 32)".
+
+### Open points
+
+- **Needs a decision:** `vq_scrninfo` (`CONTRL[5] == 1`, `INTIN[0] == 2`) between V62
+  and V66 at 32 planes; see "The EdDI gate" in `100-v_opnvwk.md`.
+- Inferred: that every other `INQ_TAB` word is independent of the depth (no source
+  read says otherwise: `INQ_TAB_ROM` is patched only at `[4]`, `[5]`, `[19]`,
+  `tos-api/src/vdi/workstation.rs:325@inq`).

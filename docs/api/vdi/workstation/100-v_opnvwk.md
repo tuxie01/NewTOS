@@ -503,3 +503,124 @@ previously said "the fixed 640×480 is only in the driver
 (framebuffer.rs:23-25)" — that constant pair no longer exists; the
 geometry is negotiated at boot (`AtomicU32` pair) and defaults to
 **1920×1080** on both boards (`kernel/src/drivers/mod.rs:31-33`).
+
+---
+
+## 32-plane setting and the boot argument `vdiplanes` (ADR-038, V62)
+
+Spec gate of TASK/V62 (researcher, 2026-11-18). **Contract source:** ADR-038 in
+`docs/MEMORY.md` (accepted 2026-11-18). EmuTOS has no path above 16 planes
+(`references/emutos/vdi/vdi_defs.h:22`, `TRUECOLOR_MODE = (v_planes > 8)`), so at
+32 planes the ADR is the contract, not EmuTOS (ADR-038 point 12). At 16 planes
+EmuTOS stays the contract and nothing in this file above changes. Labels:
+**[C]** read in the source cited, **[I]** inferred, **[D]** ADR-038 design choice
+(no EmuTOS value exists).
+
+### 1. The boot argument `vdiplanes=<16|32>`
+
+- **Where it is documented.** No single document lists the kernel's
+  `cmdline.txt` arguments **[C: searched `docs/`]**. The existing arguments are
+  described where they act: `mdlimit=` in `docs/COMPATIBILITY.md:1051` and
+  `docs/api/structures/md.md:282`, `serial=on` and `input=aes` in
+  `docs/api/gemdos/154-ssystem.md:411-412`, and the token constants with their
+  doc-comments in `kernel/src/bootargs.rs` (`MDLIMIT`, `kernel/src/bootargs.rs:94@MDLIMIT`).
+  This section is the specification of `vdiplanes=`.
+- **Syntax.** `vdiplanes=16` or `vdiplanes=32` as one blank-delimited token of
+  `cmdline.txt` (QEMU: `-append`). Token splitting, "first matching token
+  decides", digits only, no sign/unit are the behaviour of
+  `bootargs::numeric_setting` (`kernel/src/bootargs.rs:113@numeric_setting`):
+  `Setting::Default` when no token starts with the prefix, `Setting::Invalid` for
+  an empty or non-digit remainder or a value above `max`, else `Setting::Given(n)`
+  **[C]**. The prefix to pass is `vdiplanes=` (analogue of
+  `MDLIMIT = b"mdlimit="`, `kernel/src/bootargs.rs:94@MDLIMIT`) **[I]**.
+- **Reading.** Once at boot, through `boot_switch` as `mdlimit` and `input=aes`
+  are (`kernel/src/lib.rs:288@mdlimit`, `:296@input_aes`; ADR-038 point 2) **[C]**.
+  It must be decided before the first `planes()` answer is used by VDI/AES
+  **[I]**; the kernel order was not traced here (Open points).
+- **Result table.**
+
+| Boot text | `Setting` | Planes | Boot line |
+|---|---|---|---|
+| no `vdiplanes=` token | `Default` | **16** | none required |
+| `vdiplanes=16` | `Given(16)` | **16** | none required |
+| `vdiplanes=32` | `Given(32)` | **32** | none required |
+| `vdiplanes=` (empty), `vdiplanes=abc`, `vdiplanes=32x` | `Invalid` | **16** | yes (ADR-038 point 2) |
+| a number other than 16/32 (`8`, `0`, `24`, `64`, above `max`) | `Given(n)` or `Invalid` | **16** | yes: the caller must treat every value other than 16 and 32 as invalid **[I]**: `numeric_setting` only bounds the value by `max`, so with `max = 32` the values 0..31 other than 16 come back as `Given` |
+
+  The wording of the boot line is not fixed by ADR-038 or by any source; the
+  analogue is the `mdlimit` line (`kernel/src/lib.rs:954@Invalid`: "INVALID boot
+  argument ignored, default") **[C]**. The developer picks the text; a test
+  checks that a line naming `vdiplanes` appears **[I]**.
+- **Not a call.** A program cannot change the depth; there is no `Ssystem` mode
+  and no run-time switch (ADR-038 point 2; `shel_write(SHW_RESCHNG)` does not
+  switch). V62 adds no `Ssystem` mode (mode answers belong to V68).
+
+### 2. `planes()` becomes a boot-time value
+
+Today the constant 16 is held in three independent places (ADR-038 Context;
+`docs/analysis/vdi-32bit-scope-2026-11-18.md` §1.1). V62 makes each follow the
+setting:
+
+| Place | Today | At the setting |
+|---|---|---|
+| kernel raster backend `RasterBackend::planes()` (`kernel/src/vdi_backend.rs:44@PLANES`, trait method `kernel/src/vdi_backend.rs:465@planes`) | `PLANES = 16` | 16 or 32 [C: ADR-038 point 3] |
+| `tos-api` raster, `CHUNKY_PLANES` (`tos-api/src/vdi/raster.rs:85@CHUNKY_PLANES`): the stamp of `device_mem` (`:213@CHUNKY_PLANES`) and the plane cap of `vro_cpyfm`/`vrt_cpyfm` (`:560@CHUNKY_PLANES`, `:821@CHUNKY_PLANES`) | 16 | the setting's depth (ADR-038 point 5: "the cap is raised to the setting's depth"); the EmuTOS rule it generalises is `plane_ct <= 16` (`references/emutos/vdi/vdi_raster.c:963`, under `CONF_WITH_VDI_16BIT`, on in the default config `references/emutos/include/config.h:62-63`) [C] |
+| EdDI, `DEVICE_PLANES` (`tos-api/src/vdi/eddi.rs:52@DEVICE_PLANES`) and its gate (`tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`) | 16 | see §4 |
+
+V63-V67 own the drawing, MFDB, pen and AES changes that follow; what V62 does to
+a 32-plane boot is limited to the answers of §3 and the three constants.
+
+### 3. Values V62 must produce
+
+All other `DEV_TAB`/`INQ_TAB` words are unchanged. Each value with its source:
+
+| Word | At 16 planes | Source of the 16-plane value | At 32 planes | Source of the 32-plane value |
+|---|---|---|---|---|
+| `INQ_TAB[4]` (`vq_extnd` mode 1 `INTOUT[4]`) | 16 | EmuTOS `INQ_TAB[4] = v_planes` (`references/emutos/vdi/vdi_control.c:210`); NewTOS `tos-api/src/vdi/workstation.rs:325@inq` | **32** | same formula; ADR-038 point 3 |
+| `INQ_TAB[5]` video lookup table | 0 | EmuTOS `if ((v_planes == 16) \|\| (get_monitor_type() == MON_MONO)) INQ_TAB[5] = 0; else 1` (`references/emutos/vdi/vdi_control.c:211-213`) | **0** **[D]** | ADR-038 point 3: the EmuTOS `== 16` test cannot be taken literally at 32 (it would give 1, "LUT present"); fVDI's driver writes 0 for every depth (`references/fvdi/fvdi/drivers/aranym/spec.c:389`). The gate to change: `tos-api/src/vdi/workstation.rs:330@planes` (`inq[5] = if planes == 16 { 0 } else { 1 }`) |
+| `DEV_TAB[13]` simultaneous colours | 256 | `(v_planes<8) ? (1<<v_planes) : 256` (`references/emutos/vdi/vdi_control.c:206`); NewTOS fills it from `ncol = backend.num_colors()` (`tos-api/src/vdi/workstation.rs:229@dev`, `:313@dev`) | **256** | the same EmuTOS formula (`v_planes >= 8` gives 256); NewTOS `num_colors()` stays the 256 pens (ADR-038 point 3, ADR-024 point 2) |
+| `DEV_TAB[35]` colour capable | 1 | `(v_planes==1) ? 0 : 1` (`references/emutos/vdi/vdi_control.c:207`); NewTOS `tos-api/src/vdi/workstation.rs:230@dev` | **1** | same formula |
+| `DEV_TAB[39]` | 0 | `get_palette()` returns 0 for a Videl mode that is neither `VIDEL_COMPAT` nor 4 bpp (`references/emutos/bios/screen.c:838-846`); NewTOS `palette_precision` (`tos-api/src/vdi/workstation.rs:39@palette_precision`, used `:231@palette_precision`, `:315@palette_precision`) returns 4096 only for 4 planes, else 0 | **0** | ADR-038 point 3; `palette_precision(32)` is 0 by the existing function with no change [C: code reads `planes == 4`] |
+| `ap_planes` (`global[10]` after `appl_init`) | 16 | EmuTOS `ap_planes = gl_nplanes` (`references/emutos/aes/gemsuper.c:97`), `gl_nplanes = gsx_nplanes()` (`references/emutos/aes/gemgraf.c:395`), `gsx_nplanes()` returns `intout[4]` of `EXTENDED_INQUIRE` (`references/emutos/aes/gemgsxif.c:495-501`) | **32** | ADR-038 points 3 and 10; NewTOS `screen_planes()` already returns `planes()` (`tos-api/src/aes/appl.rs:369@screen_planes`), so it follows the backend [C] |
+
+Workstation-open path: both `init_wk` (`tos-api/src/vdi/workstation.rs:160@planes`,
+`dev[13]/[35]/[39]` at `:229-231`) and `vq_extnd` (`:302@planes`, `:313-315`) read
+`backend.planes()` fresh on each call, so the three words follow the backend with no
+other change **[C]**. The same `planes > 8` truecolor gates (`:250@planes`,
+`:431@planes`) hold at 32, the predicate being EmuTOS's own `v_planes > 8`
+(`references/emutos/vdi/vdi_defs.h:22`) **[C]**; this slice leaves them unchanged.
+`v_opnwk` and `v_opnvwk` return the same `DEV_TAB`/`SIZ_TAB` (this file); there is
+no separate workstation-open value set.
+
+### 4. The EdDI gate (`vq_extnd` with `CONTRL[5] == 1`, `INTIN[0] == 2`)
+
+The gate (`tos-api/src/vdi/eddi.rs:82@DEVICE_PLANES`) answers the 273-word table
+only when `backend.planes() == DEVICE_PLANES` (16) and otherwise lets the call fall
+through to plain `vq_extnd` (mode `INTIN[0] != 0`, so `INQ_TAB`) **[C]**. ADR-038
+point 8 gives the 32-plane table (values there) but belongs to V66
+(`TASK/V66.md` scope). So after V62 and before V66 a `vdiplanes=32` boot **answers
+the EdDI call with `INQ_TAB`** (the existing fall-through), unless V62 widens the
+gate; ADR-038 and the V62 ticket do not say which **[I]**; V62's receipt must state
+what a 32-plane boot shows (TASK/V62 acceptance). At 16 planes the table and the gate
+are unchanged.
+
+### 5. What V62 does not decide
+
+The drawing result at 32 planes, pens (V64), memory MFDB and `v_get_pixel` (V65),
+`vq_scrninfo` values (V66), AES save buffers (`tos-api/src/aes/gsxif.rs`) and the
+XBIOS words (V68) follow their own slices.
+
+### Open points
+
+- **Inferred:** the exact `numeric_setting` call for `vdiplanes=` (prefix, `max`) and
+  that every `Given(n)` other than 16/32 is treated as invalid (§1); no line of
+  ADR-038 spells the mapping out.
+- **Needs a decision (not a value V62 needs):** whether a 32-plane boot before V66
+  answers `vq_scrninfo` with the `INQ_TAB` fall-through or widens the gate (§4).
+  Both are consistent with ADR-038; V62's acceptance asks only that the receipt
+  says what the boot shows.
+- **Not traced:** the order inside `kernel/src/lib.rs` between reading the boot
+  arguments and the first `planes()` use (§1).
+- The text of the invalid-value boot line is not fixed by any source (§1).
+- Out of scope: `docs/api/vdi/eddi-vq_scrninfo.md` is German (CLAUDE.md language
+  rule); translated when it is next edited (V66).

@@ -434,6 +434,13 @@ inline) + `aes/gemaplib.c:54-63` (`ap_init` sets the flag and returns the pid).
   **NewTOS:** the raster backend's `planes()` (`screen_planes()`), matching
   VDI `INQ_TAB[4]`. This is not `log2(num_colors)`: the current truecolor
   backend has 16 planes but reports 256 logical colour pens.
+  **32-plane setting (ADR-038 points 3 and 10, V62):** with the boot argument
+  `vdiplanes=32` `ap_planes` = **32**; the code path is unchanged because
+  `screen_planes()` returns the backend's `planes()`
+  (`tos-api/src/aes/appl.rs:369@screen_planes`), and EmuTOS derives it the same
+  way (`references/emutos/aes/gemsuper.c:97`, `gemgraf.c:395`,
+  `gemgsxif.c:495-501`). At the default 16 it stays 16. Value table:
+  `docs/api/vdi/workstation/100-v_opnvwk.md`, section "32-plane setting".
 - `AP_3RESV`/`ap_3resv` (`global[11]`) = `&D` (address of the AES global area
   `THEGLO`, an internal pointer) — **NewTOS:** the AES process-descriptor table
   address (`tos-api::aes::pd::table_addr()`), the process-management core of our
@@ -1181,3 +1188,9 @@ returns are pid / 0 / 1 / -1 only.
   `_AESrscfile[i]` is dereferenced.
 - **`appl_tplay`/`appl_trecord`** are honest-unsupported until the input
   recorder exists (Rule 2), not stubbed.
+
+
+### Open points
+
+- `ap_planes` at 32 planes: no EmuTOS path exists above 16; the value is ADR-038's (inferred from the cited derivation chain, not measured).
+- The file-side `num_planes` of resources is the file's depth and is not changed (ADR-038 point 10).

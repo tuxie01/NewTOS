@@ -336,3 +336,17 @@ allocation and no free-handle scan; the physical handle is fixed).
   (`tos-api/src/vdi/mouse.rs`), and the frame clock instead.
 - **1080p later.** As in `v_opnvwk`, the geometry flows from the
   `RasterBackend`; a negotiated larger mode needs no VDI table change.
+
+---
+
+## 32-plane setting (ADR-038, V62)
+
+`v_opnwk` returns the same `DEV_TAB`/`SIZ_TAB` as `v_opnvwk`; with the boot argument
+`vdiplanes=32` the words that depend on the plane count are `DEV_TAB[13] = 256`,
+`[35] = 1`, `[39] = 0` (as at 16 planes), and `INQ_TAB[4] = 32` for the following
+`vq_extnd`. The table with the source of each value is
+[`100-v_opnvwk`, "32-plane setting"](100-v_opnvwk.md#32-plane-setting-and-the-boot-argument-vdiplanes-adr-038-v62).
+
+### Open points
+
+- None beyond those in `100-v_opnvwk.md` (the EdDI gate decision and the boot order).
