@@ -512,8 +512,8 @@ not seen). A session without an agent name counts as the lead.
 - Conformance with EmuTOS: tosdump cases against the oracle
   (`docs/analysis/ORACLE.md`).
 - A tosdump case table on NewTOS: `cargo xtask tosdump <dumper> <table.tsv>
-  --out <run dir> [--reference <BIN>]…` (`--tree`, `--disk`,
-  `--features bios-arg-trace`; TOOL09) — one call builds, boots QEMU
+  --out <run dir> [--reference <BIN>]…` (`--tree`, `--disk`, `--bootargs`,
+  `--features bios-arg-trace`; TOOL09, V68) — one call builds, boots QEMU
   raspi4b and compares; no per-run scripts.
 - Debug features (cargo features, off by default): with the feature off,
   the kernel's code and data bytes equal the build without the change,
