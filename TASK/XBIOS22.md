@@ -210,3 +210,22 @@ Still open for XBIOS22 before code: the exact `VsetMode` word (a), B1/B2 (b), th
 - Inferred: the oracle's `0x1C` came from NVRAM, not the built-in default (`bios/screen.c:491,529`).
 - Out of scope: EmuTOS's AES puts `VsetMode(-1)` into `intout[45]` of `v_opnwk` (`aes/gemgsxif.c:184`); NewTOS's
   `v_opnwk` answer there is not checked.
+
+## Owner decision 2026-11-18
+
+Answers to the lead's recommendations on spec step 2, after the lead explained that `VsetMode(-1)` is a query
+only (the configuration stays in `config.txt`) and that it goes together with `_VDO`.
+
+1. `VsetMode(-1)` answers `0x001C` ("ah ok dann setze das so um": ah ok, then build it like that). Every
+   `VsetMode(mode != -1)` keeps answering the function number.
+2. `VgetSize`: the byte count of the 32-bpp `Physbase` screen, option B1 ("ja gibt ja die größe zurück": yes, it
+   returns the size).
+3. `_VDO`: "mach es so das es am besten passt, man sollte vorher natürlich messen wie teradesk es z.b. erwartet"
+   (do it the way that fits best; of course one should measure first what e.g. TeraDesk expects). The lead reads
+   this as: build the recommended `0x00030000` (`VDO_FALCON`), and the value counts as decided only after the
+   tester measured TeraDesk's Falcon branch with it (the `vid-vdo` scenario of
+   `measurements/measurement-2026-10-29-arch06/method/`, repeated on the developer's commit). If TeraDesk shows a
+   wrong dialog state or an alert there, the branch does not land and the value comes back to the owner. The
+   ADR-012 amendment text of spec step 2 is applied in the implementing commit.
+4. `VgetSize` while no framebuffer is up (`Host::screen()` is `None`): the function number `0x5B`, EmuTOS's own
+   "no Videl" answer (lead's recommendation, covered by the owner's "setze das so um"; not answered separately).
