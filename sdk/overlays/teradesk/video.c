@@ -23,9 +23,9 @@
 
 /*
  * NewTOS overlay of TeraDesk's video.c (TASK/SDK07; vendored tree stays
- * pristine, per sdk/apps/build-teradesk.sh). The ONLY change vs. upstream is
- * the ST overscan (Lacescan) path, marked "NewTOS overlay, patch site SDK07":
- *
+ * pristine, per sdk/apps/build-teradesk.sh). Two changes vs. upstream: the V69
+ * plane-count clamp in voptions() (TASK/V69.md, reason at the site) and the ST
+ * overscan (Lacescan) path, marked "NewTOS overlay, patch site SDK07":
  *  - get_set_video(0), ST/STe branch: when _MCH == 0xFFFFFFFF (MCH_NOHARD,
  *    nohard.h) the OVER/Lace cookie probe is skipped and `over` is set to -1L,
  *    upstream's own "no overscan" marker. voptions() then leaves the Overscan
@@ -480,7 +480,7 @@ short voptions(void)
 	_WORD npmax;						/* max settable number of colour planes */
 	_WORD npmin;						/* min settable number of colour planes */
 	_WORD npp;							/* previous number of colour planes */
-	_WORD np = xd_nplanes;				/* number of colour planes: 1 to 16 */
+	_WORD np = (xd_nplanes > 16) ? 16 : xd_nplanes;	/* NewTOS overlay, patch site V69: 1 to 16; at vdiplanes=32 np indexed npc[] (17 entries) past its end and wrote "4194304K" into the 3-char VNCOL string */
 	bool editcol = FALSE;				/* permit editting number of colours */
 	bool qquit = FALSE;
 	XDINFO info;						/* video options dialog */

@@ -1,7 +1,13 @@
-# V69 — receipt (developer): part A, tosdump at 32 planes
+# V69 — receipt (developer): part A, tosdump at 32 planes; part B, TeraDesk and DEVIATIONS
 
 Role: developer
 Agent: a00b6a784b430f5d6
+Agent: a73782620fb31f6c0
+
+Two developers, one per part: `a00b6a784b430f5d6` wrote part A (sections up to "Out-of-scope observations" of part A),
+`a73782620fb31f6c0` part B (section "Part B" at the end). The header holds both as two `Agent:` lines: the tooling reads
+every `Agent:` line before the first `## ` (`header_fields`, `tools/xtask/src/tickets.rs:617@header_fields`), so `accept`
+refuses both as acceptor and `land`/`accept` clean both agent directories.
 
 Date 2026-11-18. Branch `v69` from `main` @ `06ef14f5b` (worktree `target-agents/agent-a00b6a784b430f5d6/wt`).
 Part A of TASK/V69.md only ("Spec gate ... two parts"): the tosdump instruments at the 32-plane setting, built as
@@ -233,3 +239,107 @@ are unchanged (verdicts and reports identical). Part B (the programs) waits for 
 - `tosdump/probes/vdprobe.c` and `wkprobe.c` keep their 16-plane `grab()` (as the gate says) and their `wbuf[2048]`.
 - `cargo xtask doc-check --fix-anchors` (TASK/TOOL49) is not in this tree's xtask ("unknown argument"); anchors were moved
   by hand from doc-check's "nearest occurrence".
+
+## Part B (developer `a73782620fb31f6c0`, 2026-11-19): TeraDesk patch T1, DEVIATIONS rows
+
+Branch `v69b` from `main` @ `9d90f0589` (worktree `target-agents/agent-a73782620fb31f6c0/wt`). Owner decisions of
+2026-11-19 (ticket section "Part A landed; owner decisions on part B"): TeraDesk option T1, HighWire struck with a
+`docs/DEVIATIONS.md` row. PRESENT (owner decision open), zView (measurement, tester), DOOM, HighWire sources: untouched. No
+kernel, `tos-api`, `tos-types`, `programs/` or `mapping.tsv` change.
+
+### What changed, by file
+
+- `sdk/overlays/teradesk/video.c` (whole-file overlay, confirmed: `sdk/apps/build-teradesk.sh` symlinks it over the vendored
+  file in the build's shadow tree), `voptions()`, line 483: `_WORD np = (xd_nplanes > 16) ? 16 : xd_nplanes;`, with a
+  trailing comment "NewTOS overlay, patch site V69" and the reason; the file header (lines 26-28) now names two changes vs.
+  upstream. Written line-neutral (730 lines before and after; the blank header line 28 took the third line), CRLF kept, so
+  every cite into this overlay stays where it was (`docs/COMPATIBILITY.md:1947`, `docs/api/xbios/58-vsetmode.md` `:475`,
+  `:557-567`, `TASK/XBIOS22.md`, `TASK/XBIOS23-STATUS-UNFINISHED.MD`). The vendored tree `sdk/apps/teradesk/` is unchanged.
+- `docs/DEVIATIONS.md`, section "VDI at 32 planes": two rows after the PRESENT row: TeraDesk's *Options > Video options*
+  dialog shows 64K at 32 planes (pointer to `TASK/XBIOS24.md`, parked); HighWire "not built: no build recipe; by the source
+  its 32-bit raster functions write 8-byte `ULONG` pixels under LP64" with the source cites of the analysis section 2.3. The
+  PRESENT row is unchanged (owner decision open).
+- `TASK/V69.md` line 3; this receipt.
+
+### The analysis's cites against the source (verified before the change)
+
+Upstream `sdk/apps/teradesk/video.c` (vendored `b5532b8`) = overlay line + 29 in this part of the file.
+
+| Analysis says | Source | Verdict |
+|---|---|---|
+| `npc[]` 17 entries, `:446` | upstream 446 / overlay 475, `{0,0,1,0,2,0,0,0,3,0,0,0,0,0,0,0,4}` | as stated |
+| `s = vidoptions[VNCOL].ob_spec.free_string`, `:448` | 448 / 477 | as stated |
+| `np = xd_nplanes`, `:454` | 454 / 483 | as stated |
+| `npmax = 16`, `:565` | 565 / 594 | as stated |
+| `ncc = 0x00000001L << np`, `:568` | **567** / 596; 568 is `npp = np` | off by one, content right |
+| `ltoa`, `strcat` into `s`, `:576-577` | 576-577 / 605-606 | as stated |
+| `newmode \|= npc[np]`, `:592` (Falcon branch only, `if (fal_mil)`) | 592 / 621 | as stated |
+| `np = minmax(npmin, np, npmax)`, `:625` | 625 / 654 | as stated |
+| VNCOL string is 3 characters | `desktop.rsc` (vendored) string table: `"Overscan    \0" "   \0" "Colours:\0"` | consistent (the string was found by its neighbour, not decoded through object 15 of `VOPTIONS`) |
+
+**Every use of `np` in `voptions()`** (all after the initialiser, so the clamp covers them): the text at the top of every
+loop (`ncc`, `ltoa`/`strcat`; reached in **every** `_VDO` branch, not only Falcon — at 32 the TT, ST and default branches
+would also have written `"4194304K"`); `npc[np]` (Falcon); `minmax` (Falcon); `VNCOLUP`/`VNCOLDN` (`np <<= 1` only while
+`np < npmax`, `>>= 1` while `np > npmin`: bounded by 16); `np = npp` (restore). `xd_nplanes` has one other use in the file,
+`get_set_video(0)`'s `xd_nplanes == 1` (overlay `:219`), unaffected. Elsewhere in TeraDesk `xd_nplanes` sizes the dialog
+save-under and cursor MFDBs (`sdk/apps/teradesk/library/xdialog/xdutil.c:103-105`, `sdk/apps/teradesk/library/xdialog/xddraw.c:1283-1285`), the ADR-038 32-plane form, not
+the dialog's table: unchanged, as the handover says.
+
+**At 16 planes nothing changes:** `xd_nplanes <= 16` gives the same `np`. Checked on the object: `video.o` compiled with the
+build's flags from the base overlay and from the patched one; the disassembly differs only inside `voptions` (register
+allocation around the `ldrsh` of `xd_nplanes`, the `#0x10` clamp), `.rodata` identical. At `vdiplanes=32` the dialog starts
+from `np = 16`, i.e. exactly the 16-plane flow.
+
+### Build, clippy, tests (real output)
+
+- TeraDesk: `bash sdk/apps/build-teradesk.sh` — "overlays applied: 12", "compiled OK=48 FAILED=0 (of 48)", "LINK OK ...
+  DESKTOP.NAP (353360 bytes)", "undefined symbols in the final image (goal 0): 0"; the error file of `video.c` is empty; the two non-empty
+  error files are those of `prgtype.c` and `error.c` (not touched). To keep the main tree's gitignored build directory of `sdk/apps/teradesk`
+  free of an unlanded binary, the worktree's `sdk/apps/teradesk` link pointed at a copy of the vendored tree,
+  `target-agents/agent-a73782620fb31f6c0/teradesk-src` (rsync without the build directory, `diff -rq` equal to the main tree's
+  before the build; 7.5M). Host clang: `Apple clang version 21.0.0 (clang-2100.4.1.1)`.
+- **sha256** (gitignored outputs, in the agent directory `agent-a73782620fb31f6c0` under `target-agents`, 5.9G with the worktree, deleted when the
+  ticket lands): `DESKTOP.NAP` `52757a2c3f7eb751e71bbad0477a08f3adf73b385c44bc411750e3a0224f99e9`;
+  dist `desktop.rsc` `409f69a09bf1d1d869bdf9e712510413917cc2355b05b3ba937e60366b0b0e08`;
+  dist `icons.rsc` `8d4bc8a2b8ca8e6890f318677a0445dd26b476b4cd0bf6ee4fc103a0f4f22e75`;
+  dist `cicons.rsc` `ee7de7f37985aba9856ccbe01fb852bec47e6ff9d200644ea3aced15231f6241` (the resources come from unchanged
+  inputs); `video.o` base `f9892413c95eb98cfa5ab4dd5ea0a225be5a00015932dad8633411aeefd72af5`, patched
+  `c4818dc564eadc88378beaafbf8b14a7b0de423b17f58dc3edaaab94c3a73f80` (= the build's object of `video.c`, `cmp`).
+- `cargo xtask build --board qemu-virt`: OK; `--board rpi4`: OK; kernel 93 warnings, the base's (no kernel source touched).
+- `cargo clippy -p xtask --all-targets`: bin 1, bin test 9 warnings, as part A's base: **delta 0** (no Rust file changed).
+- `cargo xtask test` (full): **2579 passed, 0 failed, 7 ignored** (= baseline 2579/0/7).
+- `sdk/run-host-tests.sh`: 33 passed, 0 failed, 5 skipped (skips: gitignored inputs a worktree does not link).
+- `cargo xtask doc-check docs/DEVIATIONS.md`: 0 failures; `cargo xtask status-check --new-only`: 1 checked, 0 rejected.
+
+### Tester handoff (part B)
+
+- **Where the dialog is:** menu *Options* > *Video options...* (`MVOPTS`, `sdk/apps/teradesk/main.c:1369`; overlay
+  `sdk/overlays/teradesk/main.c:1393@MVOPTS`). Keyboard: **no default shortcut** — the defaults set ^O, ^I, ^F, ^P, ^A, ^Q,
+  ^Del, ^S, ^W only (`sdk/apps/teradesk/main.c:877-885`), the generated `TERADESK.INF` sets no `vopt` key
+  (`tools/make-sd-image.sh:692@TERAINF`). If an application is registered as the "video" special app (`AT_VIDE`), the menu
+  starts it instead of the dialog (`sdk/overlays/teradesk/main.c:1394@AT_VIDE`); the standard image registers none (not read further).
+- **Run:** standard image with the patched `DESKTOP.NAP` (build `sdk/apps/build-teradesk.sh` on this branch), QEMU
+  raspi4b, `--bootargs vdiplanes=32`; open the dialog; then once at the default for comparison.
+- **Expected at 32:** the dialog opens (Falcon branch, `_VDO` Falcon): VGA-80 selected, *Colours* **64K**, no corruption of
+  the text after it ("Colours:" label intact); then the same flow as at 16 (`docs/analysis/teradesk-video-pi-mode-2026-11-18.md`
+  section 3): first OK/Return rings the bell and shows 256, second raises the "change of video mode" alert; Cancel leaves.
+  The screendump at 32 equal to the one at 16 apart from the 32-plane pixel store. Before the patch the text would have read
+  `4194304K`. Not real-Pi-only.
+- zView's measurement (analysis section 3) and PRESENT are not part of this change.
+
+### Proposed `docs/STATUS.md` line (part B)
+
+`2026-11-19 — V69 part B: TeraDesk's Video options dialog clamps its plane count to 16 in the overlay
+(sdk/overlays/teradesk/video.c, patch site V69): at vdiplanes=32 it no longer reads past its 17-entry npc[] table nor
+writes "4194304K" into the 3-character colour text; it shows 64K as the Falcon mode word does (real mode: XBIOS24,
+parked). DEVIATIONS rows for that dialog and for HighWire (not built, owner struck it from V69). PRESENT waits for the
+owner; zView is measured by the tester. (<commit>)`
+
+### Out-of-scope observations (part B)
+
+- `sdk/apps/build-teradesk.sh` header lists the overlay reasons ("video.c + nohard.h (no ACIA overscan switch ...,
+  SDK07)") without V69; left as is (the handover limits the change to the overlay; the overlay's own header names both).
+- `docs/analysis/v69-programs-at-32-planes-2026-11-18.md` section 2.1 cites `ncc = 1L << np` as `:568`; it is `:567`
+  (dated snapshot, not edited).
+- The analysis says only the Falcon branch reaches the dialog's defect; the text overflow is in every `_VDO` branch (the
+  clamp covers all, see above).
