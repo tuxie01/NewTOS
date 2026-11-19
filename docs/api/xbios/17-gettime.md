@@ -89,6 +89,18 @@ None.
   - high word (date): bits 0-4 day, 5-8 month, 9-15 year-since-1980.
   - low word (time): bits 0-4 double-seconds, 5-10 minute, 11-15 hour.
 - **Source location:** `bios/clock.c:1319` (fallback) or the RTC backend read.
+- **Width and extension (cited):** the function is declared `LONG gettime(void)`
+  (`bios/clock.c:1266`, `bios/clock.h:39`) and `LONG` is a signed 32-bit type
+  (`include/portab.h:123`); the backends return `ULONG`
+  (`bios/clock.c:349`, `:808`, `:912`, `:1060`), which the `LONG` return type
+  converts without change of the 32 bits. The m68k result is therefore the
+  32 bits in `D0`, read as a signed LONG: bit 31 (date year bit 6, i.e. from
+  2044 on) set means **negative**. On AArch64 that LONG arrives in `x0`
+  **sign-extended** to 64 bits, so bits 63..32 are all copies of bit 31
+  (`docs/COMPATIBILITY.md`, "LONG results in `x0`: sign-extended";
+  `docs/TOS-REFERENCE-DUMPER.md` §3, `ret_hi`). Example (inferred by applying
+  that rule): `0x8CCF6000` is returned as `0xFFFFFFFF8CCF6000`; `0x2B8F6000`
+  as `0x000000002B8F6000`.
 
 ### Side effects on global state / hardware
 
@@ -196,8 +208,8 @@ configured; the packed encoding is contract.
 
 ### `Gettime` reads the same seeded epoch as GEMDOS
 
-`Gettime` (XBIOS 0x17) is dispatched (`tos-api/src/xbios/mod.rs:99`) to
-`gemdos::time::xbios_gettime` (`tos-api/src/gemdos/time.rs:220-223`), which reads
+`Gettime` (XBIOS 0x17) is dispatched (`tos-api/src/xbios/mod.rs:124@GETTIME`) to
+`gemdos::time::xbios_gettime` (`tos-api/src/gemdos/time.rs:227@xbios_gettime`), which reads
 `now = BASE_SECS + CNTPCT/CNTFRQ`, decomposes it, and returns
 `(pack_date << 16) | pack_time` — the EmuTOS `MAKE_ULONG(current_date,
 current_time)` fallback path, but over the seeded epoch instead of an RTC. It is
@@ -235,6 +247,28 @@ the boot value was 1980-01-01, or on the Pi board the FAT date of
 
 ### Gaps vs. the contract (Step-2 candidates)
 
+- **`x0` extension (TASK/XBIOS09.md, parked):** the dispatch arm
+  `crate::gemdos::time::xbios_gettime() as i64` (`tos-api/src/xbios/mod.rs:124@GETTIME`)
+  casts a `u32`, so it **zero-extends**; for a value with bit 31 set (year
+  2044 on) `x0` bits 63..32 are `0` instead of `0xFFFFFFFF`. The contract above
+  is sign extension. Measured by probe H01 (`Settime(0x8CCF6000)`: `ret=8ccf6000
+  hi=00000000`, `measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`);
+  not measurable at the oracle (Hatari returns the host clock, never bit 31).
+
 - **No RTC read, no persistence** — every boot starts at the build date.
   Persistence is the same item as `Settime` (an RTC backend, TASK/RTC01;
   `docs/COMPATIBILITY.md`, "No RTC").
+
+---
+
+## Open points
+
+- Inferred, not read: the two example `x0` values above are the rule applied to
+  a chosen input, not an EmuTOS output; the oracle cannot show bit 31 set.
+- Inferred: that no backend narrows the value differently on any machine; the
+  five backend return statements were read only by signature (`ULONG`), the
+  `amiga_getdt`/`lisa_getdt` bodies are other-machine builds and not read.
+- Out of scope (TASK/XBIOS13.md, TASK/XBIOS08.md): the Settime text, NVRAM
+  lines and the 1980 fallback sentence of this spec group are not edited here.
+- Out of scope: `// zero-extended` comment at `tos-api/src/xbios/mod.rs:120-122@SETTIME`
+  is a code comment, fixed by the developer in TASK/XBIOS09.md.
