@@ -5,8 +5,11 @@
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
 > Contract: trap ID/ABI, the 24-bit LONG result (bits 24-31 zero), the
-> deterministic LCG sequence from a given seed. Reference: the `rseed`
-> storage and the `hz_200` auto-seed.
+> deterministic LCG sequence from a given seed, **and the first seed**
+> `(hz_200 << 16) + hz_200` taken from the caller-visible `_hz_200` (a program
+> that reads `$4BA` around its first `Random()` can predict the first value;
+> probe `xsseed.c` X01 measures exactly that, see "Acceptance probe"). Reference
+> (free): where `rseed` is stored.
 
 ## EmuTOS source
 
@@ -34,8 +37,15 @@
 ## Source extraction summary
 
 `Random` returns a 24-bit pseudo-random number using a linear congruential
-generator. On the first call (`rseed == 0`) it seeds `rseed = (hz_200 << 16)
-+ hz_200`. Each call then does `rseed = rseed * 3141592621 + 1` (a 32-bit LCG,
+generator. At **every** call that finds `rseed == 0` (the first call, and any later call
+after the LCG has stepped onto 0) it seeds `rseed = (hz_200 << 16) + hz_200`
+in 32-bit unsigned arithmetic (`bios/xbios.c:423-426`; `rseed` is `ULONG`,
+`bios/xbios.c:419`; `hz_200` is `volatile LONG`, `include/tosvars.h:53`).
+A seed that comes out 0 (only possible for `hz_200 == 0`, because 65537 is odd
+and so invertible mod 2^32; inferred) is **not** replaced: the code goes on
+with `rseed = 0`, so that call computes `0*3141592621 + 1 = 1` and returns
+`(1 >> 8) & 0xFFFFFF = 0` (`bios/xbios.c:427-429`). There is no
+"bump zero to one" step in EmuTOS. Each call then does `rseed = rseed * 3141592621 + 1` (a 32-bit LCG,
 multiplier ≈ π×10⁹) and returns `(rseed >> 8) & 0xFFFFFF` — the middle 24 bits,
 with bits 24-31 always zero.
 
@@ -108,8 +118,14 @@ None.
 - **Range:** every result satisfies `0 <= r <= 0xFFFFFF` (bits 24-31 zero).
 - **Determinism:** from a fixed `rseed`, the sequence of results matches the
   LCG `rseed = rseed*3141592621 + 1; return (rseed>>8)&0xFFFFFF`.
-- **Auto-seed:** the first call after boot seeds from `hz_200`, so it is not a
-  constant across boots (but is a function of uptime at first call).
+- **Auto-seed:** the first call seeds from `hz_200`, so it is not a constant
+  across boots (but is a function of uptime at first call). Contract check: for
+  some `h` in `[hz_200 before .. hz_200 after]` the first result equals the LCG
+  step of `(h << 16) + h` (probe X01).
+- **Zero seed:** `hz_200 == 0` at the first call gives `rseed = 0` then 1; the
+  result is 0 and the next result is the LCG step of 1 (cited
+  `bios/xbios.c:423-429`; not measured: `hz_200` is never 0 by the time a
+  program runs).
 - **Advances each call:** two consecutive calls return different values (for
   any non-degenerate seed).
 
@@ -117,8 +133,8 @@ None.
 
 ## Edge cases discovered in source
 
-1. **First-call seed from `hz_200`.** `rseed = (hz_200 << 16) + hz_200`
-   (`bios/xbios.c:423-426`); early after boot `hz_200` is small, so the
+1. **Seed from `hz_200`.** `rseed = (hz_200 << 16) + hz_200`
+   (`bios/xbios.c:423-426`), re-done whenever `rseed` is 0 at entry; early after boot `hz_200` is small, so the
    effective entropy is low (~16 bits). AES/games often mix `hz_200`
    themselves for this reason.
 2. **24-bit result, LCG weaknesses.** The `>> 8` masks the worst low bits, but
@@ -180,39 +196,97 @@ by changing `Random`.
 
 ## Pi / BCM2711 binding
 
-> Re-points the auto-seed source from **`hz_200`** (the 200 Hz counter, which
-> does not exist on the Pi) to the **generic-timer frame clock**. The 24-bit
-> result, the LCG recurrence, and the deterministic-from-a-seed contract are
-> unchanged; only the first-call seed is re-pointed. See
-> `docs/HARDWARE-PROFILE.md` §3.5.
+> The 24-bit result, the LCG recurrence and the first seed are the EmuTOS
+> contract above. `_hz_200` exists on NewTOS (`bios/tick.rs`, see
+> [`docs/api/bios/06-tickcal.md`](../bios/06-tickcal.md)); the 60 Hz frame clock
+> is **not** a seed source.
 
-### The LCG is bit-identical; the seed comes from the frame clock
+### Current code (does not meet the contract; the XBIOS11 fix changes it)
 
-`Random` (XBIOS 0x11) is dispatched (`tos-api/src/xbios/mod.rs:42`) to
-`system::random` (`tos-api/src/xbios/system.rs:14-28`). The recurrence is the
-exact EmuTOS LCG: `rseed = rseed*3141592621 + 1; return (rseed >> 8) &
-0xFFFFFF` (`system.rs:25-27`) — so for a given `rseed` the sequence is
-bit-identical to real TOS.
+`Random` is dispatched (`tos-api/src/xbios/mod.rs:116@RANDOM`) to `system::random`
+(`tos-api/src/xbios/system.rs:14-28@random`). The recurrence is the EmuTOS LCG
+(`tos-api/src/xbios/system.rs:25-27@wrapping_mul`). The first seed is drawn from `h.frame_clock()`
+(`CNTPCT*60/CNTFRQ`, 60 Hz) as `(fc << 16) + fc` (`tos-api/src/xbios/system.rs:17-19@random`), and a zero
+seed is bumped to 1 (`tos-api/src/xbios/system.rs:20-22@random`). Both differ from
+`bios/xbios.c:423-429`: the measured first value differs (X01 `no` on NewTOS
+with `hz_200` 3024 and frame clock 908; run
+`measurements/measurement-2026-10-28-xbios-system-audit/runs/SEED-NEWTOS-raspi4b/XSSEED.LOG`),
+and the zero seed continues as 1 instead of 0.
 
-On the **first** call (`rseed == 0`) the seed is drawn from the host **frame
-clock** (`h.frame_clock()` = `CNTPCT*60/CNTFRQ`, `host_env.rs:191-206`) as
-`s = (fc << 16) + fc` (`system.rs:17-22`) — structurally the EmuTOS
-`(hz_200 << 16) + hz_200`, but with the frame clock standing in for the
-non-existent `hz_200` counter (see `06-tickcal.md`: no 200 Hz counter is
-materialised on the Pi). A zero seed is bumped to 1 (`system.rs:20-22`).
+### Required behaviour
 
-| Atari reference | Pi-4 model today |
-|-----------------|------------------|
-| First-call seed = `(hz_200 << 16) + hz_200` | `(frame_clock << 16) + frame_clock`, `frame_clock = CNTPCT*60/CNTFRQ` |
-| `hz_200` small early after boot (~16-bit entropy) | frame clock likewise small early after boot — same low-entropy caveat |
-| Sequence deterministic from `rseed` | identical LCG, identical determinism |
+1. Seed value: `(H << 16) + H` in `u32` wrapping arithmetic, `H` = the 200 Hz
+   counter as a `u32`. No frame clock anywhere in `Random`.
+2. No zero-seed substitution: a seed of 0 goes straight into
+   `s = s*3141592621 + 1` (result 0, state 1).
+3. The `rseed == 0` test and the seeding stay at the top of every call, as in
+   EmuTOS (so a state that steps onto 0 is re-seeded from the then-current `H`).
+4. Result `(s >> 8) & 0xFFFFFF`, returned as a non-negative `i64`
+   (`tos-api/src/xbios/system.rs:27@wrapping_mul`).
 
-### Gaps vs. the contract (Step-2 candidates)
+### Which `_hz_200` is `H`
 
-- **None functional.** The LCG matches; only the seed hardware differs (frame
-  clock vs. `hz_200`), which the contract already treats as "a function of
-  uptime at first call, not a constant across boots" — satisfied. The
-  low-entropy-early-after-boot caveat carries over unchanged.
-- **No reseed back door** (as the contract notes): `rseed` is an internal
-  static; a higher-quality source (AArch64 `RNDR`) would be a separate NewTOS
-  extension, not a change to `Random`.
+What a program observes is the `$4BA` cell of its own page 0 (`tos-api/src/bios/tick.rs:108@publish`,
+loader seed `tos-api/src/bdos/process/loader.rs:1262@HZ_200_ADDR`). The kernel counter
+`bios::tick::hz_200()` (`tos-api/src/bios/tick.rs:92@hz_200`) is the value that cell is
+published from (`tos-api/src/bios/tick.rs:78-85@advance`). EmuTOS has one global, so the
+source gives no choice; the choice is NewTOS-internal and the contract is the
+observable one: **`H` must lie in the window `[cell before the call .. cell
+after the call]`** that X01 reads.
+
+- **Kernel counter `tick::hz_200()`:** satisfies the window whenever the
+  caller's cell is current. `Random` runs inside the SVC handler with IRQs
+  masked (`bios/tick.rs` comment at `publish`, cited above), so the counter cannot
+  move during the call. Inferred, not verified: right after a switch to another
+  process the new process's cell may lag the counter by up to one tick until
+  the next timer interrupt (`publish` writes only the running process's page).
+- **Calling process's page-0 cell:** matches what the program literally reads,
+  including a lagging cell, and would differ from the kernel counter only in that
+  case; it needs `current_page0_kva()` (`tos-api/src/bdos/process.rs:1084@current_page0_kva`) and an unaligned
+  read at `0x4BA`. A program that *writes* its own `$4BA` is seen by EmuTOS's
+  `Random` but by neither NewTOS option for the kernel counter (only the cell
+  option would see it); not measured, no known user.
+
+Recommendation (inferred, developer's call within the contract): the kernel
+counter. No owner question remains: the two options agree on every state the
+probe can reach (first program after boot, cell written by the loader at
+launch, `tos-api/src/bdos/process/loader.rs:1262@HZ_200_ADDR`).
+
+### Acceptance probe
+
+`measurements/measurement-2026-10-28-xbios-system-audit/method/xsseed.c`
+(built by `measurements/measurement-2026-10-28-xbios-system-audit/method/build-xsprobe.sh` into `XSSEED.PRG` / `XSSEED.NAP`; it is not
+yet under `tosdump/probes/`, so a permanent test needs it copied there, see Open
+points). It must run as the **first program after boot**, so no earlier
+`Random()` (e.g. TOS Protobt) has advanced the state. It reads `$4BA` through
+`Supexec`, calls `Random()` once, reads `$4BA` again, and for each `h` in
+`[h1..h2]` computes the LCG step of `((u32)h << 16) + h`. It writes
+`XSSEED.LOG` with two lines:
+
+- `X01 first Random() matches a seed (hz_200<<16)+hz_200 for hz_200 in the window: yes|no`
+- `X01 info hz_200 window=<h1>..<h2> random=<hex6>` (machine value, not compared)
+
+Counts as equal to the oracle: the `X01 first ... : yes` line (oracle: `yes` in
+`runs/SEED-EMUTOS-tt`, `-tt-repeat`, `-falcontc` of the run above). The `info`
+line differs by design. Companion cases that must stay equal: `xsprobe.c`
+R01-R03 and P08 (generator unchanged). The zero seed is not probed.
+
+### Gaps vs. the contract
+
+- First seed from the frame clock (above): to be fixed by XBIOS11.
+- Zero seed bumped to 1 (above): to be fixed by XBIOS11.
+- **No reseed back door:** `rseed` is an internal static; a higher-quality
+  source (AArch64 `RNDR`) would be a separate extension, not a change to `Random`.
+
+---
+
+## Open points
+
+- Inferred: zero seed only for `hz_200 == 0` (modular argument, `bios/xbios.c:424-425`).
+- Inferred: lag of the page-0 cell after a process switch; not measured.
+- Inferred: a program writing its own `$4BA` is out of any probe; behaviour of the
+  two NewTOS options not tested.
+- `xsseed.c` lives only under `measurements/`; the XBIOS11 acceptance wants it
+  as a permanent probe under `tosdump/probes/` (CLAUDE.md, Testing, probe rule).
+- Out of scope: `docs/api/xbios/_state.md:347-351` already states the EmuTOS seed
+  correctly; `docs/COMPATIBILITY.md` has no `Random` entry (lead's call).
