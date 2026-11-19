@@ -39,3 +39,14 @@ Owner 2026-11-19: reopen TASK/XBIOS13.md and this ticket ("mit 1 weiter").
   give a writable RTC is reported to the owner as a proposal, not applied.
 - A documentation-only ticket: it has no `fix`/`feat` commit and cannot reach DONE through `accept`; after the
   landing the lead brings it to the owner.
+
+## Landed with the gap accepted (2026-11-19)
+
+The researcher returned GAPS (`ac9cbf8d6`): section 9 of `docs/analysis/ORACLE.md` states the limit and the two
+waiting rows, but "the pinned Hatari has no option for a writable RTC" rests on the manual, the todo list and the
+release notes of the Hatari 2.6.1 bundle; the Hatari source is not in `references/`.
+
+Owner 2026-11-19, asked with three options (1: land as it is and accept the gap; 2: fetch the Hatari 2.6.1 source
+and have the code read; 3: `--rtc-year` in the oracle configuration): option 1. Landed as `fecd9c426`.
+
+The ticket stays OPEN until the owner closes it.
