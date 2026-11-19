@@ -65,3 +65,25 @@ STOP points, "Open points"):
 - A90 — no Pi-specific observation stated in ticket or receipt.
 - A118 — "HypView-Serie" is open in the receipts but not defined.
 - T04 — which of the 13 TeraDesk menu entries is not stated.
+
+## Real-Pi session of 2026-11-19 (lead)
+
+Owner 2026-11-19: card in the Mac, prepare the kernel and say what to test. Preparation
+`measurements/measurement-2026-11-19-pitest02-prep/RUNINFO.TXT` (kernel `kern1119.img` of `afc2bb1c0`, test sheet
+`measurements/measurement-2026-11-19-pitest02-prep/TESTBLATT.md`); the card was written with `tools/sync-card.sh --write`
+by the lead on the owner's word (`measurements/measurement-2026-11-19-pitest02-card/card.manifest`); evaluation of the
+card's result files `measurements/measurement-2026-11-19-pitest02-pi/RUNINFO.TXT`.
+
+Owner's answers: the first boot failed at the bootloader (sector 0 read as garbage) and worked after reseating the
+card; the Pi boots with both settings, 16 and 32; nothing unusual noticed; the sheet was not gone through step by step
+("wir brauchen nicht die ganzen apps durchgehen").
+
+Shown by files (written at `vdiplanes=32`): sheet steps B2, B5, A5, and A4 with the cases 87, 213, 230-235 as
+expected; A7 at 16 planes within the spread. `_SND` is in the jar.
+
+Still open in the collected list, no file and no explicit answer: SCRNINFO and `bios-r1` at the default start, Fbench
+at 32 planes, PRESENT's times, the pitch, the two serial boot lines, the mouse click on Cancel in TeraDesk's Video
+options dialog, the SND03 hearing test.
+
+New observation, values only, for the owner to decide on a ticket: `bios-r1` cases 31 `Bconstat(1)` and 36
+`Bconstat(6)` return -1 on the Pi where the `falcontc` reference and QEMU return 0.
