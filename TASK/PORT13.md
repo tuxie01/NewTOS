@@ -1,6 +1,6 @@
 # PORT13 — zDesk: can it be built for NewTOS?
 
-Status: OPEN (2026-11-19) | Priority: P3
+Status: PARKED (2026-11-19) | Priority: P3 | Reason: owner 2026-11-19: park; analysis docs/analysis/zdesk-newtos-build-feasibility-2026-11-19.md landed (b18c5b6a4): buildable with about 15 patched files, but the source is a v0.1 browser prototype without program launch or file operations, licence and origin unclear | Reopen: on the owner's word; before a port: licence and origin of this state settled
 
 Title: zDesk: can it be built for NewTOS?
 
@@ -40,3 +40,7 @@ whether we can build it for NewTOS).
 
 - Step 1: a dated analysis under `docs/analysis/` with the dependencies, the compile attempt's result and the
   missing calls, each cited; licence and origin stated or named as not found.
+
+## Status history
+
+- 2026-11-19: set to PARKED by `cargo xtask set-status` (was "Status: OPEN (2026-11-19) | Priority: P3")
