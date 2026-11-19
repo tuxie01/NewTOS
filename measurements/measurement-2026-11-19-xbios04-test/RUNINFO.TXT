@@ -1,0 +1,23 @@
+XBIOS04 tester run, 2026-11-19. Agent a3759a7b13eb65ff0. Verdict: PASS (QEMU scope; real-Pi4-only items listed below).
+Scope: the landed XBIOS04 change (commit 393fdc345: Ikbdws / Bconout(4,c) stay no-op and warn "IKBD commands ignored" once per process; COMPATIBILITY entry) tested on main HEAD 37c6d8e31.
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.328; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+Clone (scratch, gitignored): target-agents/agent-a3759a7b13eb65ff0/wt (detached, 37c6d8e31), total scratch 5.9G (du -sh).
+Cited gitignored output: rpi4 debug kernel8.img sha256 da865591bb8badac31cad6aa45c12652239f75b0af69b3b88da9821d137444eb (copy target-agents/agent-a3759a7b13eb65ff0/kernel8-rpi4.img).
+
+VERDICT PER LINE OF "Abnahme (Anwender, 2026-10-30)"
+1. Hosttest green: PASS. cargo xtask test 2580 passed / 0 failed / 7 ignored (serial/cargo-xtask-test.txt; equals the 2580/0/7 of the latest committed run measurement-2026-11-19-xbios09-test). The ticket's test tos-api/tests/bios15_os_hooks.rs ikbd_commands_warn_once_per_process_for_ikbdws_and_bconout_4 run alone: 1 passed.
+2. No previously equal case in bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 newly differs: PASS. method/run-tosdump.sh, raspi4b, one QEMU at a time, vs EMUTOS-1a7484ab-{BIOS,BIOS-core,XBIOS-chardev,XBIOS-system}.BIN: bios-r1 35/147 differ, bios-core-r1 2/44, xbios-chardev-r1 1/23, xbios-system-r1 9/43. The tosdiff case lists (serial/wt-<table>/tosdiff-*.txt, lines with sha/build/path removed) are text-identical to the base-* lists of measurements/measurement-2026-11-19-xbios09-test/serial/ (the last committed run of these tables). All four runs "ended normally ... desktop up after DUMPBIOS.NAP, rc=0". (Reference is the latest committed run, not a rebuild of the commit before 393fdc345; the developer-time run measurement-2026-10-30-xbios04 did the before/after on 9f71ded8.)
+3. W01-W04 ACCEPTED with COMPATIBILITY entry: PASS. docs/COMPATIBILITY.md section "IKBD commands are not interpreted, no response packets" (line ~1519) names user decision 2026-10-30, XBIOS04 option 1, the three hooks statvec/clockvec/joyvec, the observable difference, and "W01-W04 ... ACCEPTED with this entry"; read in the main tree.
+Extra (handover retest): once-per-process warning on the booted kernel: PASS.
+ - serial/mdprobe (permanent tosdump/probes/mdprobe.c via tosdump/probes/run-mdprobe.sh newtos, rpi4 debug kernel): D07 Bconout(4,0x11) ret=00000001; BOOT-SERIAL.txt holds exactly one "[hook] warning: slot 0 (PD 0x01a07000) sent IKBD command bytes via Bconout(4); IKBD commands ignored: ..." line.
+ - serial/mdprobe2 (TEMPORARY probe, own tree only, never committed; patch method/temp-mdprobe-ikbdws.patch: two Ikbdws(0,{0x1C}) calls before D07): exactly one warning line, "... via Ikbdws; IKBD commands ignored ...", none for the second Ikbdws and none for the following Bconout(4): one key for both calls. D07 still ret=1. (W01 waits in Bconin(3) as designed in the probe.)
+Build/boot baseline: cargo xtask build both boards OK (kernel 93 rustc warnings, as in the xbios09 run). cargo xtask run --headless: qemu-virt and rpi4 each "[desk] desktop up (0 drives)", no exception/panic line (serial/run-qemu-virt.txt, run-rpi4.txt). clippy delta not run (no code change under test; developer run recorded 121/74 equal to before).
+
+FAILURES: none.
+DROVE: host tests, both board builds, four tosdump tables, MDPROBE warning on the booted kernel (Bconout(4) path, and Ikbdws path via temporary probe), headless boots of both boards.
+COULD NOT VERIFY: oracle comparison of W01-W04 hook calls (accepted deviation by decision, no interpreter); no bios case or card program calls Ikbdws.
+REAL-PI4-ONLY: none relevant (no hardware path touched); interactive mouse/keyboard behaviour after IKBD commands is not exercised.
+OUT-OF-SCOPE OBSERVATIONS: none.
+
+IMAGE MANIFESTS (serial/*/card.img.manifest): six, all `optional_missing none`; image_sha256 values: wt-bios-r1 ecbc.. see each file; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+ACCEPT: cargo xtask accept XBIOS04 --commit 393fdc345 --result PASS (outcome in the hand-off).

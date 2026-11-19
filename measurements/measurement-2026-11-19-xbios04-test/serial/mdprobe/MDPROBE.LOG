@@ -1,0 +1,19 @@
+MDPROBE TASK/BIOS04
+D01 Bconstat(3) MIDI ret=00000000 hi=00000000
+D02 Bconstat(4) IKBD ret=00000000 hi=00000000
+D03 Bconin(4) IKBD ret=00000000 hi=00000000
+D04 Bcostat(3) before output ret=ffffffff hi=ffffffff
+D05 Bcostat(4) before output ret=ffffffff hi=ffffffff
+D06 Bconout(3,0xFE) MIDI ret=00000001 hi=00000000
+D07 Bconout(4,0x11) IKBD resume ret=00000001 hi=00000000
+D08 Bcostat(3) after Bconout(4) ret=ffffffff hi=ffffffff
+D09 Bcostat(4) after Bconout(3) ret=ffffffff hi=ffffffff
+D10 Bconstat(3) after the output ret=00000000 hi=00000000
+R01 Iorec(2) ibufsiz=128 head_eq_tail=1
+R02 Bconstat(3) 3 bytes in the ring ret=ffffffff hi=ffffffff
+R03 Bconin(3) first ret=000000fe hi=00000000
+R04 Bconin(3) second ret=00000090 hi=00000000
+R05 Bconin(3) third ret=0000003c hi=00000000
+R06 Bconstat(3) ring read ret=00000000 hi=00000000
+R07 head_eq_tail=1
+W01 before Bconin(3) on the empty ring

@@ -1,0 +1,12 @@
+diff --git a/tosdump/probes/mdprobe.c b/tosdump/probes/mdprobe.c
+index a05d06caa..383e4de51 100644
+--- a/tosdump/probes/mdprobe.c
++++ b/tosdump/probes/mdprobe.c
+@@ -113,6 +113,7 @@ static void part_d(void)
+ 	ret("D04", "Bcostat(3) before output", Bcostat(3));
+ 	ret("D05", "Bcostat(4) before output", Bcostat(4));
+ 	ret("D06", "Bconout(3,0xFE) MIDI", Bconout(3, 0xFE));
++	{ static char cmd[1] = { 0x1C }; Ikbdws(0, cmd); Ikbdws(0, cmd); }
+ 	ret("D07", "Bconout(4,0x11) IKBD resume", Bconout(4, 0x11));
+ 	ret("D08", "Bcostat(3) after Bconout(4)", Bcostat(3));
+ 	ret("D09", "Bcostat(4) after Bconout(3)", Bcostat(4));
