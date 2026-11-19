@@ -1,6 +1,6 @@
 # XBIOS08 — `Settime` normalises or clamps impossible fields instead of taking them raw
 
-Status: OPEN (2026-11-19) | Priority: P2
+Status: ACCEPTED (2026-11-19) | Priority: P2 | Ref: docs/COMPATIBILITY.md
 
 Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS08.md status line: GEPARKT 2026-10-30 (Anwender: bis ein Port es braucht)
 
@@ -68,3 +68,18 @@ as described to the owner with option B:
 - Then the lead sets the ticket ACCEPTED with the entry as its reference.
 
 The points of TASK/XBIOS13.md that concern `Settime` (its point 1) are closed by the same document step.
+- 2026-11-19: set to ACCEPTED by `cargo xtask set-status` (was "Status: OPEN (2026-11-19) | Priority: P2")
+
+## Entered and accepted (2026-11-19)
+
+Documents landed as `2c429952f` (researcher `c074f677b`): `docs/COMPATIBILITY.md`, entry "`Settime` with impossible
+fields: NewTOS normalises, EmuTOS keeps them raw"; `docs/DEVIATIONS.md`, XBIOS section; `docs/api/xbios/16-settime.md`.
+
+Corrections to the facts above, found by the researcher in the run's logs:
+
+- For the set value `04:05:62` the NewTOS log has `04:06:02` in T24, not `04:06:04`.
+- For T23–T28 the NewTOS values are reads at once, not after a tick: the probe polls until the read differs from the
+  raw set value, and the normalised NewTOS value differs already. NewTOS after a tick is not measured there.
+- The code comment "(EmuTOS parity)" stands at `tos-api/src/gemdos/time.rs:216@hour`; the doc comment above
+  `xbios_settime` also says the fields pass through unchanged. Both are wrong and listed in the spec's open points
+  for the next code change of that function.
