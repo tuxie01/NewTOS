@@ -41,3 +41,29 @@ All read from source by the researcher of BIOS19, none measured:
 
 The four `bcon*_vec` tables, `_v_bas_ad`, `_vblsem`, `_nvbls`, `_hdv_init`, `_hdv_boot`, `_themd`, `_dskbufp`,
 `_pun_ptr`: listed in `docs/DEVIATIONS.md` by TASK/SPEC08.md until a program needs them.
+
+## Spec gate and owner decisions (2026-11-20)
+
+Spec gate: `docs/api/bios/_sysvars-counters-contract.md`, landed as `567d3b9b4` (researcher `c473ec81d`, verdict
+GAPS with three decisions for the owner). Owner 2026-11-20, reminded first that EmuTOS is the yardstick ("ich
+wünsche emutos als masstab") and asked with the options of sections 5 to 7 of that file, answered "ja" to the lead's
+recommendations:
+
+- **Wider scope.** Not only the six cells above: every unserved system variable that needs only a value or a
+  counter is served as on EmuTOS. Added: `_v_bas_ad`, `_vblsem`, `_nvbls`, `_hdv_init`, `_hdv_boot`, `_themd`,
+  `_dskbufp`, `_pun_ptr`. The section "Not in this ticket" above no longer holds for them. The four `bcon*_vec`
+  tables are TASK/BIOS22.md.
+- **Rate (option C1).** `_frclock` and `_vbclock` follow the 60 Hz frame clock `Vsync` waits on, and start at 0 at
+  boot.
+- **`_vbclock` (option V2).** It advances only while `_vblsem` is greater than 0, as on EmuTOS; `_vblsem` is served
+  with EmuTOS's boot value.
+- **Per-process view (P1 with P3).** The running process gets the value in the timer interrupt, a process that is
+  switched in gets it refreshed at once, and `Vsync` publishes the value before it returns, so
+  `Vsync(); x = *_frclock;` reads the new frame number as on EmuTOS.
+- **ADR-031.** `dump_vec`, `aux_stat` and `aux_vec` hold the return stub as on EmuTOS; NewTOS still does not call
+  `dump_vec`; the `DumpVec` watcher compares against the stub. The ADR text is shown to the owner before it is
+  entered; the developer does not start before the amendment is in `docs/MEMORY.md`.
+
+Before the developer starts: a second spec pass for the eight added cells (same file), and the ADR amendment.
+For the tester: the six cells and the added ones lie at addresses `Setexc` cannot read; the probe reads through
+`Supexec`. The frame rate of the pinned oracle is measured in the test run.
