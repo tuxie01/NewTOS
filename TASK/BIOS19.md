@@ -18,3 +18,21 @@ Type: research (reading), then docs and measurement. From the inventory snapshot
 ## Acceptance
 
 - Every variable of `tosvars.ld` classified in a spec table; served ones have oracle read cases.
+
+## Table and NVMaccess section landed; owner decisions (2026-11-19)
+
+The researcher returned GAPS (`0c8941107`, landed as `71d0d925e`): `docs/api/bios/_sysvars-contract.md` (84
+assignments: served 37, hardware 25, missing 17, free 3, not variables 2) and `docs/api/xbios/2e-nvmaccess.md`,
+read from source, nothing measured, the inferred statements listed as open points in both files.
+
+Owner 2026-11-19, on the lead's six recommendations ("ich gehe mit deinen empfehlungen mit"):
+
+- Land the two files as they are.
+- A developer ticket for the return stubs, the frame counters and `_timer_ms`: TASK/BIOS20.md. The other unserved
+  variables become rows of `docs/DEVIATIONS.md`: TASK/SPEC08.md.
+- Section 7 of `docs/api/bios/_boot-init.md` is replaced by a pointer to the new table (SPEC08).
+- The paragraph for `docs/COMPATIBILITY.md` is entered in a wording shown to the owner first (SPEC08).
+- The oracle read cases for the served variables get their own ticket after BIOS20: TASK/BIOS21.md.
+- The class "free" stays.
+
+This ticket stays OPEN: its acceptance line on the read cases is met by BIOS21.
