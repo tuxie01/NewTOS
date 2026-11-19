@@ -1,0 +1,152 @@
+EMUTOS-1a7484ab-BIOS-falcontc.BIN vs BIOS.BIN -- area BIOS, 147 cases from bios-r1.tsv
+
+case 31  trap 13 function 0x01  Bconstat(1) AUX -- bios/bios.c:914
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   BIOS.BIN                          = 0xFFFFFFFFFFFFFFFF (-1)
+
+case 36  trap 13 function 0x01  Bconstat(6) Bconmap 6 -- bios/bios.c:914
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000000 (0)   BIOS.BIN                          = 0xFFFFFFFFFFFFFFFF (-1)
+
+case 70  trap 13 function 0x08  Bcostat(7) Bconmap 7 -- bios/bios.c:1143
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   BIOS.BIN                          = 0x0000000000000000 (0)
+
+case 105  trap 14 function 0x0F  Rsconf(-1 x6) old ucr/rsr/tsr -- bios/serport.c:226
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFF88000000 (-2013265920)   BIOS.BIN                          = 0x0000000088010100 (2281767168)
+
+case 128  trap 14 function 0x1C  Giaccess(0,7) mixer -- bios/sound.c:94
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00000000000000C0 (192)   BIOS.BIN                          = 0x0000000000000000 (0)
+
+case 129  trap 14 function 0x1C  Giaccess(0,14) port A -- bios/sound.c:94
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000027 (39)   BIOS.BIN                          = 0x0000000000000000 (0)
+
+case 178  trap 14 function 0x29  Floprate(0,-1) rate -- bios/floppy.c:1058-1061
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000003 (3)   BIOS.BIN                          = 0xFFFFFFFFFFFFFFF1 (-15)
+
+case 179  trap 14 function 0x29  Floprate(0,-4) HD? -- bios/floppy.c:1050-1051
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   BIOS.BIN                          = 0xFFFFFFFFFFFFFFF1 (-15)
+
+case 183  trap 14 function 0x2C  Bconmap(-1) mapped device -- bios/serport.c:1089-1090
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000000007 (7)   BIOS.BIN                          = 0x0000000000000006 (6)
+
+case 189  trap 14 function 0x2E  NVMaccess(0,0,48,b0) read all 48 -- bios/nvram.c:30,183-197
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   BIOS.BIN                          = 0x002E (46)
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[4]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[5]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[6]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[7]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[8]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x11   BIOS.BIN                          = 0xDE
+    capture[9]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x2E   BIOS.BIN                          = 0xAD
+    capture[10]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x20   BIOS.BIN                          = 0xDE
+    capture[11]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x01   BIOS.BIN                          = 0xAD
+    capture[12]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFF   BIOS.BIN                          = 0xDE
+    capture[13]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[14]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[15]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x1A   BIOS.BIN                          = 0xAD
+    capture[16]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x87   BIOS.BIN                          = 0xDE
+    capture[17]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[18]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[19]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[20]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[21]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[22]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[23]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[24]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[25]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[26]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[27]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[28]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[29]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[30]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[31]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[32]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[33]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[34]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[35]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[36]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[37]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[38]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[39]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[40]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[41]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[42]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[43]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[44]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[45]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[46]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[47]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+
+case 190  trap 14 function 0x2E  NVMaccess(0,0,0,b0) count 0 -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   BIOS.BIN                          = 0x002E (46)
+
+case 191  trap 14 function 0x2E  NVMaccess(0,-1,1,b0) start<0 -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   BIOS.BIN                          = 0x002E (46)
+
+case 192  trap 14 function 0x2E  NVMaccess(0,47,2,b0) past 48 -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   BIOS.BIN                          = 0x002E (46)
+
+case 193  trap 14 function 0x2E  NVMaccess(0,0,1,NULL) -- bios/nvram.c:180-181
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   BIOS.BIN                          = 0x002E (46)
+
+case 194  trap 14 function 0x2E  NVMaccess(3,..) bad op -- bios/nvram.c:206-208
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xFFFB (-5)   BIOS.BIN                          = 0x002E (46)
+
+case 213  trap 14 function 0x5B  VgetSize(0x1C) -- LONG vgetsize, bios/videl.c:724
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000000000096000 (614400)   BIOS.BIN                          = 0x00000000007E9000 (8294400)
+
+case 215  trap 14 function 0x5F  Vfixmode(0x1C) -- bios/videl.c:917
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x001C (28)   BIOS.BIN                          = 0x005F (95)
+
+case 218  trap 14 function 0x67  Dsp_GetWordSize() -- bios/dsp.c:508
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0003 (3)   BIOS.BIN                          = 0x0067 (103)
+
+case 219  trap 14 function 0x6A  Dsp_Available(b0,b1) x -- bios/dsp.c:619 (no has_dsp test)
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x3E   BIOS.BIN                          = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xA9   BIOS.BIN                          = 0xAD
+
+case 220  trap 14 function 0x6A  Dsp_Available(b0,b1) y -- bios/dsp.c:619
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xDE
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x40   BIOS.BIN                          = 0xDE
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xAD
+
+case 221  trap 14 function 0x72  Dsp_GetProgAbility() -- bios/dsp.c:976
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   BIOS.BIN                          = 0x0072 (114)
+
+case 222  trap 14 function 0x75  Dsp_InqSubrAbility(0) -- bios/dsp.c:1146
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0017 (23)   BIOS.BIN                          = 0x0075 (117)
+
+case 223  trap 14 function 0x77  Dsp_Hf0(-1) -- bios/dsp.c:1200
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   BIOS.BIN                          = 0x0077 (119)
+
+case 224  trap 14 function 0x78  Dsp_Hf1(-1) -- bios/dsp.c:1222
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   BIOS.BIN                          = 0x0078 (120)
+
+case 225  trap 14 function 0x79  Dsp_Hf2() -- bios/dsp.c:1247
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   BIOS.BIN                          = 0x0079 (121)
+
+case 226  trap 14 function 0x7A  Dsp_Hf3() -- bios/dsp.c:1257
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x0000 (0)   BIOS.BIN                          = 0x007A (122)
+
+case 227  trap 14 function 0x7D  Dsp_Hstat() -- UBYTE dsp_hstat, bios/dsp.c:1273
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x06 (6)   BIOS.BIN                          = 0x7D (125)
+
+case 235  trap 14 function 0x8D  Buffptr(b0) -- bios/dmasound.c:772
+    capture[0]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0x01
+    capture[1]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0xCF
+    capture[2]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0x80
+    capture[3]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0x00   BIOS.BIN                          = 0x90
+    capture[8]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xDE   BIOS.BIN                          = 0x00
+    capture[9]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAD   BIOS.BIN                          = 0x00
+    capture[10]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xDE   BIOS.BIN                          = 0x00
+    capture[11]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAD   BIOS.BIN                          = 0x00
+    capture[12]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xDE   BIOS.BIN                          = 0x00
+    capture[13]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAD   BIOS.BIN                          = 0x00
+    capture[14]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xDE   BIOS.BIN                          = 0x00
+    capture[15]             EMUTOS-1a7484ab-BIOS-falcontc.BIN = 0xAD   BIOS.BIN                          = 0x00
+
+28 of 147 cases differ

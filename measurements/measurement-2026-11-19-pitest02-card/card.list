@@ -1,0 +1,29 @@
+# pitest02-card.list -- what tools/sync-card.sh puts onto the owner's Pi card for the collected real-Pi run (PITEST02).
+# Format: tools/sync-card.sh header. The kernel is not in this list: `--kernels <run>/kernels --active kern1119.img` adds it
+# (BOOT:kern1119.img + BOOT:kernel8.img; the old kernel8.img, cmdline.txt, config.txt are saved to card-before/ first).
+# cmdline.txt is NOT touched by the write. CMD32.TXT / CMD16.TXT are plain files beside it: the owner copies one over
+# CMDLINE.TXT to switch the boot configuration (TESTBLATT.md, "Umschalten").
+# Every source below lies in this run directory (payload/); the built programs are from the worktree of afc2bb1c0
+# (method/build-notes.txt). Files the card already has stay untouched unless they are named here.
+BOOT:CMD32.TXT                    | measurements/measurement-2026-11-19-pitest02-prep/payload/boot/CMD32.TXT          | method file (vdiplanes=32)
+BOOT:CMD16.TXT                    | measurements/measurement-2026-11-19-pitest02-prep/payload/boot/CMD16.TXT          | method file (vdiplanes=16)
+BOOT:CMDSER.TXT                   | measurements/measurement-2026-11-19-pitest02-prep/payload/boot/CMDSER.TXT         | method file (serial=on, only with a USB-TTL adapter)
+BOOT:CMD32S.TXT                   | measurements/measurement-2026-11-19-pitest02-prep/payload/boot/CMD32S.TXT         | method file (serial=on vdiplanes=32, only with a USB-TTL adapter)
+# --- probes (C:\PITEST) -------------------------------------------------------------------------------------------
+C:\PITEST\SNDTONE.NCP             | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/SNDTONE.NCP      | sdk/build.sh sdk/examples/sndtone.c SNDTONE.NCP
+C:\PITEST\SNPROBE.NAP             | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/SNPROBE.NAP      | tosdump/build-snprobe-newtos.sh
+C:\PITEST\SCRNINFO.NAP            | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/SCRNINFO.NAP     | tosdump/build-scrninfo-newtos.sh
+C:\PITEST\VDIDRAW.NAP             | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/VDIDRAW.NAP      | tosdump/build-vdidraw-newtos.sh
+C:\PITEST\BIOS\DUMPBIOS.NAP       | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/bios/DUMPBIOS.NAP | tosdump/build-dumpbios-newtos.sh
+C:\PITEST\BIOS\BIOS.TSV           | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/bios/BIOS.TSV    | tosdump/cases/bios-r1.tsv (copy)
+C:\PITEST\RAST32\DUMPRAST.NAP     | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/rast32/DUMPRAST.NAP | tosdump/build-dumprast-newtos.sh
+C:\PITEST\RAST32\RASTER.TSV       | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/rast32/RASTER.TSV | tosdump/cases/vdi-raster32.tsv (copy)
+# --- programs at 32 planes ----------------------------------------------------------------------------------------
+C:\Apps\TERADESK\DESKTOP.NAP      | measurements/measurement-2026-11-19-pitest02-prep/payload/teradesk/DESKTOP.NAP    | sdk/apps/build-teradesk.sh (V69 overlay)
+C:\Apps\TERADESK\desktop.rsc      | measurements/measurement-2026-11-19-pitest02-prep/payload/teradesk/desktop.rsc    | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\icons.rsc        | measurements/measurement-2026-11-19-pitest02-prep/payload/teradesk/icons.rsc      | sdk/apps/build-teradesk.sh
+C:\Apps\TERADESK\cicons.rsc       | measurements/measurement-2026-11-19-pitest02-prep/payload/teradesk/cicons.rsc     | sdk/apps/build-teradesk.sh
+C:\Apps\PRESENT\PRESENT.NAP       | measurements/measurement-2026-11-19-pitest02-prep/payload/present/PRESENT.NAP     | method/build-present.sh
+C:\Apps\PRESENT\SLIDES.TXT        | measurements/measurement-2026-11-19-pitest02-prep/payload/present/SLIDES.TXT      | sdk/apps/present/sample/SLIDES.TXT (copy)
+C:\Apps\PRESENT\TEST.PNG          | measurements/measurement-2026-11-19-pitest02-prep/payload/present/TEST.PNG        | sdk/apps/present/sample/gen-sample.py
+C:\Apps\ZVIEW\SAMPLES\TRGB.PNG    | measurements/measurement-2026-11-19-pitest02-prep/payload/pitest/TRGB.PNG         | measurements/measurement-2026-10-06-zview-m4/bin/SAMPLES/TRGB.PNG (copy)

@@ -1,0 +1,154 @@
+RUNINFO PITEST02 - evaluation of the owner's real-Pi session (host only, read only on the card)
+
+Scope: collect the result files the owner's real-Pi run left on the Pi card (kern1119.img, build afc2) and compare them with the
+expectations of measurements/measurement-2026-11-19-pitest02-prep/TESTBLATT.md. No build, no QEMU, no verdict where the sheet says
+"nicht festgelegt" (values only). Verdict of this run: PARTIAL (only part of the sheet left files; the rest waits for the owner).
+
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.328; host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1)
+Tester: agent-a148975e933acca44. No clone, no worktree, no cargo target dir (nothing built). Scratch: none.
+
+== Card identification (from content, not the volume name) ==
+"/Volumes/BOOT 1": CARDMAN.TXT (card/CARDMAN.TXT = the card manifest) names "kernel kern1119.img 8bceb17f... , kernel_active
+kern1119.img -> kernel8.img", tree_commit 94cc9549f, written by tools/sync-card.sh 2026-11-19T19:29:02Z. File dates on the Pi are
+NOT wall-clock: the Pi has no RTC, every boot starts at 2026-11-19 00:00:00 (SCRNINFO "date 2026-11-19 time 00:00:30"), so the
+dates 00:00..00:06 are time since power-on in the owner's session; files with dates 20:29 are the sync (Mac time).
+The second card (/Volumes/BOOT, TOOLS, SYSTEM, GAMES) was not touched.
+optional_missing of the card manifest, verbatim: "optional_missing none". boot_cmdline empty at sync; C:\CMDLINE.TXT now holds
+"vdiplanes=32" + newline + padding spaces (13 bytes, card file date 00:06, i.e. written on the Pi after the sync; the owner
+switched to 32).
+
+== Commands (all host-side; board: none, real Pi 4 data collected by the owner) ==
+- ls / cat / stat / shasum on "/Volumes/BOOT 1" (read only), cp -X of each result file into card/ (copy list below) - OK
+- tosdump/host/build/tosdiff tosdump/cases/bios-r1.tsv tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN card/PITEST/BIOS/BIOS.BIN
+  -> exit 1, "28 of 147 cases differ" (method/tosdiff-EMUTOS-1a7484ab-BIOS-falcontc.txt)
+- same with tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN -> exit 1, "33 of 147 cases differ" (method/tosdiff-EMUTOS-1a7484ab-BIOS.txt)
+- python3 -I tosdump/host/contract32-check.py tosdump/cases/vdi-raster32.tsv card/PITEST/RAST32/RASTER.BIN
+  -> exit 0, "0 of 64 cases differ from the NewTOS contract" (method/contract32-check.txt)
+- cargo xtask scratch-clean a2e56c27c67de64b3 (the prep run's leftover agent dir, 2.1 GiB) -> removed.
+Failures: none in the harness. No reproduction command needed beyond the three evaluation commands above.
+
+== Copied files (cp -X from the card; sha256 in card.sha256; card file date = Pi uptime clock, see above) ==
+ size   card date            sha256                                                            file (C:)
+ 13397  19 Nov 00:00:30      4fbab8783eb97ac6ea1cc18657cab52da75287feecfa6c75f89b7c7f89af20ea  PITEST\SCRNINFO.TXT
+  3829  19 Nov 00:01:48      26e69a9f9bbf97bc77b385b7060e35b609ae09463b423411d3506377942ef5b9  PITEST\SNPROBE.LOG
+ 47072  19 Nov 00:01:38      4cce16a90c68b06417aa402f3b7d68494c03e6a05b78a46204d7bfae3c2ee043  PITEST\BIOS\BIOS.BIN
+   172  19 Nov 00:01:38      ac5e812b4a8683af170d330d41c7464c5c5af079873277af7ea5773c94f30431  PITEST\BIOS\BIOS.LOG
+367648  19 Nov 00:01:14      aee482dfb1c00319b93b65ffa0437af75af95cf356010b37c5add90ed1c4f2f9  PITEST\RAST32\RASTER.BIN
+   599  19 Nov 00:01:14      e06990861efb03a28e7733e4d79eeda0546897a372e7767d6cee151d5469df6d  PITEST\RAST32\RASTER.LOG
+  5281  19 Nov 00:04:38      dc86dca0cd108f60ac4ea710b28041d9e174921dfe03de1be3b1c5d07e351d8f  Apps\FBENCH\P16.FBP
+    13  19 Nov 00:06:00      9d9a2101a548fdfe61d80370a0490210713ce72c50f5fdb9c5f46403e6c03c07  CMDLINE.TXT
+ 15536  19 Nov 20:29:04      046dd4de59d90323141835db5ada4aadef7353f2c143a7549e4ee5daac5213c3  CARDMAN.TXT
+Not found / not copied: C:\Apps\PRESENT\PRESENT.LOG (absent), any Fbench file other than P16.FBP newer than 2026-11-08
+(LATEST.TXT and OPTIMIZE.* still dated 2026-11-08; the other 2026-11-08..: PDFs/zip are old), no PITEST\SNDTONE output file exists
+by design. ._SCRNINFO.TXT (AppleDouble, 4096 bytes, written by the Mac when the file was seen) was not copied.
+All copies are under measurements/measurement-2026-11-19-pitest02-pi/card/ (small, none gitignored).
+
+== Depth at which each file was written (from its own content) ==
+SCRNINFO.TXT : 1920x1080, 32 planes (vq_extnd(1)[4]=32) -> the part-B (vdiplanes=32) run. File name serves A2 and B2; the A2
+               result (16 planes) is not on the card (overwritten or never run).
+RASTER.LOG   : "workstation reports 1920x1080 at 32 planes" -> part B (B5). DEV_TAB 1919,1079.
+BIOS.BIN/LOG : no depth line in the log; case 213 VgetSize = 8294400 = 1920*1080*4 (16 planes would be 4147200) and the file
+               is dated 00:01:38 after RASTER at 00:01:14 -> written at 32 planes, i.e. in the same boot family as SCRNINFO (part B
+               state). Sheet puts it in A4 (default start); the depth differs from the sheet's A4 premise (see below).
+SNPROBE.LOG  : the log carries no depth. Its date 00:01:48 follows BIOS 00:01:38 / RAST32 00:01:14 / SCRNINFO 00:00:30 in the
+               same uptime clock, but the clock restarts at every boot, so the depth is not provable from the file. Sound path
+               does not depend on depth.
+P16.FBP      : "SCREEN=1920x1080 256 colours 16 planes", PLANES=16, DATE 2026-11-19 00:04 -> a 16-plane run (part A, A7).
+CMDLINE.TXT  : vdiplanes=32 now.
+Conclusion: the owner ran at least two boots: one at 16 planes (Fbench P16, A7) and one at 32 planes (SCRNINFO, RAST32, BIOS and
+very probably SNPROBE). At A-part files that exist only at 32 planes the sheet's 16-plane expectations cannot be judged.
+
+== Per sheet step ==
+A1  start/desktop        no result file (waits for owner's photo/answer)
+A2  SCRNINFO 16 planes   file absent at 16: SCRNINFO.TXT on the card is the 32-plane run (B2). Cookie jar part of A2 is met by the
+                         32 run: 7 entries incl. "5F534E44 '_SND'  value 00000014 (20)" (QEMU: 6 entries without _SND; diff in
+                         prep smoke-ref/SCRNINFO-qemu-v32.TXT: only the screen size 1920x1080 vs 640x480, the _SND entry, the
+                         time). A2 itself (16 planes, work_out[2]=16/0010, [4]=-32768/8000): NOT TESTED.
+A3  SNDTONE              no result file (console output, photo/tuner needed)
+A4  bios-r1 on the Pi    BIOS.LOG: "BIOS.TSV: 147 cases, CRC 583C11E0", "all 147 cases ran", "BIOS.BIN: 147 records, 47072 bytes"
+                         = EQUAL to the sheet. tosdiff, written at 32 planes (see above):
+                         vs falcontc: 28 of 147 differ: 31 36 70 105 128 129 178 179 183 189 190 191 192 193 194 213 215 218 219
+                           220 221 222 223 224 225 226 227 235.
+                         vs tt (EMUTOS-1a7484ab-BIOS.BIN): 33 of 147 differ: 31 36 70 87 105 128 129 178 179 189 190 191 192 193
+                           194 200 201 202 203 204 205 206 207 208 211 212 213 214 215 219 220 232 235.
+                         QEMU list of smoke-ref (falcontc, 31 cases): 70 105 128 129 178 179 183 189-194 213 215 218-227 230-235.
+                         Pi minus QEMU = 31, 36; QEMU minus Pi = 230 231 232 233 234; common 26.
+                         Called out cases (falcontc reference):
+                          230 Soundcmd(0,-1), 231 Soundcmd(1,-1), 232 Soundcmd(6,-1), 233 Buffoper(-1), 234 Sndstatus(0):
+                            now EQUAL to falcontc (not in the diff) = the sheet's expectation 230-234 met.
+                          235 Buffptr(b0): still differs (capture bytes 00 00 00 00 vs 01 CF 80 90), as expected (ACCEPTED layout).
+                          213 VgetSize(0x1C): 8294400 (0x7E9000) vs falcontc 614400 = sheet expectation 8294400 met. (At 32
+                            planes by content; 1920*1080*4 = 8294400, 16 planes would give 4147200: the sheet's number is the
+                            32-plane figure; whether XBIOS22's "default" claim is for 16 or 32 planes is not decided here.)
+                          87 Getrez(): equal to falcontc (not in the falcontc diff); differs vs tt (as in QEMU).
+                         New on the Pi against QEMU, expectation not set: 31 Bconstat(1) AUX ret -1 (falcontc 0), 36 Bconstat(6)
+                         Bconmap 6 ret -1 (falcontc 0). Values only, no verdict (sheet: other differences "nicht festgelegt").
+A5  SNPROBE with backend SNPROBE.LOG: A01 "Locksnd() ret=00000001 (1)" (not 00000080) = met; no "B-F skipped: Locksnd answers its
+                         function number" line = met; parts B, C, D ran (B07..D06 present); ends "E-F skipped: no m68k handler on
+                         NewTOS", "end". Versus the falcontc oracle log (measurement-2026-11-12-snd04/oracle/falcontc-run1):
+                         differences in A16 (play=01cf8090 vs 0), A28 Dsptristate ret -5 vs 0, A29 Gpio ret -5 vs 0, B04, B06
+                         (steps of ~500 per tick vs ~120), B07 distinct=18 vs 324, B08 play=00402000 vs 00025ba0, C03 distinct
+                         58 vs 1696 / wraps 3 both, D06 distinct 31, C06. No target for B-F set by the sheet: values only.
+A6  DOOM                 no result file
+A7  Fbench 16 planes     only the profile P16.FBP (16 planes, DURATION=200, DATE 2026-11-19 00:04, 110 results as OPTIMIZE.FBP).
+                         LATEST.TXT not updated (still 2026-11-08). Five lines, Ops/s:
+                           Blit scr->scr 64x64      2026-11-08 38823   P16 38459   (-0.9 %)
+                           Blit mem->scr 64x64      2026-11-08 27971   P16 28108   (+0.5 %)
+                           Blit scr->mem 64x64      2026-11-08 24765   P16 24765   (0.0 %)
+                           Mono blit (vrt_cpyfm)    2026-11-08 45055   P16 44608   (-1.0 %)
+                           Blit 64x64, aligned      2026-11-08 57343   P16 56495   (-1.5 %)
+                         All within the ~10 % run-to-run spread of the 2026-11-08 run. Sheet: no target set, values only.
+A8  TeraDesk video opts  no result file (owner's answer)
+A9  PRESENT              no result file: PRESENT.LOG absent on the card
+A10 zView                no result file
+A11 serial boot line     no result file (needs adapter)
+B1  start 32             no result file (photo); the 32-plane boot itself is shown by SCRNINFO
+B1b serial line          no result file
+B2  SCRNINFO 32          SCRNINFO.TXT: "screen 1920x1080, 32 planes (vq_extnd(1)[4])"; vq_scrninfo work_out[2]=32/0020,
+                         [3]=256/0100, [4]=0/0000, [8..10]=8/8/8, red bits 16..23 ([16..23]=16..23), green 8..15, blue 0..7,
+                         cookie jar contains _SND = 00000014; summary "format 2, clut 2, planes 32 ... bits r/g/b 8/8/8";
+                         "screen area restore: VERIFIED". = EQUAL to the sheet's B2 expectation.
+                         Diff against smoke-ref/SCRNINFO-qemu-v32.TXT: only time, 7 vs 6 cookie entries (_SND), 1919/1079 vs
+                         639/479 and "1920x1080" vs "640x480".
+B3  everyday use         no result file (owner's observation; hang/restart would be the QUIRK-001 suspicion)
+B4  VDIDRAW              no result file
+B5  wide raster dumps    RASTER.LOG: "RASTER.TSV: 64 cases, CRC 09A6D228" = ok; "table declares screen 640x480 at 32 planes;
+                         workstation reports 1920x1080 at 32 planes" = ok (no "screen mismatch" refusal); "table declares a
+                         32-plane screen: NewTOS contract (ADR-038), no oracle"; "all 64 cases ran"; "RASTER.BIN: 64 records,
+                         367648 bytes" = all equal to the sheet. contract32-check.py exit 0, "0 of 64 cases differ from the
+                         NewTOS contract" (QEMU reference smoke-ref/rast32/contract32-check.txt says the same).
+B6  TeraDesk 32          no result file
+B7  zView 32             no result file
+B8  PRESENT 32           no result file (PRESENT.LOG absent)
+B9  DOOM 32              no result file
+B10 Fbench 32            no result file (no P32 profile on the card, no LATEST.TXT update: Fbench at 32 planes either not run or
+                         did not save a file; no statement)
+B11 SNDTONE 32           no result file
+B12 back to default      CMDLINE.TXT still "vdiplanes=32": not done at the time of collection (or by the owner later on)
+Part C (SND03)           no result file; kernel on card is still kern1119.img (kernel8.img = kern1119.img by CARDMAN.TXT; the card's
+                         kernel8.img was not hashed here, only the manifest read)
+
+== Steps without a result file (wait for the owner's own report) ==
+A1 A3 A6 A8 A9 A10 A11 B1 B1b B3 B4 B6 B7 B8 B9 B10 B11 B12, Part C; A2 at 16 planes; A4/A5 depth premise (files were produced
+at 32 planes, not at the default start).
+
+== Drove vs. could not verify ==
+Drove: reading the card, evaluating A4 (tosdiff twice), B5 (contract check), reading A2/B2, A5, A7/B10 values against the sheet.
+Could not verify: everything visual and everything interactive (photos), tones, serial lines, HDMI, QUIRK-001, cache coherence
+beyond "the dumps ran and equal the contract".
+
+== Real-Pi-only items (all the data above is from silicon, collected by the owner; nothing claimed from QEMU) ==
+1 A3 pitch / tone; 2 A8/B6 Cancel click; 3 B3 5-minute daily use (cache coherence, QUIRK-001); 4 HDMI colours B1..B9;
+5 A11/B1b serial boot lines; 6 DOOM/PRESENT/Fbench timing at 32 and A9 vs B8; 7 Part C hearing test.
+
+== Out-of-scope observations ==
+- bios-r1 cases 31 (Bconstat(1) AUX) and 36 (Bconstat(6) Bconmap 6): ret -1 on the Pi, 0 in falcontc and in QEMU's NewTOS.
+- C:\PITEST\._SCRNINFO.TXT (AppleDouble file) exists on the card: the Mac wrote it after the card was mounted; harmless.
+- The measurement-2026-11-19-pitest02-card/ directory contains card-before/C/Apps/TERADESK/DESKTOP.NAP (353312 bytes) which is
+  not gitignored and is committed as it is; card-before/C/kernel8.img is gitignored (*.img) and stays out of git:
+  path measurements/measurement-2026-11-19-pitest02-card/card-before/C/kernel8.img, 1,5M, sha256
+  b4bc3a16ac03f348e2b3a8e574024a4bde3edaebdd95de12aeb237ee8771ad87.
+
+== Cleanup ==
+target-agents/agent-a2e56c27c67de64b3 removed with "cargo xtask scratch-clean". Main tree: nothing changed except the two new
+measurement directories (committed). Nothing was written to the card.

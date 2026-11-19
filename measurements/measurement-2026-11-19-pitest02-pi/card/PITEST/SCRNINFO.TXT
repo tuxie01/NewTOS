@@ -1,0 +1,213 @@
+SCRNINFO build afc2 -- EdDI / vq_scrninfo probe
+spec docs/api/vdi/eddi-vq_scrninfo.md
+date 2026-11-19 time 00:00:30 (Tgetdate 5D73, Tgettime 000F)
+Getrez 2
+
+== 1. COOKIE JAR ==
+_p_cookies = 000005F0, 7 entries, end entry value 16
+   0  4E544F53 'NTOS'  value 00000100 (256)
+   1  5F4D4348 '_MCH'  value FFFFFFFF (4294967295)
+   2  5F494454 '_IDT'  value 0000112E (4398)
+   3  5F414B50 '_AKP'  value 00000000 (0)
+   4  45644449 'EdDI'  value 00000001 (1)
+   5  5F56444F '_VDO'  value 00030000 (196608)
+   6  5F534E44 '_SND'  value 00000014 (20)
+EdDI: PRESENT, value 00000001
+
+== 2. EdDI DISPATCHER, FUNCTION 0 ==
+skipped: cookie value 00000001 is not a callable address (zero or odd)
+
+== 3. WORKSTATION ==
+appl_init id 0, AES version global[0] 0340, graf_handle 1, v_opnvwk handle 2
+work_in 1 1 1 1 1 1 1 1 1 1 2
+opnvwk_out[  0]   1919/077F   1079/0437      0/0000    278/0116    278/0116      3/0003      7/0007      0/0000
+opnvwk_out[  8]      6/0006      8/0008      1/0001     24/0018     12/000C    256/0100     10/000A      1/0001
+opnvwk_out[ 16]      2/0002      3/0003      4/0004      5/0005      6/0006      7/0007      8/0008      9/0009
+opnvwk_out[ 24]     10/000A      3/0003      0/0000      3/0003      3/0003      3/0003      0/0000      3/0003
+opnvwk_out[ 32]      0/0000      3/0003      2/0002      1/0001      1/0001      1/0001      0/0000      0/0000
+opnvwk_out[ 40]      2/0002      1/0001      1/0001      1/0001      2/0002
+opnvwk_pts[  0]      5/0005      4/0004      7/0007     13/000D      1/0001      0/0000     40/0028      0/0000
+opnvwk_pts[  8]     15/000F     11/000B    120/0078     88/0058
+vq_extnd(0): CONTRL[2]=6 CONTRL[4]=45
+extnd0_out[  0]   1919/077F   1079/0437      0/0000    278/0116    278/0116      3/0003      7/0007      0/0000
+extnd0_out[  8]      6/0006      8/0008      1/0001     24/0018     12/000C    256/0100     10/000A      1/0001
+extnd0_out[ 16]      2/0002      3/0003      4/0004      5/0005      6/0006      7/0007      8/0008      9/0009
+extnd0_out[ 24]     10/000A      3/0003      0/0000      3/0003      3/0003      3/0003      0/0000      3/0003
+extnd0_out[ 32]      0/0000      3/0003      2/0002      1/0001      1/0001      1/0001      0/0000      0/0000
+extnd0_out[ 40]      2/0002      1/0001      1/0001      1/0001      2/0002
+extnd0_pts[  0]      5/0005      4/0004      7/0007     13/000D      1/0001      0/0000     40/0028      0/0000
+extnd0_pts[  8]     15/000F     11/000B    120/0078     88/0058
+vq_extnd(1): CONTRL[2]=6 CONTRL[4]=45
+extnd1_out[  0]      4/0004      1/0001     31/001F      0/0000     32/0020      0/0000     50/0032      1/0001
+extnd1_out[  8]      1/0001      4/0004      2/0002      1/0001      0/0000      0/0000   1024/0400     -1/FFFF
+extnd1_out[ 16]      1/0001      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+extnd1_out[ 24]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+extnd1_out[ 32]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+extnd1_out[ 40]      0/0000      0/0000      0/0000      0/0000      0/0000
+extnd1_pts[  0]      0/0000      0/0000   1919/077F   1079/0437      0/0000      0/0000      0/0000      0/0000
+extnd1_pts[  8]      0/0000      0/0000      0/0000      0/0000
+screen 1920x1080, 32 planes (vq_extnd(1)[4]), 256 pens (DEV_TAB[13]), lookup table 0 (vq_extnd(1)[5])
+
+== 3b. vq_scrninfo (102/1, INTIN[0]=2) ==
+CONTRL after: [2]=0/0000 [4]=272/0110 (both were 5A5A going in)
+work_out[  0]      2/0002      2/0002     32/0020    256/0100      0/0000      0/0000      0/0000      0/0000
+work_out[  8]      8/0008      8/0008      8/0008      0/0000      0/0000      8/0008      1/0001      0/0000
+work_out[ 16]     16/0010     17/0011     18/0012     19/0013     20/0014     21/0015     22/0016     23/0017
+work_out[ 24]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 32]      8/0008      9/0009     10/000A     11/000B     12/000C     13/000D     14/000E     15/000F
+work_out[ 40]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 48]      0/0000      1/0001      2/0002      3/0003      4/0004      5/0005      6/0006      7/0007
+work_out[ 56]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 64]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 72]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 80]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 88]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[ 96]     24/0018     25/0019     26/001A     27/001B     28/001C     29/001D     30/001E     31/001F
+work_out[104]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[112]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[120]     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF     -1/FFFF
+work_out[128]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[136]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[144]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[152]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[160]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[168]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[176]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[184]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[192]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[200]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[208]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[216]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[224]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[232]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[240]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[248]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[256]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[264]      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000      0/0000
+work_out[272]      0/0000
+INTOUT[273..511] untouched (still 5A5A)
+PTSOUT untouched
+summary: format 2, clut 2, planes 32, colours 01000000, line bytes 0, address 00000000, bits r/g/b 8/8/8, alpha 0, genlock 0, unused 8, organisation 1/0001
+
+== 4. PIXELS: VDI draw -> vro_cpyfm -> device-format MFDB ==
+area x 32..63, y 32..33; MFDB fd_w 32 fd_h 2 fd_wdwidth 2 fd_stand 0 fd_nplanes 32
+pens re-coloured with vs_color: YES (>8 planes), restored afterwards
+pens (vq_color flag 0 = requested, flag 1 = realized; [rc] = INTOUT[0]):
+  pen   0  old 1000,1000,1000  set 1000,1000,1000  req [0] 1000,1000,1000  real [0] 1000,1000,1000
+  pen   1  old    0,   0,   0  set    0,   0,   0  req [1]    0,   0,   0  real [1]    0,   0,   0
+  pen   2  old 1000,   0,   0  set 1000,   0,   0  req [2] 1000,   0,   0  real [2] 1000,   0,   0
+  pen   3  old    0,1000,   0  set    0,1000,   0  req [3]    0,1000,   0  real [3]    0,1000,   0
+  pen   4  old    0,   0,1000  set    0,   0,1000  req [4]    0,   0,1000  real [4]    0,   0,1000
+  pen   5  old    0,1000,1000  set 1000,1000,   0  req [5] 1000,1000,   0  real [5] 1000,1000,   0
+  pen   6  old 1000,1000,   0  set    0,1000,1000  req [6]    0,1000,1000  real [6]    0,1000,1000
+  pen   7  old 1000,   0,1000  set 1000,   0,1000  req [7] 1000,   0,1000  real [7] 1000,   0,1000
+  pen   8  old  733, 733, 733  set  500,   0,   0  req [8]  500,   0,   0  real [8]  502,   0,   0
+  pen   9  old  533, 533, 533  set    0, 500,   0  req [9]    0, 500,   0  real [9]    0, 502,   0
+  pen  10  old  667,   0,   0  set    0,   0, 500  req [10]    0,   0, 500  real [10]    0,   0, 502
+  pen  11  old    0, 667,   0  set  100,   0,   0  req [11]  100,   0,   0  real [11]  102,   0,   0
+  pen  12  old    0,   0, 667  set    0, 100,   0  req [12]    0, 100,   0  real [12]    0, 102,   0
+  pen  13  old    0, 667, 667  set    0,   0, 100  req [13]    0,   0, 100  real [13]    0,   0, 102
+  pen  14  old  667, 667,   0  set 1000, 500, 250  req [14] 1000, 500, 250  real [14] 1000, 502, 251
+  pen  15  old  667,   0, 667  set  250, 500,1000  req [15]  250, 500,1000  real [15]  251, 502,1000
+pixel map (row,col: pen drawn | v_get_pixel INTOUT[0] INTOUT[1]):
+  0, 0: pen   0 | 00FF FFFF
+  0, 1: pen   1 | 0000 0000
+  0, 2: pen   2 | 00FF 0000
+  0, 3: pen   3 | 0000 FF00
+  0, 4: pen   4 | 0000 00FF
+  0, 5: pen   5 | 00FF FF00
+  0, 6: pen   6 | 0000 FFFF
+  0, 7: pen   7 | 00FF 00FF
+  0, 8: pen   8 | 0080 0000
+  0, 9: pen   9 | 0000 8000
+  0,10: pen  10 | 0000 0080
+  0,11: pen  11 | 001A 0000
+  0,12: pen  12 | 0000 1A00
+  0,13: pen  13 | 0000 001A
+  0,14: pen  14 | 00FF 8040
+  0,15: pen  15 | 0040 80FF
+  0,16: pen   0 | 00FF FFFF
+  0,17: pen   0 | 00FF FFFF
+  0,18: pen   0 | 00FF FFFF
+  0,19: pen   0 | 00FF FFFF
+  0,20: pen   0 | 00FF FFFF
+  0,21: pen   0 | 00FF FFFF
+  0,22: pen   0 | 00FF FFFF
+  0,23: pen   0 | 00FF FFFF
+  0,24: pen   0 | 00FF FFFF
+  0,25: pen   0 | 00FF FFFF
+  0,26: pen   0 | 00FF FFFF
+  0,27: pen   0 | 00FF FFFF
+  0,28: pen   0 | 00FF FFFF
+  0,29: pen   0 | 00FF FFFF
+  0,30: pen   0 | 00FF FFFF
+  0,31: pen   0 | 00FF FFFF
+  1, 0: pen  15 | 0040 80FF
+  1, 1: pen  14 | 00FF 8040
+  1, 2: pen  13 | 0000 001A
+  1, 3: pen  12 | 0000 1A00
+  1, 4: pen  11 | 001A 0000
+  1, 5: pen  10 | 0000 0080
+  1, 6: pen   9 | 0000 8000
+  1, 7: pen   8 | 0080 0000
+  1, 8: pen   7 | 00FF 00FF
+  1, 9: pen   6 | 0000 FFFF
+  1,10: pen   5 | 00FF FF00
+  1,11: pen   4 | 0000 00FF
+  1,12: pen   3 | 0000 FF00
+  1,13: pen   2 | 00FF 0000
+  1,14: pen   1 | 0000 0000
+  1,15: pen   0 | 00FF FFFF
+  1,16: pen   0 | 00FF FFFF
+  1,17: pen   0 | 00FF FFFF
+  1,18: pen   0 | 00FF FFFF
+  1,19: pen   0 | 00FF FFFF
+  1,20: pen   0 | 00FF FFFF
+  1,21: pen   0 | 00FF FFFF
+  1,22: pen   0 | 00FF FFFF
+  1,23: pen   0 | 00FF FFFF
+  1,24: pen   0 | 00FF FFFF
+  1,25: pen   0 | 00FF FFFF
+  1,26: pen   0 | 00FF FFFF
+  1,27: pen   0 | 00FF FFFF
+  1,28: pen   0 | 00FF FFFF
+  1,29: pen   0 | 00FF FFFF
+  1,30: pen   0 | 00FF FFFF
+  1,31: pen   0 | 00FF FFFF
+device-format bytes after vro_cpyfm (256 bytes = fd_wdwidth 2 * 2 * planes 32 * rows 2; buffer pre-filled A5A5):
+  bytes +0000: FF FF FF 00 00 00 00 00 00 00 FF 00 00 FF 00 00
+  bytes +0010: FF 00 00 00 00 FF FF 00 FF FF 00 00 FF 00 FF 00
+  bytes +0020: 00 00 80 00 00 80 00 00 80 00 00 00 00 00 1A 00
+  bytes +0030: 00 1A 00 00 1A 00 00 00 40 80 FF 00 FF 80 40 00
+  bytes +0040: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +0050: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +0060: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +0070: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +0080: FF 80 40 00 40 80 FF 00 1A 00 00 00 00 1A 00 00
+  bytes +0090: 00 00 1A 00 80 00 00 00 00 80 00 00 00 00 80 00
+  bytes +00A0: FF 00 FF 00 FF FF 00 00 00 FF FF 00 FF 00 00 00
+  bytes +00B0: 00 FF 00 00 00 00 FF 00 00 00 00 00 FF FF FF 00
+  bytes +00C0: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +00D0: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +00E0: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  bytes +00F0: FF FF FF 00 FF FF FF 00 FF FF FF 00 FF FF FF 00
+  BEwords +0000: FFFF FF00 0000 0000 0000 FF00 00FF 0000
+  BEwords +0010: FF00 0000 00FF FF00 FFFF 0000 FF00 FF00
+  BEwords +0020: 0000 8000 0080 0000 8000 0000 0000 1A00
+  BEwords +0030: 001A 0000 1A00 0000 4080 FF00 FF80 4000
+  BEwords +0040: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +0050: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +0060: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +0070: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +0080: FF80 4000 4080 FF00 1A00 0000 001A 0000
+  BEwords +0090: 0000 1A00 8000 0000 0080 0000 0000 8000
+  BEwords +00A0: FF00 FF00 FFFF 0000 00FF FF00 FF00 0000
+  BEwords +00B0: 00FF 0000 0000 FF00 0000 0000 FFFF FF00
+  BEwords +00C0: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +00D0: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +00E0: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+  BEwords +00F0: FFFF FF00 FFFF FF00 FFFF FF00 FFFF FF00
+buffer beyond 256 bytes untouched
+screen area restore: VERIFIED (re-read equals the saved copy)
+
+end of report

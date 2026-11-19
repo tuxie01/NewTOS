@@ -1,0 +1,2 @@
+NewTOS contract (ADR-038, 32-plane setting), no oracle: tosdump/cases/vdi-raster32.tsv, wide raster table (area 7 VDI-RASTER32)
+0 of 64 cases differ from the NewTOS contract
