@@ -1,0 +1,4 @@
+1237c1237
+< 	if (planes != 16 && planes != 32) {
+---
+> 	if (planes != 16) {

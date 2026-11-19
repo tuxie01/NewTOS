@@ -1,0 +1,5 @@
+run wt v16 serial=on- 2026-11-19 12:58:29 CET append=''
+bba26190bc48293670a3fdd1d34f5efd90622c91d8abb9d7b233d3d70677015a  kernel8.img (k-nav.img)
+qmp: cannot connect
+clone after run  (deleted)
+wt v16 serial=on- rc=1 fsck rc=8 EXC/PANIC:  lines: 

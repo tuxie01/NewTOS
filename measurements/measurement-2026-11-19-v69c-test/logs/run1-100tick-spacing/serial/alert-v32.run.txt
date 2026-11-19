@@ -1,0 +1,7 @@
+run alert-v32 2026-11-19 13:03:11 CET append='serial=on vdiplanes=32'
+bba26190bc48293670a3fdd1d34f5efd90622c91d8abb9d7b233d3d70677015a  kernel8.img (k-nav.img)
+485244d474c4f668ece7b2cbb09b9b46a3a4a0f8a402349249d60fcfa91ad7cc  base card pr-alert.img
+MARKER-MISSING b'\\[inj\\] up:PRESENT armed'@1
+t=150.3s -> alert-v32-arm.png.MISSING.png {"return": {}}
+clone after run 485244d474c4f668ece7b2cbb09b9b46a3a4a0f8a402349249d60fcfa91ad7cc (deleted)
+alert-v32 rc=3 fsck rc=0 EXC/PANIC: 0 lines: 56

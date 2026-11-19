@@ -1,0 +1,11 @@
+run wt-main-v16 2026-11-19 13:07:59 CET append='serial=on'
+166dee316b9bec7c3cfb88087647ad6e3bb4900a1fb1163156255c757a93863d  kernel8.img (k-nav.img)
+b6768dab05aec5fe9dd980e270318b52ef5425b7274bc8e91ed24138ff0d8fb8  base card pr-wt-main.img
+t=17.5s -> wt-main-v16-arm.png {"return": {}}
+t=19.3s -> wt-main-v16-s1.png {"return": {}}
+t=21.4s -> wt-main-v16-s2.png {"return": {}}
+t=23.5s -> wt-main-v16-s3.png {"return": {}}
+t=25.6s -> wt-main-v16-s4.png {"return": {}}
+t=28.0s -> wt-main-v16-end.png {"return": {}}
+clone after run afab76116401e0994fed20337ae0e97062ef49ca633fb0926c60303d388a3832 (deleted)
+wt-main-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 85

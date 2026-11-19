@@ -1,0 +1,120 @@
+V69 part C, tester run of developer commit d82cf2a23 (branch v69c)  --  2026-11-19
+================================================================================
+Verdict: PASS (real-Pi4-only items listed below; nothing of this run claims them)
+
+Scope (one sentence): PRESENT.NAP at 16 and at 32 planes by converting the frame at the blit (owner option P2), its alert at a
+plane count other than 16/32, and the doc edits of the commit; standing baseline (both boards build, host tests, warnings,
+doc-check). No `cargo xtask accept` in this run.
+
+Environment
+  machine        Ingo's Mac mini (scutil --get ComputerName)
+  macOS          27.0.1
+  Claude Code    2.1.328
+  host clang     Apple clang version 21.0.0 (clang-2100.4.1.1)   (host_clang line of every manifest)
+  tested commit  d82cf2a23  (worktree target-agents/agent-a972011a23195200a/wt, detached)
+  control tree   2d00b4bb5  (its parent on main; worktree .../wt-main) = PRESENT before the change
+  agent dir      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a972011a23195200a  (9.7G, du -sh; deleted on accept/landing)
+  The commit changes only present.c (sdk/apps/present), docs and TASK files: no Rust file (git diff --name-only 2d00b4bb5 d82cf2a23).
+
+How the run was made (method/)
+  - PRESENT.NAP builds: method/build-present.sh = sdk/apps/present/build-present.sh copied with SDK = the main tree's prebuilt
+    archives (gemlib, libpng, libz, libm, libc; no lib_ensure) and BUILD redirected to the agent dir, so nothing is written to
+    any tree. build side wt = present.c of d82cf2a23, side wt-main = present.c of 2d00b4bb5. Both: 0 compiler warnings (-Wall -Wextra).
+    A third build "alert" = a SCRATCH variant (method/alert-variant.diff, agent dir only, never a branch): the one condition
+    `planes != 16 && planes != 32` of the committed alert changed to `planes != 16`, so the committed alert path runs at the
+    32-plane screen (the boot argument cannot give any other plane count: vdiplanes=<16|32> only, kernel/src/bootargs.rs).
+  - Cards: tools/mkcard.sh only (method/mkcards.sh), #Z autorun C:\Apps\PRESENT\PRESENT.NAP (method/z-present.inf), the tracked
+    sample SLIDES.TXT and the generated TEST.PNG; manifests in method/manifests/ (quoted below).
+  - Kernel: ONE scratch release rpi4 kernel built from a copy of the tested tree (tools/inject-arm.py up:PRESENT=method/nav.script;
+    method/build-inj.sh): IKBD injector keys Right, Space, Right, Esc 400 ticks apart. The kernel code is identical on both sides
+    (the commit changes no Rust), so one kernel serves every run. It lives only in the agent dir.
+  - QEMU: `qemu-system-aarch64 -M raspi4b -display none -append "serial=on [vdiplanes=N]"`, one QEMU at a time, card = APFS clone
+    (cp -c) of the base card, screendumps by QMP keyed to the injector's serial byte lines (method/run.sh, mdrive.py, fx.py,
+    pr-run.sh, matrix.sh), 640x480 (the raspi4b default). After each run fsck_msdos -n of the clone's FAT partition and the
+    EXC/PANIC count of the serial log. Compares: method/compare.sh (pngcmp.py exact, pngtol.py at 5 bits per gun), output logs/compare.txt.
+  - Board: raspi4b only (qemu-virt has no C:, so PRESENT cannot be loaded from a card there).
+
+Commands and outcomes (board: raspi4b QEMU unless stated)
+ Build / host
+  cargo xtask build --board qemu-virt (debug, fresh), d82cf2a23 ....... OK  (kernel 93 warnings, tos-api 64)   logs/build-wt-qemu-virt.log
+  cargo xtask build --board rpi4      (debug, fresh), d82cf2a23 ....... OK  (same counts)                      logs/build-wt-rpi4.log
+  both builds on 2d00b4bb5 ............................................ OK, same counts: warnings delta 0     logs/build-wt-main-*.log
+  cargo xtask build --board rpi4 --release, d82cf2a23 ................. OK
+  clippy: not run. The commit changes no .rs file; nothing for clippy to see (build warning delta 0 above).
+  cargo xtask test (full, d82cf2a23) .................................. 2579 passed / 0 failed / 7 ignored (221 suites); baseline 2579/0/7   logs/test-wt.log
+  sdk/run-host-tests.sh in the MAIN tree (read-only script, temp dir only; same sdk as the commit except present.c)
+      ................................................................. 38 passed, 0 failed, 0 skipped = baseline 38/0/0   logs/sdk-host-main.log
+  sdk/run-host-tests.sh in a bare worktree of d82cf2a23 (no gitignored inputs; only sdk/apps/* are linked by worktree-setup)
+      ................................................................. 5 passed / 6 failed / 27 skipped (mintlib tree, libc.a, gemlib.a absent).
+  Why the developer reports 33/0/5: the same cause. A worktree lacks the gitignored sdk inputs (mintlib, gemlib tree/archives, z-tools),
+  so tests SKIP or do not build. I then symlinked the main tree's gitignored sdk paths into my worktree: 37 passed / 1 failed / 0 skipped
+  (logs/sdk-host-wt.log); the one failure is rt-host "rebuild parity: 256 of 407 shipped members byte-identical, 136 identical but for the
+  compiler identification, 15 differ" with "rt-host: 1950316 checks, 0 failed", i.e. a toolchain/path-dependent parity check inside a
+  symlinked worktree; it passes in the main tree (38/0/0). It does not touch PRESENT. Not investigated further (out of scope).
+  cargo xtask doc-check of the 8 docs/TASK files the commit edits, in d82cf2a23 with the gitignored sdk linked: 4 failures
+      TASK/V61.md:147 and :223 (Applications/z-tools/... missing)            old text (blame e7165beaae), gitignored input absent in my worktree
+      TASK/V69.md:104 (measurements/measurement-2026-11-19-v69b-test/)       old text (blame f39ddeb16), not from this commit
+      TASK/V69-STATUS-UNFINISHED.MD:420 (sdk/apps/present/build/PRESENT.NAP) new line of the commit: cites a GITIGNORED build output; it
+          exists in the main tree (and in the developer's tree), absent only in a clean worktree. Not a defect of the commit.
+  (docs/DEVIATIONS.md, docs/sdk/14-present.md, docs/COMPATIBILITY.md, docs/api/vdi/raster/_raster.md, TASK/MEM12.md: no failure that is
+   not the sdk-inputs artefact on the control tree too.)
+ PRESENT, QEMU raspi4b, scripts nav (slides 1 arm, 2, 3, 4, then Esc to the desktop), 12 runs of serial/<side>-<label>.log:
+  wt-v16, wt-v16b   d82cf2a23, default boot (16 planes)                 each rc 0, fsck rc 0, 0 EXC/PANIC
+  wt-v16x           d82cf2a23, explicit vdiplanes=16                    rc 0, fsck 0, 0 EXC/PANIC
+  wt-main-v16       2d00b4bb5, default boot                            rc 0, fsck 0, 0 EXC/PANIC
+  wt-v32, wt-v32b   d82cf2a23, vdiplanes=32 ("[vdi] VDI depth: 32 planes")  each rc 0, fsck 0, 0 EXC/PANIC
+  wt-main-v32       2d00b4bb5, vdiplanes=32 (NEGATIVE CONTROL)          rc 3 (injector never armed: no slide show; see 3), fsck 0, 0 EXC/PANIC
+  alert-v32         scratch variant, vdiplanes=32 (ALERT path)          rc 3 (injector never armed: the alert waits for a click), fsck 0, 0 EXC/PANIC
+  The slide runs write PRESENT.LOG (the sample file says @log), so the clone sha256 after a run differs from the base card (the two runs that never armed, wt-main-v32 and alert-v32, are equal); fsck_msdos -n clean after every run (serial/*.fsck.txt).
+  Earlier attempts kept as history, not cited: logs/aborted-first-attempt (a shell quoting slip of mine, no QEMU ran) and
+  logs/run1-100tick-spacing (keys 100 ticks apart: the slide order raced between runs, even at the default boot, so those frames do
+  not compare; the spacing was raised to 400 ticks and every cited run is of that second set).
+
+Results (every frame viewed with Read, plus method/compare.sh over all pixels; logs/compare.txt)
+ 1. Default boot, d82cf2a23 against main 2d00b4bb5: frames arm, s1, s2, s3, s4, end all 6 of 6 pixel-IDENTICAL (640x480). The repeat
+    wt-v16b and the explicit vdiplanes=16 run wt-v16x are 6 of 6 IDENTICAL to wt-v16 as well. At 16 planes the path is unchanged.
+    Viewed: slide 1 "NewTOS" centred, slide 2 bullets + TEST.PNG (grid, circle, alpha bands), slide 3 missing-picture note,
+    slide 4 wrapped long lines with umlauts; footer and "n / 4" counter present.
+ 2. vdiplanes=32, d82cf2a23: slides s1..s4 and the arm frame are pixel-IDENTICAL to the 16-plane frames (exact compare, also equal
+    at 5 bits per gun, largest step 0); wt-v32b likewise; wt-v32 against wt-v32b 6 of 6 IDENTICAL. Font capture works: the slide texts
+    are drawn in the Scale2x/3x system font (viewed wt-v32-s1.png, wt-v32-s2.png: correct slide image, text and picture). The only
+    differing frame is "end" (the desktop after Esc: 288610 pixels, largest step 3 of 255, EQUAL at 5 bits per gun): the native desktop
+    is drawn at 8 bits per gun at 32 planes, not PRESENT output.
+ 3. Negative control, 2d00b4bb5 at vdiplanes=32 (wt-main-v32-arm.png.MISSING.png, viewed): the form alert "PRESENT: cannot read the
+    system font." on the desktop, no slide show: the defect P2 repairs reproduces on main.
+ 4. Alert, scratch variant at 32 planes (alert-v32-arm.png.MISSING.png, viewed): the committed alert "PRESENT needs a screen of 16 or
+    32 planes." with [ Quit ]; no crash, 0 EXC/PANIC, fsck clean, the process ends cleanly after the dump (QEMU quit by the run script).
+    This exercises the committed alert branch and text through the real vq_extnd; the plane-count condition itself was changed in the
+    scratch copy (alert-variant.diff), because the kernel offers no third plane count.
+
+Drove vs. could not verify
+  drove: both board builds, host tests (cargo xtask test, sdk host tests), warnings delta, doc-check, PRESENT slide show at 16 and 32
+         planes on raspi4b QEMU with pixel compares and viewed frames, negative control on main, alert branch via the scratch variant.
+  could not verify: a plane count other than 16/32 with the unchanged condition (not reachable: vdiplanes accepts 16|32 only);
+         qemu-virt (ramfb) PRESENT run (no C: there; the slide show is card-loaded); screen sizes other than 640x480 (the earlier PRESENT01
+         run covered 640x480, 1024x768, 1920x1080 at 16 planes; here 640x480 only); the @log timing line of docs/sdk/14-present.md for the
+         32-plane expansion (no timing measured, no claim made).
+
+Real-Pi4-only (listed, no pass claimed): 3
+  - the VideoCore framebuffer at 32 planes and the real HDMI picture of a slide;
+  - the blit/expansion time of the 32-bit conversion on silicon (QEMU guest time only, not measured here);
+  - real USB-HID clicker/keyboard navigation (QEMU used the IKBD injector).
+
+Out-of-scope observations
+  - sdk/run-host-tests.sh rt-host fails its member-rebuild parity in a symlinked worktree (15 of 407 members differ), passes in the main tree.
+  - doc-check of docs that cite a gitignored build output (TASK/V69-STATUS-UNFINISHED.MD:420) fails in any clean worktree.
+
+Manifests of the booted images (method/manifests/), optional_missing quoted verbatim
+  pr-wt.img.manifest        optional_missing none   (host_clang Apple clang version 21.0.0 (clang-2100.4.1.1))
+  pr-wt-main.img.manifest   optional_missing none
+  pr-alert.img.manifest     optional_missing none
+
+Gitignored outputs cited (agent dir; path relative to it, sha256)
+  scratch/bin/k-nav.img (injector kernel, scratch)               166dee316b9bec7c3cfb88087647ad6e3bb4900a1fb1163156255c757a93863d
+  scratch/bin/k-rpi4-release.img (plain release rpi4, d82cf2a23)  66f3be4bac63044af5711c407a1e90481bce9964882d4e4840cbdbac8c89b830
+  scratch/bin/present-wt/PRESENT.NAP (d82cf2a23)                  6b2445e41bcffe44c5074d034f3160bfbbab35edc7f9aa67c7b15561a4eca36d  430752 bytes
+  scratch/bin/present-wt-main/PRESENT.NAP (2d00b4bb5)             1433062a1ad0d4345c596341208b117b2db27e86b5c9356217e81708eb7124da  431136 bytes
+  scratch/bin/present-alert/PRESENT.NAP (scratch variant)         5338456729b2ff99b09c8cac1ad49b9377c362653fa74baeee0c940a9ba327f4  430768 bytes
+  base cards: image_sha256 in the manifests (pr-wt 1d55d390..., pr-wt-main b6768dab..., pr-alert 485244d4...); each run's serial/<tag>.run.txt
+  records the kernel and base-card sha256 and the clone's sha256 after the run.
+  clone path of the worktrees: target-agents/agent-a972011a23195200a/{wt,wt-main}, agent dir 9.7G.

@@ -1,0 +1,11 @@
+run wt-v32b 2026-11-19 13:10:02 CET append='serial=on vdiplanes=32'
+166dee316b9bec7c3cfb88087647ad6e3bb4900a1fb1163156255c757a93863d  kernel8.img (k-nav.img)
+1d55d3904d32ea231da633aaac860200b7f1ebe15f58b64c0d86a7343702125c  base card pr-wt.img
+t=17.5s -> wt-v32b-arm.png {"return": {}}
+t=19.4s -> wt-v32b-s1.png {"return": {}}
+t=21.4s -> wt-v32b-s2.png {"return": {}}
+t=23.5s -> wt-v32b-s3.png {"return": {}}
+t=25.6s -> wt-v32b-s4.png {"return": {}}
+t=28.0s -> wt-v32b-end.png {"return": {}}
+clone after run 29291cae7e718584b960def88de1806fa3e637b36620588a33cff8926888e151 (deleted)
+wt-v32b rc=0 fsck rc=0 EXC/PANIC: 0 lines: 86

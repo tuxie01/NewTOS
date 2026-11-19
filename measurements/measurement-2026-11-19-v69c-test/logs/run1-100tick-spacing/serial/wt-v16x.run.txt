@@ -1,0 +1,11 @@
+run wt-v16x 2026-11-19 13:05:44 CET append='serial=on vdiplanes=16'
+bba26190bc48293670a3fdd1d34f5efd90622c91d8abb9d7b233d3d70677015a  kernel8.img (k-nav.img)
+1d55d3904d32ea231da633aaac860200b7f1ebe15f58b64c0d86a7343702125c  base card pr-wt.img
+t=17.5s -> wt-v16x-arm.png {"return": {}}
+t=19.1s -> wt-v16x-s1.png {"return": {}}
+t=19.9s -> wt-v16x-s2.png {"return": {}}
+t=20.8s -> wt-v16x-s3.png {"return": {}}
+t=21.6s -> wt-v16x-s4.png {"return": {}}
+t=22.4s -> wt-v16x-end.png {"return": {}}
+clone after run aee862e4d84285a860dc8d3e3bccf750f7924e160dce04f8f91fc046fe0f132d (deleted)
+wt-v16x rc=0 fsck rc=0 EXC/PANIC: 0 lines: 86

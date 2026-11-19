@@ -1,0 +1,9 @@
+wt-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 85
+wt-main-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 85
+wt-v16b rc=0 fsck rc=0 EXC/PANIC: 0 lines: 85
+wt-v16x rc=0 fsck rc=0 EXC/PANIC: 0 lines: 86
+wt-v32 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 86
+wt-v32b rc=0 fsck rc=0 EXC/PANIC: 0 lines: 86
+wt-main-v32 rc=3 fsck rc=0 EXC/PANIC: 0 lines: 56
+alert-v32 rc=3 fsck rc=0 EXC/PANIC: 0 lines: 56
+MATRIXDONE

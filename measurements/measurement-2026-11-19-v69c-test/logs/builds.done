@@ -1,0 +1,7 @@
+wt qemu-virt rc=0
+wt rpi4 rc=0
+wt-main qemu-virt rc=0
+wt-main rpi4 rc=0
+wt rpi4 release rc=0
+test rc=0
+ALL

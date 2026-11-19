@@ -1,0 +1,36 @@
+wt-v16 vs wt-main-v16 arm  exact: IDENTICAL 640x480
+wt-v16 vs wt-main-v16 s1   exact: IDENTICAL 640x480
+wt-v16 vs wt-main-v16 s2   exact: IDENTICAL 640x480
+wt-v16 vs wt-main-v16 s3   exact: IDENTICAL 640x480
+wt-v16 vs wt-main-v16 s4   exact: IDENTICAL 640x480
+wt-v16 vs wt-main-v16 end  exact: IDENTICAL 640x480
+wt-v16 vs wt-v16b arm  exact: IDENTICAL 640x480
+wt-v16 vs wt-v16b s1   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16b s2   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16b s3   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16b s4   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16b end  exact: IDENTICAL 640x480
+wt-v16 vs wt-v16x arm  exact: IDENTICAL 640x480
+wt-v16 vs wt-v16x s1   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16x s2   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16x s3   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16x s4   exact: IDENTICAL 640x480
+wt-v16 vs wt-v16x end  exact: IDENTICAL 640x480
+wt-v32 vs wt-v16 arm  exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32 vs wt-v16 s1   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32 vs wt-v16 s2   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32 vs wt-v16 s3   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32 vs wt-v16 s4   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32 vs wt-v16 end  exact: DIFFER 288610 of 307200 pixels, bbox x 0..639 y 19..479  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 3)
+wt-v32b vs wt-v16 arm  exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32b vs wt-v16 s1   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32b vs wt-v16 s2   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32b vs wt-v16 s3   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32b vs wt-v16 s4   exact: IDENTICAL 640x480  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 0)
+wt-v32b vs wt-v16 end  exact: DIFFER 288610 of 307200 pixels, bbox x 0..639 y 19..479  | 5bit: EQUAL AT 5 BITS 640x480 (largest step 3)
+wt-v32 vs wt-v32b arm  exact: IDENTICAL 640x480
+wt-v32 vs wt-v32b s1   exact: IDENTICAL 640x480
+wt-v32 vs wt-v32b s2   exact: IDENTICAL 640x480
+wt-v32 vs wt-v32b s3   exact: IDENTICAL 640x480
+wt-v32 vs wt-v32b s4   exact: IDENTICAL 640x480
+wt-v32 vs wt-v32b end  exact: IDENTICAL 640x480

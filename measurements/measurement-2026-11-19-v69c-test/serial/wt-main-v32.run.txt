@@ -1,0 +1,7 @@
+run wt-main-v32 2026-11-19 13:10:33 CET append='serial=on vdiplanes=32'
+166dee316b9bec7c3cfb88087647ad6e3bb4900a1fb1163156255c757a93863d  kernel8.img (k-nav.img)
+b6768dab05aec5fe9dd980e270318b52ef5425b7274bc8e91ed24138ff0d8fb8  base card pr-wt-main.img
+MARKER-MISSING b'\\[inj\\] up:PRESENT armed'@1
+t=40.2s -> wt-main-v32-arm.png.MISSING.png {"return": {}}
+clone after run b6768dab05aec5fe9dd980e270318b52ef5425b7274bc8e91ed24138ff0d8fb8 (deleted)
+wt-main-v32 rc=3 fsck rc=0 EXC/PANIC: 0 lines: 56
