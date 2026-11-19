@@ -87,3 +87,7 @@ options dialog, the SND03 hearing test.
 
 New observation, values only, for the owner to decide on a ticket: `bios-r1` cases 31 `Bconstat(1)` and 36
 `Bconstat(6)` return -1 on the Pi where the `falcontc` reference and QEMU return 0.
+
+Owner 2026-11-19 on the two `Bconstat` cases: nothing is connected to the serial inputs of the Pi, so the open input
+floats and delivers noise as received characters. No ticket. Not measured; it is confirmed or refuted by the same
+`bios-r1` run with a USB serial adapter connected (the sheet's optional step A11), which joins the collected list.
