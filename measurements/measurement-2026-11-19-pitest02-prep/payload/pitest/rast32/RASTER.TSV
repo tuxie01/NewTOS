@@ -1,0 +1,136 @@
+# vdi-raster32.tsv -- NewTOS contract (ADR-038), 32-plane setting: no oracle.
+#
+# The memory-form raster group at vdiplanes=32 (TASK/V69). A WIDE table
+# (tosdump/core/cases.h, "THE 32-PLANE SETTING"): it declares a 32-plane
+# screen, so DUMPRAST runs it only at 32 planes, writes the wide record
+# (area 7 VDI-RASTER32, 5744 bytes, buffers of 1024 WORDs) and logs "NewTOS
+# contract (ADR-038), no oracle". EmuTOS has no path above 16 planes
+# (vdi_defs.h:22): nothing here is compared with an oracle. The values a
+# case must show are the contract's -- ADR-038 (docs/MEMORY.md) and the
+# 32-plane sections of docs/api/vdi/raster/_raster.md (V63 R1-R6, V64
+# P1-P9, V65 sections 2-6) -- and tosdump/host/contract32-check.py lays
+# them beside every case, computed from the case line itself; its dump is
+# a regression baseline (NEWTOS32-...), never an expectation by itself.
+#
+# Run: cargo xtask tosdump rast tosdump/cases/vdi-raster32.tsv --out <dir>
+#      --bootargs vdiplanes=32
+#
+#   opcode <TAB> intin <TAB> ptsin <TAB> src <TAB> dst <TAB> fill <TAB> comment
+#
+# src/dst = buffer,fd_w,fd_h,fd_wdwidth,fd_stand,fd_nplanes (buffer 0 = A,
+# 1 = B); fill = the two seeds of td_rast_fill (tosdump/core/record.c).
+#
+# THE 32-PLANE MEMORY FORM (V65 section 3): fd_stand 0, fd_nplanes 32, one
+# native-endian 32-bit pixel 0xXXRRGGBB per position, row fd_wdwidth * 16
+# pixels. On AArch64 the WORD array holds pixel k as WORD 2k (low) and
+# 2k+1 (high). A 32 x 16 form (fd_wdwidth 2) is 1024 WORDs, the whole wide
+# buffer. Memory-to-memory results are exact in all 32 bits, X included:
+# every pixel here comes from the buffers' fill or a pen, none from a
+# screen pixel no pen wrote.
+#
+# Planar 1..8-plane forms are depth-independent (V65 section 2) and are
+# measured by vdi-raster.tsv at 32 against its own 16-plane run; they are
+# not restated here.
+!screen	640,480,32
+
+# ======================================================================
+# SECTION M -- vro_cpyfm (109) 32-plane memory to memory.
+# ======================================================================
+# The 16/16 group of vdi-raster.tsv, restated at 32 planes. The 16 logic
+# ops act bitwise on all 32 bits (V63 R4, V65 section 3): ALL_WHITE writes
+# 0x00000000, ALL_BLACK 0xFFFFFFFF, D_ONLY changes nothing. The source
+# rectangle is sorted (arb_corner), the destination extent is the source's
+# (dont_clip), an overlap inside one buffer reads every source pixel before
+# it is overwritten (the start-address rule, vdi_raster.c:995-1002).
+109	0	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	60,61	M1 op 0 ALL_WHITE: 0x00000000
+109	1	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	62,63	M2 op 1 S_AND_D
+109	2	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	64,65	M3 op 2 S_AND_NOTD
+109	3	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	66,67	M4 op 3 S_ONLY: the source pixels, all 32 bits
+109	4	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	68,69	M5 op 4 NOTS_AND_D
+109	5	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	70,71	M6 op 5 D_ONLY: nothing changes
+109	6	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	72,73	M7 op 6 S_XOR_D
+109	7	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	74,75	M8 op 7 S_OR_D
+109	8	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	76,77	M9 op 8 NOT_SORD
+109	9	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	78,79	M10 op 9 NOT_SXORD
+109	10	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	80,81	M11 op 10 NOT_D: X complemented too
+109	11	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	82,83	M12 op 11 S_OR_NOTD
+109	12	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	84,85	M13 op 12 NOT_S
+109	13	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	86,87	M14 op 13 NOTS_OR_D
+109	14	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	88,89	M15 op 14 NOT_SANDD
+109	15	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	90,91	M16 op 15 ALL_BLACK: 0xFFFFFFFF
+109	0x13	0,0,7,7,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	92,93	M17 PAT_FLAG|3 on the truecolor path: nothing copied
+109	3	0,0,0,0,5,5,5,5	0,32,16,2,0,32	1,32,16,2,0,32	94,95	M18 one pixel, a degenerate rectangle
+109	3	7,7,0,0,8,8,15,15	0,32,16,2,0,32	1,32,16,2,0,32	96,97	M19 reversed source corners: arb_corner sorts
+109	3	0,0,7,7,15,15,8,8	0,32,16,2,0,32	1,32,16,2,0,32	98,99	M20 reversed destination corners
+109	3	24,8,31,15,0,0,7,7	0,32,16,2,0,32	1,32,16,2,0,32	100,101	M21 a rectangle at the far corner of the form
+109	3	0,0,31,15,0,0,31,15	0,32,16,2,0,32	1,32,16,2,0,32	102,103	M22 the whole form: B = A, 1024 WORDs
+109	3	0,0,7,7,0,0,31,15	0,32,16,2,0,32	1,32,16,2,0,32	104,105	M23 PTSIN[6..7] too big: the extent is the source's
+109	3	0,0,15,7,8,8,23,15	0,32,16,2,0,32	0,32,16,2,0,32	106,107	M24 overlap in A, destination down and right
+109	3	8,8,23,15,0,0,15,7	0,32,16,2,0,32	0,32,16,2,0,32	108,109	M25 overlap in A, destination up and left
+109	6	0,0,15,7,0,8,15,15	0,32,16,2,0,32	0,32,16,2,0,32	110,111	M26 XOR inside one buffer, no overlap
+109	3	0,0,11,11,3,0,14,11	0,32,16,2,0,32	0,32,16,2,0,32	112,113	M27 overlap in A, right by 3 on the same rows
+109	3	3,4,15,15,0,0,12,11	0,32,16,2,0,32	0,32,16,2,0,32	114,115	M28 overlap in A, up and left by 3,4
+
+# ======================================================================
+# SECTION R -- the refusals at 32 (V65 section 2; ADR-038 point 5, O5).
+# ======================================================================
+# A refused call is a silent no-op: destination, INTOUT, PTSOUT and the
+# MFDBs (fd_stand included) untouched, both buffers keep their fill.
+# A 9..31-plane memory form is refused at 32 -- 16 planes included -- and
+# so is a plane mismatch (s_nxwd != d_nxwd) and an invalid mode.
+109	3	0,0,15,15,0,0,15,15	0,32,16,2,0,16	1,32,16,2,0,16	120,121	R1 16-plane memory forms: refused at 32 (O5)
+109	3	0,0,15,15,0,0,15,15	0,32,16,2,0,12	1,32,16,2,0,12	122,123	R2 12-plane memory forms: refused
+109	3	0,0,15,15,0,0,15,15	0,32,16,2,0,9	1,32,16,2,0,9	124,125	R3 9-plane memory forms: refused
+109	3	0,0,15,15,0,0,15,15	0,32,16,2,0,31	1,32,16,2,0,31	126,127	R4 31-plane memory forms: refused
+109	3	0,0,15,15,0,0,15,15	0,32,16,2,0,32	1,32,16,2,0,16	128,129	R5 32 to 16 planes: mismatch, refused
+109	3	0,0,15,15,0,0,15,15	0,32,16,2,0,16	1,32,16,2,0,32	130,131	R6 16 to 32 planes: mismatch, refused
+109	0x20	0,0,7,7,0,0,7,7	0,32,16,2,0,32	1,32,16,2,0,32	132,133	R7 mode above bit 5 is invalid
+109	0x7FFF	0,0,7,7,0,0,7,7	0,32,16,2,0,32	1,32,16,2,0,32	134,135	R8 mode 0x7FFF invalid
+109	-	0,0,7,7,0,0,7,7	0,32,16,2,0,32	1,32,16,2,0,32	136,137	R9 no intin at all: INTIN[0] is the poison
+121	1,1,0	0,0,15,15,0,0,15,15	0,32,16,2,0,1	1,32,16,2,0,16	138,139	R10 vrt_cpyfm 1 to 16 planes: refused at 32
+121	1,1,0	0,0,15,15,0,0,15,15	0,32,16,2,0,1	1,32,16,2,0,12	140,141	R11 vrt_cpyfm 1 to 12 planes: refused
+121	1,1,0	0,0,15,15,0,0,15,15	0,32,16,2,0,1	1,32,16,2,0,9	142,143	R12 vrt_cpyfm 1 to 9 planes: refused
+121	1,1,0	0,0,15,15,0,0,15,15	0,32,16,2,0,32	1,32,16,2,0,32	144,145	R13 vrt_cpyfm source 32 planes, not mono: no-op
+110	-	-	0,32,16,2,1,16	1,32,16,2,0,16	146,147	R14 vr_trnfm 16-plane source at 32: no-op (V65 section 5, inferred)
+110	-	-	0,32,16,2,0,12	0,32,16,2,1,12	148,149	R15 vr_trnfm 12 planes in place at 32: no-op, fd_stand kept
+
+# ======================================================================
+# SECTION V -- vrt_cpyfm (121) mono into a 32-plane memory form.
+# ======================================================================
+# Source buffer A as a 1-plane 32x16 form (MSB first). Colours INTIN[1]
+# and [2] through validate_color_index (ncol 256 at 32), then the pen's
+# pixel 0x00RRGGBB, each gun q = (c * 255 + 500) / 1000 (V64 P2, P3):
+# pen 0 00FFFFFF, 1 00000000, 2 00FF0000, 4 000000FF, 6 00FFFF00, 8
+# 00BBBBBB, 9 00888888, 16 00FFFFFF, 255 00000000. MD_REPLACE fg/bg,
+# MD_TRANS fg on set bits, MD_XOR the complement of all 32 bits on set
+# bits, MD_ERASE bg on clear bits (V65 section 4).
+121	1,1,0	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	150,151	V1 MD_REPLACE pens 1/0: set 0x00000000, clear 0x00FFFFFF
+121	2,2,0	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	152,153	V2 MD_TRANS pen 2: set 0x00FF0000, clear keeps the fill
+121	3,1,0	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	154,155	V3 MD_XOR: set ~fill (32 bits), clear the fill
+121	4,0,6	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	156,157	V4 MD_ERASE bg pen 6: clear 0x00FFFF00, set keeps the fill
+121	1,2,4	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	158,159	V5 MD_REPLACE red/blue
+121	1,8,9	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	160,161	V6 MD_REPLACE pens 8/9: 0x00BBBBBB / 0x00888888
+121	1,999,-1	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	162,163	V7 pens out of range: validate_color_index -> 1
+121	1,255,16	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	164,165	V8 pens 255/16 (videl_palette2): 0x00000000 / 0x00FFFFFF
+121	1,1,0	0,0,7,7,3,5,10,12	0,32,16,2,0,1	1,32,16,2,0,32	166,167	V9 8x8 to (3,5): fill outside
+121	1,1,0	5,3,20,10,9,2,24,9	0,32,16,2,0,1	1,32,16,2,0,32	168,169	V10 source at (5,3), not word aligned
+121	0x11,1,0	0,0,31,15,0,0,31,15	0,32,16,2,0,1	1,32,16,2,0,32	170,171	V11 PAT_FLAG|MD_REPLACE on the truecolor path: nothing
+121	0,1,0	0,0,7,7,0,0,7,7	0,32,16,2,0,1	1,32,16,2,0,32	172,173	V12 mode 0 is not an MD_ code: no-op
+121	5,1,0	0,0,7,7,0,0,7,7	0,32,16,2,0,1	1,32,16,2,0,32	174,175	V13 mode 5 is not an MD_ code: no-op
+
+# ======================================================================
+# SECTION T -- vr_trnfm (110) at 32 planes (V65 section 5).
+# ======================================================================
+# planesize = fd_h * fd_wdwidth WORDs per plane (the source's); plane p
+# holds bit 31 - p of the pixel, the leftmost pixel the MSB of each WORD;
+# planes 0..7 are X, 8..15 R, 16..23 G, 24..31 B. Output zero-filled, in
+# place through a scratch, planesize * 32 WORDs; the destination's fd_stand
+# is NOT written. A 16x16 form is 512 WORDs, a 32x16 form 1024.
+110	-	-	0,16,16,1,1,32	1,16,16,1,0,32	180,181	T1 standard to device, 16x16
+110	-	-	0,16,16,1,0,32	1,16,16,1,1,32	182,183	T2 device to standard, 16x16
+110	-	-	0,32,16,2,1,32	1,32,16,2,0,32	184,185	T3 standard to device, 32x16: the whole buffer
+110	-	-	0,32,16,2,0,32	1,32,16,2,1,32	186,187	T4 device to standard, 32x16
+110	-	-	0,16,16,1,1,32	0,16,16,1,0,32	188,189	T5 in place, standard to device
+110	-	-	0,16,16,1,0,32	0,16,16,1,1,32	190,191	T6 in place, device to standard
+110	-	-	0,16,16,1,1,32	1,16,16,1,1,32	192,193	T7 destination already says standard: fd_stand not written
+110	-	-	0,16,1,1,0,32	0,16,1,1,1,32	194,195	T8 in place, one row, device to standard

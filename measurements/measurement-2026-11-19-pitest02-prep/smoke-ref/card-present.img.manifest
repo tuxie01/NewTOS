@@ -1,0 +1,14 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image card-present.img
+image_sha256 eeff023df285f14c3360243d33707f99ef6a28d51a682df74e8264ddc5959e0c
+size_mib 64
+created 2026-11-19T19:16:08Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file 6b2445e41bcffe44c5074d034f3160bfbbab35edc7f9aa67c7b15561a4eca36d 430752 C:\Apps\PRESENT\PRESENT.NAP
+file 73a24b063304f1b5f762894315e31424fb38d0e8ba7b89af5075c355e6a9a094 1491 C:\Apps\PRESENT\SLIDES.TXT
+file ad568f319441bf4bcdf689e998afc9e3ba69734f2dd701eb5f8ced5bfc356ed4 83863 C:\Apps\PRESENT\TEST.PNG
+file 0f807e413f700a84207de71ce094808d44703f754a7de35a49b93453b8a02b06 43 C:\NEWDESK.INF

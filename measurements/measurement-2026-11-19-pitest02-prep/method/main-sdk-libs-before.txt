@@ -1,0 +1,14 @@
+1792533575 ./gemlib/gemlib-m68k.a
+1792674324 ./compiler-rt/libclang_rt.builtins.a
+1793962784 ./gemlib/gemlib.a
+1793963714 ./zlib/libz.a
+1793963720 ./libm/libm.a
+1793963722 ./libpng/libpng.a
+1793963725 ./giflib/libgif.a
+1793963725 ./libjpeg/libjpeg.a
+1793963727 ./libexif/libexif.a
+1794017917 ./cflib/cflib.a
+1794047939 ./ldg/libldg.a
+1794047939 ./windom/libwindom1.a
+1794047940 ./libshare/libshare.a
+1795009616 ./libc/libc.a

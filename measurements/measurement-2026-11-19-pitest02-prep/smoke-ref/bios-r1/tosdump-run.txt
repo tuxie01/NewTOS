@@ -1,0 +1,72 @@
+command   cargo xtask tosdump bios tosdump/cases/bios-r1.tsv --out ../out/bios-r1 --scratch ../scratch --reference tosdump/reference/EMUTOS-1a7484ab-BIOS.BIN --reference tosdump/reference/EMUTOS-1a7484ab-BIOS-falcontc.BIN
+cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt
+tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt (measured: kernel, dumper)
+harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+commit    afc2bb1c03a9b2490b522ce14058fc9692a8ca5d
+dirty     37 path(s) in git status --porcelain
+  ?? sdk/cflib/build
+  ?? sdk/cflib/cflib-21
+  ?? sdk/compiler-rt/build
+  ?? sdk/compiler-rt/compiler-rt-21.1.8.src
+  ?? sdk/examples/build
+  ?? sdk/examples/fsbench/build
+  ?? sdk/examples/libtest/build
+  ?? sdk/gemlib/build
+  ?? sdk/gemlib/build-m68k
+  ?? sdk/gemlib/gemlib-0.44.0
+  ?? sdk/gemlib/gemlib-0.44.0-m68k
+  ?? sdk/giflib/build
+  ?? sdk/giflib/giflib-6.1.3
+  ?? sdk/ldg/build
+  ?? sdk/ldg/ldg-r133
+  ?? sdk/libc/build
+  ?? sdk/libc/mintlib
+  ?? sdk/libc/tests/__pycache__
+  ?? sdk/libexif/build
+  ?? sdk/libexif/libexif-0.6.26
+  ?? sdk/libjpeg/build
+  ?? sdk/libjpeg/jpeg-9f
+  ?? sdk/libm/build
+  ?? sdk/libm/openlibm-0.8.8
+  ?? sdk/libpng/build
+  ?? sdk/libpng/libpng-1.6.59
+  ?? sdk/libshare/build
+  ?? sdk/libshare/libshare-0.1.1
+  ?? sdk/templates/console-hello/build
+  ?? sdk/templates/gem-hello/build
+  ?? sdk/windom/build
+  ?? sdk/windom/include
+  ?? sdk/windom/windom-1.21.3
+  ?? sdk/zlib/build
+  ?? sdk/zlib/zlib-1.3.2
+  ?? sdk/zview/build
+  ?? sdk/zview/z-tools-04805b7
+harness commit afc2bb1c03a9b2490b522ce14058fc9692a8ca5d
+features  (none)
+bootargs  serial=on (the default; no --bootargs)
+table     /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt/tosdump/cases/bios-r1.tsv sha256 231f2dfe73e5a80628167b216a66fe6475992b9b3a692b9025a92e8d6f3b2bf8
+table     names the unit token u:0: no; a program path x:<path>: no
+profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+target/   own (5 artifact dep-info files checked before the build)
+building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+target/   own (5 artifact dep-info files checked after the build)
+kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+kernel8.img sha256 8bceb17ffa915d47d90e080d695a30ddbafd59657dae499acc052982c2d1a7a4
+kernel ELF  sha256 c6d897ae3dbb3b84c9e4f20ede09921279e12b0237d87b985b752bc46112be1e (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+dumper build id afc2
+DUMPBIOS.NAP sha256 f015e54e5383f86b2e918c4753e162e790992d56389b60a060c5435df08a0c26
+card.img.manifest: image_sha256 1ae8ddc51e342615f4571a51aa41bdbc9a5038e271abe4567c96cdbe3f5b1042
+card.img.manifest: optional_missing none
+card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/scratch/tosdump-19856/card.img sha256 1ae8ddc51e342615f4571a51aa41bdbc9a5038e271abe4567c96cdbe3f5b1042 (booted as an APFS clone)
+qemu      raspi4b, -append serial=on, time limit 480 s
+run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+card after the run sha256 748cee32695126e669b99ab9d25d919079208c15284589a3c3cba6f1dbedb948
+BIOS.BIN 47072 bytes, sha256 544b1cf2159721df1d2730b504522a24e00f95ebe5ef36f1f3b9480dfc3ff98f
+BIOS.LOG 172 bytes, sha256 ac5e812b4a8683af170d330d41c7464c5c5af079873277af7ea5773c94f30431
+tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a2e56c27c67de64b3/wt/tosdump/host/build/tosdiff sha256 600d86b73622c9bb7c9e071e2e60a6bd8da05372257462182e84de42b0876c60
+tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 147 records of 320 bytes, build afc2, case CRC 583C11E0
+tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 35 of 147 cases differ
+tosdiff EMUTOS-1a7484ab-BIOS-falcontc.BIN vs NEWTOS.BIN: exit 1, 31 of 147 cases differ
+total     32 s
+result    run complete (differences above are findings, not failures)

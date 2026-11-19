@@ -1,0 +1,15 @@
+Builds of 2026-11-19, all from the detached worktree target-agents/agent-a2e56c27c67de64b3/wt at afc2bb1c03a9b2490b522ce14058fc9692a8ca5d
+(cargo xtask worktree-setup run; gitignored sdk inputs of the main tree linked into the worktree as symlinks, sdk/apps/teradesk replaced by a real copy
+so that sdk/apps/build-teradesk.sh writes into the worktree, not into the main tree; the .a archives of the main tree have the same mtimes before and
+after, method/main-sdk-libs-before.txt).
+
+kernel   tools/sync-card.sh kernels <agent dir>/kernels kern1119.img=none   (cargo xtask build --board rpi4 --release; features none)
+         first attempt with CARGO_TARGET_DIR exported failed in programs/build.sh (hello-gem link), repeated without it.
+SNPROBE.NAP, DUMPBIOS.NAP, DUMPRAST.NAP   built and RUN by the harness: tosdump/probes/run-snprobe.sh newtos, cargo xtask tosdump bios ... , cargo xtask tosdump rast ...
+         (the payload copies are the NAPs those runs booted: smoke-ref/*/ and method/tosdump-*.log, snprobe-run.log)
+SCRNINFO.NAP, VDIDRAW.NAP   tosdump/build-scrninfo-newtos.sh, tosdump/build-vdidraw-newtos.sh; booted by method/run3.sh (card by tools/mkcard.sh)
+SNDTONE.NCP  sdk/build.sh sdk/examples/sndtone.c   sha256 equals the card's C:\PITEST\SNDTONE.NCP (27854b9a...), not rebuilt-different
+DESKTOP.NAP + rsc   sdk/apps/build-teradesk.sh (V69 overlay sdk/overlays/teradesk/video.c, line 483); booted in QEMU by run-td.sh logic (method/run3.sh, list td:32 td:16)
+PRESENT.NAP  method/build-present.sh <tree> <out dir>   (copy of the V69c tester's script: SDK = main tree archives, BUILD redirected); 0 compiler warnings
+QEMU runs    qemu-system-aarch64 -M raspi4b -display none -no-reboot -append "serial=on [vdiplanes=32]" -kernel kern1119.img -drive file=<APFS clone of the card>,if=sd,format=raw
+             screendump by QMP (method/qmpshot.py); 35 s per run; EXC/PANIC count 0 in every serial log (serial/*.log).

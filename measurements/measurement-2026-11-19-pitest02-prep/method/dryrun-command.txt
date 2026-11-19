@@ -1,0 +1,1 @@
+tools/sync-card.sh sync --list measurements/measurement-2026-11-19-pitest02-prep/method/pitest02-card.list --boot '/Volumes/BOOT 1' BOOT --drive C '/Volumes/BOOT 1' BOOT --kernels measurements/measurement-2026-11-19-pitest02-prep/kernels --active kern1119.img

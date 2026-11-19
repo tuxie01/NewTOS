@@ -1,0 +1,39 @@
+PRESENT.NAP sample slide file (TASK/PRESENT01 test set).
+Everything before the first "# " line is a free header and is not shown.
+Format: "# Title" new slide, "- " bullet, "  - " sub-bullet, plain text line,
+blank line = space, "@image FILE.PNG", "@center", "@note ...", "; comment".
+Global (header only): "@footer text", "@log".
+@footer NewTOS - PRESENT01 test slides
+@log
+
+# NewTOS
+@center
+A TOS-compatible operating system
+for the Raspberry Pi 4
+
+Native AArch64 - EmuTOS-faithful GEM
+@note Title slide: centred layout.
+
+# What runs today
+- GEMDOS, BIOS, XBIOS, VDI and AES
+- EmuDESK desktop, rebuilt 1:1
+  - window chrome, icons, menus
+  - desk accessories
+- Ported GEM apps: QED, TeraDesk, zView
+- Native 64-bit, no emulation in the kernel
+@image TEST.PNG
+@note The picture is TEST.PNG beside this file.
+
+# A missing picture
+- This slide names a picture that is not on the card
+- The viewer shows a short note instead
+- Navigation keeps working
+@image NOPE.PNG
+
+# Long lines wrap
+- This bullet is deliberately very long so that it has to wrap over several lines, and the continuation lines stay aligned with the text and not with the bullet.
+  - A sub-bullet that is also long enough to wrap at least once on a full HD screen, still readable.
+- Umlauts and typography: äöü ÄÖÜ ß – “quoted” ‘single’ … café
+- Averyveryveryveryveryveryveryveryveryveryveryveryverylongwordwithoutanyspaceswhatsoeverthatmustbreakhard
+
+Plain paragraph without a bullet after a blank line.

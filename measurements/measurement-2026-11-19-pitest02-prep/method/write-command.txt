@@ -1,0 +1,19 @@
+Dry run (done, output in dryrun-output.txt), repository root, nothing written:
+
+  tools/sync-card.sh sync \
+    --list measurements/measurement-2026-11-19-pitest02-prep/method/pitest02-card.list \
+    --boot "/Volumes/BOOT 1" BOOT --drive C "/Volumes/BOOT 1" BOOT \
+    --kernels measurements/measurement-2026-11-19-pitest02-prep/kernels --active kern1119.img
+
+Write (the lead, on the owner's word only; --run-dir must be a NEW directory, it receives card-before/ and card.manifest):
+
+  tools/sync-card.sh sync \
+    --list measurements/measurement-2026-11-19-pitest02-prep/method/pitest02-card.list \
+    --boot "/Volumes/BOOT 1" BOOT --drive C "/Volumes/BOOT 1" BOOT \
+    --kernels measurements/measurement-2026-11-19-pitest02-prep/kernels --active kern1119.img \
+    --write --run-dir measurements/measurement-2026-11-19-pitest02-card
+
+No --cmdline and no --allow-boot-config: cmdline.txt and config.txt stay as they are (saved to card-before/ anyway).
+kern1119.img is gitignored (*.img): it exists in this run directory only on this Mac, sha256 below; rebuild with
+`tools/sync-card.sh kernels <dir> kern1119.img=none` at afc2bb1c0 if it is gone. Afterwards:
+  tools/sync-card.sh verify <the same card options, without --write>

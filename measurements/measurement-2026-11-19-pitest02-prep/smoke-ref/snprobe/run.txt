@@ -1,0 +1,7 @@
+snprobe run, side newtos (2026-11-19T19:15:27Z)
+tree      afc2bb1c03a9b2490b522ce14058fc9692a8ca5d 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SNPROBE.PRG 641612efdc2ef6ec409765efe41e88e6ee68aefd7711331ffa4b66c7b90f37c8 SNPROBE.NAP 1ef0e77368a993fde1dae07e4b87f732857ebcefe3a652be912af5efcf5c5d3e
+kernel    8bceb17ffa915d47d90e080d695a30ddbafd59657dae499acc052982c2d1a7a4 ../kernels/kern1119.img
+card      0b1ee370a3c13a60c06be72ccc81f902729ba63811e682aeff21052dc79634fa (tools/mkcard.sh, C:\SNPROBE.NAP, #Z autorun)
+qemu      done
+card      after 4d755990c6740a02b1298e7f375de259daa16e84e1022d7d2d44c40b37e7a58e (the booted clone)
