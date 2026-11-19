@@ -94,7 +94,6 @@ gives its before/after number in its line under *Recent Decisions*.
   [BIOS13](../TASK/BIOS13.md) (pure doc/ledger maintenance; no program, no open fix),
   [BIOS14](../TASK/BIOS14.md) (tool gap; blocks no open fix),
   [XBIOS07](../TASK/XBIOS07.md) (doc correction without a user),
-  [XBIOS11](../TASK/XBIOS11.md) (no card program depends on the seed origin (only user is TeraDesk formatting)),
   
   [XBIOS16](../TASK/XBIOS16.md) (no program calls Jdisint/Jenabint/Mfpint),
   [XBIOS19](../TASK/XBIOS19.md) (no program calls Bioskeys),
