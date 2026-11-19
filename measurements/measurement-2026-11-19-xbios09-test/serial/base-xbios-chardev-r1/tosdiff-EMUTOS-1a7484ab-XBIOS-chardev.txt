@@ -1,0 +1,6 @@
+EMUTOS-1a7484ab-XBIOS-chardev.BIN vs NEWTOS.BIN -- area BIOS, 23 cases from xbios-chardev-r1.tsv
+
+case 31  trap 14 function 0x0F  Rsconf(-1 x6) old ucr/rsr/tsr (machine: TT MFP, Falcon SCC) -- 
+    ret                      EXACT   EMUTOS-1a7484ab-XBIOS-chardev.BIN = 0xFFFFFFFF88018100 (-2013167360)   NEWTOS.BIN                        = 0x0000000088010100 (2281767168)
+
+1 of 23 cases differ

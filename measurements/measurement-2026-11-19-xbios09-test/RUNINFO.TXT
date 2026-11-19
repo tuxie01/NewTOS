@@ -1,0 +1,35 @@
+XBIOS09 tester run, 2026-11-19. Agent afb46b578c30bcdf4. Verdict: PASS (on the QEMU scope; real-Pi4-only items listed below).
+Scope: developer commit 22575c489 (branch xbios09): XBIOS Gettime returns its packed LONG sign-extended into x0.
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.328; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+Clone (scratch, gitignored): target-agents/agent-afb46b578c30bcdf4/wt (commit 22575c489, detached worktree); baseline tree target-agents/agent-afb46b578c30bcdf4/base (main 9ffcce079).
+Scratch total target-agents/agent-afb46b578c30bcdf4: 8.1G (du -sh). Outputs cited: wt kernel8.img (rpi4, debug) sha256 ff16707c9ed86d7abfca1d7213550b4e172d882dee3e29eb29529fb9ea3751f9, in wt/target/aarch64-unknown-none-softfloat/debug/ (copy in target-agents/agent-afb46b578c30bcdf4/probe/kernel8.img).
+
+COMMANDS (board, outcome)
+1. cargo xtask test in wt (host): 2580 passed / 0 failed / 7 ignored (baseline 2579/0/7; +1 = new test xbios09_gettime_sign_extension). PASS.
+2. cargo xtask build --board qemu-virt and --board rpi4 in wt: both OK.
+3. Warnings: rpi4 build, base 9ffcce079 vs wt: kernel 93 / tos-api 64 in both, delta 0.
+4. cargo xtask doc-check TASK/XBIOS09.md docs/COMPATIBILITY.md docs/api/xbios/17-gettime.md: in the main tree 0 failures (in the worktree 10 'missing' cites into gitignored sdk/ trees that worktree-setup does not link; not a finding).
+5. cargo xtask run --board qemu-virt --headless and --board rpi4 --headless (90 s bounded, serial/run-*.txt): both reach "[desk] desktop up"; no exception or panic line (grep hits are only the words "default"/warn notes from the build output).
+6. tosdump (method/run-tosdump.sh, raspi4b, one QEMU at a time) on wt and on base, four tables, each against its EMUTOS-1a7484ab reference:
+   bios-r1: 35 of 147 differ (wt) / 35 of 147 (base); bios-core-r1: 2 of 44 / 2 of 44; xbios-chardev-r1: 1 of 23 / 1 of 23; xbios-system-r1: 9 of 43 / 9 of 43.
+   The tosdiff case lists (serial/{wt,base}-<table>/tosdiff-EMUTOS-*.txt) are text-identical (diff of the files without sha/build/path lines: no difference). The BIOS.BIN files differ only from byte 13 (build id in the header, 2257 vs the base build).
+   All runs ended "normally ... desktop up after DUMPBIOS.NAP, rc=0".
+7. Probe H01 (audit run's XSHI.NAP, runner of measurements/measurement-2026-10-28-xbios-system-audit/method/run-newtos.sh unchanged; method/run-h01.sh), raspi4b, kernel of 22575c489, through the real trap:
+   serial/H01/XSHI.LOG: "H01 Settime(8ccf6000) Gettime ret=8ccf6000 hi=ffffffff negative-as-long=yes" (audit run on main-before: hi=00000000, negative-as-long=no).
+8. XSPROBE.NAP (method/run-xsprobe.sh): T01 Gettime=2a4320a3 Gettime.hi=00000000 (bit 31 clear, upper half 0); T10 hi=00000000. XSPROBE.LOG without info lines equals the audit's PROBE-NEWTOS-raspi4b log (no diff). The boot clock (T00 Gettime == Tget agree, date 2026-11-19) is unchanged.
+
+FAILURES: none.
+DROVE: host tests, both board builds, warnings delta, doc-check, headless boots of both boards, four tosdump tables vs baseline, probe H01 and XSPROBE on the booted kernel (real trap).
+COULD NOT VERIFY: Gettime against the oracle (EmuTOS in Hatari returns the host clock, XBIOS14; the host test is the acceptance case per the ticket). No m68k side run.
+REAL-PI4-ONLY: none relevant to this change (pure value-width in the dispatcher); the boot clock source on silicon (no RTC yet) is not exercised here.
+OUT-OF-SCOPE OBSERVATIONS: none beyond the tosdiff differences that exist identically on main.
+
+IMAGE MANIFESTS (copies under serial/<run>/card.img.manifest; image_sha256 / optional_missing):
+ wt-bios-r1 f874e060bac76b66ebde6a24a5dc087ba78940efcf2dfc7b29fe4765f91e6937 / optional_missing none
+ wt-bios-core-r1 c510d0a8cde6b8307a43e99e76a7a9b13141b107a5d6d7a25e8c1c2e5a279910 / optional_missing none
+ wt-xbios-chardev-r1 0b310a0cfd282d0645736394d99ae3a355d1f5408cb33f31d8695077cdbb1157 / optional_missing none
+ wt-xbios-system-r1 30ba3e6537de99f9f97c3991e934b38e49989bc282a58ce45ad9e80383057d29 / optional_missing none
+ base-* manifests in serial/base-*/ (all optional_missing none)
+ H01 86a8eaf7ed884566d228d34df47f6cd08bed0c2acbcc6598fa4d3cbf5c3330dd / optional_missing none; XSPROBE manifest in serial/XSPROBE/ (optional_missing none)
+ host_clang: Apple clang version 21.0.0 (clang-2100.4.1.1); host_cflow GNU cflow 1.8
+ wt BIOS.BIN sha256 (gitignored, scratch): bios-r1 36375058e36d82454293e6807bcb61e43ae7f61976599b43c0966aaea462e9da; bios-core-r1 2da66596603deeae2589942519ebfb264cd00cf5e0d63a7d04ce92c7523b3e6b; xbios-chardev-r1 926dc98c56a42a08af4e73706aec1b2347a8a6b69f6cf56409cc9b83132bc508; xbios-system-r1 59644bede8ed827de74e... (see tosdump-run.txt: 59644bede8ed827de74ee4d762e6cac0ffecd1fda8f6c23f29e968356c5a1934)
