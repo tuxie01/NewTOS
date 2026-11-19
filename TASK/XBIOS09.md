@@ -1,6 +1,6 @@
 # XBIOS09 — `Gettime`: packed LONG zero-extended; positive instead of negative from the year 2044 on
 
-Status: IMPLEMENTED (2026-11-19) | Priority: P2 | Commit: self | Missing: tester run (host test, bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 on raspi4b)
+Status: DONE (2026-11-19) | Priority: P2 | Commit: 4fa990dad | Receipt: XBIOS09-STATUS-DONE.MD
 
 Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS09.md status line: GEPARKT 2026-10-30 (Anwender: bis ein Port es braucht)
 
