@@ -48,3 +48,13 @@ classed this ticket as fixable, first of four in the queue.
 - The acceptance line "`docs/STATUS.md` … in the same commit" predates the rule that only the lead edits
   `docs/STATUS.md`: the developer proposes its line in the receipt.
 - Spec gate first: the Pi-binding section of `docs/api/xbios/11-random.md` still describes the frame-clock seed.
+
+## Spec gate landed; developer stopped (2026-11-20)
+
+Spec gate READY, landed as `9e0481fb7`: `docs/api/xbios/11-random.md` (found beyond the ticket: EmuTOS re-seeds on
+every call that finds the state 0, not only on the first).
+
+The developer was started and stopped on the owner's word the same night (machine noise) before it committed. Its
+uncommitted work is in the worktree `target-agents/agent-acc781cc44394cbbc/wt` on branch `xbios11`: edits to
+`tos-api/src/xbios/system.rs`, `docs/api/xbios/11-random.md`, `tosdump/Makefile`, and the new files of the host
+test and the permanent probe. Nothing is tested. The developer is resumed or restarted on the owner's word.
