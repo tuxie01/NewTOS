@@ -445,3 +445,81 @@ for the Researcher, never a NewTOS finding (same section, "The oracle
 self-check"). Still open: the GEMDOS area. tos-api's `aes_reference` harness
 checks `ap_3resv` relationally on its own (non-zero iff the reference's is,
 `tos-api/tests/aes_reference/harness.rs`).
+
+## 9. Known limits of the oracle
+
+### 9.1 The RTC takes no write: `Gettime` stays the host clock (XBIOS14)
+
+**Limit.** On the pinned Hatari (2.6.1, `tools/oracle/oracle.env`, `ORACLE_HATARI`) in
+profiles `tt` and `falcontc` (§2), a `Settime` has no effect on a later `Gettime`: `Gettime`
+returns the host clock whatever was set. Consequences for tables:
+
+- A `Gettime` after `Settime` cannot be compared with NewTOS (the NewTOS side is measured:
+  same clock as GEMDOS, audit T01-T33). The audit compares `Settime` only through the
+  GEMDOS cache (`Tgetdate`/`Tgettime`).
+- A `Gettime` result with bit 31 set (year >= 2044) cannot be produced at the oracle; the
+  oracle's `Gettime` is the host year.
+
+**Evidence (measured, the audit run).**
+
+- `measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-EMUTOS-tt-nvtrace/trace.txt:302-312`:
+  `Settime(0x2A4320A3)` makes EmuTOS write the registers 11, 10, 11, 9 (=33), 8 (=2), 7 (=3),
+  4 (=4), 2 (=5), 0 (=6), 11; the next `Gettime` (same file, lines 313-322) reads the
+  registers 0, 2, 4, 7, 8, 9 as 12, 20, 12, 28, 10, 58, the host clock, as it did before the
+  write (lines 163-168). The second `Settime` at line 323 and its `Gettime` at line 343 give
+  the same read-back (lines 344-352). Run description:
+  `measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`, entry
+  `PROBE-EMUTOS-tt-nvtrace`.
+- `measurements/measurement-2026-10-28-xbios-system-audit/runs/HIGH-EMUTOS-tt/XSHI.LOG`
+  (probe H01): `Gettime` is the host clock, never bit 31 (audit XBIOS-SYS-002 / -007).
+
+**EmuTOS side (source, cited).** `settime` writes the GEMDOS date and time first, then, on a
+machine with NVRAM, calls `nsetdt` (`references/emutos/bios/clock.c:1221-1222`,
+`:1229-1232`); `nvram_setregs` writes the six time registers through `set_nvram_rtc`
+(`references/emutos/bios/clock.c:893-907`); `nvram_getregs` reads them back the same way
+(`references/emutos/bios/clock.c:866-885`). EmuTOS does what the source says (the trace shows
+the writes); the read does not see them, so the fault is in Hatari's register model, not in
+EmuTOS (inferred from the trace: writes issued, reads unchanged).
+
+**Which Hatari option gives a writable RTC? None found; gap.** Sources read, all in the
+pinned Hatari 2.6.1 bundle at `/Volumes/Daten/hatari-2.6.1_macos/` (outside the repository,
+not a pinned source tree; there is no Hatari source in `references/`):
+
+- the bundle's HatariHelp manual (manual.html under Hatari.app/Contents/Resources): the only RTC option is
+  `--rtc-year <x>`: "With the default value 0, RTC date and time are taken from the host";
+  it moves the year only. The feature table lists the Falcon/TT RTC as present, no option
+  makes it writable.
+- the bundle's doc folder, todo.txt lines 29-31: "Allow time to be set on machines with RTC (= using host
+  time). This requires calculating offset to host time on write, and using that offset on
+  further reads." The upstream to-do list names the missing feature, so 2.6.1 does not have
+  it. (This is the document's statement; the Hatari source was not read.)
+- the bundle's doc folder, release-notes.txt lines 245-247: the only RTC change of the release is the year
+  override. `tools/oracle/hatari.cfg` already sets `nRtcYear = 0` (line 29), the default.
+
+Proposal for the owner (not applied, no measurement made): `--rtc-year` could move the year
+to a fixed value, which would make a `Gettime` year comparable but not the written
+`Settime` value; a writable RTC needs a Hatari that implements the to-do item above. A
+change of Hatari or its configuration reruns control and calibration first (§7).
+
+### 9.2 Case rows waiting for an RTC-capable oracle
+
+From `docs/audits/2026-10-28-xbios-system.md` section 5 (lines 273-275), proposed and not
+added to any table, waiting for an oracle whose RTC takes writes:
+
+```
++14:0x16	l:0x8CCF6000	IGNORE	-	Settime(2050-06-15 12:00) prelude
+14:0x17	-	EXACT	-	Gettime() bit 31 -> high half
+```
+
+Also open for the same reason, audit section "Offen": `Gettime` after `Settime` at the
+oracle (XBIOS-SYS-007) and the `Gettime` value with bit 31 (XBIOS-SYS-002 rests on the ABI
+rule there).
+
+## Open points
+
+- Hatari's source is not in `references/`: that no option makes the RTC writable rests on
+  the 2.6.1 manual, to-do list and release notes of the bundle (documentation, not code).
+  Reading the source or a Hatari run would settle it; not done (stop condition).
+- Inferred: the fault lies in Hatari's RTC register model (EmuTOS issues the writes,
+  trace lines 302-312; reads unchanged).
+- Out of scope: none.
