@@ -1490,8 +1490,8 @@ stays V65. Open point 4 asks the lead to confirm.
 ### Program survey (which program touches a memory MFDB)
 
 Searched `sdk/apps`, `sdk/overlays`, `programs`, `tosdump` for `fd_nplanes`. `sdk/apps/present/present.c` builds
-16-plane memory forms (`sdk/apps/present/present.c:620@fd_nplanes`, `sdk/apps/present/present.c:1098@fd_nplanes`): at the 32 setting its
-`vro_cpyfm` calls are refused (O5, "gets a patch"). `sdk/apps/doom/doomgeneric_gem.c` takes `fd_nplanes` from `INQ_TAB[4]`
+its memory forms with the screen's plane count from `vq_extnd` (`sdk/apps/present/present.c:643@fd_nplanes`, `sdk/apps/present/present.c:1148@fd_nplanes`;
+the patch of O5, TASK/V69): 16-plane forms at the 16 setting, 32-plane forms at the 32 setting. `sdk/apps/doom/doomgeneric_gem.c` takes `fd_nplanes` from `INQ_TAB[4]`
 and a row as `fd_wdwidth * 16 * dev_bpp` bytes above 8 planes (`sdk/apps/doom/doomgeneric_gem.c:713@form_row_bytes`), which at 32 planes agrees with
 section 3. The standard image (`tools/make-sd-image.sh:92@PRESENT`) carries `PRESENT.NAP`; DOOM is not in that script. The
 manifest-to-recipe mapping of every other image executable was not done (open point 6).
@@ -1678,7 +1678,7 @@ Patterns searched over `tos-api/src`, `kernel/src`, `programs/` (`*.rs`) with `/
 | `tos-api/src/vdi/eddi.rs:53@DEVICE_PLANES` | the 16-plane table beside `LAYOUT_32` (`tos-api/src/vdi/eddi.rs:197@LAYOUT_32`) | none (V66) |
 | `kernel/src/selftest_raster.rs:166@mfdb` and `tos-api/src/aes/menu.rs:2729@read_pixel` | hand-built 16-bit form; unwired self-tests | none (not reached in production) |
 | `tosdump/core/cases.c:2176@nplanes`, `tosdump/core/cases.c:2548@planes`, `tosdump/core/dumprast.c:128@planes`, `tosdump/probes/icprobe.c:227@fd_nplanes`, `tosdump/probes/vdprobe.c:164@fd_nplanes`, `tosdump/probes/wkprobe.c:189@fd_nplanes` | planes capped or hard-wired at 16; the icon probe reads the icon form as WORDs | **V69** (ADR-038 point 13 (iv)) |
-| `sdk/apps/present/present.c:620@fd_nplanes`, `sdk/apps/present/present.c:1098@fd_nplanes` | builds 16-plane memory forms, refused at 32 (O5) | **V69** (patch decision) |
+| `sdk/apps/present/present.c:643@fd_nplanes`, `sdk/apps/present/present.c:1148@fd_nplanes` | memory forms at the screen's plane count (16 or 32) since the V69 patch | none (V69) |
 | XBIOS answers (`VsetMode` word `0x001C`, `Getrez`, `VgetSize`) and the `docs/COMPATIBILITY.md` text | the mode word says 16-bit truecolor beside a 32-plane VDI by ADR-038 point 9 | **V68** |
 
 No file under `tos-api/src` or `kernel/src` outside the rows above assumes 16 planes at the 32 setting **[C for the

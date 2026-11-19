@@ -1,6 +1,7 @@
 # 14 — PRESENT.NAP: the slide show
 
-Stand 2026-10-08, TASK/PRESENT01. Our own GEM application (not a port) for
+As of 2026-10-08, TASK/PRESENT01; screen depths 16 and 32 planes since
+2026-11-19, TASK/V69. Our own GEM application (not a port) for
 showing slides full screen on NewTOS — written for the Atari meeting talk, but
 an ordinary SDK program: one C file, `sdk/apps/present/present.c`, built by
 `sdk/apps/present/build-present.sh` against gemlib, libpng, zlib, OpenLibm and
@@ -121,17 +122,29 @@ shows a small note `[picture not found: NAME]` / `[not a PNG picture: …]` /
   `M_ON`, `form_dial(FMD_FINISH)` (the AES has the area redrawn),
   `END_MCTRL`, `END_UPDATE`. Started from the desktop, the desktop is back after
   Esc.
+* **Screen depth.** Read once with `vq_extnd` (`intout[4]`). PRESENT runs at
+  16 planes (the default) and at 32 planes (boot argument `vdiplanes=32`,
+  ADR-038); any other count gives the alert "PRESENT needs a screen of 16 or 32
+  planes." and a clean exit. A NewTOS memory MFDB has the device's form: at 16
+  planes one 16-bit word per pixel (`RRRRRGGGGG0BBBBB`), at 32 planes one 32-bit
+  word `0x00RRGGBB` per pixel (ADR-038 point 5; a 16-plane form is refused
+  there), so both MFDBs below are built with the screen's plane count.
 * **Large text from the system font.** The 224 cells 32…255 are drawn once with
   `v_gtext` (black on white, top-aligned) and copied back with `vro_cpyfm` into
-  a memory MFDB — on NewTOS a memory MFDB is 16-bit RGB565 chunky
-  (`tos-api/src/vdi/raster.rs`), so ink is "pixel ≠ background". Larger sizes
+  a memory MFDB of the screen's depth, so ink is "pixel ≠ background" (at 32
+  planes the unused top byte is masked off before the compare). Larger sizes
   come from those bitmaps with Scale2x / Scale3x (EPX; ×4 = 2×2, ×6 = 3×2,
   ×8 = 2×2×2), which smooth diagonals instead of producing blocks; each glyph is
   scaled once and cached.
-* **One blit per slide.** A slide is composed into one off-screen RGB565 frame
-  (screen size, stride rounded to 16 pixels) and copied to the screen with a
-  single `vro_cpyfm(S_ONLY)`. Measured in QEMU at 1920×1080 (`@log`, 5 ms
-  clock): compose ≤ 5 ms, blit 15–20 ms, picture decode + scale 40–45 ms once.
+* **One blit per slide.** A slide is composed into one off-screen 16-bit frame
+  (`RRRRRGGGGG0BBBBB`, screen size, stride rounded to 16 pixels) and copied to
+  the screen with a single `vro_cpyfm(S_ONLY)`. At 32 planes the frame is first
+  expanded into a second, 32-bit buffer (`0x00RRGGBB`, 5 → 8 bits per gun by bit
+  replication, the expansion the 16-plane device applies to a memory word), and
+  that buffer is copied: the colours keep 16-bit quality at both depths, and the
+  expansion counts into the blit time of `@log`. Measured in QEMU at 1920×1080
+  at 16 planes (`@log`, 5 ms clock): compose ≤ 5 ms, blit 15–20 ms, picture
+  decode + scale 40–45 ms once.
 * **Pictures.** libpng (static) → RGBA8 (`png_set_expand`, `strip_16`,
   `gray_to_rgb`, filler), size limit 8192×8192 / 16 Mpixel, own error handler
   (`setjmp`), so a broken file never reaches the screen console. The scaled

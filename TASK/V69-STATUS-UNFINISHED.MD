@@ -1,11 +1,13 @@
-# V69 — receipt (developer): part A, tosdump at 32 planes; part B, TeraDesk and DEVIATIONS
+# V69 — receipt (developer): part A, tosdump at 32 planes; part B, TeraDesk and DEVIATIONS; part C, PRESENT
 
 Role: developer
 Agent: a00b6a784b430f5d6
 Agent: a73782620fb31f6c0
+Agent: a712e5c5c8d6ab585
 
-Two developers, one per part: `a00b6a784b430f5d6` wrote part A (sections up to "Out-of-scope observations" of part A),
-`a73782620fb31f6c0` part B (section "Part B" at the end). The header holds both as two `Agent:` lines: the tooling reads
+Three developers, one per part: `a00b6a784b430f5d6` wrote part A (sections up to "Out-of-scope observations" of part A),
+`a73782620fb31f6c0` part B (section "Part B"), `a712e5c5c8d6ab585` part C (section "Part C" at the end). The header holds
+all of them as `Agent:` lines: the tooling reads
 every `Agent:` line before the first `## ` (`header_fields`, `tools/xtask/src/tickets.rs:617@header_fields`), so `accept`
 refuses both as acceptor and `land`/`accept` clean both agent directories.
 
@@ -343,3 +345,112 @@ owner; zView is measured by the tester. (<commit>)`
   (dated snapshot, not edited).
 - The analysis says only the Falcon branch reaches the dialog's defect; the text overflow is in every `_VDO` branch (the
   clamp covers all, see above).
+
+## Part C (developer `a712e5c5c8d6ab585`, 2026-11-19): PRESENT at 16 and 32 planes, option P2
+
+Branch `v69c` from `main` @ `2d00b4bb5` (worktree `target-agents/agent-a712e5c5c8d6ab585/wt`). Owner decision 2026-11-19,
+option P2 ("ok dann p2", ticket section "Part B state and the PRESENT decision"): PRESENT runs at 16 and at 32 planes by
+converting at the blit; colours stay at 16-bit quality (no 24-bit frame, P3 not chosen); an alert for every other plane
+count. Spec: `docs/analysis/v69-programs-at-32-planes-2026-11-18.md` section 2.2; the memory form at 32 planes is ADR-038
+point 5 (`fd_nplanes = 32`, one 32-bit pixel per position, a row of `fd_wdwidth * 16` pixels), the pixel is ADR-038
+point 4 (`0x00RRGGBB`, the X byte carries no colour and is masked on read). No kernel, `tos-api`, `tos-types`,
+`programs/`, `sdk/overlays/` or `mapping.tsv` change: PRESENT is our own tracked source (no upstream tree), so the change is
+a direct edit, as the handover says.
+
+### What changed, by file and function
+
+- `sdk/apps/present/present.c`
+  - `main` (`sdk/apps/present/present.c:1235@vq_extnd`): after `v_opnvwk`, `vq_extnd(vh, 1, work_out)`, `planes =
+    work_out[4]`; not 16 and not 32 gives the alert `[3][PRESENT needs a screen|of 16 or 32 planes.][ Quit ]` and the
+    existing clean exit (`out_vdi`: `v_clsvwk`, `appl_exit`), before any screen ownership is taken. At 32 planes a second
+    frame `fb32` of `FBW * SH * 4` bytes is allocated beside `fb` (`sdk/apps/present/present.c:1253@fb32`); if it fails, the
+    existing "not enough memory for the screen buffer" alert.
+  - `cap_pixel` (new, `sdk/apps/present/present.c:589@cap_pixel`): pixel `i` of the capture buffer, `u16` at 16 planes,
+    `u32 & 0x00FFFFFF` at 32 (ADR-038 point 4).
+  - `capture_font` (`sdk/apps/present/present.c:598@capture_font`): buffer `(capw + 15 & ~15) * caph * planes / 8` bytes,
+    `mem.fd_nplanes = planes`; background and ink compare through `cap_pixel`. The row stride in pixels is unchanged
+    (`fd_wdwidth * 16`, the same at both depths by ADR-038 point 5).
+  - `expand_frame` (new, `sdk/apps/present/present.c:1117@expand_frame`): `fb` (`RRRRRGGGGG0BBBBB`) to `fb32`
+    (`0x00RRGGBB`), the visible `SW` columns of every row, 5 to 8 bits per gun by bit replication `(c << 3) | (c >> 2)`:
+    the expansion the 16-plane device applies to a memory word (`kernel/src/vdi_backend.rs:200@word_to_device`,
+    `kernel/src/vdi_backend.rs:174@expand5to8`). PRESENT never sets bit 5 (`RGB()`, `blend565`), so the X byte is 0 and
+    the store pixels at 32 planes equal those at 16 [I].
+  - `blit_frame` (`sdk/apps/present/present.c:1132@blit_frame`): at 32 planes `expand_frame()` then `src.fd_addr = fb32`;
+    `src.fd_nplanes = planes`. At 16 planes `fb` as before.
+  - Header comment "HOW IT DRAWS" and the frame-buffer section comment: the "NewTOS memory MFDBs are 16-bit RGB565 chunky"
+    sentence replaced by the two forms (16 and 32 planes) and the convert-at-blit.
+  - At 16 planes: same calls with the same arguments in the same order, plus one `vq_extnd` before the slide file is read;
+    the capture compares the same 16-bit values (widened to `u32`), the frame and its blit are untouched. Not
+    byte-identical as a binary (the new code is in it): base `PRESENT.NAP` 431184 bytes, new 430784 bytes.
+- `docs/sdk/14-present.md` section 5: a "Screen depth" bullet; the "16-bit RGB565 chunky" sentence replaced by the
+  depth-dependent form; the blit bullet names the 32-plane expansion and that it counts into `@log`'s blit time (the
+  1920x1080 timings are marked as 16-plane ones). Line 3's German "Stand" translated ("As of").
+- `docs/DEVIATIONS.md`, section "VDI at 32 planes": the PRESENT row rewritten (it runs at 32; colours at 16-bit quality, P3
+  not chosen; alert for other counts; basis "read", no run at 32 yet). Kept as a row, not removed: the 16-bit colour quality
+  at `vdiplanes=32` stays a known difference a user sees. The TeraDesk row's basis raised from "the dialog not yet driven"
+  to the measurement `measurements/measurement-2026-11-19-v69b-test2/RUNINFO.TXT` results 3 and 4.
+- `docs/COMPATIBILITY.md` (the VDI-depth section, "Observable differences at 32 planes") and
+  `docs/api/vdi/raster/_raster.md` (program survey and the change-site table): the sentences "PRESENT copies nothing until
+  its patch" / "refused at 32" replaced, the `present.c` anchors moved to the new lines (`:643`, `:1148`).
+- `TASK/V69.md` line 3 (`Missing:` updated); this receipt.
+
+### Build, clippy, tests (real output)
+
+- PRESENT: `sdk/apps/present/build-present.sh` — "LINK OK -> .../PRESENT.NAP (430784 bytes)", "undefined symbols (goal 0):
+  0", the build's error file `present.err` empty (0 bytes; the base build's was empty too: warnings delta 0, `-Wall -Wextra`). Host clang:
+  `Apple clang version 21.0.0 (clang-2100.4.1.1)`.
+- **sha256** (gitignored outputs, in the agent directory `agent-a712e5c5c8d6ab585` under `target-agents`, 5.9G with the
+  worktree, deleted when the ticket lands): new `PRESENT.NAP` (the worktree's build directory of PRESENT)
+  `57cd986e5b93d8230f859a36ff0479154d89dafffd58fc613d0ff4aef0198397`; base (`2d00b4bb5`, a copy in the agent directory)
+  `d3fdd1f3f700f7991050d7661061d2077902e93bbcfafc743950491458ea58f3`; `TEST.PNG`
+  `ad568f319441bf4bcdf689e998afc9e3ba69734f2dd701eb5f8ced5bfc356ed4` (unchanged input).
+- `cargo xtask build --board qemu-virt`: OK; `--board rpi4`: OK; kernel 93 / `tos-api` 64 warnings, the base's (no Rust
+  source touched).
+- `cargo clippy -p xtask --all-targets`: bin 1, bin test 9 warnings, as the base of parts A and B: **delta 0**.
+- `cargo xtask test` (full): **2579 passed, 0 failed, 7 ignored** (221 suites; = baseline 2579/0/7).
+- `sdk/run-host-tests.sh`: 33 passed, 0 failed, 5 skipped (rt-host, ldbl-host, newtos-cc-host: compiler-rt not built in
+  the worktree; custom-font-host: z-tools tree absent; libshare-host), as part B.
+- `cargo xtask doc-check docs/DEVIATIONS.md docs/COMPATIBILITY.md docs/api/vdi/raster/_raster.md docs/sdk/14-present.md`:
+  3 failures, all pre-existing and not on edited lines (`docs/COMPATIBILITY.md:482`, `:592`, `:2218` cite
+  the extracted `cflib-21` and `z-tools-04805b7` trees under `sdk/`, trees the main tree has and `worktree-setup` does not
+  link); every edited line resolves. `cargo xtask status-check --new-only`: see the commit.
+
+### Tester handoff (part C)
+
+- **Build:** `sdk/apps/present/build-present.sh` on this branch writes `sdk/apps/present/build/PRESENT.NAP`; the standard
+  image takes it from there (`tools/make-sd-image.sh:92@PRESENT`) into `C:\Apps\PRESENT\` with the sample `SLIDES.TXT`
+  and `TEST.PNG` (slides with text, bullets, a picture slide, a centred title slide).
+- **Run:** QEMU raspi4b (or virt) with the standard image, PRESENT started from the desktop or by `#Z` autorun, at the
+  default boot and with `--bootargs vdiplanes=32`; step through every sample slide (Space / Right), then Esc.
+- **Expected at 32:** no "cannot read the system font" alert; every slide shows; screendump of each slide **equal to the
+  16-plane screendump of the same slide**: by the code the store pixels are the same (5-bit guns replicated to 8, X byte
+  0) [I]; if the dump tool shows the device pixel, exact equality, not only within 5 bits; the mouse sprite is hidden
+  during the show. After Esc the desktop is back (`form_dial(FMD_FINISH)`). Wire, with `k-vditrace`: `vq_extnd` flag 1 ->
+  32; `vro_cpyfm` S_ONLY screen -> memory form `w256 h112 wd16 stand0 planes32` for the 8x16 font (capture), then per
+  slide memory `planes32` `w=SW h=SH wd=FBW/16` -> screen; no 16-plane form at 32.
+- **Expected at 16:** as on `main`: the same screendumps as a `main` (`2d00b4bb5`) PRESENT, frame by frame; wire as
+  before plus one `vq_extnd` flag 1 before the first slide.
+- **Negative control (optional):** `main`'s PRESENT at `vdiplanes=32` (the analysis expects the font alert or garbage,
+  section 2.2, never run).
+- **Not testable here:** the "other plane count" alert: NewTOS offers only 16 and 32 (ADR-038 point 1), so the branch is
+  read-only evidence. Real-Pi-only: HDMI colours and the blit time at 1920x1080 with the expansion.
+- `@log`: with `@log` in the slide file `PRESENT.LOG` records the blit time; at 32 planes it includes the expansion.
+
+### Proposed `docs/STATUS.md` line (part C)
+
+`2026-11-19 — V69 part C: PRESENT runs at 16 and at 32 planes (owner option P2): it reads the depth with vq_extnd, captures
+the system font into a memory form of the screen's depth and, at vdiplanes=32, expands its 16-bit frame to 0x00RRGGBB at
+the blit (5 -> 8 bits by replication, the 16-plane device's own expansion), so slides look as at 16; other counts: an
+alert and a clean exit. DEVIATIONS: PRESENT row rewritten (16-bit colour quality at 32), the TeraDesk row raised to the
+v69b-test2 measurement. (<commit>)`
+
+### Out-of-scope observations (part C)
+
+- `cargo xtask worktree-setup` does not link the extracted `cflib-21` and `z-tools-04805b7` trees under `sdk/`, so doc-check in a
+  worktree reports 3 failures in `docs/COMPATIBILITY.md` that the main tree does not.
+- Dated snapshots `docs/analysis/v69-programs-at-32-planes-2026-11-18.md` (section 2.2 and open points) and
+  `docs/analysis/vdi-32bit-scope-2026-11-18.md` (program table) cite `present.c` lines this change moved; history, not edited.
+- `docs/analysis/lp64-tos-struct-survey-2026-10-28.md:119` cites the `get_sysvar` line of `present.c`, which moved by 23
+  lines (dated snapshot, German text, not edited). `TASK/MEM12.md:74` and `TASK/V61.md:213` had live anchors into moved
+  lines: their anchor line numbers rewritten by hand (`:934` to `:957`, `:620` to `:643`), no other change; the
+  `--fix-anchors` option named in `CLAUDE.md` does not exist in this tree's xtask ("unknown argument").

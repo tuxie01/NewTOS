@@ -71,7 +71,7 @@ of a program to the system variables is therefore an EL0 access to page 0.
 |---|---|---|
 | mintlib `clock()` (every program with `clock`/timing) | `sdk/libc/mintlib/time/clock.c:15,21@get_sysvar` → `sdk/libc/newtos-arch/getsysvar.c:36@get_sysvar` | `_hz_200` `0x4BA`, direct load |
 | DOOM | `sdk/apps/doom/doomgeneric_gem.c:675@get_sysvar`, `:1858-1866@kbd_probe` | `_hz_200`; `_sysbase` `0x4F2` → OSHEADER `os_version`/`os_dummy` |
-| PRESENT | `sdk/apps/present/present.c:934@get_sysvar` | `_hz_200` |
+| PRESENT | `sdk/apps/present/present.c:957@get_sysvar` | `_hz_200` |
 | TeraDesk | `sdk/apps/teradesk/library/utility/gettos.c:40-42@os_version` | `_sysbase` → `os_version` |
 | WinDom (zView) | `sdk/windom/overlay/src/vq_tos.c:83@syshead`, `sdk/windom/overlay/src/cookieptr.c:48@__cookieptr` | `_sysbase`, `_p_cookies` `0x5A0` |
 | zView | `sdk/zview/z-tools-04805b7/zview/chrono.c:25,45@Super` | `_hz_200` |

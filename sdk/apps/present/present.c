@@ -43,15 +43,24 @@
  *   quit      Esc, Q
  *
  * HOW IT DRAWS
+ *   The screen depth is read once (vq_extnd, intout[4]): PRESENT runs at 16
+ *   planes (the NewTOS default) and at 32 planes (boot argument vdiplanes=32,
+ *   ADR-038); any other count gives an alert and a clean exit. A NewTOS memory
+ *   MFDB has the device's form: at 16 planes one 16-bit word per pixel
+ *   (RRRRRGGGGG0BBBBB), at 32 planes one 32-bit word 0x00RRGGBB per pixel
+ *   (ADR-038 point 5); a 16-plane form is refused at 32 planes.
  *   The system font (8x16 on NewTOS) is read once: the 224 printable cells are
- *   drawn with v_gtext and copied back with vro_cpyfm into a memory MFDB
- *   (NewTOS memory MFDBs are 16-bit RGB565 chunky, tos-api/src/vdi/raster.rs).
- *   Larger sizes are made from those bitmaps with Scale2x/Scale3x (EPX), which
- *   rounds diagonals instead of producing blocks, and cached per size. A slide
- *   is composed into one off-screen RGB565 frame and put on the screen with a
- *   single vro_cpyfm (S_ONLY). Pictures: libpng -> RGBA8 -> alpha-composited on
- *   the background, enlarged by the largest whole factor that fits (crisp
- *   pixels) or reduced with a box filter, then cached per slide.
+ *   drawn with v_gtext and copied back with vro_cpyfm into a memory MFDB of
+ *   the screen's depth. Larger sizes are made from those bitmaps with
+ *   Scale2x/Scale3x (EPX), which rounds diagonals instead of producing blocks,
+ *   and cached per size. A slide is composed into one off-screen 16-bit
+ *   RRRRRGGGGG0BBBBB frame and put on the screen with a single vro_cpyfm
+ *   (S_ONLY); at 32 planes the frame is first expanded to 0x00RRGGBB (5 -> 8
+ *   bits per gun by bit replication, the expansion the 16-plane device itself
+ *   applies), so the colours keep 16-bit quality at both depths. Pictures:
+ *   libpng -> RGBA8 -> alpha-composited on the background, enlarged by the
+ *   largest whole factor that fits (crisp pixels) or reduced with a box
+ *   filter, then cached per slide.
  *
  * SCREEN OWNERSHIP
  *   wind_update(BEG_UPDATE) + wind_update(BEG_MCTRL), form_dial(FMD_START)
@@ -69,6 +78,7 @@
 
 typedef unsigned char u8;
 typedef unsigned short u16;
+typedef unsigned int u32;
 
 /* ------------------------------------------------------------------------ */
 /* Slide model                                                              */
@@ -368,12 +378,14 @@ static char *read_file(const char *path, long max, long *outlen)
 }
 
 /* ------------------------------------------------------------------------ */
-/* Frame buffer (RGB565, the NewTOS memory-MFDB format)                     */
+/* Frame buffer (16-bit RRRRRGGGGG0BBBBB, the 16-plane memory-MFDB format)  */
 
 static short vh;
 static int SW, SH;              /* screen size */
 static int FBW;                 /* frame stride in pixels (multiple of 16) */
+static int planes;              /* screen depth from vq_extnd: 16 or 32 */
 static u16 *fb;
+static u32 *fb32;               /* 32 planes: fb expanded to 0x00RRGGBB */
 
 #define RGB(r, g, b) ((u16)((((r) >> 3) << 11) | (((g) >> 3) << 6) | ((b) >> 3)))
 
@@ -572,13 +584,23 @@ static void draw_str(int x, int y, int k, u16 col, const char *s, int n)
 			draw_glyph(x, y, (u8)s[i], k, col);
 }
 
+/* Pixel i of a capture buffer in the screen's memory-MFDB form. At 32 planes
+ * the X byte is masked off (ADR-038 point 4: it carries no colour). */
+static u32 cap_pixel(const void *buf, long i)
+{
+	if (planes == 32)
+		return ((const u32 *)buf)[i] & 0x00FFFFFFu;
+	return ((const u16 *)buf)[i];
+}
+
 /* Read the system font: draw the cells 32..255 with v_gtext (black on
  * white, top-aligned) in the top-left corner and copy them back. */
 static int capture_font(void)
 {
 	short attr[10], d, pxy[4], p8[8];
 	int capw, caph, r, k, c, x, y, inked = 0;
-	u16 *buf, bgv;
+	void *buf;
+	u32 bgv;
 	MFDB mem, scr;
 	char s[33];
 
@@ -589,7 +611,8 @@ static int capture_font(void)
 		return 0;
 	capw = 32 * cw;
 	caph = 7 * ch;
-	buf = malloc((size_t)((capw + 15) & ~15) * caph * 2);
+	/* a row is fd_wdwidth * 16 pixels of planes / 8 bytes */
+	buf = malloc((size_t)((capw + 15) & ~15) * caph * (planes / 8));
 	if (!buf)
 		return 0;
 
@@ -617,18 +640,18 @@ static int capture_font(void)
 	mem.fd_h = caph;
 	mem.fd_wdwidth = (capw + 15) / 16;
 	mem.fd_stand = 0;
-	mem.fd_nplanes = 16;
+	mem.fd_nplanes = planes;
 	p8[0] = 0; p8[1] = 0; p8[2] = capw - 1; p8[3] = caph - 1;
 	p8[4] = 0; p8[5] = 0; p8[6] = capw - 1; p8[7] = caph - 1;
 	vro_cpyfm(vh, S_ONLY, p8, &scr, &mem);
 
-	bgv = buf[0];                 /* top-left pixel of the ' ' cell */
+	bgv = cap_pixel(buf, 0);      /* top-left pixel of the ' ' cell */
 	memset(base_glyph, 0, sizeof(base_glyph));
 	for (c = 32; c < 256; c++) {
 		int row = (c - 32) / 32, col = (c - 32) % 32;
 		for (y = 0; y < ch; y++)
 			for (x = 0; x < cw; x++) {
-				u16 v = buf[(long)(row * ch + y) * ((capw + 15) & ~15) + col * cw + x];
+				u32 v = cap_pixel(buf, (long)(row * ch + y) * ((capw + 15) & ~15) + col * cw + x);
 				if (v != bgv) {
 					base_glyph[c][y][x] = 1;
 					inked++;
@@ -1084,18 +1107,45 @@ static void render_slide(int idx)
 	sl->t_render = get_sysvar(_hz_200) - t0 - sl->t_image;
 }
 
+/* 5 -> 8 bits by bit replication: the expansion the 16-plane device applies
+ * to a memory word (kernel/src/vdi_backend.rs word_to_device, expand5to8),
+ * so a frame shows the same store pixels at 32 planes as at 16. */
+#define EXPAND5(c) ((u32)(((c) << 3) | ((c) >> 2)))
+
+/* 32 planes: fb (RRRRRGGGGG0BBBBB) -> fb32 (0x00RRGGBB), the visible
+ * columns of every row; bit 5 of the word is never set by RGB(). */
+static void expand_frame(void)
+{
+	int x, y;
+	for (y = 0; y < SH; y++) {
+		const u16 *s = fb + (long)y * FBW;
+		u32 *d = fb32 + (long)y * FBW;
+		for (x = 0; x < SW; x++) {
+			u32 v = s[x];
+			d[x] = (EXPAND5((v >> 11) & 31) << 16) |
+			       (EXPAND5((v >> 6) & 31) << 8) |
+			       EXPAND5(v & 31);
+		}
+	}
+}
+
 static void blit_frame(void)
 {
 	MFDB src, dst;
 	short p[8];
 	memset(&src, 0, sizeof(src));
 	memset(&dst, 0, sizeof(dst));
-	src.fd_addr = fb;
+	if (planes == 32) {
+		expand_frame();
+		src.fd_addr = fb32;
+	} else {
+		src.fd_addr = fb;
+	}
 	src.fd_w = SW;
 	src.fd_h = SH;
 	src.fd_wdwidth = FBW / 16;
 	src.fd_stand = 0;
-	src.fd_nplanes = 16;
+	src.fd_nplanes = planes;
 	p[0] = 0; p[1] = 0; p[2] = SW - 1; p[3] = SH - 1;
 	p[4] = 0; p[5] = 0; p[6] = SW - 1; p[7] = SH - 1;
 	vro_cpyfm(vh, S_ONLY, p, &src, &dst);
@@ -1182,6 +1232,12 @@ int main(int argc, char **argv)
 	SW = work_out[0] + 1;
 	SH = work_out[1] + 1;
 	FBW = (SW + 15) & ~15;
+	vq_extnd(vh, 1, work_out);
+	planes = work_out[4];
+	if (planes != 16 && planes != 32) {
+		form_alert(1, "[3][PRESENT needs a screen|of 16 or 32 planes.][ Quit ]");
+		goto out_vdi;
+	}
 
 	n = load_slides(argc, argv);
 	if (n < 0) {
@@ -1193,6 +1249,13 @@ int main(int argc, char **argv)
 		goto out_vdi;
 	}
 	fb = malloc((size_t)FBW * SH * 2);
+	if (fb && planes == 32) {
+		fb32 = malloc((size_t)FBW * SH * 4);
+		if (!fb32) {
+			free(fb);
+			fb = NULL;
+		}
+	}
 	if (!fb) {
 		form_alert(1, "[3][PRESENT: not enough memory|for the screen buffer.][ Quit ]");
 		goto out_vdi;

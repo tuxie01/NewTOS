@@ -2007,9 +2007,9 @@ and writes 16-bit pixels into `Physbase` memory is wrong at either setting, beca
 `5b-vgetsize.md`, `04-getrez.md` ("At the 32-plane setting").
 
 Observable differences at 32 planes beyond the table, each indexed by trigger in `docs/DEVIATIONS.md` ("VDI at
-32 planes"): the mode word beside the plane count; a 16-plane memory form refused; `PRESENT.NAP` (hardwired 16-plane
-forms, `sdk/apps/present/present.c:620,1098@fd_nplanes`) therefore copies nothing until its patch (TASK/V69). At 16 planes
-none of these exists. The gate for 32-plane behaviour is the host tests of V62-V68, not the oracle:
+32 planes"): the mode word beside the plane count; a 16-plane memory form refused; `PRESENT.NAP` builds its memory
+forms at the screen's depth (`sdk/apps/present/present.c:643,1148@fd_nplanes`, TASK/V69) and keeps 16-bit colour quality
+at 32 planes. At 16 planes none of these exists. The gate for 32-plane behaviour is the host tests of V62-V68, not the oracle:
 `tos-api/tests/vdi_v62_planes_setting.rs`, `vdi_v63_device_pixel.rs`, `vdi_v64_pens.rs`, `vdi_v65_memory_forms.rs`,
 `vdi_v66_scrninfo32.rs`, `aes_v67_cicon32.rs`, `vt52_console_32.rs`, `vt52_console_32_default_palette.rs` and
 `xbios_v68_planes_setting.rs` (shared helpers in `tos-api/tests/vdi_planes32_common/`); and on the running system the
