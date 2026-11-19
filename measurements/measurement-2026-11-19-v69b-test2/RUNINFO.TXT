@@ -1,0 +1,142 @@
+V69 part B, tester run of developer commit d237b0a3b (branch v69b)  --  2026-11-19
+================================================================================
+Verdict: PASS
+
+Scope (one sentence): the TeraDesk Video options plane-count clamp (sdk/overlays/teradesk/video.c), the two docs/DEVIATIONS.md
+rows, and the zView measurement at 32 planes (TASK/V69.md, "Part B state and the PRESENT decision"); standing baseline
+(both boards build, host tests, warnings, doc-check). PRESENT is not in this run (not handed over yet). No `cargo xtask accept`.
+
+Environment
+  machine        Ingo's Mac mini (scutil --get ComputerName)
+  macOS          27.0.1
+  Claude Code    2.1.328
+  host clang     Apple clang version 21.0.0 (clang-2100.4.1.1)   (host_clang line of every manifest)
+  tested commit  d237b0a3b  (worktree target-agents/agent-a1c13a347fc9224d7/wt, detached)
+  control tree   9d90f0589  (its parent on main; worktree .../wt-main) = the unpatched TeraDesk overlay
+  agent dir      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1c13a347fc9224d7  (11G in total, du -sh; deleted on accept)
+
+How the run was made (method/)
+  The scripts of the stopped earlier run directory were used as a read-only template (copied here, adjusted: env.sh,
+  mkcards.sh, td-matrix.sh, td-extra.sh, zv-matrix.sh, build-all.sh, build-test.sh, pngtol.py are new or changed; the rest is
+  copied unchanged). Nothing of that directory is cited as evidence; every result below is from runs of this tester.
+  - DESKTOP.NAP builds: the SDK build script sdk/apps/build-teradesk.sh was copied to the agent dir with SDK/OVL/BUILD redirected
+    (so that nothing is written into the main tree: sdk/apps/teradesk of a worktree is a symlink into the main tree) and the
+    two lib_ensure calls removed (the main tree's libc.a, gemlib.a used as they stand). Same script, same libraries, only the
+    overlay differs: build-wt = overlay of d237b0a3b, build-wt-main = overlay of 9d90f0589.
+  - Cards: tools/mkcard.sh only (method/mkcards.sh, method/mkcard-zv.sh); manifests in method/manifests/.
+  - Kernels (scratch trees of the branch tree, release rpi4): k-open, k-cancel2, k-ok3 = the scripted IKBD injector armed on
+    TeraDesk (tools/inject-arm.py up:DESKTOP=<script>, method/gen.py from open/cancel2/ok3.spec); k-vditrace = bios-arg-trace
+    plus a scratch-only VDI call decoder (method/vditrace.patch.py: logs vq_scrninfo, vq_extnd, vro_cpyfm MFDB fields). Both
+    live only in the agent dir; no branch carries them.
+  - QEMU: `qemu-system-aarch64 -M raspi4b -display none -append "serial=on [vdiplanes=N]"`, one QEMU at a time, card = APFS
+    clone (cp -c) of the base card, screendumps by QMP keyed to serial markers (method/run.sh, mdrive.py); after each run
+    fsck_msdos -n of the clone's FAT partition (dd'd out) and EXC/PANIC count of the serial log.
+  - Boards: raspi4b only (qemu-virt has no C: and so cannot carry TeraDesk or zView from the card).
+
+Commands and outcomes (board: raspi4b QEMU unless stated)
+ Build / host
+  cargo xtask build --board qemu-virt (debug, fresh), tested tree ........ OK, kernel 93 warnings, tos-api 64
+  cargo xtask build --board rpi4      (debug, fresh), tested tree ........ OK, same counts
+  the same two builds on the control tree 9d90f0589 ....................... OK, same counts: warnings delta 0
+  cargo clippy -p xtask --all-targets, tested vs control ................. bin 1 / bin test 9 warnings on both: delta 0
+  cargo xtask test (full, tested tree) .................................... 2579 passed / 0 failed / 7 ignored (221 suites);
+                                                                            baseline (docs/STATUS.md line 44) 2579 / 0 / 7. The commit adds no test.
+  cargo xtask doc-check docs/DEVIATIONS.md TASK/V69.md (tested tree) ...... 0 failures (2 files, 103 path cites, 19 ADR cites,
+                                                                            5 anchored line cites); control tree 0 failures too
+ TeraDesk, Options > Video options (method/td-matrix.sh; scripts open, cancel2, ok3; patched = wt card, unpatched = main card)
+  12 runs, serial/<script>-<wt|main>-<v16|v32>.log (v16 = default boot, v32 = `vdiplanes=32`) ...... each rc 0, fsck rc 0, 0 EXC/PANIC
+  method/td-extra.sh: open at explicit `vdiplanes=16` (wt, main) and cancel2 repeated at the default (v16b, wt, main) ... each rc 0, fsck 0, 0 EXC/PANIC
+ zView (method/zv-matrix.sh, standard #Z launcher ZVLAUNCH, samples T24.BMP and TRGB.PNG, kernel k-vditrace)
+  4 runs, serial/zv-<sample>-<v16|v32>.log, screendumps z25 / z45 (25 s / 45 s after "starting C:\ZVIEW\ZVIEW.NAP") ...... each rc 0, fsck 0, 0 EXC/PANIC
+ Total 20 QEMU runs: 20 fsck_msdos -n clean (the cards are not written by these programs: the sha256 after each run equals the one before), 0 lines of [EXC]/PANIC/panicked/[crash] in any serial log (grep over serial/*.log).
+
+Results
+ 1. TeraDesk dialog at the default / `vdiplanes=16`, patched against main (method/pngcmp.py, every pixel):
+    open: 5 of 5 frames identical (default), 4 of 5 (explicit vdiplanes=16: opts frame differs, see 2); cancel2: 8 of 9 (opts
+    differs); ok3: 9 of 9 identical. Explicit `vdiplanes=16` against the default boot, patched: 5 of 5 identical.
+ 2. The only non-identical frames are the "opts" frame (menu pulled down, hover highlight of "Video options..." present in the
+    patched run, absent in the main run; 3494 pixels, bbox x 224..439 y 9..185: the menu area). It is a capture-time frame
+    (one injector byte earlier/later); the repeat of cancel2 at the default (v16b, wt and main) has all 9 frames identical,
+    and the next frame ("hover") is identical in every pair. Read as timing, not as a product difference.
+ 3. Patched at `vdiplanes=32` (visual inspection of the PNGs with Read): screendumps/open-wt-v32-dialog.png shows the dialog,
+    "Colours: 64K", no garbled text, all labels intact. Against the patched 16-plane run every frame of all three scripts
+    (22 frames) is equal at 5 bits per gun, largest per-gun step 4 (method/pngtol.py; exact equality is not expected, the
+    32-plane device word keeps 8 bits, ADR-038, V67 rule). The 32-plane frame list:
+      open     : desk, opts, hover, dialog, idle                      -> dialog opens, stays, no overrun
+      ok3      : r1 (OK pressed: alert "A change of video mode will terminate all running applications."),
+                 r2 (alert's OK: screen cleared, the app ends), r3/r4 (desktop re-launched by the #Z autorun, menu bar and icons)
+                 -> OK path behaves as at 16 planes (r1..r4 equal at 5 bits to the 16-plane frames, r2 included)
+      cancel2  : click on Cancel (427,361): the dialog stays open at both depths and the Colours text reads "256" (see 7);
+                 Esc: no effect; Undo key: dialog closed, desktop intact (frame "undo" equal at 5 bits to the 16-plane one)
+    The dialog was opened, left idle for 3000 injector ticks (open idle frame), left by OK and by the Undo key (cancel) at 32 planes.
+ 4. NEGATIVE CONTROL, unpatched (main card) at `vdiplanes=32`: screendumps/open-main-v32-dialog.png shows the Colours field
+    overrun and garbled ("4194304K" over the button frame). Difference to the patched run: 295 pixels, bbox x 381..442 y 275..286
+    (the Colours field and nothing else); in the frames after the dialog (desk, opts, idle of ok3, r1..r4) the two are identical.
+    The unpatched DESKTOP.NAP differs from the patched one (sha256 below), so the card difference is real.
+    No crash in the unpatched run either: the overrun is the 5-byte text corruption the developer described.
+ 5. zView at `vdiplanes=32` (screendumps/zv-<sample>-v32-z25.png, z45.png; Read of both PNGs: window with the 64x48 test
+    picture, colour bars, gradient and checkerboard visible, toolbar icons visible, menu bar "zView File Edit View Help"):
+    (a) wire, from the scratch call decoder (serial/zv-*-v32.log):
+        vq_extnd intin0=1 -> planes 32;  vq_scrninfo answer words 0x0002 0x0002 0x0020 0x0100 0x0000 0x0000 0x0000 0x0000
+        (format 2, clut 2, planes 32, out[4] != 0x8000), called once, before any copy;
+        vro_cpyfm mode 3 (S_ONLY) with the picture as memory MFDB "w64 h48 wd4 stand0 planes32" -> screen (null MFDB), accepted
+        (the picture appears); toolbar icon forms "w16 h16 wd1 stand0 planes32" likewise (3 copies); 257 further 16x1 copies into a planes32 form.
+    (b) pixels, method/zvcmp.py (locates the decoded sample picture in the dump and compares per gun; mouse sprite masked):
+        32 planes, both samples, both dump times: 7776 of 7776 gun values EXACT to the decoded 8-bit sample (max diff 0).
+        16 planes (default boot), both samples: 100 % equal to the 5-bit expansion, 65.6 % exact, max diff 7.
+        So at 32 planes zView takes the plain `raster_32` route (8-bit `0x00RRGGBB`, not `raster_32r` = R/B swap, not a 5-bit route).
+    The T24.BMP picture of the 32-plane run is the sample's 8-bit decode exactly; the window title area reads 64x48x24
+    (T24.BMP) and 64x48x8 (TRGB.PNG, the file's own depth label).
+    Recorded answer to "which path": `raster_32` (expected); `vq_scrninfo` was called (yes, once). 0 EXC/PANIC, fsck clean.
+ 6. docs/DEVIATIONS.md, the two new rows: doc-check clean (cites resolve, anchors good). Content not audited (not my job);
+    the TeraDesk row says "the dialog not yet driven at 32 planes" in its evidence column: this run drove it (items 3, 4).
+ 7. Out-of-scope observation: at the default boot AND at 32 planes, on main AND on the patch, a mouse click on the dialog's
+    Cancel button (method/cancel2.spec, 427,361, 60 ticks held) leaves the dialog open and changes the Colours text from
+    "64K" to "256"; main and patch are identical at 16 planes (frame "click" identical), so it is not caused by this commit.
+    It may be the injector's click, not the desktop; not investigated.
+
+Drove / could not verify
+  drove: build of both boards (debug) on tested and control commit; host tests; clippy delta; doc-check; TeraDesk Video
+  options dialog patched at default, `vdiplanes=16` and `vdiplanes=32` (open, OK + alert, Cancel via Undo key, idle), unpatched
+  control at 16 and 32, pixel comparison and visual inspection; zView at 16 and 32 with two samples, wire and pixel analysis.
+  not verified: the dialog's mouse Cancel (item 7); the TeraDesk dialog on silicon; zView on a real Pi4 (HDMI colours); the
+  PRESENT patch (not part of this run); `cargo xtask accept` (not done on the lead's stop order).
+
+Real-Pi4-only (not claimed)
+  1. real HDMI output / colours of the Video options dialog and of zView at 32 planes
+  2. interactive mouse and keyboard on the dialog (only the scripted IKBD injector on QEMU was driven)
+  3. cache coherence / QUIRK-001 TTBR0 wedge for the zView decode and the 32-plane memory copies
+
+Out-of-scope observations
+  - item 7 (Cancel click).
+  - cargo xtask build prints 159 "warning" lines per board (kernel 93 + tos-api 64 + others), identical on tested and control tree.
+  - sdk/apps/teradesk of a worktree is a symlink into the main tree: running sdk/apps/build-teradesk.sh inside a worktree
+    would write build/ into the main tree; avoided here (copy of the script with redirected paths, in the agent dir).
+
+Images booted (manifests copied to method/manifests/, quoted)
+  td-wt.img        optional_missing none   host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)  file DESKTOP.NAP e27433ff...afe1 353312
+  td-main.img      optional_missing none   (same host_clang)
+  zv-T24.BMP.img   optional_missing none
+  zv-TRGB.PNG.img  optional_missing none
+  The manifests are method/manifests/<image>.manifest (td-wt, td-main, zv-T24.BMP, zv-TRGB.PNG), each "optional_missing none".
+
+Gitignored outputs cited (agent dir .../target-agents/agent-a1c13a347fc9224d7; sizes du -sh)
+  scratch/bin/k-open.img        6.2M for the four  34489275e95504bd787317585b81d907ccb50b65fe2672028a1467d0cd4bf34f
+  scratch/bin/k-cancel2.img                        1c0c3990a7f6b703f7b63a8f8aea6da675f966b0bbedb4df155f13d3edb92b00
+  scratch/bin/k-ok3.img                            109f6ddc7451da4d38c477563ef8444f033a1d92ae3df62520c0c0ae1779826a
+  scratch/bin/k-vditrace.img                       0357833e4a3f193f5f1e1dd4174838839d1f3a46ca2baced2fd3003208e47a80
+  scratch/cards/td-wt.img       64 MiB (256M for four) d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6
+  scratch/cards/td-main.img                        f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17
+  scratch/cards/zv-T24.BMP.img                     2acdb6f55182273e01af617b90de29511d7335aae72880b1f3db9af18c14cd71
+  scratch/cards/zv-TRGB.PNG.img                    91f36a2fdc6c57fdc5476b91e18b377c053d95b22619c0c3be0ad225742d66ea
+  shadow/build-wt/dist/DESKTOP.NAP      (2.9M shadow dir)  e27433ffe64b8a2f5b4505600a5f3bca3c9e105da15dc63b0cc83bad78d1afe1  (patched)
+  shadow/build-wt-main/dist/DESKTOP.NAP                    afa390a2937a37a92112eca79d9ad65d127b4556dfd4ac9c6fa3e313fd49bbd5  (unpatched)
+  main tree inputs read (gitignored): sdk/libc/libc.a 3fa0168cabbe06f454a05616adbf5ffad4c86dd695b06b1e166abd4cbe0dafe2,
+    sdk/gemlib/gemlib.a 3ac523df3fcea9e80a12714dacfd3032e6c20ce406d7b53c569fd7266f360dab,
+    sdk/zview/build/dist/ZVIEW/ZVIEW.NAP 38444d741a1db7f68d62aa2e05e6a3d8555f41bd10ebefb4b2224004f62e4d9d
+  worktrees: wt 5.8G, wt-main 2.0G.
+  Card sha256 after each run equals the one before (see "clone after run" in serial/*.run.txt): the run did not change the cards.
+
+Reproducing (no failure to reproduce; the passing runs)
+  . method/env.sh; bash method/build-all.sh (kernels); bash method/mkcards.sh; bash method/mkcard-zv.sh $S T24.BMP;
+  bash method/td-matrix.sh; bash method/zv-matrix.sh   (after building the two DESKTOP.NAP variants as described above)

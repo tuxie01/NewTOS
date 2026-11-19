@@ -1,0 +1,7 @@
+run zv-T24.BMP-v32 2026-11-19 12:29:26 CET append='serial=on vdiplanes=32'
+0357833e4a3f193f5f1e1dd4174838839d1f3a46ca2baced2fd3003208e47a80  kernel8.img (k-vditrace.img)
+2acdb6f55182273e01af617b90de29511d7335aae72880b1f3db9af18c14cd71  base card zv-T24.BMP.img
+t=40.3s -> zv-T24.BMP-v32-z25.png {"return": {}}
+t=60.3s -> zv-T24.BMP-v32-z45.png {"return": {}}
+clone after run 2acdb6f55182273e01af617b90de29511d7335aae72880b1f3db9af18c14cd71 (deleted)
+zv-T24.BMP-v32 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 353

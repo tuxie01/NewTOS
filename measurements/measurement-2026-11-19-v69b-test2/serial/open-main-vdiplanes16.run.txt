@@ -1,0 +1,10 @@
+run open-main-vdiplanes16 2026-11-19 12:33:26 CET append='serial=on vdiplanes=16'
+34489275e95504bd787317585b81d907ccb50b65fe2672028a1467d0cd4bf34f  kernel8.img (k-open.img)
+f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17  base card td-main.img
+t=17.6s -> open-main-vdiplanes16-desk.png {"return": {}}
+t=19.4s -> open-main-vdiplanes16-opts.png {"return": {}}
+t=20.9s -> open-main-vdiplanes16-hover.png {"return": {}}
+t=23.0s -> open-main-vdiplanes16-dialog.png {"return": {}}
+t=38.1s -> open-main-vdiplanes16-idle.png {"return": {}}
+clone after run f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17 (deleted)
+open-main-vdiplanes16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 114

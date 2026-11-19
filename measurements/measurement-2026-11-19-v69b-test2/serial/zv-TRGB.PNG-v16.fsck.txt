@@ -1,0 +1,6 @@
+** /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a1c13a347fc9224d7/scratch/q.LFDnLF/fat.img
+** Phase 1 - Preparing FAT
+** Phase 2 - Checking Directories
+** Phase 3 - Checking for Orphan Clusters
+Warning: 40 files, 62740 KiB free (31370 clusters)
+fsck rc=0

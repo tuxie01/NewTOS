@@ -1,0 +1,14 @@
+run cancel2-main-v16 2026-11-19 12:22:14 CET append='serial=on'
+1c0c3990a7f6b703f7b63a8f8aea6da675f966b0bbedb4df155f13d3edb92b00  kernel8.img (k-cancel2.img)
+f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17  base card td-main.img
+t=17.5s -> cancel2-main-v16-desk.png {"return": {}}
+t=19.4s -> cancel2-main-v16-opts.png {"return": {}}
+t=20.8s -> cancel2-main-v16-hover.png {"return": {}}
+t=23.1s -> cancel2-main-v16-dialog.png {"return": {}}
+t=28.3s -> cancel2-main-v16-onbutton.png {"return": {}}
+t=31.6s -> cancel2-main-v16-click.png {"return": {}}
+t=40.9s -> cancel2-main-v16-esc.png {"return": {}}
+t=49.9s -> cancel2-main-v16-undo.png {"return": {}}
+t=57.6s -> cancel2-main-v16-idle.png {"return": {}}
+clone after run f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17 (deleted)
+cancel2-main-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 141

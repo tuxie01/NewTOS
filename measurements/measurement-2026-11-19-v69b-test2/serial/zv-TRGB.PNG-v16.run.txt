@@ -1,0 +1,7 @@
+run zv-TRGB.PNG-v16 2026-11-19 12:30:28 CET append='serial=on'
+0357833e4a3f193f5f1e1dd4174838839d1f3a46ca2baced2fd3003208e47a80  kernel8.img (k-vditrace.img)
+91f36a2fdc6c57fdc5476b91e18b377c053d95b22619c0c3be0ad225742d66ea  base card zv-TRGB.PNG.img
+t=40.3s -> zv-TRGB.PNG-v16-z25.png {"return": {}}
+t=60.3s -> zv-TRGB.PNG-v16-z45.png {"return": {}}
+clone after run 91f36a2fdc6c57fdc5476b91e18b377c053d95b22619c0c3be0ad225742d66ea (deleted)
+zv-TRGB.PNG-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 352

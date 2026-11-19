@@ -1,0 +1,14 @@
+run cancel2-wt-v16 2026-11-19 12:20:13 CET append='serial=on'
+1c0c3990a7f6b703f7b63a8f8aea6da675f966b0bbedb4df155f13d3edb92b00  kernel8.img (k-cancel2.img)
+d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6  base card td-wt.img
+t=17.6s -> cancel2-wt-v16-desk.png {"return": {}}
+t=19.5s -> cancel2-wt-v16-opts.png {"return": {}}
+t=20.8s -> cancel2-wt-v16-hover.png {"return": {}}
+t=23.2s -> cancel2-wt-v16-dialog.png {"return": {}}
+t=28.3s -> cancel2-wt-v16-onbutton.png {"return": {}}
+t=31.6s -> cancel2-wt-v16-click.png {"return": {}}
+t=40.8s -> cancel2-wt-v16-esc.png {"return": {}}
+t=50.0s -> cancel2-wt-v16-undo.png {"return": {}}
+t=57.5s -> cancel2-wt-v16-idle.png {"return": {}}
+clone after run d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6 (deleted)
+cancel2-wt-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 141

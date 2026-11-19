@@ -1,0 +1,10 @@
+run open-wt-v16 2026-11-19 12:17:30 CET append='serial=on'
+34489275e95504bd787317585b81d907ccb50b65fe2672028a1467d0cd4bf34f  kernel8.img (k-open.img)
+d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6  base card td-wt.img
+t=17.5s -> open-wt-v16-desk.png {"return": {}}
+t=19.6s -> open-wt-v16-opts.png {"return": {}}
+t=20.9s -> open-wt-v16-hover.png {"return": {}}
+t=23.0s -> open-wt-v16-dialog.png {"return": {}}
+t=38.1s -> open-wt-v16-idle.png {"return": {}}
+clone after run d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6 (deleted)
+open-wt-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 113

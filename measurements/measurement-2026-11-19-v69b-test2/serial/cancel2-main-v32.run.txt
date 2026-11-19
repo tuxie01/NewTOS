@@ -1,0 +1,14 @@
+run cancel2-main-v32 2026-11-19 12:23:14 CET append='serial=on vdiplanes=32'
+1c0c3990a7f6b703f7b63a8f8aea6da675f966b0bbedb4df155f13d3edb92b00  kernel8.img (k-cancel2.img)
+f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17  base card td-main.img
+t=17.3s -> cancel2-main-v32-desk.png {"return": {}}
+t=19.4s -> cancel2-main-v32-opts.png {"return": {}}
+t=21.0s -> cancel2-main-v32-hover.png {"return": {}}
+t=23.1s -> cancel2-main-v32-dialog.png {"return": {}}
+t=28.2s -> cancel2-main-v32-onbutton.png {"return": {}}
+t=31.6s -> cancel2-main-v32-click.png {"return": {}}
+t=40.8s -> cancel2-main-v32-esc.png {"return": {}}
+t=50.0s -> cancel2-main-v32-undo.png {"return": {}}
+t=57.4s -> cancel2-main-v32-idle.png {"return": {}}
+clone after run f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17 (deleted)
+cancel2-main-v32 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 142

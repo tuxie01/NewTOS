@@ -1,0 +1,14 @@
+run ok3-wt-v16 2026-11-19 12:24:14 CET append='serial=on'
+109f6ddc7451da4d38c477563ef8444f033a1d92ae3df62520c0c0ae1779826a  kernel8.img (k-ok3.img)
+d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6  base card td-wt.img
+t=17.4s -> ok3-wt-v16-desk.png {"return": {}}
+t=19.4s -> ok3-wt-v16-opts.png {"return": {}}
+t=20.8s -> ok3-wt-v16-hover.png {"return": {}}
+t=23.1s -> ok3-wt-v16-dialog.png {"return": {}}
+t=27.2s -> ok3-wt-v16-r1.png {"return": {}}
+t=31.3s -> ok3-wt-v16-r2.png {"return": {}}
+t=35.5s -> ok3-wt-v16-r3.png {"return": {}}
+t=43.1s -> ok3-wt-v16-r4.png {"return": {}}
+t=58.2s -> ok3-wt-v16-idle.png {"return": {}}
+clone after run d9bb3885447ec8211191d78704207ae728166f5224d733dfcb710564e46d0ee6 (deleted)
+ok3-wt-v16 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 140

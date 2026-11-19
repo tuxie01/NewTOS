@@ -1,0 +1,14 @@
+run ok3-main-v32 2026-11-19 12:27:17 CET append='serial=on vdiplanes=32'
+109f6ddc7451da4d38c477563ef8444f033a1d92ae3df62520c0c0ae1779826a  kernel8.img (k-ok3.img)
+f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17  base card td-main.img
+t=17.5s -> ok3-main-v32-desk.png {"return": {}}
+t=19.5s -> ok3-main-v32-opts.png {"return": {}}
+t=20.9s -> ok3-main-v32-hover.png {"return": {}}
+t=22.9s -> ok3-main-v32-dialog.png {"return": {}}
+t=27.3s -> ok3-main-v32-r1.png {"return": {}}
+t=31.4s -> ok3-main-v32-r2.png {"return": {}}
+t=35.6s -> ok3-main-v32-r3.png {"return": {}}
+t=43.2s -> ok3-main-v32-r4.png {"return": {}}
+t=58.3s -> ok3-main-v32-idle.png {"return": {}}
+clone after run f8f6a60630db5690b50d4923a026ae2f9bd95d16ec566646fb7de6ddb24aec17 (deleted)
+ok3-main-v32 rc=0 fsck rc=0 EXC/PANIC: 0 lines: 141
