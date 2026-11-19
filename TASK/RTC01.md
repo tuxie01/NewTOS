@@ -1,6 +1,6 @@
 # RTC01 — Battery-backed clock: DS3231 on I2C as a BIOS clock driver
 
-Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue, after the Atari meeting, needs the RTC hardware (H01) | Reopen: the RTC module is available (see H01)
+Status: OPEN (2026-11-19) | Priority: P3
 
 Migrated (owner batch 11, 2026-11-11), evidence: TASK/RTC01.md status line: OFFEN (after the Atari meeting), no DONE receipt, no fix/feat commit names the id
 
@@ -55,3 +55,7 @@ wrong time). Setting the clock from the System Info accessory comes later.
 QEMU raspi4b has no DS3231: host tests for BCD conversion and the
 register/packed-time mapping; boot without module unchanged in QEMU; on the
 real Pi: time survives a power cycle, `Settime` persists.
+
+## Status history
+
+- 2026-11-19: reopened (was "Status: PARKED (2026-11-11) | Priority: P3 | Reason: owner decision 2026-11-11 at the legacy migration: not on the work queue, after the Atari meeting, needs the RTC hardware (H01) | Reopen: the RTC module is available (see H01)"): owner 2026-11-19: the DS3231 module is at hand and the time functions must be clean; first step is the Track-B spec

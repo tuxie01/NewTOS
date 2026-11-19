@@ -67,3 +67,10 @@ the Pi:
   `C:\kerns03.img`.
 
 Still missing for the acceptance: the tone heard (owner); `docs/hardware/pwm-audio.md` updated with these facts.
+
+## Owner decision 2026-11-19: the hearing test counts as done
+
+Asked whether the tone heard at the jack on 2026-11-18 (SNDTONE, TASK/SND05.md, "Real-Pi run") replaces the open
+hearing test of this ticket, or whether the probe kernel is booted once more for the tones T1 to T4: the owner
+followed the lead's recommendation, the tone of 2026-11-18 counts. Left of the `Missing` field: the update of
+`docs/hardware/pwm-audio.md` with the measured facts, then the tester's acceptance.

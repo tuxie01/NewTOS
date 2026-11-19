@@ -1,6 +1,6 @@
 # XBIOS14 — Oracle limit: Hatari accepts no write access to the RTC, `Gettime` after `Settime` is not comparable
 
-Status: OPEN (2026-11-19) | Priority: P3
+Status: OBSOLETE (2026-11-19) | Priority: P3 | Reason: owner 2026-11-19: documentation-only ticket, the oracle limit is recorded in docs/analysis/ORACLE.md section 9 (fecd9c426), the missing Hatari source read accepted as a gap
 
 Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS14.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: Orakelgrenze, blockiert keinen Fix)
 
@@ -50,3 +50,4 @@ Owner 2026-11-19, asked with three options (1: land as it is and accept the gap;
 and have the code read; 3: `--rtc-year` in the oracle configuration): option 1. Landed as `fecd9c426`.
 
 The ticket stays OPEN until the owner closes it.
+- 2026-11-19: set to OBSOLETE by `cargo xtask set-status` (was "Status: OPEN (2026-11-19) | Priority: P3")

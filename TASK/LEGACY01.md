@@ -1,6 +1,6 @@
 # LEGACY01 — classify the legacy tickets for migration (read-only)
 
-Status: OPEN (2026-11-11) | Priority: P1
+Status: OBSOLETE (2026-11-19) | Priority: P1 | Reason: owner 2026-11-19: the classification is complete, 656 tickets migrated and the baseline empty (c04ba2741); the migration itself was TOOL54 | Target: TOOL54
 
 Type: research (read-only), development slot. Owner decision 2026-11-11: the legacy tickets are cleaned up before the
 inventory creates new tickets; starts on the development slot after the [TOOL52](TOOL52.md) cut. An inventory snapshot
@@ -29,3 +29,7 @@ The migration tool is [TOOL54](TOOL54.md).
 - Every baseline ticket in exactly one class; counts and sample results reported to the owner before any `migrate`
   run.
 - No ticket file changed by this ticket (read-only); doc-check of the triage document 0 failures.
+
+## Status history
+
+- 2026-11-19: set to OBSOLETE by `cargo xtask set-status` (was "Status: OPEN (2026-11-11) | Priority: P1")

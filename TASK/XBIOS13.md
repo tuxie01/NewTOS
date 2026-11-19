@@ -1,6 +1,6 @@
 # XBIOS13 — Spec `docs/api/xbios/` (`Settime`, `Gettime`, NVRAM) contradicts measurement and code
 
-Status: OPEN (2026-11-19) | Priority: P3
+Status: OBSOLETE (2026-11-19) | Priority: P3 | Reason: owner 2026-11-19: documentation-only ticket, its corrections are landed (2c429952f, eb1d563d7; points 1 and 2 by XBIOS08 and XBIOS09)
 
 Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS13.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: reine Spec-Pflege)
 
@@ -44,3 +44,4 @@ Owner 2026-11-19: reopen this ticket and TASK/XBIOS14.md ("mit 1 weiter").
 - The seed named in point 4 is out of date: the FAT timestamp of `KERNEL8.IMG` was replaced by the build date.
 - A documentation-only ticket: it has no `fix`/`feat` commit and cannot reach DONE through `accept`; after the
   landing the lead brings it to the owner.
+- 2026-11-19: set to OBSOLETE by `cargo xtask set-status` (was "Status: OPEN (2026-11-19) | Priority: P3")
