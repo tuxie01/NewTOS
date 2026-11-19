@@ -1724,6 +1724,50 @@ have an RTC (the Falcon's NVRAM; Hatari passes the host clock): a value set
 with `Settime`/`Tsetdate`/`Tsettime` does not survive a restart, and each
 boot starts again at the build date.
 
+**`Settime` with impossible fields: NewTOS normalises, EmuTOS keeps them raw** — owner decision
+2026-11-19, option B ([XBIOS08](../TASK/XBIOS08.md), finding XBIOS-SYS-001; reason given: a DS3231,
+[RTC01](../TASK/RTC01.md), cannot store impossible values either). EmuTOS' `settime` copies the two
+words into the GEMDOS cache unchecked (`references/emutos/bios/clock.c:1218-1222`; `Tgetdate`/`Tgettime`
+return the cache, `references/emutos/bdos/time.c:98-135`) and `tikfrk` counts the raw fields on
+(`references/emutos/bdos/time.c:175-230`). NewTOS stores one seconds count (`BASE_SECS`), so the packed
+LONG is turned into one: month clamped to 1..12, day clamped to 1..days of that month (year
+rule `year % 4`), the year not clamped, and hour (0..31), minute (0..63) and second (2 x 0..31) summed in
+seconds, so they roll the clock forward (`tos-api/src/gemdos/time.rs:210-221@xbios_settime`,
+`compose` `tos-api/src/gemdos/time.rs:107@compose`). A read-back is therefore a valid date and time.
+Valid values are equal on both sides (probe T01-T08). Measured, set -> read by `Tgetdate`/`Tgettime`
+at once (EmuTOS / NewTOS; run
+`measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`, logs `measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-EMUTOS-tt/XSPROBE.LOG`
+and `measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-NEWTOS-raspi4b/XSPROBE.LOG`, diff `measurements/measurement-2026-10-28-xbios-system-audit/probe-diff-emutos-tt-vs-newtos.txt`):
+
+| Probe | Set (date time) | EmuTOS | NewTOS |
+|---|---|---|---|
+| T10 | 2001-02-03 25:00:00 | 2001-02-03 25:00:00 | 2001-02-04 01:00:00 |
+| T11 | 2001-02-03 31:63:62 | 2001-02-03 31:63:62 | 2001-02-04 08:04:02 |
+| T12 | 2001-02-03 04:61:00 | 2001-02-03 04:61:00 | 2001-02-03 05:01:00 |
+| T13 | 2001-02-03 04:05:60 | 2001-02-03 04:05:60 | 2001-02-03 04:06:00 |
+| T14 | 2001-02-03 04:05:62 | 2001-02-03 04:05:62 | 2001-02-03 04:06:02 |
+| T15 | 2001-13-03 04:05:06 | 2001-13-03 04:05:06 | 2001-12-03 04:05:06 |
+| T16 | 2001-15-03 04:05:06 | 2001-15-03 04:05:06 | 2001-12-03 04:05:06 |
+| T17 | 2001-00-00 04:05:06 | 2001-00-00 04:05:06 | 2001-01-01 04:05:06 |
+| T18 | 2001-02-30 04:05:06 | 2001-02-30 04:05:06 | 2001-02-28 04:05:06 |
+| T19 | 2001-02-29 04:05:06 | 2001-02-29 04:05:06 | 2001-02-28 04:05:06 |
+| T20 | 2001-04-31 04:05:06 | 2001-04-31 04:05:06 | 2001-04-30 04:05:06 |
+| T21 | `0x00000000` (1980-00-00 00:00:00) | 1980-00-00 00:00:00 | 1980-01-01 00:00:00 |
+| T22 | `0xFFFFFFFF` (2107-15-31 31:63:62) | 2107-15-31 31:63:62 | 1980-01-01 08:04:02 |
+
+Probes T23-T28 wait for the GEMDOS clock to move (`xsprobe.c` `set_and_roll`, polling until the
+read-back differs from the raw set value). On EmuTOS that is one tick later and shows how `tikfrk`
+carries the raw fields (set -> read: T23 2001-02-03 23:59:62 -> 23:60:00; T24 04:05:62 -> 04:06:00;
+T25 25:00:00 -> 25:00:02; T26 04:61:58 -> 04:62:00; T27 2001-02-30 23:59:58 -> 2001-03-01 00:00:00;
+T28 2001-00-00 04:05:06 -> 2001-00-00 04:05:08). On NewTOS the normalised value already differs from the
+raw one, so the loop ends at once and the read is the at-once value, not a later one (T23 2001-02-04
+00:00:02; T24 04:06:02; T25 2001-02-04 01:00:00; T26 05:01:58; T27 2001-02-28 23:59:58; T28 2001-01-01
+04:05:06). **Observable difference:** a program that sets impossible fields and reads them back
+sees a valid, shifted value (clamped month/day, hour/minute/second carried into the date); it
+also sees no `23:60:00`-style value after a tick. Programs that set valid times are
+unaffected (T01-T08 equal); the year overflow 2107 -> 1980 is the same on both sides (T08), and T22 on NewTOS
+ends in 1980 as well (2107-12-31 plus the carried fields). Spec: `docs/api/xbios/16-settime.md`; table row: `docs/DEVIATIONS.md` (XBIOS section).
+
 **The mouse wheel scrolls the file list of the file selector** — owner request
 2026-11-04 (*"ueberall anders funktioniert es, nur in der Fileselektor box
 nicht"*: it works everywhere else, only not in the file selector box),

@@ -4,9 +4,11 @@
 > Verified against `bios/clock.c:1218` (`settime`).
 
 > **Contract vs. reference** — see [`docs/COMPATIBILITY.md`](../../COMPATIBILITY.md).
-> Contract: trap ID/ABI, `void` return, the DOS-packed datetime encoding, the
-> "no validation" behaviour, that it updates the GEMDOS `current_time`/
-> `current_date` globals. Reference: the RTC backend chain.
+> Contract: trap ID/ABI, `void` return, the DOS-packed datetime encoding,
+> that it updates the GEMDOS `current_time`/`current_date` globals. EmuTOS's
+> "no validation" is **not** kept by NewTOS for impossible fields: sanctioned
+> deviation, see "Validation deviation" below and `docs/COMPATIBILITY.md`
+> ("`Settime` with impossible fields"). Reference: the RTC backend chain.
 
 ## EmuTOS source
 
@@ -50,8 +52,8 @@ then dispatches to whichever RTC the machine has (NVRAM → MegaRTC → MonSTer 
 ICD → UltraSatan → IKBD, in that detection order), returning after the first
 match. On a build with no RTC backend it updates only the cache.
 
-It does **no** range validation: a program can pass an impossible date and it
-is accepted into the cache and (if present) the RTC. GEMDOS `Tsetdate`/
+In EmuTOS it does **no** range validation (NewTOS normalises, see the deviation
+section): a program can pass an impossible date and it is accepted into the cache and (if present) the RTC. GEMDOS `Tsetdate`/
 `Tsettime` (0x2B/0x2D) validate and then commit through `Settime`, so they are
 the safer entry point. There is no return value and no error report — RTC
 write failures are not surfaced.
@@ -125,8 +127,9 @@ No validation; RTC write failures are not reported.
 
 - **Cache updated:** after `Settime((date<<16)|time)`, a subsequent
   `Gettime()`/`Tgetdate()`/`Tgettime()` reflects the new packed value.
-- **No validation:** `Settime` with an out-of-range field (e.g. month 14) is
-  accepted into the cache (unlike `Tsetdate`, which rejects it — see D-007).
+- **No validation (EmuTOS only):** `Settime` with an out-of-range field (e.g. month 14) is
+  accepted into the cache (unlike `Tsetdate`, which rejects it — see D-007). NewTOS clamps/carries it
+  (deviation section); a test against NewTOS expects the normalised value.
 - **No return:** the call yields no error code even if there is no RTC.
 - **Persistence (RTC build):** on a build with an RTC, the value survives into
   the RTC and is re-read at next boot.
@@ -138,7 +141,7 @@ No validation; RTC write failures are not reported.
 1. **Cache written before the RTC, unconditionally.** `current_time`/
    `current_date` are set first (`bios/clock.c:1221-1222`), so GEMDOS time is
    updated even if the RTC write later fails or there is no RTC.
-2. **No validation.** Any packed value is accepted (`Settime` is the raw
+2. **No validation (EmuTOS).** Any packed value is accepted (`Settime` is the raw
    setter); GEMDOS `Tsetdate`/`Tsettime` add the bounds checks (D-007).
 3. **No-RTC build only updates the cache.** With all RTC `CONF_WITH_*` off,
    nothing persists; on the NewTOS profile (no IKBD clock either) time resets
@@ -213,8 +216,8 @@ The Pi-4 has **no battery-backed RTC**. NewTOS models the wall clock as a
 settable base epoch (`BASE_SECS`, seconds since 1980-01-01) plus the monotonic
 generic-timer delta: `now = BASE_SECS + CNTPCT/CNTFRQ`
 (`tos-api/src/gemdos/time.rs:25-45`). `Settime` (XBIOS 0x16) is dispatched
-(`tos-api/src/xbios/mod.rs:95-98`) to `gemdos::time::xbios_settime`
-(`time.rs:203-214`), which unpacks the LONG (`date<<16 | time`) and recomputes
+(`tos-api/src/xbios/mod.rs:121@xbios_settime`) to `gemdos::time::xbios_settime`
+(`tos-api/src/gemdos/time.rs:210-221@xbios_settime`), which unpacks the LONG (`date<<16 | time`) and recomputes
 `BASE_SECS` so the clock reads the requested value — exactly the EmuTOS
 "no-RTC build updates only the cache" path. **Nothing persists across boots.**
 
@@ -224,15 +227,46 @@ generic-timer delta: `now = BASE_SECS + CNTPCT/CNTFRQ`
 | RTC backend (NVRAM/MegaRTC/…/IKBD) written for persistence | **none** — no RTC hardware, nothing persisted |
 | Time survives power-off (RTC build) | resets to the boot default (`DEFAULT_DATETIME`, the build date at 00:00:00) each power-up |
 
-### Validation deviation (documented)
+### Validation deviation (documented, owner 2026-11-19, option B)
 
-The contract says `Settime` does **no** validation. NewTOS's seconds-based clock
-cannot store an impossible calendar date the way EmuTOS's raw WORD cache can, so
-an out-of-range month/day is **clamped to the nearest valid date** rather than
-stored verbatim (`time.rs:206-208`, `.clamp(1,12)` / `.clamp(1, days_in_month)`).
-Hour/minute/second pass through unvalidated (they only roll the clock forward).
-This is a deliberate, documented divergence from the "accept any packed value"
-edge case.
+EmuTOS does **no** validation: `settime` copies both words into the GEMDOS cache
+(`references/emutos/bios/clock.c:1218-1222`) and `tikfrk` counts the raw fields on
+(`references/emutos/bdos/time.c:175-230`), so an impossible month, day, hour, minute or
+second is read back unchanged (measured, probe T10-T22, same-run `Tgetdate`/`Tgettime`).
+
+NewTOS keeps one seconds count, so every field is turned into it
+(`tos-api/src/gemdos/time.rs:210-221@xbios_settime`, `compose` at
+`tos-api/src/gemdos/time.rs:107@compose`). What the code does, field by field:
+
+| Field (packed bits) | Range the 16-bit field can hold | Code | Effect |
+|---|---|---|---|
+| year, date bits 9-15 | 0-127 | `1980 + field`, not clamped | any of 1980-2107 |
+| month, date bits 5-8 | 0-15 | `.clamp(1, 12)` | 0 becomes 1; 13-15 become 12 |
+| day, date bits 0-4 | 0-31 | `.clamp(1, days_in_month(year, month))` (leap year = `year % 4 == 0`) | 0 becomes 1; above the month's length becomes the last day |
+| hour, time bits 11-15 | 0-31 | used as is | 24-31 are added as hours: the clock reads the following day |
+| minute, time bits 5-10 | 0-63 | used as is | 60-63 are added as minutes: carried into the hour |
+| second/2, time bits 0-4 | 0-31 (seconds 0-62) | `field * 2`, used as is | 60 and 62 are added as seconds: carried into the minute |
+
+Hour, minute and second are therefore **not** passed through: they are summed
+in seconds with the date and read back normalised. The old sentence "hour/minute/second pass
+through unvalidated" was wrong, and so is the code comment `(EmuTOS parity)` at
+`tos-api/src/gemdos/time.rs:216@hour` (a developer edit; listed in Open points, not changed here).
+
+Measured pairs, set -> read at once (EmuTOS / NewTOS; logs
+`measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-EMUTOS-tt/XSPROBE.LOG` and
+`measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-NEWTOS-raspi4b/XSPROBE.LOG`):
+`2001-02-03 25:00:00` -> `25:00:00` / `2001-02-04 01:00:00` (T10);
+`2001-02-03 04:05:62` -> `04:05:62` / `04:06:02` (T14);
+`2001-13-03` -> `2001-13-03` / `2001-12-03` (T15); `2001-02-30` -> `2001-02-30` / `2001-02-28` (T18);
+`0x00000000` -> `1980-00-00 00:00:00` / `1980-01-01 00:00:00` (T21). The full list T10-T28,
+including the after-tick reads, is in `docs/COMPATIBILITY.md` ("`Settime` with impossible fields");
+the row by trigger is in `docs/DEVIATIONS.md`. For T23-T28 on NewTOS the poll in `xsprobe.c`
+(`set_and_roll`) leaves at once, because the normalised read already differs from the raw
+set value; those NewTOS values are at-once reads, not after-tick reads.
+
+Valid values are equal on both sides (T01-T08). Why NewTOS differs: the clock is one seconds count
+shared with GEMDOS, and the planned DS3231 (TASK/RTC01.md) cannot store impossible values
+either (owner's reason, TASK/XBIOS08.md "Owner decision 2026-11-19").
 
 ### Gaps vs. the contract (Step-2 candidates)
 
@@ -240,5 +274,19 @@ edge case.
   each boot. A NewTOS RTC backend (PL031 on QEMU `virt`; SD/config-region or I²C
   RTC on real Pi-4) is the Step-2/PHASE-07 item — recommend an ADR to pick the
   persistence path.
-- **Out-of-range date clamped, not stored** (above) — differs from EmuTOS's
+- **Impossible fields clamped or carried, not stored** (above) — differs from EmuTOS's
   verbatim cache write.
+
+---
+
+## Open points
+
+- Code comment `tos-api/src/gemdos/time.rs:216@hour` says "hour/min/sec not validated (EmuTOS parity)" and the
+  doc comment above `xbios_settime` (`tos-api/src/gemdos/time.rs:197-209@xbios_settime`) says the fields "pass through
+  unchanged": both are wrong against the measurement; for the developer's next change of that function (no code edit here).
+- Inferred, not measured: the cases T10-T28 do not cover every field value; month 14, day 0 with a 31-day month and so on follow
+  from the code (clamp), probes T15-T17 and T20 cover month 13/15, month 0, day 31 in a 30-day month.
+- Inferred: the wrap of T22 (2107-12-31 + carry -> 1980) is consistent with T08 but the mechanism in `pack_date`
+  (`tos-api/src/gemdos/time.rs:122@pack_date`, `(dt.year - 1980) as u16 << 9`) was not measured separately.
+- NewTOS T23-T28 read values are at-once reads (see the deviation section); no after-tick NewTOS read of these cases exists.
+- Out of scope: the "no persistence", `Gettime` text and the NVRAM lines stay for TASK/XBIOS13.md.
