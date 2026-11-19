@@ -2138,10 +2138,11 @@ A TOS LONG result arrives in `x0` as a **sign-extended `i64`**
 bit and lie below 2 GiB. This is the m68k `D0` read as a signed LONG. Known
 deviations, each with its fix ticket (user 2026-10-28;
 `docs/analysis/abi-assumptions-check-2026-10-28.md` §1): `Rsconf`
-zero-extends (TASK/XBIOS06.md), `Gettime` zero-extends (TASK/XBIOS09.md),
+zero-extends (TASK/XBIOS06.md),
 the pointer form of `Getcookie()` zero-extends
 in the SDK (TASK/SDK06.md). The `Pexec` child exit code is zero-extended on
-purpose, as in EmuTOS (`references/emutos/bdos/proc.c:601`, `:616`).
+purpose, as in EmuTOS (`references/emutos/bdos/proc.c:601`, `:616`). `Gettime`
+sign-extends since TASK/XBIOS09.md (`tos-api/src/xbios/mod.rs:124@GETTIME`).
 
 ## Native vs m68k struct variants
 

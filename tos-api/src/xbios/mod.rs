@@ -116,12 +116,12 @@ pub fn dispatch(args: &TrapArgs) -> i64 {
         RANDOM => system::random(),
         // Clock group: Settime/Gettime read/write the same wall clock as
         // GEMDOS Tgetdate/Tgettime (no separate RTC on NewTOS). Settime
-        // returns void → 0; Gettime returns the packed LONG (zero-extended).
+        // returns void → 0; Gettime the packed LONG, sign-extended (XBIOS09).
         SETTIME => {
             crate::gemdos::time::xbios_settime(args.arg_i32(0) as u32);
             0
         }
-        GETTIME => crate::gemdos::time::xbios_gettime() as i64,
+        GETTIME => i64::from(crate::gemdos::time::xbios_gettime() as i32),
         // IKBD command write: no ACIA transport → documented no-op (void),
         // warned once per process (XBIOS04). `docs/api/xbios/19-ikbdws.md`.
         IKBDWS => system::ikbdws(),

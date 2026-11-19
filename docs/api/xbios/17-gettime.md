@@ -247,13 +247,15 @@ the boot value was 1980-01-01, or on the Pi board the FAT date of
 
 ### Gaps vs. the contract (Step-2 candidates)
 
-- **`x0` extension (TASK/XBIOS09.md, parked):** the dispatch arm
-  `crate::gemdos::time::xbios_gettime() as i64` (`tos-api/src/xbios/mod.rs:124@GETTIME`)
-  casts a `u32`, so it **zero-extends**; for a value with bit 31 set (year
-  2044 on) `x0` bits 63..32 are `0` instead of `0xFFFFFFFF`. The contract above
-  is sign extension. Measured by probe H01 (`Settime(0x8CCF6000)`: `ret=8ccf6000
-  hi=00000000`, `measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`);
-  not measurable at the oracle (Hatari returns the host clock, never bit 31).
+- **`x0` extension (TASK/XBIOS09.md): closed.** The dispatch arm
+  (`tos-api/src/xbios/mod.rs:124@GETTIME`) returns
+  `i64::from(xbios_gettime() as i32)`: the packed LONG **sign-extended**, as the
+  contract above states. Until then it cast the `u32` straight to `i64` and
+  zero-extended (probe H01, `Settime(0x8CCF6000)`: `ret=8ccf6000 hi=00000000`,
+  `measurements/measurement-2026-10-28-xbios-system-audit/RUNINFO.TXT`). Host
+  test `tos-api/tests/xbios09_gettime_sign_extension.rs`: `0x8CCF6000` reads back
+  as `0xFFFFFFFF8CCF6000`, `0x2B8F6000` unchanged. Still not measurable at the
+  oracle (Hatari returns the host clock, never bit 31; TASK/XBIOS14.md).
 
 - **No RTC read, no persistence** — every boot starts at the build date.
   Persistence is the same item as `Settime` (an RTC backend, TASK/RTC01;
@@ -270,5 +272,5 @@ the boot value was 1980-01-01, or on the Pi board the FAT date of
   `amiga_getdt`/`lisa_getdt` bodies are other-machine builds and not read.
 - Out of scope (TASK/XBIOS13.md, TASK/XBIOS08.md): the Settime text, NVRAM
   lines and the 1980 fallback sentence of this spec group are not edited here.
-- Out of scope: `// zero-extended` comment at `tos-api/src/xbios/mod.rs:120-122@SETTIME`
-  is a code comment, fixed by the developer in TASK/XBIOS09.md.
+- The former `// zero-extended` comment at `tos-api/src/xbios/mod.rs:117-119@SETTIME`
+  now states the sign extension (TASK/XBIOS09.md).
