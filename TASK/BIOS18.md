@@ -17,3 +17,10 @@ Type: research then development. From the inventory snapshot docs/analysis/inven
 ## Acceptance
 
 - Survey result recorded; either a case table with oracle dump plus equal NewTOS result, or the 28 rows classified in `mapping.tsv`.
+
+## Added from TASK/BIOS20.md (owner, 2026-11-20)
+
+`_pun_ptr` (`$516`), the AHDI `PUN_INFO` table, is taken up with this ticket: EmuTOS points the cell at a table
+built from the drive list (`docs/api/bios/_sysvars-counters-contract.md`, the `_pun_ptr` section and question Q7);
+NewTOS leaves it 0. Open before it is provided: whether `Rwabs` honours raw device numbers the way a `PUN_INFO`
+consumer expects, and where the table lives.

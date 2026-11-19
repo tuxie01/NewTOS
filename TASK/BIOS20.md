@@ -67,3 +67,29 @@ recommendations:
 Before the developer starts: a second spec pass for the eight added cells (same file), and the ADR amendment.
 For the tester: the six cells and the added ones lie at addresses `Setexc` cannot read; the probe reads through
 `Supexec`. The frame rate of the pinned oracle is measured in the test run.
+
+## Second spec pass and owner answers (2026-11-20)
+
+Second pass landed as `a2cd6a7a7` (researcher `0d1deb151`, GAPS with questions Q1 to Q8, section 17 of
+`docs/api/bios/_sysvars-counters-contract.md`). Owner 2026-11-20, asked with the options of each question,
+followed the lead's recommendations ("ich gehe mit deinen empfehlungen"):
+
+- **Q1, option (c).** `_vbclock` is `_frclock` minus the frames the process ran with `_vblsem` at or below 0; a
+  process that was away loses nothing.
+- **Q2, option (b).** `_vblsem` at or below 0 in the running process also stops the kernel's frame work for the
+  mouse (`vb_draw`), as on EmuTOS. Rule S10 of `docs/api/_super-state.md` gets `_vblsem` as a documented input.
+- **Q3, option (b).** `_nvbls` is 8 and `_vblqueue` points at eight empty slots in page 0; a program may enter a
+  routine, NewTOS never calls it and warns. The `vblqueue` row of ADR-031 changes.
+- **Q4, option (a).** `_v_bas_ad` always holds the screen address. A program that uses it before calling `Logbase`
+  or `Physbase` ends with a bus error. Mapping the screen at the first access instead was named to the owner as a
+  possible later step; the researcher did not examine it.
+- **Q5, option (b).** `_themd` is a 16-byte MD in the m68k layout with the extent at load.
+- **Q6, option (b).** `_dskbufp` points at a 3072-byte buffer in the process's private read-write page.
+- **Q7.** `_pun_ptr` leaves this ticket and stays 0: it is taken up with TASK/BIOS18.md (partitions), after it is
+  read whether `Rwabs` honours what a `PUN_INFO` consumer expects.
+- **Q8.** `_hdv_init` holds the return stub; `_hdv_boot` holds a stub that returns a defined error code (the value
+  from the EmuTOS routine, fixed in the spec); ADR-031 gets a line for it.
+
+So thirteen cells are served by this ticket. Before the developer starts: the amendment of ADR-031 (stub row,
+`vblqueue` row, the `_hdv_boot` stub) and of rule S10, in a wording the owner sees first; then the spec file's
+section 17 is restated as decided.

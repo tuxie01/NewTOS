@@ -26,3 +26,20 @@ One row per ticket in a new dated analysis under docs/analysis/ (bios-parked-rev
 
 - The file is landed; no ticket is edited, reopened or closed by the researcher.
 - The lead brings the list to the owner: (a) into the queue, (b) as accepted deviations, (c) as decided per ticket.
+
+## Review landed; owner decisions (2026-11-20)
+
+Landed as `0aa912a7b` (researcher `81ffb0fa3`, GAPS: two return values on the oracle are unmeasured):
+`docs/analysis/bios-parked-review-2026-11-20.md`. Owner 2026-11-20, on the lead's five recommendations ("ich gehe
+mit deinen empfehlungen"):
+
+1. The analysis is landed as it is.
+2. The four tickets that can be made equal to EmuTOS go into the queue in this order: TASK/XBIOS11.md,
+   TASK/XBIOS06.md, TASK/XBIOS16.md, TASK/XBIOS19.md. Each is set OPEN (and translated) when its turn comes.
+   XBIOS16 starts with a measurement on the pinned oracle (the `d0` of `Jdisint` and `Jenabint`) and a spec file.
+3. TASK/XBIOS20.md: the table case for `Mfpint` and `Xbtimer` and the measurement of `Initmous`'s `d0` go with
+   XBIOS16 (the same oracle run). The hardware part (`Midiws`, `Offgibit`, `Ongibit`, `Setpalette`'s `colorptr`
+   and VBL coupling, `Initmous`'s effect) becomes an accepted deviation under ADR-031 once the measurement is in.
+4. The documentation rests of TASK/BIOS13.md and TASK/XBIOS07.md and the two stale spec files the review found go
+   into TASK/SPEC07.md; both tickets are closed after it. TASK/BIOS14.md stays parked behind the product fixes.
+5. TASK/XBIOS24.md stays parked until the owner chooses among the options of the analysis of 2026-11-18.
