@@ -177,8 +177,15 @@ Beyond 0x57: Videl (0x58–0x5F, `CONF_WITH_VIDEL`; the four screen queries 0x58
 > in the NewTOS TT-shifter profile *and* documented as their own spec file.
 > The floppy/DMA (`_floppy-stubs.md`), PSG (`_psg-group.md`) and TT-shifter
 > (`_tt-shifter.md`) entries are present in the table but grouped; the MFP
-> (0x0D/0x1A/0x1B/0x1F) and NVRAM (0x2E) entries are `xbios_unimpl` in the
-> profile.
+> (0x0D/0x1A/0x1B/0x1F) entries are `xbios_unimpl` in the profile. The NVRAM
+> entry (0x2E) is **not** `xbios_unimpl` in the reference build:
+> `CONF_WITH_NVRAM` is 1 there (`include/config.h:1161-1163`; the oracle ROM
+> links `_nvmaccess`, `emutos.map:688`), so the slot holds `nvmaccess`
+> (`bios/xbios.c:1348-1349`). NewTOS has no NVRAM and answers `0x2E`
+> through its catch-all arm (`tos-api/src/xbios/mod.rs:162@other`), which is
+> also EmuTOS' answer on a machine without an NVRAM chip (`bios/nvram.c:161-162`,
+> `has_nvram`); owner decision 2026-11-12, `docs/COMPATIBILITY.md`, "XBIOS for
+> absent Atari hardware" (TASK/XBIOS10).
 >
 > **Setprt (0x21) is not in that unimpl group** despite `CONF_WITH_PRINTER_PORT`
 > being off in the NewTOS profile: `setprt()` (`bios/parport.c:49-57`) is a
@@ -217,3 +224,11 @@ return), `Supexec` = `xbios_l_l` (one LONG, LONG return),
 ABI tables live in each function spec.
 
 (Populated further during Phase 07.)
+
+---
+
+## Open points
+
+- Corrected (TASK/XBIOS13): the NVRAM (0x2E) `xbios_unimpl` statement, now cited against `include/config.h:1161-1163`, `bios/xbios.c:1348-1349` and `emutos.map:688` of the oracle's build tree.
+- Out of scope: the MFP entries (0x0D/0x1A/0x1B/0x1F) are described as `xbios_unimpl` in the same sentence; `docs/api/xbios/_full-function-inventory.md:72` says `CONF_WITH_MFP` = 1 in the reference build. Not checked here.
+- Inferred: that the oracle's macro value is 1 follows from the default and the linked symbol, not from a preprocessor run of the oracle tree.

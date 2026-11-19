@@ -4,8 +4,19 @@
 > `bios/xbios.c:1285` (`xbios_vecs[]`). Build profile per `CLAUDE.md`:
 > `CONF_WITH_TT_SHIFTER` + `CONF_WITH_VT52`, **disable** `CONF_WITH_VIDEL`,
 > `CONF_WITH_DSP`, `CONF_WITH_DMASOUND`, `CONF_WITH_MFP`,
-> `CONF_WITH_PRINTER_PORT`, `CONF_WITH_NVRAM`, and the Atari-hardware
+> `CONF_WITH_PRINTER_PORT`, and the Atari-hardware
 > device configs (no floppy/ACSI, no YM2149, no ACIA).
+>
+> **`CONF_WITH_NVRAM` is not in that list (TASK/XBIOS13):** the reference
+> build keeps it on. `CONF_WITH_NVRAM` defaults to 1 (`include/config.h:1161-1163`);
+> the three places that set it 0 are the FireBee block (`include/config.h:289-290`,
+> `MACHINE_FIREBEE`), the `TARGET_192` block (`:412-413`) and the
+> `!CONF_ATARI_HARDWARE` block (`:770-771`), none of which is `make 512`
+> (`TARGET_512`, `Makefile:561`; `CONF_ATARI_HARDWARE` defaults 1, `:665-667`).
+> The oracle ROM (`references/emutos-oracle/1a7484ab`) links `_nvmaccess`
+> (`emutos.map:688`). So in the reference build slot 0x2E is the real
+> `nvmaccess` (`bios/xbios.c:1348-1349`); only **NewTOS** leaves it
+> unwired.
 >
 > **Exception (D-060):** `CONF_WITH_PRINTER_PORT` off means EmuTOS's
 > `setprt()` (0x21) is not compiled and its `xbios_vecs[]` slot falls back
@@ -77,7 +88,7 @@ function number itself — **not** a GEMDOS error (see *D-008* / *D-039*).
 | 0x2B  | DMAwrite   | `DMAwrite`                    | 🟢 PHASE-04 / stub | ✅ (`_floppy-stubs.md`) | ACSI/SCSI raw I/O |
 | 0x2C  | Bconmap    | `bconmap` (`serport.c:1082`)  | ➡ func-number | ✅ | `BCONMAP_AVAILABLE` off → returns `0x2c` |
 | 0x2D  | (reserved) | `xbios_unimpl`                | ⛔ unimpl | (dispatcher) | |
-| 0x2E  | NVMaccess  | `nvmaccess`                   | ⛔ unimpl | (dispatcher) | `CONF_WITH_NVRAM` off |
+| 0x2E  | NVMaccess  | `nvmaccess`                   | ⛔ unimpl (NewTOS only) | (dispatcher) | reference build: real handler (`CONF_WITH_NVRAM` = 1); NewTOS has no NVRAM and answers `0x2E` (catch-all arm, `tos-api/src/xbios/mod.rs:162@other`; `docs/COMPATIBILITY.md` "XBIOS for absent Atari hardware") |
 | 0x2F..0x3F | (reserved) | `xbios_unimpl`            | ⛔ unimpl | (dispatcher) | 17 entries |
 | 0x40  | Blitmode   | `blitmode` (`bios/xbios.c:886`)    | 🟡 stub → 0 | ✅ | no Atari blitter |
 | 0x41..0x4F | (reserved) | `xbios_unimpl`            | ⛔ unimpl | (dispatcher) | 15 filler entries |
@@ -119,9 +130,16 @@ matching the incorrect Compendium text.
 | 🟢 implement | 23 | PHASE-04/07/08 (screen, keyboard, time, TT-shifter, Random, Protobt, Iorec, Kbdvbase, **Setprt**) |
 | 🟡 stub      | 12 | return `EUNDEV`/`0`/default (floppy/DMA, PSG, Midiws/Ikbdws/Rsconf/Scrdmp/Blitmode) |
 | ➡ dispatch   | 1 | `Bconmap` returns the func number (`BCONMAP_AVAILABLE` off) |
-| ⛔ unimpl    | 52 | `xbios_unimpl` (MFP/NVRAM/reserved/Ssbrk/Prtblk/Puntaes/used_by_bios + 0x2F..0x3F + 0x41..0x4F) |
+| ⛔ unimpl    | 52 | `xbios_unimpl` (MFP/NVRAM [NewTOS profile only, see the header]/reserved/Ssbrk/Prtblk/Puntaes/used_by_bios + 0x2F..0x3F + 0x41..0x4F) |
 | **Total**   | 88 | (`LAST_ENTRY = 0x57`) |
 
 The counts are approximate at the category boundary (e.g. `Bconmap` could be
 counted as a stub); the invariant is the 88-slot table and that every
 unimplemented slot returns its own function number.
+
+---
+
+## Open points
+
+- Corrected (TASK/XBIOS13): the `CONF_WITH_NVRAM` off statements (header and the 0x2E row) against `include/config.h:1161-1163` and `emutos.map:688`; the other "disable" entries of the header (`CONF_WITH_MFP`, `CONF_WITH_VIDEL`, `CONF_WITH_DSP`, ...) are not re-checked here: `docs/api/xbios/_full-function-inventory.md:70-75` lists several of them as 1 in the reference build (out of scope, one line only).
+- Inferred: that `make 512` sets no `CONF_WITH_NVRAM` override: read `Makefile:561` (`-DTARGET_512` only) and the three 0-blocks of `config.h`; the oracle map confirms the link of `_nvmaccess`, not the value of the macro.

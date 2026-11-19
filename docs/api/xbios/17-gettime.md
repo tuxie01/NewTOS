@@ -270,7 +270,10 @@ the boot value was 1980-01-01, or on the Pi board the FAT date of
 - Inferred: that no backend narrows the value differently on any machine; the
   five backend return statements were read only by signature (`ULONG`), the
   `amiga_getdt`/`lisa_getdt` bodies are other-machine builds and not read.
-- Out of scope (TASK/XBIOS13.md, TASK/XBIOS08.md): the Settime text, NVRAM
-  lines and the 1980 fallback sentence of this spec group are not edited here.
+- Out of scope (TASK/XBIOS08.md): the Settime text of this spec group is not edited here.
+- TASK/XBIOS13 point 4: the sentence "fallback = 1980-01-01 if the clock was never set" is no
+  longer in this file; the boot value is documented under "Boot value: the build date at
+  00:00:00" (TASK/XBIOS12), checked against `tos-api/src/gemdos/time.rs:237@DEFAULT_DATETIME`
+  and `:247@time_init`. The only remaining "1980" is the history sentence there.
 - The former `// zero-extended` comment at `tos-api/src/xbios/mod.rs:117-119@SETTIME`
   now states the sign extension (TASK/XBIOS09.md).
