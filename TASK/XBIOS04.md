@@ -1,6 +1,6 @@
 # XBIOS04 — `Ikbdws` ist ein No-op: IKBD-Kommandos erzeugen keine Antwortpakete
 
-Status: IMPLEMENTED (2026-11-11) | Priority: P2 | Commit: 393fdc345 | Missing: tester acceptance through cargo xtask accept
+Status: DONE (2026-11-19) | Priority: P2 | Commit: 393fdc345 | Receipt: XBIOS04-STATUS-DONE.MD
 
 Migrated (owner batch 17, 2026-11-11, to IMPLEMENTED), evidence: commit 393fdc345 (feat(xbios): warn once per process when IKBD commands are ignored (XBI), VERIFIED: diff of 393fdc345 (feat(xbios): warn once per process when IKBD commands are ig) touches tos-api/src/xbios/system.rs, tos-api/src/bios/chardev.rs, tos-api/src/bdos/process/hooks.rs (+5), names the id by subject, 157 files, legacy line: ERLEDIGT 2026-10-30 (Option 1 + Warnung, W01–W04 ACCEPTED)
 
