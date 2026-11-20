@@ -1,0 +1,6 @@
+xsseed run, side emutos (2026-11-20T07:06:03Z)
+tree      70d7a8ae0e9efd304948103e4374d85d688bc3f5 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    XSSEED.PRG ce35b8daa7b785fa7393b4de283d84b3d56fb09ee29b1a07f103f47bbc2759c5 XSSEED.NAP 34af07f12439ce5d210783a24ee4874682c41935de5e0603b3c506a21027b47e
+oracle    /Volumes/Daten/hatari-2.6.1_macos/Hatari.app/Contents/MacOS/Hatari, ROM /Volumes/Daten/Development/PiRusTOS/tools/oracle/etos512de-1a7484ab.img (323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c), profile falcontc, cfg /Volumes/Daten/Development/PiRusTOS/tools/oracle/hatari.cfg (c8f4998aa139115d97dbb3d14a07e1cc05e8bc848350ff841ecfb9d038f8ae46)
+hatari    end-seen; stopped (SIGKILL)
+end       X01 first Random() matches a seed (hz_200<<16)+hz_200 for hz_200 in the window: yes

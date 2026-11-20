@@ -1,0 +1,51 @@
+XBIOS11 tester run, 2026-11-20. Agent a93fdbd1b62dde149. Verdict: PASS (QEMU/Hatari scope; real-Pi4-only items listed below). Phase test, no accept.
+Scope: developer commit 70d7a8ae0 on branch xbios11 (Random seeds from the 200 Hz counter as EmuTOS, permanent probe tosdump/probes/xsseed.c).
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.329; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+Clone (scratch, gitignored): target-agents/agent-a93fdbd1b62dde149/wt (detached 70d7a8ae0), whole agent dir 6.1G (du -sh).
+Cited gitignored outputs (target-agents/agent-a93fdbd1b62dde149/out/), sha256:
+  kernel8-rpi4-branch.img        5f78f700fff3fc36c659d6bedb9877815ce427a1284089c136e1cec05de60ebd (rpi4 debug, 70d7a8ae0)
+  kernel8-rpi4-branch-trace.img  259e40786fb603c3144ea808b9f6fb692bb0d0d2744e379b97755be0274d6073 (rpi4 debug, --features bios-arg-trace)
+  kernel8-rpi4-main.img          d0813f747fd7c7fd92eb8067010792566d96b8e46e06a692252226c273166c6c (negative control, see below)
+  probes (target/ of the xs dir / tosdump/build): XSSEED.PRG ce35b8daa7b785fa7393b4de283d84b3d56fb09ee29b1a07f103f47bbc2759c5, XSSEED.NAP 34af07f12439ce5d210783a24ee4874682c41935de5e0603b3c506a21027b47e
+  xsprobe (audit build script): XSPROBE.NAP c378bfe67eac08576e08da4b851881f51bda8f3652768e291521dab524ed2580
+Run directory size 2.2M.
+
+COMMANDS (board, outcome)
+1. cargo xtask build --board rpi4 : OK, 159 warning lines. cargo xtask build --board qemu-virt : OK, 159. (My first attempt with an external CARGO_TARGET_DIR failed in programs/build.sh, a harness path assumption, not the product; rebuilt with the default wt/target.) Negative-control build at the parent's system.rs also 159 -> warnings delta 0 against main code (serial/warnings-*.txt). Full clippy not rerun by me; the developer's recorded clippy delta 0 was not verified (open item below, informational).
+2. cargo xtask test (full): exit 0, 2587 passed / 0 failed / 7 ignored over 223 results (serial/cargo-xtask-test.txt). Baseline main 2580/0/7; +7 = developer's 6 unit tests + 1 new test binary. Matches the developer's figure.
+3. Probe X01, tosdump/probes/run-xsseed.sh (one emulator at a time):
+   oracle tt        : "X01 first ... : yes" (window 2572, random dc248c)         serial/xsseed-oracle-tt
+   oracle falcontc  : yes (window 3360, c26d0e)                                  serial/xsseed-oracle-falcontc
+   NewTOS raspi4b, branch kernel with bios-arg-trace: yes (window 3034, 3079f1)  serial/xsseed-newtos-branch-trace
+       BOOT-SERIAL.txt trace: "[biostrace] 000001 U0 14:0x11 Random - -> 0x3079f1" = the probe's value; Random is the first XBIOS call after the first Supexec, the probe is the first program after boot (#Z autorun).
+   NewTOS raspi4b, branch kernel plain: yes (window 3033, 8f0c0b)                serial/xsseed-newtos-branch-plain
+   NEGATIVE CONTROL: NewTOS raspi4b, same probe, kernel built with tos-api/src/xbios/system.rs of the parent commit (code of main) : "no" (window 3038, b8f1e6) serial/xsseed-newtos-main-negctl. (Built in my own worktree by temporarily restoring that one file from 70d7a8ae0~1, then restored; tree clean afterwards. The run.txt "tree/dirty" line was written after the restore and so reads 0 dirty.)
+   The X01 "info" lines differ by design (live counters).
+4. xsprobe R01-R03, P08 on NewTOS raspi4b (branch kernel, build-xsprobe.sh + run-newtos.sh of the 2026-10-28 audit, copied to method/): P08 yes, bytes-0..7-untouched=yes sum=1235, R01 "1000 values, bits 24..31 set in 0, high half set in 0", R02 yes, R03 yes. Identical (apart from the "info seeds=" lines, not compared) to the oracle log measurements/measurement-2026-10-28-xbios-system-audit/runs/PROBE-EMUTOS-tt/XSPROBE.LOG. serial/xsprobe-newtos-branch. (I did not rerun the oracle side; the generator is unchanged and the 2026-10-28 oracle log is the stated reference.)
+5. Four tables on raspi4b via cargo xtask tosdump (method/run-tosdump.sh, copied from the xbios04 run), branch tree, one QEMU at a time, all "ended normally ... desktop up after DUMPBIOS.NAP, rc=0":
+   bios-r1 35/147 differ; bios-core-r1 2/44; xbios-chardev-r1 1/23; xbios-system-r1 9/43. The tosdiff texts (sha/path stripped) are identical to measurement-2026-11-19-xbios04-test/serial/wt-<table>/tosdiff-EMUTOS*.txt for all four tables (diff empty). serial/tables/, serial/tables.log.
+6. cargo xtask run --headless --board qemu-virt and --board rpi4 (90 s each, killed): both "[desk] desktop up (0 drives)", 0 exception/panic lines (serial/run-*.txt). (Run output has no "PASS" lines of its own in this harness; marker = desktop up.)
+7. cargo xtask doc-check docs/api/xbios/11-random.md tosdump/probes/xsseed.c TASK/XBIOS11.md: 0 failures.
+
+VERDICT PER ACCEPTANCE LINE OF TASK/XBIOS11.md
+A1 Probe X01 "yes" equal to the oracle; R01-R03 and P08 stay equal: PASS (items 3, 4; negative control "no" on main code shows the probe discriminates).
+A2 No case equal before newly differs in the four tables: PASS (item 5; case lists text-identical to the last committed run of the same tables).
+A3 cargo xtask test green: PASS (2587/0/7).
+A4 STATUS.md and spec in the same commit; doc-check 0 failures: PASS for the spec (docs/api/xbios/11-random.md changed in the commit, doc-check 0 failures). STATUS.md is lead-only; the developer proposed its line in the receipt (not a defect).
+VERDICT PER REQUIRED BEHAVIOUR OF THE SPEC (Pi binding)
+B1 no frame clock: shown by the probe (X01 yes with hz_200 in the window where the old code gave frame-clock seed, negative control "no") and by the host test seed_from_counter pair 2573 -> 7d9272 (oracle value). PASS.
+B2 no zero substitution (seed 0 stays 0: state 1, result 0): HOST TEST ONLY (random_step unit test zero_seed_is_kept). Not reachable by any probe/boot run (needs hz_200 == 0 at a zero state). Ran: cargo xtask test, inside the 2587 (the unit tests are in the lib; the receipt's single-run commands were not repeated by me).
+B3 re-seed on every zero state: HOST TEST ONLY (a_state_stepped_onto_zero_is_reseeded). Unreachable in a probe. PASS by host test.
+B4 result width (24 bits, non-negative i64): R01 on NewTOS (bits 24..31 and high half never set in 1000 values) plus host test result_is_the_middle_24_bits. PASS.
+MAPPING / DOCS: docs/analysis/deps/mapping.tsv row "random -> tos-api/src/xbios/system.rs random mapped" was not edited by the commit and is still correct (function name and file unchanged; random_step is a private helper with no EmuTOS counterpart). The commit touched docs/api/xbios/11-random.md (new anchored cites, 0 doc-check failures), TASK/XBIOS11.md line 3 and the receipt. No COMPATIBILITY/DEVIATIONS line exists for Random (developer says so; I did not re-grep them beyond the commit's file list).
+
+FAILURES: none.
+DROVE: host tests, both board builds, X01 on oracle tt/falcontc and NewTOS raspi4b (plain, trace), negative control, xsprobe on NewTOS, four tosdump tables, headless boots of both boards.
+COULD NOT VERIFY / not run: clippy delta (not rerun; developer's figure only); oracle side of xsprobe (reused 2026-10-28 log); B2/B3 on the running system.
+REAL-PI4-ONLY: the 200 Hz counter's rate on silicon comes from the timer IRQ (not driven; QEMU only); no other hardware path touched.
+OUT-OF-SCOPE OBSERVATIONS: external CARGO_TARGET_DIR breaks cargo xtask build (programs/build.sh expects wt/target); the xtask run output has no PASS lines on its own.
+
+IMAGE MANIFESTS (copies in serial/*/card.img.manifest), all booted images, host_clang Apple clang version 21.0.0 (clang-2100.4.1.1), every one: optional_missing none
+ xsseed-newtos-branch-trace image_sha256 f7020a8b...e9be3; xsseed-newtos-branch-plain dae29fd9...1025cc; xsseed-newtos-main-negctl 54a4ca19...9b484c;
+ tables: bios-r1 a14d916e..., bios-core-r1 456cf7a0..., xbios-chardev-r1 2a998725..., xbios-system-r1 2ba5a091...; xsprobe-newtos-branch 73b2ff37... (full values in the manifests).
+Hatari oracle ROM sha256 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c (pinned, checked by the runner).

@@ -1,0 +1,64 @@
+=== wt bios-r1
+tosdump: dumper build id 70d7
+tosdump: DUMPBIOS.NAP sha256 905caf2de22ae24b922b2a65200a51490436a08eb5df257b8b9d6579c68cd24d
+tosdump: card.img.manifest: image_sha256 a14d916ee3452a733015bef70771cae1408740dbddfba71968bd0822c3e4dd89
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-xbios11-test/serial/tables/scratch-wt/tosdump-27119/card.img sha256 a14d916ee3452a733015bef70771cae1408740dbddfba71968bd0822c3e4dd89 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 e77633a1241e0b46ddb90b2f108a6a776c33b18e719baf64f0cc48440fe30752
+tosdump: BIOS.BIN 47072 bytes, sha256 0c7f6cd6e50165192ae32d72b9e3a9c6f0da7afa3a0ed5a4f59e98587de9b6a2
+tosdump: BIOS.LOG 172 bytes, sha256 0b7ff007b31dfe8a63df5521b818a18fdb238d363cc68a3701febbfea75881c4
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a93fdbd1b62dde149/wt/tosdump/host/build/tosdiff sha256 92bab266fb742f05b88898b6ef487ae186c30dc6425687b310cb1e6d205d97a9
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 147 records of 320 bytes, build 70d7, case CRC 583C11E0
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS.BIN vs NEWTOS.BIN: exit 1, 35 of 147 cases differ
+tosdump: total     42 s
+tosdump: result    run complete (differences above are findings, not failures)
+=== wt bios-core-r1
+tosdump: dumper build id 70d7
+tosdump: DUMPBIOS.NAP sha256 905caf2de22ae24b922b2a65200a51490436a08eb5df257b8b9d6579c68cd24d
+tosdump: card.img.manifest: image_sha256 456cf7a04fdbe5886aa2060d3eea466990c1efde12a05432a7e11c03a5da6aa8
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-xbios11-test/serial/tables/scratch-wt/tosdump-28108/card.img sha256 456cf7a04fdbe5886aa2060d3eea466990c1efde12a05432a7e11c03a5da6aa8 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 63fcb725817df6517efe4c4af491f72f2e4384e862da320400847cf71bbc396c
+tosdump: BIOS.BIN 14112 bytes, sha256 d151efb56c07711cdcc67e79c7505b6a4fd90ab7c52d13d48a5e28ee5b5525b6
+tosdump: BIOS.LOG 168 bytes, sha256 8e4daf6f6f5aee8b5e9229bfb4f4e414ad6bb6a9619e7ae4779149fd063971b7
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a93fdbd1b62dde149/wt/tosdump/host/build/tosdiff sha256 92bab266fb742f05b88898b6ef487ae186c30dc6425687b310cb1e6d205d97a9
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 44 records of 320 bytes, build 70d7, case CRC C056A3E0
+tosdump: tosdiff EMUTOS-1a7484ab-BIOS-core.BIN vs NEWTOS.BIN: exit 1, 2 of 44 cases differ
+tosdump: total     47 s
+tosdump: result    run complete (differences above are findings, not failures)
+=== wt xbios-chardev-r1
+tosdump: dumper build id 70d7
+tosdump: DUMPBIOS.NAP sha256 905caf2de22ae24b922b2a65200a51490436a08eb5df257b8b9d6579c68cd24d
+tosdump: card.img.manifest: image_sha256 2a998725a328a7c78b18902059b8d6c0ad9759f968d4cda9e9f5c19bf20ba8d2
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-xbios11-test/serial/tables/scratch-wt/tosdump-28917/card.img sha256 2a998725a328a7c78b18902059b8d6c0ad9759f968d4cda9e9f5c19bf20ba8d2 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 83247ecfcba71d68f4703d74984cd338cd0453c902a4a805e11cd3cea1af32cb
+tosdump: BIOS.BIN 7392 bytes, sha256 64222d2e74c1ea3c027cedcd7784bece4886f696da19839906d1982750d74fce
+tosdump: BIOS.LOG 167 bytes, sha256 6c00cf2446c77495e8fb231d50083aabe4b96231b6ed77290737ce6d2735c43e
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a93fdbd1b62dde149/wt/tosdump/host/build/tosdiff sha256 92bab266fb742f05b88898b6ef487ae186c30dc6425687b310cb1e6d205d97a9
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 23 records of 320 bytes, build 70d7, case CRC 5C3A5F7A
+tosdump: tosdiff EMUTOS-1a7484ab-XBIOS-chardev.BIN vs NEWTOS.BIN: exit 1, 1 of 23 cases differ
+tosdump: total     35 s
+tosdump: result    run complete (differences above are findings, not failures)
+=== wt xbios-system-r1
+tosdump: dumper build id 70d7
+tosdump: DUMPBIOS.NAP sha256 905caf2de22ae24b922b2a65200a51490436a08eb5df257b8b9d6579c68cd24d
+tosdump: card.img.manifest: image_sha256 2ba5a091272f1987109f01e7ca1c76db3df41949fc9042630c42db942548317d
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-xbios11-test/serial/tables/scratch-wt/tosdump-29876/card.img sha256 2ba5a091272f1987109f01e7ca1c76db3df41949fc9042630c42db942548317d (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=0
+tosdump: card after the run sha256 9fc00d32e4ebdf034b814ca584b9e9c989c1695c1360858bd8ad1b8743a3413b
+tosdump: BIOS.BIN 13792 bytes, sha256 8523bb4b0fa210338ae9cc5840f7cb3edfa095c00b25006eed1b3b587a92ce38
+tosdump: BIOS.LOG 168 bytes, sha256 e2b001a30809d147f367a34984e0b022f355d24c5fb133b8fc601603d4e5dcfc
+tosdump: tosdiff   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a93fdbd1b62dde149/wt/tosdump/host/build/tosdiff sha256 92bab266fb742f05b88898b6ef487ae186c30dc6425687b310cb1e6d205d97a9
+tosdump: tosdiff --validate: exit 0 BIOS.BIN: area BIOS, 43 records of 320 bytes, build 70d7, case CRC 3944A677
+tosdump: tosdiff EMUTOS-1a7484ab-XBIOS-system.BIN vs NEWTOS.BIN: exit 1, 9 of 43 cases differ
+tosdump: total     36 s
+tosdump: result    run complete (differences above are findings, not failures)

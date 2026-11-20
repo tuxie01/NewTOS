@@ -1,0 +1,8 @@
+xsseed run, side newtos (2026-11-20T07:07:23Z)
+tree      70d7a8ae0e9efd304948103e4374d85d688bc3f5 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    XSSEED.PRG ce35b8daa7b785fa7393b4de283d84b3d56fb09ee29b1a07f103f47bbc2759c5 XSSEED.NAP 34af07f12439ce5d210783a24ee4874682c41935de5e0603b3c506a21027b47e
+kernel    d0813f747fd7c7fd92eb8067010792566d96b8e46e06a692252226c273166c6c ../out/kernel8-rpi4-main.img
+card      54a4ca19942dba1f4e888129b89ed91cfb955e00c5788fd34011c929fe9b484c (tools/mkcard.sh, C:\XSSEED.NAP, #Z autorun)
+qemu      probe-exited; stopped
+card      after 3dff2646f59e645cd59bd95dfba844ceccdb8fa071f3374992f835a165992e8f (the booted clone)
+end       X01 first Random() matches a seed (hz_200<<16)+hz_200 for hz_200 in the window: no

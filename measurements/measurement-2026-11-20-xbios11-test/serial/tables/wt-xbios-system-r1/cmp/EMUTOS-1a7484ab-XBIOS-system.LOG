@@ -1,0 +1,6 @@
+DUMPBIOS build 3d74, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 43 cases, CRC 3944A677
+running 43 cases
+all 43 cases ran
+BIOS.BIN: 43 records, 13792 bytes

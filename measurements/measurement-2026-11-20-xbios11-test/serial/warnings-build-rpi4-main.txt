@@ -1,0 +1,74 @@
+  42 warning: value assigned to `control` is never read
+  15 warning: value assigned to `intin` is never read
+  15 warning: value assigned to `addrin` is never read
+  14 warning: missing documentation for a struct field
+   4 warning: missing documentation for a variant
+   1 warning: value assigned to `tree` is never read
+   1 warning: value assigned to `top` is never read
+   1 warning: type `Vdipb` is more private than the item `vsc_form`
+   1 warning: type `Vdipb` is more private than the item `vq_mouse`
+   1 warning: type `Vdipb` is more private than the item `vex_wheelv`
+   1 warning: type `Vdipb` is more private than the item `vex_timv`
+   1 warning: type `Vdipb` is more private than the item `vex_motv`
+   1 warning: type `Vdipb` is more private than the item `vex_curv`
+   1 warning: type `Vdipb` is more private than the item `vex_butv`
+   1 warning: type `Vdipb` is more private than the item `v_show_c`
+   1 warning: type `Aespb` is more private than the item `wind_update`
+   1 warning: type `Aespb` is more private than the item `wind_set`
+   1 warning: type `Aespb` is more private than the item `wind_open`
+   1 warning: type `Aespb` is more private than the item `wind_new`
+   1 warning: type `Aespb` is more private than the item `wind_get`
+   1 warning: type `Aespb` is more private than the item `wind_find`
+   1 warning: type `Aespb` is more private than the item `wind_delete`
+   1 warning: type `Aespb` is more private than the item `wind_create`
+   1 warning: type `Aespb` is more private than the item `wind_close`
+   1 warning: type `Aespb` is more private than the item `wind_calc`
+   1 warning: type `Aespb` is more private than the item `shel_write`
+   1 warning: type `Aespb` is more private than the item `shel_wdef`
+   1 warning: type `Aespb` is more private than the item `shel_read`
+   1 warning: type `Aespb` is more private than the item `shel_rdef`
+   1 warning: type `Aespb` is more private than the item `shel_put`
+   1 warning: type `Aespb` is more private than the item `shel_get`
+   1 warning: type `Aespb` is more private than the item `shel_find`
+   1 warning: type `Aespb` is more private than the item `shel_envrn`
+   1 warning: type `Aespb` is more private than the item `scrp_write`
+   1 warning: type `Aespb` is more private than the item `scrp_read`
+   1 warning: type `Aespb` is more private than the item `scrp_clear`
+   1 warning: type `Aespb` is more private than the item `rsrc_saddr`
+   1 warning: type `Aespb` is more private than the item `rsrc_obfix`
+   1 warning: type `Aespb` is more private than the item `rsrc_load`
+   1 warning: type `Aespb` is more private than the item `rsrc_gaddr`
+   1 warning: type `Aespb` is more private than the item `rsrc_free`
+   1 warning: type `Aespb` is more private than the item `objc_sysvar`
+   1 warning: type `Aespb` is more private than the item `objc_order`
+   1 warning: type `Aespb` is more private than the item `objc_offset`
+   1 warning: type `Aespb` is more private than the item `objc_find`
+   1 warning: type `Aespb` is more private than the item `objc_edit`
+   1 warning: type `Aespb` is more private than the item `objc_draw`
+   1 warning: type `Aespb` is more private than the item `objc_delete`
+   1 warning: type `Aespb` is more private than the item `objc_change`
+   1 warning: type `Aespb` is more private than the item `objc_add`
+   1 warning: type `Aespb` is more private than the item `menu_tnormal`
+   1 warning: type `Aespb` is more private than the item `menu_text`
+   1 warning: type `Aespb` is more private than the item `menu_settings`
+   1 warning: type `Aespb` is more private than the item `menu_register`
+   1 warning: type `Aespb` is more private than the item `menu_popup`
+   1 warning: type `Aespb` is more private than the item `menu_istart`
+   1 warning: type `Aespb` is more private than the item `menu_ienable`
+   1 warning: type `Aespb` is more private than the item `menu_icheck`
+   1 warning: type `Aespb` is more private than the item `menu_bar`
+   1 warning: type `Aespb` is more private than the item `menu_attach`
+   1 warning: type `Aespb` is more private than the item `fsel_input`
+   1 warning: type `Aespb` is more private than the item `fsel_exinput`
+   1 warning: type `Aespb` is more private than the item `form_keybd`
+   1 warning: type `Aespb` is more private than the item `form_error`
+   1 warning: type `Aespb` is more private than the item `form_do`
+   1 warning: type `Aespb` is more private than the item `form_dial`
+   1 warning: type `Aespb` is more private than the item `form_center`
+   1 warning: type `Aespb` is more private than the item `form_button`
+   1 warning: type `Aespb` is more private than the item `form_alert`
+   1 warning: missing documentation for a struct
+   1 warning: function `boot_l0_phys` is never used
+   1 warning: constant `CYCLES_AFTER_KEY` is never used
+   1 warning: `tos-api` (lib) generated 64 warnings
+   1 warning: `kernel` (lib) generated 93 warnings
