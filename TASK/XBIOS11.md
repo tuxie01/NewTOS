@@ -1,6 +1,6 @@
 # XBIOS11 — `Random` takes its first seed from the 60 Hz frame clock instead of `_hz_200`
 
-Status: OPEN (2026-11-20) | Priority: P3
+Status: IMPLEMENTED (2026-11-20) | Priority: P3 | Commit: self | Missing: tester runs of probe X01 on both sides (bios-arg-trace on NewTOS), xsprobe R01-R03 and P08, and bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 on raspi4b
 
 Migrated (owner batch 12, 2026-11-11), evidence: TASK/XBIOS11.md status line: GEPARKT 2026-10-31 (Anwender, Vor-Start-Pruefung: kein Kartenprogramm haengt am Seed-Ursprung (einziger Nutzer
 

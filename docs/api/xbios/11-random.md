@@ -201,17 +201,26 @@ by changing `Random`.
 > [`docs/api/bios/06-tickcal.md`](../bios/06-tickcal.md)); the 60 Hz frame clock
 > is **not** a seed source.
 
-### Current code (does not meet the contract; the XBIOS11 fix changes it)
+### Current code (XBIOS11)
 
 `Random` is dispatched (`tos-api/src/xbios/mod.rs:116@RANDOM`) to `system::random`
-(`tos-api/src/xbios/system.rs:14-28@random`). The recurrence is the EmuTOS LCG
-(`tos-api/src/xbios/system.rs:25-27@wrapping_mul`). The first seed is drawn from `h.frame_clock()`
-(`CNTPCT*60/CNTFRQ`, 60 Hz) as `(fc << 16) + fc` (`tos-api/src/xbios/system.rs:17-19@random`), and a zero
-seed is bumped to 1 (`tos-api/src/xbios/system.rs:20-22@random`). Both differ from
-`bios/xbios.c:423-429`: the measured first value differs (X01 `no` on NewTOS
-with `hz_200` 3024 and frame clock 908; run
-`measurements/measurement-2026-10-28-xbios-system-audit/runs/SEED-NEWTOS-raspi4b/XSSEED.LOG`),
-and the zero seed continues as 1 instead of 0.
+(`tos-api/src/xbios/system.rs:24-29@random`), which keeps the state in its own static
+and runs one step `random_step(rseed, H)` with `H` = the kernel counter
+`bios::tick::hz_200()` (`tos-api/src/xbios/system.rs:297@random_step`). The step seeds
+a zero state as `(H << 16) + H` in `u32` wrapping arithmetic, without substituting a
+zero seed (`tos-api/src/xbios/system.rs:298-302@random_step`), then applies the EmuTOS
+LCG and returns `(s >> 8) & 0xFFFFFF` as a non-negative `i64`
+(`tos-api/src/xbios/system.rs:304-305@wrapping_mul`): the four required behaviours below,
+as `bios/xbios.c:423-429`. No frame clock is read. Until XBIOS11 the first seed came
+from the 60 Hz frame clock and a zero seed was bumped to 1 (X01 `no` on NewTOS with
+`hz_200` 3024 and frame clock 908; run
+`measurements/measurement-2026-10-28-xbios-system-audit/runs/SEED-NEWTOS-raspi4b/XSSEED.LOG`).
+
+Host tests: the unit tests of `random_step` (`tos-api/src/xbios/system.rs:309@tests`: seed
+from the counter, including the oracle's measured pair `hz_200` 2573 → `7d9272`, 32-bit
+wrap of the seed, zero seed kept, a state stepped onto 0 re-seeded, the 24-bit result)
+and `tos-api/tests/xbios11_random_seed.rs` (the first `Random` through the XBIOS
+dispatcher after `bios::tick::advance(2573)` gives `7d9272`).
 
 ### Required behaviour
 
@@ -222,7 +231,7 @@ and the zero seed continues as 1 instead of 0.
 3. The `rseed == 0` test and the seeding stay at the top of every call, as in
    EmuTOS (so a state that steps onto 0 is re-seeded from the then-current `H`).
 4. Result `(s >> 8) & 0xFFFFFF`, returned as a non-negative `i64`
-   (`tos-api/src/xbios/system.rs:27@wrapping_mul`).
+   (`tos-api/src/xbios/system.rs:304-305@wrapping_mul`).
 
 ### Which `_hz_200` is `H`
 
@@ -247,17 +256,22 @@ after the call]`** that X01 reads.
   `Random` but by neither NewTOS option for the kernel counter (only the cell
   option would see it); not measured, no known user.
 
-Recommendation (inferred, developer's call within the contract): the kernel
-counter. No owner question remains: the two options agree on every state the
-probe can reach (first program after boot, cell written by the loader at
-launch, `tos-api/src/bdos/process/loader.rs:1262@HZ_200_ADDR`).
+Chosen (XBIOS11): the kernel counter. No owner question remains: the two
+options agree on every state the probe can reach (first program after boot,
+cell written by the loader at launch,
+`tos-api/src/bdos/process/loader.rs:1262@HZ_200_ADDR`).
 
 ### Acceptance probe
 
-`measurements/measurement-2026-10-28-xbios-system-audit/method/xsseed.c`
-(built by `measurements/measurement-2026-10-28-xbios-system-audit/method/build-xsprobe.sh` into `XSSEED.PRG` / `XSSEED.NAP`; it is not
-yet under `tosdump/probes/`, so a permanent test needs it copied there, see Open
-points). It must run as the **first program after boot**, so no earlier
+`tosdump/probes/xsseed.c`, the probe of the audit run
+(`measurements/measurement-2026-10-28-xbios-system-audit/method/xsseed.c`) made
+permanent with its program text unchanged (XBIOS11). Built by
+`make -C tosdump xsseed-m68k` (`XSSEED.PRG`) and `make -C tosdump xsseed-newtos`
+(`XSSEED.NAP`, `tosdump/build-xsseed-newtos.sh`); run on one side by
+`tosdump/probes/run-xsseed.sh emutos tt|falcontc <out-dir>` (the pinned oracle,
+`--auto`) or `tosdump/probes/run-xsseed.sh newtos <out-dir> <kernel8.img>` (QEMU
+raspi4b, `#Z` autorun; a kernel with `--features bios-arg-trace` leaves the
+argument trace). It must run as the **first program after boot**, so no earlier
 `Random()` (e.g. TOS Protobt) has advanced the state. It reads `$4BA` through
 `Supexec`, calls `Random()` once, reads `$4BA` again, and for each `h` in
 `[h1..h2]` computes the LCG step of `((u32)h << 16) + h`. It writes
@@ -273,8 +287,8 @@ R01-R03 and P08 (generator unchanged). The zero seed is not probed.
 
 ### Gaps vs. the contract
 
-- First seed from the frame clock (above): to be fixed by XBIOS11.
-- Zero seed bumped to 1 (above): to be fixed by XBIOS11.
+- None in the seed or the generator since XBIOS11 (first seed from `_hz_200`,
+  zero seed kept, re-seed on every zero state).
 - **No reseed back door:** `rseed` is an internal static; a higher-quality
   source (AArch64 `RNDR`) would be a separate extension, not a change to `Random`.
 
@@ -286,7 +300,8 @@ R01-R03 and P08 (generator unchanged). The zero seed is not probed.
 - Inferred: lag of the page-0 cell after a process switch; not measured.
 - Inferred: a program writing its own `$4BA` is out of any probe; behaviour of the
   two NewTOS options not tested.
-- `xsseed.c` lives only under `measurements/`; the XBIOS11 acceptance wants it
-  as a permanent probe under `tosdump/probes/` (CLAUDE.md, Testing, probe rule).
+- `xsseed.c` is a permanent probe under `tosdump/probes/` (XBIOS11); a tosdiff
+  table case would need the first `Random` before any other, so it stays a probe
+  until a follow-up ticket finds a table form (CLAUDE.md, Testing, probe rule).
 - Out of scope: `docs/api/xbios/_state.md:347-351` already states the EmuTOS seed
   correctly; `docs/COMPATIBILITY.md` has no `Random` entry (lead's call).

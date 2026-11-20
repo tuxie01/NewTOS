@@ -53,6 +53,9 @@
 #   make xdprobe-newtos   XDPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hzprobe-newtos   HZPROBE.NAP, _hz_200 in user state while Super
 #                         toggles (probes/hzprobe.c; NewTOS only)
+#   make xsseed-m68k      XSSEED.PRG, Random's first seed against _hz_200
+#                         (probes/xsseed.c)
+#   make xsseed-newtos    XSSEED.NAP, the same probe for NewTOS (AArch64)
 #   make host-test        the host-side suite (same as make -C host test)
 #
 # Same core sources for both; only abi/ differs (spec section 2).
@@ -97,7 +100,7 @@ BUILD := build
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos snprobe-m68k snprobe-newtos hzprobe-newtos host-test clean
+        akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos snprobe-m68k snprobe-newtos hzprobe-newtos xsseed-m68k xsseed-newtos host-test clean
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
@@ -105,7 +108,7 @@ all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
-     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos snprobe-m68k snprobe-newtos hzprobe-newtos host-test
+     akprobe-m68k akprobe-newtos sbprobe-m68k sbprobe-newtos vdprobe-m68k vdprobe-newtos icprobe-m68k icprobe-newtos dcprobe-m68k dcprobe-newtos xdprobe-m68k xdprobe-newtos snprobe-m68k snprobe-newtos hzprobe-newtos xsseed-m68k xsseed-newtos host-test
 
 $(BUILD):
 	@mkdir -p $(BUILD)
@@ -372,6 +375,17 @@ $(BUILD)/XDPROBE.NAP: probes/xdprobe.c build-xdprobe-newtos.sh | $(BUILD)
 hzprobe-newtos: $(BUILD)/HZPROBE.NAP
 $(BUILD)/HZPROBE.NAP: probes/hzprobe.c build-hzprobe-newtos.sh | $(BUILD)
 	./build-hzprobe-newtos.sh $@
+
+# Random's first seed (TASK/XBIOS11): no disk, any oracle profile; must be the
+# first program after boot; terminates. Run by probes/run-xsseed.sh.
+xsseed-m68k: $(BUILD)/XSSEED.PRG
+$(BUILD)/XSSEED.PRG: probes/xsseed.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/xsseed.c -o $@
+	@$(CROSS_MINT)size $@
+
+xsseed-newtos: $(BUILD)/XSSEED.NAP
+$(BUILD)/XSSEED.NAP: probes/xsseed.c build-xsseed-newtos.sh | $(BUILD)
+	./build-xsseed-newtos.sh $@
 
 host-test:
 	@$(MAKE) --no-print-directory -C host test

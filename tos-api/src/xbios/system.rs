@@ -10,22 +10,22 @@ use crate::bdos::process::hooks::{self, IkbdPath};
 use crate::host;
 use crate::trap::TrapArgs;
 
-/// `Random` (0x11) — 24-bit pseudo-random via the EmuTOS LCG. Seeded
-/// from the host frame clock on first use.
+/// `Random` (0x11) — 24-bit pseudo-random via the EmuTOS LCG, EmuTOS
+/// `random()` (`bios/xbios.c:421-430`). Every call that finds the state 0
+/// (the first call, and any later one after the LCG stepped onto 0) seeds it
+/// from the 200 Hz counter `_hz_200` as `(hz_200 << 16) + hz_200`; the
+/// kernel counter [`crate::bios::tick::hz_200`] is the value the caller's
+/// `$4BA` cell is published from, and it cannot move during the call (the
+/// SVC handler runs with IRQs masked). A seed of 0 is kept, as in EmuTOS
+/// (no substitution). Then `rseed = rseed * 3141592621 + 1`, result
+/// `(rseed >> 8) & 0xFFFFFF`, bits 24-63 zero. One call is
+/// [`random_step`]; the state is this function's own static.
+/// Spec: `docs/api/xbios/11-random.md` (XBIOS11).
 pub fn random() -> i64 {
     static RSEED: AtomicU32 = AtomicU32::new(0);
-    let mut s = RSEED.load(Ordering::Relaxed);
-    if s == 0 {
-        let fc = host::host().map_or(1, |h| h.frame_clock());
-        s = ((fc << 16) as u32).wrapping_add(fc as u32);
-        if s == 0 {
-            s = 1;
-        }
-    }
-    // EmuTOS: rseed = rseed * 3141592621 + 1; return (rseed >> 8) & 0xFFFFFF.
-    s = s.wrapping_mul(3_141_592_621).wrapping_add(1);
+    let (s, value) = random_step(RSEED.load(Ordering::Relaxed), crate::bios::tick::hz_200());
     RSEED.store(s, Ordering::Relaxed);
-    ((s >> 8) & 0x00FF_FFFF) as i64
+    value
 }
 
 /// `Vsync` (0x25) — block until the next frame. Spins on the host frame
@@ -290,3 +290,97 @@ pub fn rsconf(args: &TrapArgs) -> i64 {
 /// of each process's page 0 (`references/emutos/tosvars.ld:87`; the loader seeds
 /// `-1`, `bios/bios.c:357`). Written by [`scrdmp`].
 pub const DUMPFLG_ADDR: usize = 0x4EE;
+
+/// One `Random` call on the state `rseed` with the 200 Hz counter at `hz`:
+/// the new state and the result. A seed that comes out 0 stays 0 (EmuTOS has
+/// no substitution): that call gives state 1 and result 0.
+fn random_step(rseed: u32, hz: u32) -> (u32, i64) {
+    let mut s = rseed;
+    if s == 0 {
+        // EmuTOS: rseed = hz_200 << 16; rseed += hz_200; (ULONG arithmetic).
+        s = (hz << 16).wrapping_add(hz);
+    }
+    // EmuTOS: rseed = rseed * 3141592621 + 1; return (rseed >> 8) & 0xFFFFFF.
+    s = s.wrapping_mul(3_141_592_621).wrapping_add(1);
+    (s, i64::from((s >> 8) & 0x00FF_FFFF))
+}
+
+#[cfg(test)]
+mod tests {
+    //! `Random` against `docs/api/xbios/11-random.md`, "Required behaviour"
+    //! (XBIOS11): seed from the 200 Hz counter, no zero-seed substitution, a
+    //! re-seed on every zero state, the 24-bit result.
+    use super::random_step;
+
+    const MUL: u32 = 3_141_592_621;
+
+    /// The EmuTOS step without the seeding: `s * 3141592621 + 1`.
+    fn lcg(s: u32) -> u32 {
+        s.wrapping_mul(MUL).wrapping_add(1)
+    }
+
+    #[test]
+    fn zero_state_seeds_from_the_counter() {
+        let hz: u32 = 3024;
+        let seed = (hz << 16) + hz;
+        let (s, r) = random_step(0, hz);
+        assert_eq!(s, lcg(seed));
+        assert_eq!(r, i64::from((lcg(seed) >> 8) & 0xFF_FFFF));
+        // Measured on the oracle (EmuTOS, Hatari TT): hz_200 2573 at the
+        // first Random() gave 7d9272
+        // (measurements/measurement-2026-10-28-xbios-system-audit/runs/SEED-EMUTOS-tt/XSSEED.LOG).
+        assert_eq!(random_step(0, 2573).1, 0x7D_9272);
+    }
+
+    #[test]
+    fn seed_wraps_in_32_bits() {
+        // `hz_200 << 16` drops the high half, `+ hz_200` wraps (ULONG rseed).
+        // 0x0001_FFFF << 16 = 0xFFFF_0000; + 0x0001_FFFF = 0x1_0000_FFFF -> 0x0000_FFFF.
+        assert_eq!(random_step(0, 0x0001_FFFF).0, lcg(0x0000_FFFF));
+    }
+
+    #[test]
+    fn zero_seed_is_kept() {
+        // hz_200 == 0 gives seed 0; EmuTOS goes on with 0: state 1, result 0.
+        assert_eq!(random_step(0, 0), (1, 0));
+        // The next call steps from 1, the counter is not read.
+        assert_eq!(random_step(1, 0x1234).0, lcg(1));
+        assert_eq!(random_step(1, 0x1234).1, i64::from((lcg(1) >> 8) & 0xFF_FFFF));
+    }
+
+    #[test]
+    fn non_zero_state_ignores_the_counter() {
+        let s0 = 0xDEAD_BEEF;
+        assert_eq!(random_step(s0, 1), random_step(s0, 0xFFFF_FFFF));
+        assert_eq!(random_step(s0, 7).0, lcg(s0));
+    }
+
+    #[test]
+    fn a_state_stepped_onto_zero_is_reseeded() {
+        // The one state p with p * MUL + 1 == 0 (mod 2^32): p = -1 * MUL^-1.
+        // MUL is odd, so its inverse exists; Newton: x <- x * (2 - MUL * x).
+        let mut inv: u32 = MUL;
+        for _ in 0..5 {
+            inv = inv.wrapping_mul(2u32.wrapping_sub(MUL.wrapping_mul(inv)));
+        }
+        assert_eq!(MUL.wrapping_mul(inv), 1);
+        let p = u32::MAX.wrapping_mul(inv);
+        let (s, r) = random_step(p, 100);
+        assert_eq!((s, r), (0, 0), "the LCG steps onto state 0");
+        // The next call finds 0 and seeds from the counter of *that* call.
+        let hz: u32 = 4321;
+        assert_eq!(random_step(s, hz), random_step(0, hz));
+        assert_eq!(random_step(s, hz).0, lcg((hz << 16) + hz));
+    }
+
+    #[test]
+    fn result_is_the_middle_24_bits() {
+        let mut s = 0;
+        for i in 0..10_000u32 {
+            let (n, r) = random_step(s, i);
+            assert!((0..=0xFF_FFFF).contains(&r), "bits 24-31 (and 32-63) zero: {r:#x}");
+            assert_eq!(r, i64::from((n >> 8) & 0xFF_FFFF));
+            s = n;
+        }
+    }
+}
