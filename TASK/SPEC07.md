@@ -1,6 +1,6 @@
 # SPEC07 — `docs/api/xbios/_triage.md`: the "disabled" entries of the header against the reference build
 
-Status: OPEN (2026-11-19) | Priority: P3
+Status: OBSOLETE (2026-11-20) | Priority: P3 | Reason: owner 2026-11-20: documentation-only ticket, its corrections are landed (95eddbb26)
 
 Type: researcher (documentation). Owner decision 2026-11-19: its own small ticket at the end of the queue.
 
@@ -58,3 +58,7 @@ next touches those files.
 
 A documentation-only ticket: it cannot reach DONE through `accept`; the lead brings it, BIOS13 and XBIOS07 to the
 owner.
+
+## Status history
+
+- 2026-11-20: set to OBSOLETE by `cargo xtask set-status` (was "Status: OPEN (2026-11-19) | Priority: P3")

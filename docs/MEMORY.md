@@ -3236,6 +3236,28 @@ warning queue as the hook warnings. The return values are unchanged
 (TASK/XBIOS04.md, `measurements/measurement-2026-10-30-xbios04/RUNINFO.TXT`);
 COMPATIBILITY entry "IKBD commands are not interpreted, no response packets".
 
+**Amendment (2026-11-20, owner; TASK/BIOS20.md).** EmuTOS is the yardstick for
+the system variables: a cell holds what EmuTOS puts there, also where NewTOS
+never calls through it. Spec: `docs/api/bios/_sysvars-counters-contract.md`.
+
+1. **Stub row.** `dump_vec`, `aux_stat`, `aux_vec` and `hdv_init` hold the
+   `just_rts` stub by default like EmuTOS, not 0. `hdv_boot` holds a stub that
+   returns the error code EmuTOS's routine returns when nothing can be booted
+   (the value is fixed in the spec). A program that chains to the old value
+   gets a valid entry. NewTOS still calls none of them.
+2. **`dump_vec`.** Its warning (rule 1) fires when the cell differs from the
+   stub, no longer from 0.
+3. **`vblqueue`.** The cell points at eight empty slots in page 0 and `_nvbls`
+   is 8, as EmuTOS after boot. A routine a program enters there is never
+   called; the warning fires on a non-empty slot instead of on a `vblqueue`
+   other than 0.
+4. **`_vblsem`.** The kernel reads the running process's `_vblsem`: while it
+   is at or below 0, `_vbclock` does not count and the kernel's mouse draw
+   (`vb_draw`) is skipped, as the EmuTOS VBL does. This is an input in the
+   sense of rule S10 (`docs/api/_super-state.md`), which lists the cell, and
+   an exception to rule 4 ("for warnings only").
+
+
 ## ADR-032: XHDI and the SCSI driver API are not provided
 
 **Date:** 2026-10-29

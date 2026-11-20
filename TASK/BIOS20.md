@@ -93,3 +93,9 @@ followed the lead's recommendations ("ich gehe mit deinen empfehlungen"):
 So thirteen cells are served by this ticket. Before the developer starts: the amendment of ADR-031 (stub row,
 `vblqueue` row, the `_hdv_boot` stub) and of rule S10, in a wording the owner sees first; then the spec file's
 section 17 is restated as decided.
+
+## ADR-031 amended (2026-11-20)
+
+The owner approved the amendment's wording ("ok"); it is in `docs/MEMORY.md` (ADR-031, "Amendment (2026-11-20")
+with the commit of this note. Left before the developer: the researcher adds `_vblsem` to rule S10 in
+`docs/api/_super-state.md` and restates section 17 of the spec file as decided.

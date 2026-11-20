@@ -40,3 +40,9 @@ counts, which change with every variable that becomes served):
 > table in `docs/api/bios/_sysvars-contract.md`. A program reading a variable that is not provided sees 0.
 
 This ticket runs after BIOS20, so the table it points to is the one after the fix.
+
+## Added from TASK/SPEC07.md (owner, 2026-11-20)
+
+Two more rows for `docs/DEVIATIONS.md`, hardware-bound by the owner's word: `Midiws` (the oracle transmits through
+the MIDI ACIA, NewTOS drops the bytes) and `Ikbdws` (no IKBD ACIA; the warning of TASK/XBIOS04.md). The PSG calls
+are not listed as accepted: they are TASK/SND06.md; until it lands their row says so.
