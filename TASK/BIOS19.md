@@ -36,3 +36,11 @@ Owner 2026-11-19, on the lead's six recommendations ("ich gehe mit deinen empfeh
 - The class "free" stays.
 
 This ticket stays OPEN: its acceptance line on the read cases is met by BIOS21.
+
+## Read cases delivered (2026-11-20)
+
+TASK/BIOS21.md is DONE (`3b3a27e9e`): the table `tosdump/cases/bios-sysvars-r1.tsv` has a `peek` case for every
+served row (54 cases for 51 rows), frozen references for both oracle profiles, and NewTOS equals both in all of
+them (`measurements/measurement-2026-11-20-bios21-test/RUNINFO.TXT`). TASK/BIOS20.md is DONE (`cdfb6a823`). With
+that both acceptance lines of this ticket are met; as a ticket without a `fix`/`feat` commit of its own it is
+brought to the owner for closing.
