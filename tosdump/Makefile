@@ -20,6 +20,8 @@
 #   make wfprobe-newtos   WFPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make hkprobe-m68k     HKPROBE.PRG, the OS-hook probe (probes/hkprobe.c)
 #   make hkprobe-newtos   HKPROBE.NAP, the same probe for NewTOS (AArch64)
+#   make svprobe-m68k     SVPROBE.PRG, the system-variable probe (probes/svprobe.c)
+#   make svprobe-newtos   SVPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make snprobe-m68k     SNPROBE.PRG, the DMA sound group probe (probes/snprobe.c)
 #   make snprobe-newtos   SNPROBE.NAP, the same probe for NewTOS (AArch64)
 #   make axprobe-m68k     AXPROBE.PRG, a kbdvec hook during Bconin(1)
@@ -96,7 +98,7 @@ BUILD := build
 .PHONY: all dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
         dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
         scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
-        pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
+        pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos svprobe-m68k svprobe-newtos \
         axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
         sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
         vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
@@ -104,7 +106,7 @@ BUILD := build
 all: dumpvdi-m68k dumpvdi-newtos dumpaes-m68k dumpaes-newtos \
      dumprast-m68k dumprast-newtos dumpbios-m68k dumpbios-newtos \
      scrninfo-m68k scrninfo-newtos gcprobe-m68k gcprobe-newtos wfprobe-m68k wfprobe-newtos \
-     pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos \
+     pxprobe-m68k pxprobe-newtos hkprobe-m68k hkprobe-newtos svprobe-m68k svprobe-newtos \
      axprobe-m68k axprobe-newtos awprobe-newtos mdprobe-m68k mdprobe-newtos \
      sxprobe-m68k sxprobe-newtos ksprobe-m68k ksprobe-newtos \
      vwprobe-m68k vwprobe-newtos rsprobe-m68k rsprobe-newtos \
@@ -217,6 +219,17 @@ $(BUILD)/HKPROBE.PRG: probes/hkprobe.c | $(BUILD)
 hkprobe-newtos: $(BUILD)/HKPROBE.NAP
 $(BUILD)/HKPROBE.NAP: probes/hkprobe.c build-hkprobe-newtos.sh | $(BUILD)
 	./build-hkprobe-newtos.sh $@
+
+# The system-variable probe (TASK/BIOS20): no disk, any oracle profile. Run by
+# probes/run-svprobe.sh.
+svprobe-m68k: $(BUILD)/SVPROBE.PRG
+$(BUILD)/SVPROBE.PRG: probes/svprobe.c | $(BUILD)
+	$(M68K_CC) -O2 -Wall -Wextra -Werror probes/svprobe.c -o $@
+	@$(CROSS_MINT)size $@
+
+svprobe-newtos: $(BUILD)/SVPROBE.NAP
+$(BUILD)/SVPROBE.NAP: probes/svprobe.c build-svprobe-newtos.sh | $(BUILD)
+	./build-svprobe-newtos.sh $@
 
 # The DMA sound group probe (TASK/SND04): no disk, profiles tt and falcontc.
 # Run by probes/run-snprobe.sh.

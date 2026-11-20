@@ -296,7 +296,7 @@ pub fn setscreen(args: &TrapArgs) -> i64 {
 
     if (log as i64) > 0 {
         if let Some(kva) = caller_base_to_kva(log) {
-            host.set_screen_logical(kva);
+            set_logical(host, kva); // and the caller's `_v_bas_ad` (BIOS20)
         }
     }
     if (phys as i64) > 0 {
@@ -544,4 +544,52 @@ pub fn vgetrgb(args: &TrapArgs) -> i64 {
         }
     }
     0
+}
+
+// ─── `_v_bas_ad` (`$44E`), TASK/BIOS20 ──────────────────────────────────
+//
+// Spec `docs/api/bios/_sysvars-counters-contract.md` sections 8 and 17.
+// Placed at the end of the file so that no line cite into the code above
+// moves.
+
+/// `_v_bas_ad` (`$44E`, LONG): the logical screen base (EmuTOS `v_bas_ad`,
+/// `references/emutos/tosvars.ld:55`), the cell `Logbase` returns
+/// (`bios/screen.c:1071-1073`).
+pub const V_BAS_AD_ADDR: usize = 0x44E;
+
+/// The value of a process's `_v_bas_ad` cell: the user address [`logbase`]
+/// answers a process, the logical screen's physical address (VA = PA for the
+/// published screen memory, [`caller_view`]), or `None` with no screen.
+/// Computed without publishing the screen into the process: decision Q4 (a)
+/// of BIOS20 — a program that dereferences the cell before calling `Logbase`
+/// or `Physbase` takes a translation fault ("Bus Error"). The screen lies
+/// below 1 GiB (MEM11), so the 32-bit cell holds it.
+pub fn v_bas_ad_value() -> Option<u32> {
+    let info = host::host().and_then(|h| h.screen())?;
+    Some(process::kva_to_user_va(info.base) as u32)
+}
+
+/// Refresh `slot`'s `_v_bas_ad` cell from [`v_bas_ad_value`] (the refresh
+/// points: the process's own `Setscreen`, and every switch-in, since another
+/// process may have moved the global draw base). With no screen the cell is
+/// left as it is.
+pub fn write_v_bas_ad(slot: usize) {
+    let (Some(v), Some(page0)) = (v_bas_ad_value(), process::mmu::page0_kva(slot)) else {
+        return;
+    };
+    // SAFETY: `slot`'s static 4-KiB page 0; `$44E..$452` lies inside it
+    // (2 mod 4: an unaligned store, as for every page-0 LONG). Trap or boot
+    // context, single CPU.
+    unsafe { page0.add(V_BAS_AD_ADDR).cast::<u32>().write_unaligned(v) };
+}
+
+/// `Setscreen`'s logical move: the display's draw base (EmuTOS
+/// `v_bas_ad = logLoc`, `bios/screen.c:1106-1108`), then the calling
+/// process's `_v_bas_ad` cell follows what `Logbase` now reports. Other
+/// processes get it at their next switch-in.
+fn set_logical(host: &dyn host::Host, kva: u64) {
+    host.set_screen_logical(kva);
+    if let Some(slot) = process::slot_for(process::current()) {
+        write_v_bas_ad(slot);
+    }
 }

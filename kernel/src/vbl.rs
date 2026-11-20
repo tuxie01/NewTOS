@@ -34,9 +34,9 @@
 //! The pointer therefore follows a packet within one frame plus at most one
 //! 5 ms tick, and not inside a long trap — where the packet is not decoded
 //! either (`crate::input_gate`, "What is deliberately not done"). Only
-//! `vb_draw` runs: NewTOS has no program-visible `vblqueue` (ADR-031); the
-//! VT52 cursor blink, EmuTOS' other VBL client the console uses, keeps its own
-//! per-tick call (`crate::fbcon::blink_tick`).
+//! `vb_draw` runs, never a routine in the program-visible `vblqueue` (ADR-031),
+//! and not while the running process's `_vblsem` is at or below 0 (BIOS20); the
+//! VT52 cursor blink keeps its own per-tick call (`crate::fbcon::blink_tick`).
 //!
 //! # Why the two moments are safe
 //!
@@ -119,13 +119,23 @@ pub fn pump_tick() {
 }
 
 /// EmuTOS' `vblqueue[0]` call: `vb_draw` once per frame — if a frame began
-/// since the last run, and a screen is up.
+/// since the last run, `_vblsem` lets it (below), and a screen is up.
 fn run_if_due() {
     let Some(host) = tos_api::host::host() else {
         return;
     };
     let frame = host.frame_clock();
     if LAST_FRAME.swap(frame, Ordering::Relaxed) == frame {
+        return;
+    }
+    // The `_vblsem` gate (TASK/BIOS20, decision Q2 (b); ADR-031 amendment of
+    // 2026-11-20 item 4; `docs/api/_super-state.md` S10): the EmuTOS VBL skips
+    // its whole body, `vb_draw` included, when `_vblsem` is at or below 0
+    // (`references/emutos/bios/vectors.S:338-339`). The frame stays consumed —
+    // a skipped frame is not redone later, as the VBL skips its body for that
+    // interrupt. With no process running the gate does not apply. One page-0
+    // read, no lock.
+    if tos_api::bios::tick::vbl_semaphore_down() {
         return;
     }
     if !crate::vdi_backend::available() {

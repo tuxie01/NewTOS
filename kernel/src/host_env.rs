@@ -733,7 +733,10 @@ static KERNEL_HOST: KernelHost = KernelHost;
 static KERNEL_HOST_REF: &'static dyn Host = &KERNEL_HOST;
 
 /// Install the kernel host into `tos-api`. Called once from
-/// `kernel_main`.
+/// `kernel_main`. Records the boot frame of [`KernelHost::frame_clock`] at
+/// once, so the page-0 frame counters `_frclock`/`_vbclock` start at 0
+/// (TASK/BIOS20, decision C1; `tos_api::bios::tick::start_frame_clock`).
 pub fn install() {
     tos_api::host::install_host(&KERNEL_HOST_REF);
+    tos_api::bios::tick::start_frame_clock();
 }

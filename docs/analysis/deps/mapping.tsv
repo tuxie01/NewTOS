@@ -294,7 +294,7 @@ bcostat	bios/bios.c	tos-api/src/bios/chardev.rs	device	mapped	the BCONMAP_AVAILA
 bcostat	bios/bios.c	tos-api/src/xbios/bconmap.rs	entry_device	mapped	maptab[map_index] -> the BIOS device-table slot of the entry's port: entry 0 = AUX, device 1 (maptable_mfp, serport.c:98,972; BIOS08)
 bios_init	bios/bios.c	-	-	unmapped	m68k hardware initialisation sequence; NewTOS boots through the kernel init, not mapped function by function
 bios_init	bios/bios.c	tos-api/src/bios/vectors.rs	default_of	mapped	the etv_timer/etv_critic/etv_term = just_rts/default_etv_critic half: the boot values of the shared Setexc cells, all the shared ret stub (BIOS07 D3; etv_critic and etv_timer not served, ADR-031)
-bios_init	bios/bios.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the swv_vec = os_header.reseth half (bios.c:552, after just_rts at :363): every page 0 gets the reset entry, OSHEADER reseth (BIOS17); never called, no monitor change (ADR-031)
+bios_init	bios/bios.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the swv_vec = os_header.reseth half (bios.c:552, after just_rts at :363): every page 0 gets the reset entry, OSHEADER reseth (BIOS17); never called, no monitor change (ADR-031); since BIOS20 also nvbls = 8, vblqueue = vbl_list with its eight slots NULL (bios.c:366-372) and vblsem = 1 (bios.c:553) in every page 0
 biosmain	bios/bios.c	-	-	unmapped	the BIOS main sequence; NewTOS boots through the kernel init (kernel/src/lib.rs), not mapped function by function
 bootstrap	bios/bios.c	-	-	design:hardware:natfeats	NatFeats kernel bootstrap (emulators); no NewTOS counterpart
 can_shutdown	bios/bios.c	-	-	unmapped	power-off capability probe (NatFeats/hardware); no NewTOS counterpart found
@@ -319,6 +319,7 @@ bmem_init	bios/biosmem.c	-	-	unmapped	boot-time memory bounds (membot/memtop); N
 getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	getmpb	mapped	Getmpb 0x00: mp_mfl/mp_mal written, mp_rover kept (biosmem.c:149-150); themd published read-only to the caller (ADR-023); a program's NULL mpb is refused before any store (uaccess::refuse_user_write, user and super state) and ends the program (EmuTOS: bus error, panic; O3 decided 2026-11-11, BIOS06); an in-kernel NULL is refused
 getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	describe	mapped	themd = [membot, memtop) (biosmem.c:144-147) as a static boot snapshot, in the program-visible LP64 layout PublicMd (_MD, 32 bytes; BIOS06 O1 = A), not the internal BDOS MD
 getmpb	bios/biosmem.c	tos-api/src/bios/getmpb.rs	fill_mpb	mapped	the two stores mpb->mp_mfl = &themd, mpb->mp_mal = NULL (biosmem.c:149-150) in the caller's space; the first fault ends the call with uaccess::FAULTED (BIOS06 O3)
+getmpb	bios/biosmem.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the themd stores (biosmem.c:144-147) as the cell $48E: the 16-byte m68k MD {0, membot, memtop - membot, 0} at load, not the live BDOS descriptor (BIOS20 Q5 b)
 add_partition	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_avail	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
 blkdev_boot	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
@@ -329,9 +330,10 @@ blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	parse	mapped	the BPB checks 
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	log_in	mapped	drive test, the media-state reset (blkdev.c:589-590), recsiz = 0 "invalid BPB" (:601), the boot-sector read, parse and the BPB slot on success; shared by bpb_for, geometry and scan (BIOS-STOR-006)
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/drive.rs	clear_forcechange	mapped	forcechange = FALSE (blkdev.c:590)
 blkdev_getbpb	bios/blkdev.c	tos-api/src/bios/bpb.rs	geometry	mapped	the Getbpb of the BDOS log-in (ckdrv/log_media, bdos/fsdrive.c:96): log_in with the extended geometry
-blkdev_hdv_boot	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_hdv_boot	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs); its cell $47A holds a stub that returns 4 (xbios/kbdvecs.rs HDV_BOOT_STUB_VA, BIOS20 Q8), NewTOS boots no sector
 blkdev_hdv_init	bios/blkdev.c	tos-api/src/bios/mod.rs	mount	mapped	the partition scan (drive::mount, for disk_init_all) followed by the boot scan (bpb::scan, for pun_info_setup), plus the BDOS log-out and cache drop that go with a new scan; no floppies, bus_init or XHDI drive map
 blkdev_init	bios/blkdev.c	-	-	unmapped	block-device layer detail: no NewTOS counterpart function found (NewTOS: bios/mod.rs rwabs/mount, bios/drive.rs, bios/bpb.rs)
+blkdev_init	bios/blkdev.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the cell stores only: dskbufp = dskbuf (blkdev.c:90-92) -> a 3072-byte buffer in the private page, hdv_init (:98) -> the ret stub, hdv_boot (:95) -> a stub that returns 4 (BIOS20 Q6 b, Q8); hdv_bpb/hdv_rw/hdv_mediach stay 0 (ADR-031)
 blkdev_mediach	bios/blkdev.c	tos-api/src/bios/mod.rs	media_change	mapped	behind hdv_mediach (Mediach 0x09; the trap fn mediach forwards to it, no hdv_mediach vector, BIOS-STOR-010) and the direct call of Rwabs step 10: EUNDEV, forcechange -> 2 (BIOS-STOR-001); no probe/latched mediachange, the SD is non-removable
 blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/mod.rs	rwabs	mapped	behind hdv_rw (Rwabs 0x04): NewTOS calls it from the trap directly, no hdv_rw vector (BIOS-STOR-010); forcechange test/arm and media-change test of the logical path (BIOS-STOR-001); no retry/etv_critic chain
 blkdev_rwabs	bios/blkdev.c	tos-api/src/bios/drive.rs	forcechange	mapped	the blkdev[dev].forcechange test (blkdev.c:450-451)
@@ -353,7 +355,7 @@ bconout2	bios/chardev.c	tos-api/src/vdi/escape.rs	conout	mapped	Bconout(2) throu
 bconout5	bios/chardev.c	tos-api/src/vdi/escape.rs	rawout	mapped	Bconout(5)
 bcostat2	bios/chardev.c	tos-api/src/bios/chardev.rs	bcostat	mapped	Console impl
 char_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconstat	mapped	Absent impl (absent device)
-chardev_init	bios/chardev.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the prt_stat/prt_vec = just_rts half (the shared ret stub, BIOS15); NewTOS's device table is a static (bios/chardev.rs), aux_stat/aux_vec stay 0
+chardev_init	bios/chardev.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the just_rts half: prt_stat/prt_vec (BIOS15) and since BIOS20 aux_stat/aux_vec/dump_vec (chardev.c:78-84) hold the shared ret stub, none called (ADR-031 amendment 2026-11-20); NewTOS's device table is a static (bios/chardev.rs)
 charout_dummy	bios/chardev.c	tos-api/src/bios/chardev.rs	bconout	mapped	Absent impl (absent device)
 bcd2int	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
 clock_init	bios/clock.c	-	-	design:hardware:rtc	RTC drivers (IKBD clock, Mega ST RTC, NVRAM clock): NewTOS has no RTC; its clock is gemdos/time.rs
@@ -544,7 +546,7 @@ flop_add_drive	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: 
 flop_boot_read	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
 flop_checksum	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
 flop_detect_drive	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
-flop_hdv_init	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
+flop_hdv_init	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs); its cell $46A holds the ret stub (BIOS20 Q8)
 flop_init	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
 flop_mediach	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
 flopcmd	bios/floppy.c	-	-	design:hardware:floppy	floppy (WD1772) driver: no NewTOS counterpart; the XBIOS floppy calls return EUNDEV (tos-api/src/xbios/mod.rs)
@@ -707,6 +709,7 @@ ttram_detect	bios/memory2.c	-	-	design:hardware:tt-ram	TT-RAM / alt-RAM probing:
 disable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 enable_mfp_interrupt	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 init_system_timer	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
+init_system_timer	bios/mfp.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the timer_ms = 20 store (mfp.c:196): $442 holds 20, the value Tickcal answers (BIOS20); the MFP programming has no counterpart (row above)
 jdisint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3127	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 jenabint	bios/mfp.c	-	-	design:ADR-031@docs/MEMORY.md:3127	ADR-031: OS hook not served (per-hook table); MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
 mfp_init	bios/mfp.c	-	-	design:hardware:mfp68901	MFP 68901 timers/interrupts: no NewTOS counterpart (XBIOS Jdisint/Jenabint fall to the dispatcher's default arm; Mfpint/Xbtimer: xbios/mfp.rs, BIOS15)
@@ -829,17 +832,19 @@ physbase	bios/screen.c	tos-api/src/xbios/screen.rs	physbase	mapped	Physbase 0x02
 rez_changeable	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:861	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 screen_get_current_mode_info	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 screen_init_address	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
+screen_init_address	bios/screen.c	tos-api/src/bdos/process/loader.rs	populate_sysvars	mapped	the v_bas_ad = screen_start store (screen.c:656): $44E holds the address Logbase answers, not mapped until Logbase/Physbase (BIOS20 Q4 a); the shifter/VIDEL part has no counterpart (row above)
 screen_init_mode	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 set_rez_hacked	bios/screen.c	-	-	unmapped	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 setcolor	bios/screen.c	tos-api/src/xbios/screen.rs	setcolor	mapped	Setcolor 0x07
 setpalette	bios/screen.c	tos-api/src/xbios/screen.rs	setpalette	mapped	Setpalette 0x06
 setphys	bios/screen.c	tos-api/src/host.rs	set_screen_physical	mapped	-
-setscreen	bios/screen.c	tos-api/src/xbios/screen.rs	setscreen	mapped	Setscreen 0x05
+setscreen	bios/screen.c	tos-api/src/xbios/screen.rs	setscreen	mapped	Setscreen 0x05; v_bas_ad = logLoc (screen.c:1106-1108): the caller's $44E follows what Logbase then reports (BIOS20)
+setscreen	bios/screen.c	tos-api/src/xbios/screen.rs	write_v_bas_ad	mapped	the v_bas_ad store (screen.c:1107) into the calling process's page 0; every other process gets it at its next switch-in (process::set_current, BIOS20)
 shifter_check_moderez	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:861	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 shifter_get_current_mode_info	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 shifter_get_monitor_type	bios/screen.c	-	-	design:hardware:video-shifter	ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
 shifter_rez_changeable	bios/screen.c	-	-	design:ADR-017@docs/MEMORY.md:861	ADR-017: no runtime resolution change (Setscreen rez change / mode check not implemented); ST/TT shifter and VIDEL mode handling: no NewTOS counterpart function (the screen XBIOS calls are xbios/screen.rs)
-vsync	bios/screen.c	tos-api/src/xbios/system.rs	vsync	mapped	Vsync 0x25
+vsync	bios/screen.c	tos-api/src/xbios/system.rs	vsync	mapped	Vsync 0x25; waits on the host frame clock, then publishes _frclock/_vbclock into the caller's page 0 before it returns (screen.c:1217-1218 waits on frclock itself; BIOS20)
 and_icr_reg	bios/scsi.c	-	-	design:hardware:scsi	SCSI bus driver: no NewTOS counterpart
 and_mode_reg	bios/scsi.c	-	-	design:hardware:scsi	SCSI bus driver: no NewTOS counterpart
 build_rw_command	bios/scsi.c	-	-	design:hardware:scsi	SCSI bus driver: no NewTOS counterpart
@@ -993,7 +998,9 @@ int_illegal	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt
 int_priv	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 int_timerc	bios/vectors.S	tos-api/src/bios/tick.rs	advance	mapped	the 200 Hz counter
 int_unimpint	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
-int_vbl	bios/vectors.S	kernel/src/vbl.rs	run_if_due	mapped	the vblqueue[0] = vb_draw part only, once per ~60 Hz frame of the Vsync frame clock, from the timer IRQ over EL0 (irq_tick) and the trap-side input pump (pump_tick) (V55); frclock/vbclock, palette, screenpt, flopvbl, dump and the program-visible vblqueue have no counterpart (ADR-031); the VT52 blink is crate::fbcon::blink_tick per tick
+int_vbl	bios/vectors.S	kernel/src/vbl.rs	run_if_due	mapped	the vblqueue[0] = vb_draw part, once per ~60 Hz frame of the Vsync frame clock, from the timer IRQ over EL0 (irq_tick) and the trap-side input pump (pump_tick) (V55), skipped while the running process's vblsem is at or below 0 (vectors.S:338-339; BIOS20 Q2 b); frclock/vbclock are counted in bios/tick.rs (rows below); palette, screenpt, flopvbl, dump and the program-visible vblqueue slots have no counterpart (ADR-031); the VT52 blink is crate::fbcon::blink_tick per tick
+int_vbl	bios/vectors.S	tos-api/src/bios/tick.rs	write_frames	mapped	the addq.l frclock (vectors.S:330) and vbclock (:348) part: both written into the running process's page 0 from the frame clock since boot, vbclock minus the frames with vblsem down (BIOS20 C1, Q1 c)
+int_vbl	bios/vectors.S	tos-api/src/bios/tick.rs	vbl_semaphore_down	mapped	the subq.w vblsem / jmi vbl_end test (vectors.S:338-339) as a read of the running process's $452, compared with 0 (S10; BIOS20 Q2 b)
 just_rte	bios/vectors.S	-	-	design:hardware:m68k-cpu	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 keyclick	bios/vectors.S	-	-	design:hardware:ym2149	m68k exception/interrupt vector code: no NewTOS counterpart (AArch64 exception vectors are kernel/src/arch)
 mfp_rs232_rx_interrupt	bios/vectors.S	kernel/src/drivers/gic.rs	rust_irq_handler	mapped	the receive interrupt entry (vectors.S: registers saved, mfp_rs232_rx_interrupt_handler, rte): the PL011 INTID arm of the IRQ entry calls pl011_rx_drain (XBIOS15, TOOL17)

@@ -91,8 +91,8 @@ const MEDIACH: u16 = 0x09;
 const DRVMAP: u16 = 0x0A;
 const KBSHIFT: u16 = 0x0B;
 
-/// System-timer period in milliseconds (50 Hz → 20 ms), per EmuTOS.
-const TICKCAL_MS: Long = 20;
+/// System-timer period in milliseconds (50 Hz → 20 ms), per EmuTOS; also `_timer_ms` ($442, BIOS20).
+pub(crate) const TICKCAL_MS: Long = 20;
 
 /// BIOS Trap-13 dispatcher. Returns the full 64-bit register value:
 /// most functions return a `Long`, but `Getbpb` returns a native

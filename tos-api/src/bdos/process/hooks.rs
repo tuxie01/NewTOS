@@ -80,7 +80,7 @@ pub enum Hook {
     Resvector,
     /// `dump_vec` (`$502`).
     DumpVec,
-    /// `vblqueue` (`$456`).
+    /// `vblqueue` (`$456`): a routine in a slot it points at (BIOS20).
     Vblqueue,
     /// `bell_hook` (`$5AC`, `Setexc(0x16B)`).
     BellHook,
@@ -279,10 +279,10 @@ pub struct Page0Hook {
 /// `prt_stat`/`prt_vec`/`aux_stat`/`aux_vec` (`$506`–`$512`) — EmuTOS never
 /// calls them (rule 1). The CPU vector cells `$008`–`$3FC` and `etv_timer`,
 /// `etv_critic`, `etv_term` (`$400`–`$408`) are checked as well
-/// ([`check_page0`]); `$000`/`$004` are the reset SSP/PC, no hook.
+/// ([`check_page0`]); `$000`/`$004` are the reset SSP/PC, no hook. BIOS20: [`VBL_SLOT_HOOKS`].
 pub const PAGE0_HOOKS: [Page0Hook; 10] = [
     Page0Hook { addr: 0x42A, hook: Hook::Resvector, default: 0 },
-    Page0Hook { addr: 0x456, hook: Hook::Vblqueue, default: 0 },
+    Page0Hook { addr: VBL_SLOT0, hook: Hook::Vblqueue, default: 0 }, // `vblqueue` slot 0
     // EmuTOS `bios_init` ends with `swv_vec = os_header.reseth`
     // (`references/emutos/bios/bios.c:552`); NewTOS's `reseth` is the reset
     // entry (TASK/BIOS17).
@@ -291,7 +291,7 @@ pub const PAGE0_HOOKS: [Page0Hook; 10] = [
     Page0Hook { addr: 0x476, hook: Hook::HdvRw, default: 0 },
     Page0Hook { addr: 0x47E, hook: Hook::HdvMediach, default: 0 },
     Page0Hook { addr: 0x4FE, hook: Hook::ExecOs, default: 0 },
-    Page0Hook { addr: 0x502, hook: Hook::DumpVec, default: 0 },
+    Page0Hook { addr: 0x502, hook: Hook::DumpVec, default: RET_STUB },
     Page0Hook { addr: 0x5AC, hook: Hook::BellHook, default: 0 },
     Page0Hook { addr: 0x5B0, hook: Hook::KclHook, default: 0 },
 ];
@@ -325,7 +325,7 @@ pub fn check_page0(slot: usize) {
     // (the page holds little-endian LONGs, as on every NewTOS target); single
     // CPU under the trap.
     let rd = |addr: usize| unsafe { (p0.add(addr) as *const u32).read_unaligned() };
-    for h in PAGE0_HOOKS.iter() {
+    for h in page0_hook_cells() {
         let v = rd(h.addr as usize);
         if v != h.default {
             note(slot, h.hook, u64::from(v), Via::Page0);
@@ -730,6 +730,7 @@ pub fn note_ikbd_ignored(path: IkbdPath) {
 }
 
 #[cfg(test)]
+#[allow(clippy::items_after_test_module)] // the BIOS20 items after it keep every cite above
 mod tests {
     use super::*;
 
@@ -753,7 +754,7 @@ mod tests {
     fn page0_hooks_are_not_the_cells_emutos_never_calls() {
         // etv_xtra, hdv_init, hdv_boot, prt_stat, prt_vec, aux_stat, aux_vec.
         for silent in [0x40C, 0x46A, 0x47A, 0x506, 0x50A, 0x50E, 0x512] {
-            assert!(PAGE0_HOOKS.iter().all(|h| h.addr != silent), "${:X}", silent);
+            assert!(page0_hook_cells().all(|h| h.addr != silent), "${:X}", silent);
         }
     }
 
@@ -772,4 +773,40 @@ mod tests {
         let v = format!("{}", Hook::Vector(0x45));
         assert_eq!(v, "vector 0x45 ($114)");
     }
+}
+
+// ─── `dump_vec` and the `vblqueue` slots (TASK/BIOS20) ───────────────────
+//
+// ADR-031 amendment of 2026-11-20, items 2 and 3: `dump_vec`'s default is the
+// `ret` stub the loader puts there, not 0; and `vblqueue` is watched in the
+// eight `_vbl_list` slots `$4CE`-`$4EA` it points at (each empty at load), no
+// longer in the cell `$456`: a routine a program enters in a slot is never
+// called, and warns. Slot 0 is a row of [`PAGE0_HOOKS`]; slots 1-7 are
+// [`VBL_SLOT_HOOKS`]. Placed here so that no line cite into the code above
+// moves.
+
+/// The first `_vbl_list` slot, where `_vblqueue` points (`loader::VBL_LIST_ADDR`).
+const VBL_SLOT0: u16 = super::loader::VBL_LIST_ADDR as u16;
+
+/// `dump_vec`'s default: the shared `ret` stub, EmuTOS `just_rts`
+/// (`references/emutos/bios/chardev.c:84`; fits 32 bits).
+const RET_STUB: u32 = crate::xbios::kbdvecs::RET_STUB_VA as u32;
+
+/// `vblqueue` slots 1-7 (`$4D2`-`$4EA`), compared with 0 like slot 0.
+pub const VBL_SLOT_HOOKS: [Page0Hook; 7] = {
+    let mut t = [Page0Hook { addr: 0, hook: Hook::Vblqueue, default: 0 }; 7];
+    let mut i = 0;
+    while i < 7 {
+        t[i].addr = VBL_SLOT0 + 4 * (i as u16 + 1);
+        i += 1;
+    }
+    t
+};
+
+const _: () = assert!(super::loader::VBL_LIST_SLOTS == 1 + VBL_SLOT_HOOKS.len());
+
+/// Every page-0 hook cell [`check_page0`] compares with its default:
+/// [`PAGE0_HOOKS`], then the `vblqueue` slots 1-7.
+pub fn page0_hook_cells() -> impl Iterator<Item = &'static Page0Hook> {
+    PAGE0_HOOKS.iter().chain(VBL_SLOT_HOOKS.iter())
 }

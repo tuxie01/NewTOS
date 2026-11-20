@@ -686,9 +686,9 @@ unsafe fn install_slot(
     // SAFETY: slot bounds-checked; single-CPU under the lock.
     unsafe { mmu::init_slot_tables(slot)? };
 
-    // A new tenant holds no uncached screen pointer yet.
+    // A new tenant holds no uncached screen pointer and has lost no frames yet (BIOS20).
     usermem::clear_uncached(slot);
-
+    crate::bios::tick::reset_frames(slot);
     // Publish the slot metadata so `Pterm` (via `slot_for(run)`) and the
     // trap handler can find this process.
     let l0_pa = mmu::l0_pa_for(slot);
@@ -1302,7 +1302,7 @@ fn populate_sysvars(tpa: &mut [u8], pd: u64) {
     // branches to a valid entry, not to 0 (ADR-031 table, TASK/BIOS15).
     wr_long(tpa, 0x506, crate::xbios::kbdvecs::RET_STUB_VA as u32);
     wr_long(tpa, 0x50A, crate::xbios::kbdvecs::RET_STUB_VA as u32);
-
+    write_bios20_cells(tpa, stram_start, stram_end); // + the cells of TASK/BIOS20, below
     // ── The vector cells $000-$40F (TASK/BIOS07, `docs/api/bios/05-setexc.md`
     //    D3): the m68k vectors and `etv_*`, one cell for every process in
     //    `bios::vectors`, copied here so the program reads at `4 * num` what
@@ -2044,7 +2044,7 @@ mod basepage_segment_tests {
         let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
         populate_sysvars(&mut page0, 0x0109_7000);
         let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
-        for h in super::super::hooks::PAGE0_HOOKS.iter() {
+        for h in super::super::hooks::page0_hook_cells() {
             assert_eq!(rd32(h.addr as usize), h.default, "{:?} at ${:X}", h.hook, h.addr);
         }
         for n in 2..=crate::bios::vectors::ETV_TERM {
@@ -2131,4 +2131,161 @@ mod basepage_segment_tests {
         assert_eq!(dbase, tbase + tlen);
         assert_eq!((bbase, blen), (dbase + dlen, 0));
     }
+
+    /// BIOS20 (`docs/api/bios/_sysvars-counters-contract.md` section 17.5):
+    /// the static cells EmuTOS fills at boot, as the loader leaves them.
+    #[test]
+    fn bios20_static_cells_hold_the_emutos_values() {
+        let mut page0 = vec![0u8; RESERVED_LOW_END as usize];
+        populate_sysvars(&mut page0, 0x0109_7000);
+        let rd32 = |off: usize| u32::from_le_bytes(page0[off..off + 4].try_into().unwrap());
+        let rd16 = |off: usize| u16::from_le_bytes(page0[off..off + 2].try_into().unwrap());
+        let ret = crate::xbios::kbdvecs::RET_STUB_VA as u32;
+        // C01: _timer_ms = 20 = Tickcal.
+        assert_eq!(rd16(0x442), 20, "_timer_ms");
+        assert_eq!(i32::from(rd16(0x442)), crate::bios::TICKCAL_MS, "_timer_ms == Tickcal");
+        // C04, C05, C06: _vblsem 1, _nvbls 8, _vblqueue -> eight empty slots.
+        assert_eq!(rd16(0x452), 1, "_vblsem");
+        assert_eq!(rd16(0x454), 8, "_nvbls");
+        assert_eq!(rd32(0x456), 0x4CE, "_vblqueue");
+        for slot in 0..8 {
+            assert_eq!(rd32(0x4CE + 4 * slot), 0, "_vbl_list[{}]", slot);
+        }
+        // C07 seed: a new process has lost nothing.
+        assert_eq!(rd32(0x462), rd32(0x466), "_vbclock == _frclock at load");
+        // C10: hdv_init, dump_vec, aux_stat, aux_vec = the ret stub = prt_stat.
+        for cell in [0x46A, 0x502, 0x50E, 0x512] {
+            assert_eq!(rd32(cell), ret, "${:X}", cell);
+            assert_eq!(rd32(cell), rd32(0x506), "${:X} == prt_stat", cell);
+        }
+        // C11: hdv_boot = its own stub, not the ret stub.
+        let hdvb = crate::xbios::kbdvecs::HDV_BOOT_STUB_VA;
+        assert_eq!(rd32(0x47A) as u64, hdvb, "_hdv_boot");
+        assert_ne!(rd32(0x47A), ret);
+        assert_eq!(hdvb, USER_VA_BASE + KBDVEC_STUB_AREA_VA + 0x20);
+        // C12: themd = {0, membot, memtop - membot, 0}, `____md` untouched.
+        let (membot, memtop) = crate::bdos::mem::init::stram_range();
+        assert_eq!(
+            [rd32(0x48E), rd32(0x492), rd32(0x496), rd32(0x49A)],
+            [0, membot as u32, (memtop - membot) as u32, 0],
+            "_themd"
+        );
+        assert_eq!(rd32(0x49E), 0, "____md");
+        // C13: dskbufp = the 3072-byte buffer at the end of the private page.
+        assert_eq!(rd32(0x4C6), 0x7F400, "_dskbufp");
+        assert_eq!(u64::from(rd32(0x4C6)), USER_VA_BASE + mmu::PRIV_PAGE_VA + 0x400);
+        assert_eq!(rd32(0x4C6) % 4, 0);
+        assert_eq!(DSKBUF_VA + DSKBUF_SIZE, mmu::PRIV_PAGE_VA + mmu::PAGE_SIZE);
+        // C14: pun_ptr stays 0 (Q7, TASK/BIOS18.md).
+        assert_eq!(rd32(0x516), 0, "_pun_ptr");
+    }
+
+    /// BIOS20 C11: the `hdv_boot` stub is `mov x0, #4; ret` where the stub
+    /// page holds it, after the two IKBD stubs, inside their area.
+    #[test]
+    fn the_hdv_boot_stub_returns_4() {
+        let mut stubs = vec![0u8; mmu::PAGE_SIZE as usize];
+        crate::xbios::kbdvecs::write_stubs(&mut stubs);
+        let at = (crate::xbios::kbdvecs::HDV_BOOT_STUB_VA - mmu::STUB_PAGE_VA) as usize;
+        let word = |o: usize| u32::from_le_bytes(stubs[o..o + 4].try_into().unwrap());
+        assert_eq!([word(at), word(at + 4)], [0xD280_0080, 0xD65F_03C0]);
+        assert_eq!((word(at) >> 5) & 0xFFFF, 4, "MOVZ immediate");
+        let ret_at = (crate::xbios::kbdvecs::RET_STUB_VA - mmu::STUB_PAGE_VA) as usize;
+        assert_eq!(word(ret_at), 0xD65F_03C0, "the ret stub is untouched");
+        assert!(at + 8 <= (KBDVEC_STUB_AREA_VA + KBDVEC_STUB_AREA_SIZE - mmu::STUB_PAGE_VA) as usize);
+    }
+}
+
+// ─── The system variables TASK/BIOS20 serves as EmuTOS ──────────────────
+//
+// Owner decisions of 2026-11-20 and the ADR-031 amendment of that date; the
+// contract is `docs/api/bios/_sysvars-counters-contract.md` section 17.
+// Placed at the end of the file so that no line cite into the code above
+// moves.
+
+/// EL0 VA of the **disk buffer** `_dskbufp` (`$4C6`) points at (BIOS20,
+/// decision Q6 (b), `docs/api/bios/_sysvars-counters-contract.md` section
+/// 12): EmuTOS's `dskbuf`, `DSKBUF_SIZE` bytes "as low as possible in ST-RAM"
+/// (`references/emutos/bios/lowstram.c:28-45`, `bios/blkdev.c:90-92`). In the
+/// private read-write page, after the `PARMBLK` scratch; per process, zeroed
+/// at load with the page, used by no kernel code.
+pub const DSKBUF_VA: u64 = mmu::PRIV_PAGE_VA + 0x400;
+
+/// Size of the [`DSKBUF_VA`] buffer: `DSKBUF_SIZE = max(CHKSUM_SECTORS, 2) *
+/// SECTOR_SIZE = 6 * 512` (`references/emutos/include/biosext.h:22-29`,
+/// `include/biosdefs.h:23`).
+pub const DSKBUF_SIZE: u64 = 6 * 512;
+
+const _: () = assert!(DSKBUF_VA >= PARMBLK_SCRATCH_VA + 40);
+const _: () = assert!(DSKBUF_VA.is_multiple_of(8));
+const _: () = assert!(DSKBUF_VA + DSKBUF_SIZE == mmu::PRIV_PAGE_VA + mmu::PAGE_SIZE);
+const _: () = assert!(USER_VA_BASE + DSKBUF_VA <= u32::MAX as u64);
+
+/// `_vbl_list` (`$4CE`): the eight VBL-routine slots `_vblqueue` (`$456`)
+/// points at, "pointers to 8 VBL routines" (`references/emutos/tosvars.ld:86`;
+/// `vblqueue = vbl_list`, `bios/bios.c:367`). NULL at load (`:370-372`).
+pub const VBL_LIST_ADDR: u32 = 0x4CE;
+/// Number of [`VBL_LIST_ADDR`] slots, `_nvbls` (`$454`):
+/// `ARRAY_SIZE(vbl_list)` (`references/emutos/bios/bios.c:206,366`).
+pub const VBL_LIST_SLOTS: usize = 8;
+
+const _: () = assert!(VBL_LIST_ADDR as usize + 4 * VBL_LIST_SLOTS == 0x4EE);
+
+/// The static cells of TASK/BIOS20 in the page-0 byte view `tpa`, written by
+/// [`populate_sysvars`] with the ST-RAM pool bounds `(stram_start, stram_end)`
+/// it already holds. The live ones (`_frclock`/`_vbclock`, `_v_bas_ad`) are
+/// seeded here and kept fresh by `bios::tick` and `process::set_current`.
+fn write_bios20_cells(tpa: &mut [u8], stram_start: tos_types::Long, stram_end: tos_types::Long) {
+    let ret = crate::xbios::kbdvecs::RET_STUB_VA as u32;
+    // dump_vec ($502), aux_stat ($50E), aux_vec ($512): EmuTOS `chardev_init`
+    // points them at `just_rts` (`references/emutos/bios/chardev.c:78-84`),
+    // as `prt_*` above. NewTOS calls none of them (`Scrdmp` does not call
+    // `dump_vec`; EmuTOS never calls `aux_*`).
+    wr_long(tpa, 0x502, ret);
+    wr_long(tpa, 0x50E, ret);
+    wr_long(tpa, 0x512, ret);
+    // hdv_init ($46A): EmuTOS `flop_hdv_init` (`bios/blkdev.c:98`), a `void`
+    // routine it never calls (`:96-97`); NewTOS the `ret` stub.
+    wr_long(tpa, 0x46A, ret);
+    // hdv_boot ($47A): EmuTOS `blkdev_hdv_boot` (`bios/blkdev.c:95`); NewTOS
+    // a stub that returns 4, "not a valid boot sector" (`:284-285`).
+    wr_long(tpa, 0x47A, crate::xbios::kbdvecs::HDV_BOOT_STUB_VA as u32);
+    // timer_ms ($442, WORD): the system-timer period `Tickcal` answers, 20
+    // (EmuTOS `init_system_timer`, `bios/mfp.c:196`; `bios/bios.c:1096-1099`).
+    wr_word(tpa, 0x442, crate::bios::TICKCAL_MS as u16);
+    // v_bas_ad ($44E): the logical screen, the address `Logbase` answers
+    // (EmuTOS `screen_init_address`, `bios/screen.c:656`). Not published into
+    // the process: a dereference before `Logbase`/`Physbase` faults (Q4 (a)).
+    // No screen: left 0.
+    if let Some(v) = crate::xbios::screen::v_bas_ad_value() {
+        wr_long(tpa, crate::xbios::screen::V_BAS_AD_ADDR, v);
+    }
+    // vblsem ($452) = 1 (`bios/bios.c:553`), nvbls ($454) = 8 and vblqueue
+    // ($456) = the eight slots of `_vbl_list` ($4CE-$4ED), which stay 0
+    // (`bios/bios.c:366-372`; `tosvars.ld:86`). NewTOS's `vb_draw` is kernel
+    // code, so slot 0 stays empty too; a routine a program enters is never
+    // called and warns (ADR-031 amendment item 3, `hooks::PAGE0_HOOKS`).
+    wr_word(tpa, crate::bios::tick::VBLSEM_ADDR, 1);
+    wr_word(tpa, 0x454, VBL_LIST_SLOTS as u16);
+    wr_long(tpa, 0x456, VBL_LIST_ADDR);
+    // frclock ($466) / vbclock ($462): the frame counters, seeded from the
+    // live frame clock (a new process has lost nothing, so both are equal);
+    // the timer interrupt, `Vsync` and every switch-in keep them fresh
+    // (`bios::tick`).
+    let fc = crate::bios::tick::frclock();
+    wr_long(tpa, crate::bios::tick::FRCLOCK_ADDR, fc);
+    wr_long(tpa, crate::bios::tick::VBCLOCK_ADDR, fc);
+    // themd ($48E, 16 bytes): the first memory descriptor as EmuTOS `getmpb`
+    // fills it (`bios/biosmem.c:144-149`), in the m68k `MD` layout
+    // (`include/bdosdefs.h:108-115`): m_link 0, m_start membot, m_length
+    // memtop - membot, m_own 0 — the extent at load, not the live BDOS state
+    // EmuTOS's `themd` becomes after the first allocation (Q5 (b)).
+    wr_long(tpa, 0x48E, 0);
+    wr_long(tpa, 0x492, stram_start as u32);
+    wr_long(tpa, 0x496, (stram_end - stram_start) as u32);
+    wr_long(tpa, 0x49A, 0);
+    // dskbufp ($4C6): the 3072-byte disk buffer in the private read-write
+    // page (EmuTOS `dskbufp = dskbuf`, `bios/blkdev.c:90-92`; Q6 (b)).
+    wr_long(tpa, 0x4C6, (USER_VA_BASE + DSKBUF_VA) as u32);
+    // pun_ptr ($516) stays 0: TASK/BIOS18.md (Q7).
 }

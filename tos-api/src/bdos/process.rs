@@ -972,14 +972,13 @@ pub fn current_kva() -> *mut BasePage {
 /// cell on entry keeps it right for as long as the accessory runs. Only the
 /// cell follows `run`: [`RUN`] — and with it memory ownership, protection,
 /// the current directory, the DTA, the handles and the files — stays the
-/// accessory (user decision 2026-10-18, `docs/COMPATIBILITY.md`).
+/// accessory (user decision 2026-10-18, `docs/COMPATIBILITY.md`). BIOS20: [`refresh_on_switch`].
 #[inline]
 pub fn set_current(bp: *mut BasePage) {
-    if let Some(slot) = slot_for(bp) {
-        if is_accessory(slot) {
-            write_os_run_cell(slot, emutos_run());
-        }
+    if let Some(slot) = slot_for(bp).filter(|&s| is_accessory(s)) {
+        write_os_run_cell(slot, emutos_run());
     }
+    refresh_on_switch(slot_for(current()), slot_for(bp));
     RUN.store(bp, Ordering::Release);
 }
 
@@ -1451,3 +1450,18 @@ mod fp_context_tests {
 // with the feature off nothing above moves (CLAUDE.md "Testing").
 #[cfg(feature = "crash-walk")]
 pub mod crash_diag;
+
+/// The page-0 cells that follow a global value, refreshed by [`set_current`]
+/// for **every** process it makes current (TASK/BIOS20,
+/// `docs/api/bios/_sysvars-counters-contract.md` section 5 rule 2): the frame
+/// counters `_frclock`/`_vbclock`, after the process `old` that leaves the CPU
+/// is accounted up to now ([`crate::bios::tick::switch_frames`]), and
+/// `_v_bas_ad`, the logical screen another process may have moved
+/// ([`crate::xbios::screen::write_v_bas_ad`]). Called before [`RUN`] changes,
+/// so the timer interrupt never charges the new process for its time away.
+fn refresh_on_switch(old: Option<usize>, new: Option<usize>) {
+    if let Some(slot) = new {
+        crate::xbios::screen::write_v_bas_ad(slot);
+    }
+    crate::bios::tick::switch_frames(old, new);
+}

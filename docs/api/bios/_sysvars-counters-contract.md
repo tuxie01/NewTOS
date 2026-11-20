@@ -491,7 +491,12 @@ into `mp_mal`, `m_own = run`), the free rest is a new `MD` from `xmgetmd`
 (`bdos/osmem.c:169`). So what a program reads at `$48E` after boot is the first
 allocated block's descriptor, not `[membot, memtop)` (inferred from the cited
 code; the oracle value is a measurement). `m_start` stays `membot` as long as
-that block is not freed and merged (inferred).
+that block is not freed and merged (inferred). **Measured** (BIOS20 tester run,
+probe C12, `measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT`): read by a running program, the oracle's
+`$48E` has, on tt, link 0, start `membot`, length `memtop - membot`, owner 0
+(the `getmpb`-time classes, as NewTOS), and on falcontc the same except a
+length other than `memtop - membot`; the "first allocated block" inference
+above does not hold at that point, and the falcontc length is not explained.
 
 **What a program does with it.** A memory tool reads the MD chain from `$48E`
 (only inside `Supexec` on EmuTOS: a user-mode read below `$800` is a bus error,
@@ -877,10 +882,10 @@ own).
 | C07 | `a = *$466; Vsync(); b = *$466` and the same for `$462` | `b - a >= 1` | `b - a >= 1` (the `Vsync` publish) |
 | C08 | in `Supexec` set `$452 = 0`; `Vsync` x3; deltas of `$462` and `$466`; restore `$452 = 1` | `d466 >= 3`, `d462 == 0` | `d466 >= 3`, `d462 == 0` (Q1 (c)); the mouse draw stops while it is 0 (on screen only) |
 | C09 | `$466` in parent; child runs `Vsync` x3; parent reads again | one global counter, strictly larger | strictly larger (switch-in refresh); the oracle cannot show the per-process view |
-| C09b | `h0 = $4BA, f0 = $466`; N x `Vsync`; `h1, f1` | `(h1-h0)/(f1-f0)` = 200 / VBL rate | about 200/60 |
+| C09b | `h0 = $4BA, f0 = $466`; N x `Vsync`; `h1, f1` | `(h1-h0)/(f1-f0)` = 200 / VBL rate; measured tt 3.33 (60.0 Hz), falcontc 3.96 (about 50.5 Hz), `measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT` | about 200/60 (measured 3.33) |
 | C10 | read `$46A`, `$502`, `$50E`, `$512`, `$506`, `$50A`; call each through its old value | `$46A` `0x00e09712` (`flop_hdv_init`, not `just_rts`: non-zero, calling it re-detects floppies: do not call it on the oracle); `$502`, `$50E`, `$512` equal to `$506`; calls return | all six non-zero, `$46A` `$502` `$50E` `$512` equal `$506`; calls return, no fault |
 | C11 | read `$47A`; call it | non-zero ROM address; the call would try to boot: **do not call on the oracle**; compare the cell as non-zero only | non-zero; the call returns 4 |
-| C12 | read 4 LONGs at `$48E` | first allocated block (field classes) | `{0, membot, memtop - membot, 0}`; field classes compared, no number |
+| C12 | read 4 LONGs at `$48E` | first allocated block (field classes; inferred); measured: tt all four classes as NewTOS, falcontc length other than `memtop - membot` (`measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT`) | `{0, membot, memtop - membot, 0}`; field classes compared, no number |
 | C13 | read `$4C6`; read 1024 bytes through it; write and restore 1024 | `0x1004`; readable | non-zero, 4-aligned, 1024 bytes readable and writable (3072 available) |
 | C14 | read `$516` | non-zero | 0 (Q7: documented difference, not a failure of BIOS20) |
 

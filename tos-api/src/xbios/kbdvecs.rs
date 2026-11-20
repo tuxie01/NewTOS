@@ -158,13 +158,13 @@ pub fn write_table(page: &mut [u8]) {
     // half-received, the HID translator feeds whole reports.
 }
 
-/// Write the two default stubs into the shared stub page `page` (the kernel
-/// alias of the whole page) — once, by `loader::ensure_stub_page`.
+/// Write the two default stubs and the `hdv_boot` stub (BIOS20) into the shared stub
+/// page `page` (the kernel alias of the whole page) — once, by `loader::ensure_stub_page`.
 pub fn write_stubs(page: &mut [u8]) {
-    let stub = (KBDVEC_STUB_AREA_VA - STUB_PAGE_VA) as usize;
-    page[stub..stub + KBDVEC_STUB_AREA_SIZE as usize].fill(0);
+    page[(KBDVEC_STUB_AREA_VA - STUB_PAGE_VA) as usize..][..KBDVEC_STUB_AREA_SIZE as usize].fill(0);
     write_stub_code(page, RET_STUB_VA, &RET_STUB_CODE);
     write_stub_code(page, KBDVEC_DEFAULT_VA, &KBDVEC_DEFAULT_CODE);
+    write_stub_code(page, HDV_BOOT_STUB_VA, &HDV_BOOT_CODE);
 }
 
 // ─── The table with no process running ───────────────────────────────────
@@ -470,3 +470,39 @@ pub fn check_events() {
         }
     }
 }
+
+// ─── The `hdv_boot` stub (TASK/BIOS20) ──────────────────────────────────
+//
+// In the free part of this file's stub area, behind `kbdvec_default`.
+// Placed at the end of the file so that no line cite into the code above
+// moves.
+
+/// EL0 VA of the **`hdv_boot` default stub** (BIOS20, ADR-031 amendment of
+/// 2026-11-20 item 1): the value of `_hdv_boot` (`$47A`) at load, in the free
+/// part of this stub area behind `kbdvec_default`. EmuTOS points the cell at
+/// `blkdev_hdv_boot` (`references/emutos/bios/blkdev.c:95`), which returns
+/// what `bootcheck` returns when nothing is booted (`:258-285`); NewTOS has no
+/// boot sector to run, so the stub returns [`HDV_BOOT_NOT_BOOTABLE`]
+/// (`docs/api/bios/_sysvars-counters-contract.md` section 10). NewTOS never
+/// calls it.
+pub const HDV_BOOT_STUB_VA: u64 = USER_VA_BASE + KBDVEC_STUB_AREA_VA + 0x20;
+
+/// The code the `hdv_boot` stub returns: 4, "not a valid boot sector"
+/// (`bootcheck`, `references/emutos/bios/blkdev.c:284-285`).
+pub const HDV_BOOT_NOT_BOOTABLE: u16 = 4;
+
+/// The `hdv_boot` stub. Encodings checked with clang
+/// (`-target aarch64-unknown-none-elf`) + llvm-objdump:
+///
+/// ```text
+///   d2800080  mov x0, #4        ; the code (a LONG in x0)
+///   d65f03c0  ret
+/// ```
+const HDV_BOOT_CODE: [u32; 2] = [0xD280_0080, 0xD65F_03C0];
+
+const _: () = assert!(HDV_BOOT_STUB_VA >= KBDVEC_DEFAULT_VA + 4 * KBDVEC_DEFAULT_CODE.len() as u64);
+const _: () = assert!(
+    HDV_BOOT_STUB_VA - USER_VA_BASE + 4 * HDV_BOOT_CODE.len() as u64
+        <= KBDVEC_STUB_AREA_VA + KBDVEC_STUB_AREA_SIZE
+);
+const _: () = assert!((HDV_BOOT_CODE[0] >> 5) & 0xFFFF == HDV_BOOT_NOT_BOOTABLE as u32);

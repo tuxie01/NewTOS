@@ -31,12 +31,12 @@ pub fn random() -> i64 {
 /// `Vsync` (0x25) — block until the next frame. Spins on the host frame
 /// clock (~60 Hz, derived from the hardware timer); ±1 frame accuracy.
 pub fn vsync() -> i64 {
-    if let Some(h) = host::host() {
-        let a = h.frame_clock();
-        while h.frame_clock() == a {
-            core::hint::spin_loop();
-        }
+    let Some(h) = host::host() else { return 0 };
+    let a = h.frame_clock();
+    while h.frame_clock() == a {
+        core::hint::spin_loop();
     }
+    crate::bios::tick::publish_frames_running(); // BIOS20: `Vsync(); x = *_frclock;` sees the new frame, `bios/screen.c:1217-1218`
     0
 }
 

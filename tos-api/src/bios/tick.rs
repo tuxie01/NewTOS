@@ -54,7 +54,7 @@
 //!     ACCEPTED) have no NewTOS counterpart (`dosound`: not yet). Tracked as a gap in
 //!     `docs/api/bios/_state.md`, not silently absorbed.
 
-use core::sync::atomic::{AtomicU32, Ordering};
+use core::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 
 /// Tick rate of the system clock counter, in Hz (EmuTOS timer C: 200 Hz —
 /// `bios/mfp.c:205`; `include/biosdefs.h:17` `CLOCKS_PER_SEC`).
@@ -123,5 +123,172 @@ fn publish(value: u32) {
             .add(HZ_200_ADDR)
             .cast::<u32>()
             .write_unaligned(value);
+    }
+    // The frame counters of the same process, from the same interrupt
+    // (BIOS20, spec section 5 rule 1).
+    publish_frames_running();
+}
+
+// ─── `_frclock`, `_vbclock` and the `_vblsem` input (BIOS20) ─────────────
+//
+// EmuTOS counts both in its VBL interrupt: `_frclock` on every VBL
+// (`references/emutos/bios/vectors.S:330`), `_vbclock` only when the VBL
+// body runs, i.e. when `_vblsem` (`$452`) was greater than 0 on entry
+// (`:338-339`, the count at `:348`). NewTOS has no VBL interrupt; the frame
+// is the ~60 Hz frame clock `Vsync` waits on (`Host::frame_clock`), counted
+// from the frame recorded at boot ([`start_frame_clock`]), so both cells
+// start at 0 (owner decision C1, spec
+// `docs/api/bios/_sysvars-counters-contract.md` sections 5, 6 and 17).
+//
+// The cells follow `_hz_200`'s model: they are written into the **running**
+// process's page 0, at three points — this timer interrupt ([`advance`]),
+// `Vsync` before it returns ([`publish_frames_running`]) and whenever a
+// process gets the CPU ([`switch_frames`], from `process::set_current`).
+// `_vbclock` is `_frclock` minus the frames the process ran with its own
+// `_vblsem` at or below 0 ([`VBL_LOST`], decision Q1 (c)): at each
+// publish the frames since the last one ([`ACCT_FC`]) are charged when the
+// semaphore is down; at a switch-in they are not, so a process that was away
+// loses nothing. All of it is lock-free and allocation-free: one counter
+// read, a few atomics and unaligned stores into a static kernel page.
+
+/// `_vblsem` (`$452`, WORD): "if > 0, the VBL routine is executed"
+/// (`references/emutos/tosvars.ld:56`). Boot value 1 (`bios/bios.c:553`).
+/// Read by the kernel as a documented input (`docs/api/_super-state.md` S10).
+pub const VBLSEM_ADDR: usize = 0x452;
+
+/// `_vbclock` (`$462`, LONG): VBLs whose body ran (`tosvars.ld:61`).
+pub const VBCLOCK_ADDR: usize = 0x462;
+
+/// `_frclock` (`$466`, LONG): every VBL (`tosvars.ld:62`).
+pub const FRCLOCK_ADDR: usize = 0x466;
+
+/// The raw frame-clock value recorded at boot ([`start_frame_clock`]); the
+/// cells count from it, so they start at 0 (decision C1).
+static FRAME_BASE: AtomicU64 = AtomicU64::new(0);
+
+/// The frame number up to which the running process's `_vblsem` has been
+/// accounted (spec section 6, consequence 2: the global word `acct_fc`).
+static ACCT_FC: AtomicU32 = AtomicU32::new(0);
+
+/// Per process slot: the frames the process ran with its `_vblsem` at or
+/// below 0 (spec section 6, consequence 2: the per-process word `lost`); its
+/// `_vbclock` is `_frclock` minus this. Kernel-private, wrapping like the
+/// `LONG` cells; set to 0 when a process is loaded into the slot
+/// ([`reset_frames`]).
+static VBL_LOST: [AtomicU32; crate::bdos::process::MAX_PROCESSES] =
+    [const { AtomicU32::new(0) }; crate::bdos::process::MAX_PROCESSES];
+
+/// A new process in `slot` has lost no frames: its `_vbclock` equals
+/// `_frclock`. Called by the loader when it sets the slot up.
+pub fn reset_frames(slot: usize) {
+    if let Some(l) = VBL_LOST.get(slot) {
+        l.store(0, Ordering::Relaxed);
+    }
+}
+
+/// Record the boot frame: from now on [`frclock`] counts from 0. Called once
+/// by the kernel right after it installs the host.
+pub fn start_frame_clock() {
+    if let Some(h) = crate::host::host() {
+        FRAME_BASE.store(h.frame_clock(), Ordering::Relaxed);
+    }
+}
+
+/// The current `_frclock` value: frames of the host frame clock since
+/// [`start_frame_clock`], truncated to a wrapping 32-bit `LONG` (0 without a
+/// host, whose frame clock stands still).
+pub fn frclock() -> u32 {
+    crate::host::host().map_or(0, |h| h.frame_clock().wrapping_sub(FRAME_BASE.load(Ordering::Relaxed)) as u32)
+}
+
+/// Is the `_vblsem` cell of page 0 `page0` at or below 0? A signed WORD,
+/// compared with 0 only, as the EmuTOS VBL tests the sign after its
+/// `subq.w #1` (`references/emutos/bios/vectors.S:338-339`).
+///
+/// # Safety
+///
+/// `page0` is the kernel alias of a slot's 4-KiB page 0.
+unsafe fn vblsem_down(page0: *const u8) -> bool {
+    // SAFETY: caller's contract; `$452 + 2` lies inside the page.
+    let v = unsafe { page0.add(VBLSEM_ADDR).cast::<i16>().read_unaligned() };
+    v <= 0
+}
+
+/// Account `slot`'s frames up to `fc` and write its two counters into its
+/// page 0 `page0`. With `charge` the frames since [`ACCT_FC`] count as lost
+/// when the process's `_vblsem` is down; without it (a switch-in) they are
+/// the time the process was away and count for nothing.
+///
+/// # Safety
+///
+/// `page0` is the kernel alias of `slot`'s 4-KiB page 0.
+unsafe fn write_frames(slot: usize, page0: *mut u8, fc: u32, charge: bool) {
+    let Some(lost) = VBL_LOST.get(slot) else {
+        return;
+    };
+    // SAFETY: caller's contract.
+    if charge && unsafe { vblsem_down(page0) } {
+        let since = fc.wrapping_sub(ACCT_FC.load(Ordering::Relaxed));
+        lost.fetch_add(since, Ordering::Relaxed);
+    }
+    ACCT_FC.store(fc, Ordering::Relaxed);
+    let vbclock = fc.wrapping_sub(lost.load(Ordering::Relaxed));
+    // SAFETY: caller's contract; `$462..$46A` lies inside the page (2 mod 4,
+    // unaligned stores as for `_hz_200`).
+    unsafe {
+        page0.add(FRCLOCK_ADDR).cast::<u32>().write_unaligned(fc);
+        page0.add(VBCLOCK_ADDR).cast::<u32>().write_unaligned(vbclock);
+    }
+}
+
+/// Publish `_frclock` and `_vbclock` into the running process's page 0,
+/// charging the frames since the last publish to its `_vblsem` (spec section
+/// 6, consequence 2). Nothing when no process runs. Called by the timer
+/// interrupt ([`advance`]) and by `Vsync` before it returns (spec section 5
+/// rule 3); interrupt-context clean.
+pub fn publish_frames_running() {
+    let Some(slot) = crate::bdos::process::slot_for(crate::bdos::process::current()) else {
+        return;
+    };
+    let Some(page0) = crate::bdos::process::mmu::page0_kva(slot) else {
+        return;
+    };
+    // SAFETY: the running slot's static page 0 (see `publish`).
+    unsafe { write_frames(slot, page0, frclock(), true) };
+}
+
+/// The counters at a change of the running process (`process::set_current`):
+/// `old` (the slot leaving the CPU, if any and if it is not `new`) is
+/// accounted up to now, then `new` (the slot getting it, if any) is refreshed
+/// without charging the frames it spent away (spec section 5 rule 2, section
+/// 6 consequence 2). With `old == new` it is an ordinary publish.
+pub fn switch_frames(old: Option<usize>, new: Option<usize>) {
+    use crate::bdos::process::mmu::page0_kva;
+    let fc = frclock();
+    if let Some(o) = old {
+        if let Some(page0) = page0_kva(o) {
+            // SAFETY: `o`'s static page 0.
+            unsafe { write_frames(o, page0, fc, true) };
+        }
+    }
+    if let Some(n) = new.filter(|&n| Some(n) != old) {
+        if let Some(page0) = page0_kva(n) {
+            // SAFETY: `n`'s static page 0.
+            unsafe { write_frames(n, page0, fc, false) };
+        }
+    }
+}
+
+/// Is the running process's `_vblsem` at or below 0? Then the frame work of
+/// the EmuTOS VBL body is skipped for this frame: `_vbclock` does not count
+/// and the kernel's mouse draw (`vb_draw`) does not run (decision Q2 (b),
+/// ADR-031 amendment of 2026-11-20 item 4, `docs/api/_super-state.md` S10).
+/// `false` when no process runs (EL1): the gate does not apply.
+/// Interrupt-context clean (one page-0 read).
+pub fn vbl_semaphore_down() -> bool {
+    match crate::bdos::process::current_page0_kva() {
+        // SAFETY: the running slot's static page 0.
+        Some(page0) => unsafe { vblsem_down(page0) },
+        None => false,
     }
 }

@@ -35,7 +35,9 @@ there are **82 variables** in the oracle build, 83 with `_warm_magic`.
 | **free** | EmuTOS-private state with no meaning outside EmuTOS' own code (`docs/COMPATIBILITY.md` audit rubric item 2: "mark it free"). Not a class the ticket named; it holds the three rows that would otherwise be false "missing" entries |
 | n/a | not a variable (`sysvars_start`) or not in the oracle build (`_warm_magic`) |
 
-Counts: **served 37, hardware 25, missing 17, free 3, n/a 2** (= 84).
+Counts: **served 51, hardware 23, missing 5, free 3, n/a 2** (= 84). At BIOS19: served 37, hardware 25,
+missing 17; TASK/BIOS20 serves twelve "missing" rows and the "hardware" rows `_vblqueue` and `_dump_vec`
+(`docs/api/bios/_sysvars-counters-contract.md` section 17).
 
 ## 3. NewTOS writers (all that exist)
 
@@ -62,16 +64,26 @@ Page 0 of every process is the NewTOS stand-in for the `$000-$7FF` area
 7. `write_cookie_jar` / `refresh_cookie_mirrors` (`loader.rs:1347@write_cookie_jar`,
    `:1409@refresh_cookie_mirrors`): the jar array behind `_p_cookies`, not a
    `tosvars.ld` variable.
+8. Since TASK/BIOS20 (`docs/api/bios/_sysvars-counters-contract.md` section 17):
+   `write_frames` (`tos-api/src/bios/tick.rs:225@write_frames`) writes `_frclock`
+   and `_vbclock` into the running process's page from the timer interrupt
+   (`publish`), from `Vsync` (`tos-api/src/xbios/system.rs:39@publish_frames_running`)
+   and, through `switch_frames` (`tos-api/src/bios/tick.rs:265@switch_frames`), into
+   the process `set_current` makes current (`tos-api/src/bdos/process.rs:977@set_current`);
+   `write_v_bas_ad` (`tos-api/src/xbios/screen.rs:576@write_v_bas_ad`) refreshes
+   `_v_bas_ad` from `set_current` and from the process's own `Setscreen`.
 
 **Readers/watchers, not writers:** `PAGE0_HOOKS`
-(`tos-api/src/bdos/process/hooks.rs:283@PAGE0_HOOKS`, 10 cells) only compares
-and warns (ADR-031 rule 4); `current_conterm`
-(`tos-api/src/bios/chardev.rs:484@current_conterm`) reads `_conterm`.
+(`tos-api/src/bdos/process/hooks.rs:283@PAGE0_HOOKS` with `:810@page0_hook_cells`, 17 cells since
+BIOS20: the eight `_vbl_list` slots replace `$456`) only compares and warns (ADR-031 rule 4); `current_conterm`
+(`tos-api/src/bios/chardev.rs:484@current_conterm`) reads `_conterm`; since BIOS20 the
+`_vbclock` accounting and the frame tick's `vb_draw` gate read `_vblsem`
+(`tos-api/src/bios/tick.rs:288@vbl_semaphore_down`; `docs/api/_super-state.md` S10).
 
 **Searched for timer, VBL and console writers:** there is none beyond the list.
-The timer writes only `_hz_200` (4). There is no VBL interrupt; the frame
+The timer wrote only `_hz_200` (4) at BIOS19; since BIOS20 also the frame counters (8). There is no VBL interrupt; the frame
 work (`kernel/src/vbl.rs`) runs `vb_draw` on a derived ~60 Hz frame clock and
-touches no page-0 cell. The console code reads `conterm`, writes nothing.
+writes no page-0 cell (since BIOS20 it reads `_vblsem`). The console code reads `conterm`, writes nothing.
 A program may also write a cell itself in the super state
 (`docs/api/_super-state.md` S2); that is not a kernel writer.
 
@@ -107,31 +119,31 @@ from the older table.
 | `0x43A` | `_memval2` | L | `bios/memory.S:585`; read `:129,137` | `tos-api/src/bdos/process/loader.rs:1218@MEMVAL2_MAGIC` | **served** | Static; kernel reset compares it (S10). |
 | `0x43E` | `_flock` | W | `bios/acsi.c:369,377`, `bios/clock.c:168,187`, `bios/scsi.c:1246,1285`, `bios/floppy.c:1292,1329`; read `bios/floppy.c:1347` | none | **hardware** | Locks the VBL floppy routine against ACSI/SCSI/RTC I/O; no floppy, no ACSI (ADR-012 `_FDC` absent, `docs/COMPATIBILITY.md:1662`; floppy group `:1935`). 0 = EmuTOS rest value. |
 | `0x440` | `_seekrate` | W | `bios/floppy.c:309` (`DD_STEPRATE_3MS` = 3, `:79`); read `:294` | none | **hardware** | Floppy step rate; no floppy (`docs/COMPATIBILITY.md:1935`). NewTOS reads 0, EmuTOS 3. |
-| `0x442` | `_timer_ms` | W | `bios/mfp.c:196` (= 20); read `bios/vectors.S:541` | none | **missing** | Value 20 is what `Tickcal` answers on NewTOS (`tos-api/src/bios/mod.rs:95@TICKCAL_MS`); the cell reads 0. |
+| `0x442` | `_timer_ms` | W | `bios/mfp.c:196` (= 20); read `bios/vectors.S:541` | `tos-api/src/bdos/process/loader.rs:2255@TICKCAL_MS` | **served** | Static, 20, the value `Tickcal` answers (`tos-api/src/bios/mod.rs:95@TICKCAL_MS`). Served since BIOS20 (`docs/api/bios/_sysvars-counters-contract.md` section 17). |
 | `0x444` | `_fverify` | W | `bios/floppy.c:308` (= 0xff); read `:1200` | none | **hardware** | Floppy write verify; no floppy (`docs/COMPATIBILITY.md:1935`). NewTOS reads 0, EmuTOS 0xFF. |
 | `0x446` | `_bootdev` | W | `bios/bios.c:611,799,810`, `bios/blkdev.c:232`; read `bios/bios.c:827` | `tos-api/src/bdos/process/loader.rs:1234@bootdev` | **served** | Static (`tos-api/src/bdos/fs/drive.rs:55@boot_drive`). Read by `sdk/overlays/xgdos/xos_newtos.c:87@bootdev_s`, `sdk/apps/hypview/init.c:47@_bootdev`. |
 | `0x448` | `_palmode` | W | none (`bios/screen.c:607` is a local BOOL, not this cell) | none (page 0 zeroed, `tos-api/src/bdos/process/loader.rs:671@fill`) | **served** | 0 on both sides; no EmuTOS code touches it beyond the boot clear. |
 | `0x44A` | `_defshiftmod` | B | none; read `bios/screen.c:1302` | none (zero page) | **served** | 0 on both sides (EmuTOS never writes it). |
 | `0x44C` | `_sshiftmod` | B | `bios/screen.c:564,580,1327`, `bios/videl.c:651`; read `bios/screen.c:791,852,1082` | none | **hardware** | Copy of the Shifter mode register `$FFFF8260` (`tosvars.ld:54`); no Shifter, resolution comes from `config.txt` (ADR-017 Revision 2). NewTOS reads 0 (= ST low) at any real resolution. |
-| `0x44E` | `_v_bas_ad` | L | `bios/screen.c:656,1107,1139`, `bios/vectors.S:396`, `bios/nova.c:725`; read `bios/conout.c:126,507,712,739`, `bios/vt52.c:930`, the VDI (`vdi/vdi_raster.c:927,942`, `vdi/vdi_misc.c:172`, `vdi/vdi_control.c:618`, `vdi/vdi_fill.c:1175,1187`, `vdi/vdi_textblit.c:1033,1226`, `vdi/vdi_inline.h:16`), `bios/screen.c:1073` (`Logbase`) | none | **missing** | Software variable (logical screen base), the framebuffer exists. Classic idiom `*(LONG*)0x44E`; `Logbase()` answers it on NewTOS. Named in `docs/COMPATIBILITY.md:46`. |
-| `0x452` | `_vblsem` | W | `bios/bios.c:553`, `bios/screen.c:501,1158,1163`, `bios/vectors.S:336,486,489` | none | **missing** | EmuTOS boot value 1; NewTOS has no VBL interrupt (`docs/COMPATIBILITY.md:1410`). |
-| `0x454` | `_nvbls` | W | `bios/bios.c:366` (= 8); read `bios/vectors.S:440` | none | **missing** | EmuTOS 8; NewTOS 0 today. Decided (BIOS20, `_sysvars-counters-contract.md` section 17, Q3): 8, with `_vblqueue` pointing at eight empty slots in page 0. |
-| `0x456` | `_vblqueue` | L | `bios/bios.c:367`, `vdi/vdi_mouse.c:602,631` (slot 0); read `bios/vectors.S:447` | none; watched `tos-api/src/bdos/process/hooks.rs:285@Vblqueue` (default 0) | **hardware** | ADR-031 row "`dump_vec`, `swv_vec`, `exec_os`, `resvector`/`resvalid`, `vblqueue`": not served, warning. NewTOS has no VBL. Decided (BIOS20, ADR-031 amendment 2026-11-20 item 3, `_sysvars-counters-contract.md` Q3): the cell holds `$4CE`, the eight slots stay empty, never called; the watcher looks at the slots. |
+| `0x44E` | `_v_bas_ad` | L | `bios/screen.c:656,1107,1139`, `bios/vectors.S:396`, `bios/nova.c:725`; read `bios/conout.c:126,507,712,739`, `bios/vt52.c:930`, the VDI (`vdi/vdi_raster.c:927,942`, `vdi/vdi_misc.c:172`, `vdi/vdi_control.c:618`, `vdi/vdi_fill.c:1175,1187`, `vdi/vdi_textblit.c:1033,1226`, `vdi/vdi_inline.h:16`), `bios/screen.c:1073` (`Logbase`) | `tos-api/src/bdos/process/loader.rs:2261@V_BAS_AD_ADDR` at load; refreshed by `tos-api/src/xbios/screen.rs:576@write_v_bas_ad` from `set_current` (`tos-api/src/bdos/process.rs:977@set_current`) and the process's own `Setscreen` (`tos-api/src/xbios/screen.rs:590@set_logical`) | **served** | The address `Logbase` answers the process (`tos-api/src/xbios/screen.rs:567@v_bas_ad_value`). Since BIOS20 (decision Q4 (a)): not mapped until the process calls `Logbase`/`Physbase`, so a dereference before that is a bus error; a program's write changes only its own copy, not the draw target (`docs/api/bios/_sysvars-counters-contract.md` section 8; `docs/DEVIATIONS.md`). No screen at load: 0. |
+| `0x452` | `_vblsem` | W | `bios/bios.c:553`, `bios/screen.c:501,1158,1163`, `bios/vectors.S:336,486,489` | `tos-api/src/bdos/process/loader.rs:2268@VBLSEM_ADDR` (1) | **served** | Boot value 1 (`bios/bios.c:553`). Read by the kernel as an input (`docs/api/_super-state.md` S10): at or below 0 `_vbclock` stops and the mouse draw is skipped (`tos-api/src/bios/tick.rs:288@vbl_semaphore_down`, `kernel/src/vbl.rs:138@vbl_semaphore_down`). Served since BIOS20 (decisions Q1 (c), Q2 (b)). |
+| `0x454` | `_nvbls` | W | `bios/bios.c:366` (= 8); read `bios/vectors.S:440` | `tos-api/src/bdos/process/loader.rs:2269@VBL_LIST_SLOTS` (8) | **served** | Static, 8, as EmuTOS. Served since BIOS20 (`docs/api/bios/_sysvars-counters-contract.md` section 17, Q3). |
+| `0x456` | `_vblqueue` | L | `bios/bios.c:367`, `vdi/vdi_mouse.c:602,631` (slot 0); read `bios/vectors.S:447` | `tos-api/src/bdos/process/loader.rs:2270@VBL_LIST_ADDR` (`$4CE`); the slots watched by `tos-api/src/bdos/process/hooks.rs:285@VBL_SLOT0` and `:796@VBL_SLOT_HOOKS` | **served** | Holds `$4CE` as EmuTOS (served as a cell); the routines a program enters in the slots are never called and warn (ADR-031 amendment 2026-11-20 item 3). The cell itself is no longer compared. Served since BIOS20. |
 | `0x45A` | `_colorptr` | L | `bios/screen.c:1182`, `bios/videl.c:836,854`, cleared `bios/vectors.S:370`; read `:367` | none | **hardware** | Palette to load into the Shifter at the next VBL; no Shifter palette registers, no VBL (CLAUDE.md non-goal; `docs/COMPATIBILITY.md:1410`). |
 | `0x45E` | `_screenpt` | L | none; read `bios/vectors.S:394,424` (VBL base-address load) | none (zero page) | **served** | 0 on both sides: EmuTOS never writes it, and `bios/vectors.S:395` skips the load when it is 0. |
-| `0x462` | `_vbclock` | L | `bios/vectors.S:348` (VBL); no C reader | none | **missing** | VBL-executed counter. NewTOS has no VBL interrupt (`docs/COMPATIBILITY.md:1410`) and nothing mirrors a count into `$462`. **Corrects `docs/api/bios/_boot-init.md` section 7c ("keins gefunden").** |
-| `0x466` | `_frclock` | L | `bios/vectors.S:330` (VBL); read `bios/screen.c:1217-1218` (`Vsync`), `bios/floppy.c:1351,1359` | none | **missing** | Free-running frame counter; stays 0 on NewTOS, so a program that waits for it to change never leaves its loop. A derived ~60 Hz frame clock exists (`kernel/src/host_env.rs:262@frame_clock`; `Vsync` spins on it, `tos-api/src/xbios/system.rs:35@frame_clock`) but is not mirrored into `$466`. |
-| `0x46A` | `_hdv_init` | L | `bios/blkdev.c:98` (= `flop_hdv_init`); never called (`:97`) | none | **missing** | Never called by EmuTOS either (ADR-031 rule 1: no warning). NewTOS reads 0. |
+| `0x462` | `_vbclock` | L | `bios/vectors.S:348` (VBL); no C reader | seed `tos-api/src/bdos/process/loader.rs:2277@VBCLOCK_ADDR`; live `tos-api/src/bios/tick.rs:225@write_frames` from the timer interrupt (`tos-api/src/bios/tick.rs:108@publish`), `Vsync` (`tos-api/src/xbios/system.rs:39@publish_frames_running`) and `set_current` (`tos-api/src/bios/tick.rs:265@switch_frames`) | **served** | `_frclock` minus the frames the process ran with its `_vblsem` at or below 0 (decision Q1 (c)); per process, live for the running process as `_hz_200`. Starts at 0 at boot (C1). Served since BIOS20 (`docs/api/bios/_sysvars-counters-contract.md` sections 5, 6). |
+| `0x466` | `_frclock` | L | `bios/vectors.S:330` (VBL); read `bios/screen.c:1217-1218` (`Vsync`), `bios/floppy.c:1351,1359` | as `_vbclock`: seed `tos-api/src/bdos/process/loader.rs:2276@FRCLOCK_ADDR`; live `tos-api/src/bios/tick.rs:225@write_frames` | **served** | The ~60 Hz frame clock `Vsync` waits on, counted from the boot frame (`tos-api/src/bios/tick.rs:200@frclock`, decision C1); `Vsync` publishes it before it returns. A program polling it without `Vsync` sees a frame boundary up to 5 ms late (`docs/DEVIATIONS.md`). Served since BIOS20. |
+| `0x46A` | `_hdv_init` | L | `bios/blkdev.c:98` (= `flop_hdv_init`); never called (`:97`) | `tos-api/src/bdos/process/loader.rs:2249@wr_long` (the `ret` stub) | **served** | The `ret` stub (ADR-031 amendment 2026-11-20 item 1); never called (EmuTOS neither, `bios/blkdev.c:96-97`), no watcher. EmuTOS value: `flop_hdv_init`. Served since BIOS20. |
 | `0x46E` | `_swv_vec` | L | `bios/bios.c:363,552`; called `bios/screen.c:1329` | `tos-api/src/bdos/process/loader.rs:1242@RESET_ENTRY_VA` | **served** | Static (`reseth`); never called (ADR-031). Measured, `measurements/measurement-2026-10-30-bios16/RUNINFO.TXT` V01. |
 | `0x472` | `_hdv_bpb` | L | `bios/blkdev.c:101`; called `bios/bios.c:1122` | none; watched `tos-api/src/bdos/process/hooks.rs:290@HdvBpb` (default 0) | **hardware** | ADR-031 row "`hdv_*` floppy use": not served, warning; no floppy/DMA. NewTOS reads 0. |
 | `0x476` | `_hdv_rw` | L | `bios/blkdev.c:102`; called `bios/bios.c:1047` | none; watched `tos-api/src/bdos/process/hooks.rs:291@HdvRw` (default 0) | **hardware** | As `_hdv_bpb`. |
-| `0x47A` | `_hdv_boot` | L | `bios/blkdev.c:95`; never called | none | **missing** | Never called by EmuTOS (ADR-031 rule 1). **Corrects `_boot-init.md` section 7c ("boot-abhaengig gesetzt").** |
+| `0x47A` | `_hdv_boot` | L | `bios/blkdev.c:95`; never called | `tos-api/src/bdos/process/loader.rs:2252@HDV_BOOT_STUB_VA`; the stub `tos-api/src/xbios/kbdvecs.rs:488@HDV_BOOT_STUB_VA` | **served** | A stub that returns 4, "not a valid boot sector" (`bios/blkdev.c:284-285`; `docs/api/bios/_sysvars-counters-contract.md` section 10, Q8); never called, no watcher. Served since BIOS20. |
 | `0x47E` | `_hdv_mediach` | L | `bios/blkdev.c:103`; called `bios/bios.c:1186` | none; watched `tos-api/src/bdos/process/hooks.rs:292@HdvMediach` (default 0) | **hardware** | As `_hdv_bpb`; TeraDesk `force_mediach` writes it (`sdk/overlays/teradesk/file.c:28-36@hdv_mediach`). |
 | `0x482` | `_cmdload` | W | none; read `bios/bios.c:850` | `tos-api/src/bdos/process/loader.rs:1246@wr_word` (0) | **served** | 0 on both sides. |
 | `0x484` | `_conterm` | B | `bios/ikbd.c:1100` (= 7); read `bios/ikbd.c:279,475,495`, `bios/vt52.c:215` | `tos-api/src/bdos/process/loader.rs:1253@CONTERM_DEFAULT`; read per process `tos-api/src/bios/chardev.rs:484@current_conterm` | **served** | Live: the kernel reads the cell, bits 0-3 only (`docs/api/_super-state.md` S10). Read by `sdk/examples/p0kid.c:103@conterm`. |
 | `0x486` | `trp14ret` | L | none | none (zero page) | **served** | Unused on EmuTOS (`tosvars.ld:71`); 0 on both sides. |
 | `0x48A` | `criticret` | L | none | none (zero page) | **served** | No EmuTOS reference; 0 on both sides. |
-| `0x48E` | `_themd` | 16B | `bios/biosmem.c:144-147` (inside `Getmpb`); handed out as `mp_mfl` `:149`; afterwards live BDOS state (head of `pmd.mp_mfl`, split by `bdos/iumem.c:100-135`) | none | **missing** | NewTOS `Getmpb` answers a kernel `THEMD`, not `$48E` (`docs/api/bios/00-getmpb.md` V1); a direct read of `$48E` sees zeroes. Low impact (no in-repo reader). |
+| `0x48E` | `_themd` | 16B | `bios/biosmem.c:144-147` (inside `Getmpb`); handed out as `mp_mfl` `:149`; afterwards live BDOS state (head of `pmd.mp_mfl`, split by `bdos/iumem.c:100-135`) | `tos-api/src/bdos/process/loader.rs:2283@wr_long` (four LONGs) | **served** | The 16-byte m68k `MD` with the extent at load: `{0, membot, memtop - membot, 0}` (decision Q5 (b)). Measured on the oracle as a running program reads it (probe C12, `measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT`): tt the same field classes (link 0, start `membot`, length `memtop - membot`, owner 0), falcontc a length other than `memtop - membot`; the inference "the first allocated block" (`docs/api/bios/_sysvars-counters-contract.md` section 11) is not what the run measured. `Getmpb` keeps its own 32-byte LP64 answer (`docs/api/bios/00-getmpb.md` V1). Served since BIOS20. |
 | `0x49E` | `____md` | 4B | none | none (zero page) | **served** | No EmuTOS reference; 0 on both sides. |
 | `0x4A2` | `_savptr` | L | `bios/bios.c:359`, `bios/kprint.c:587`, `bios/vectors.S:1317,1356`; read `:1283,1335` | none | **hardware** | Register-save stack of the m68k BIOS/XBIOS trampoline; NewTOS dispatches by SVC (`docs/api/bios/_dispatcher.md:167`; ADR-031 row on m68k vectors). |
 | `0x4A6` | `_nflops` | W | `bios/floppy.c:319,386`; read `:1343,1358` | none | **hardware** | 0 floppies is the true answer of a machine without floppy controller (ADR-012 `_FDC` absent, `docs/COMPATIBILITY.md:1662`; `:1935`). EmuTOS on a floppy-less machine also computes 0 (`bios/floppy.c:319,386`, inferred). |
@@ -142,20 +154,20 @@ from the older table.
 | `0x4BA` | `_hz_200` | L | `bios/vectors.S:503` (Timer C); read by many | `tos-api/src/bdos/process/loader.rs:1262@HZ_200_ADDR` seed; live `tos-api/src/bios/tick.rs:108@publish`, called from `kernel/src/drivers/timer.rs:171@advance` | **served** | Live for the **running** process only (`tos-api/src/bios/tick.rs:125@write_unaligned`); a suspended process sees its last value. Read by Doom (`sdk/apps/doom/doomgeneric_gem.c:675@_hz_200`), PRESENT, `sdk/examples/fsbench.c:82@_hz_200`. |
 | `0x4BE` | `the_env` | L | none | none (zero page) | **served** | EmuTOS keeps its environment in a private static (`bios/bios.c:80`); 0 on both sides. |
 | `0x4C2` | `_drvbits` | L | `bios/blkdev.c:175,392`, `bios/floppy.c:387`; read `bios/blkdev.c:835`, `aes/gemfslib.c:699`, `bios/initinfo.c:230` | `tos-api/src/bdos/process/loader.rs:1264@drvbits` | **served** | Static (snapshot at load); `Drvmap` answers the live value (`tos-api/src/bios/drive.rs:188@drvbits`). Read by `sdk/apps/apitest/apitest.c:936@drvbits`. Not refreshed after load (no writer found). |
-| `0x4C6` | `_dskbufp` | L | `bios/blkdev.c:91`; read `bios/acsi.c:156-670`, `bios/floppy.c:352`, `bios/scsi.c:387`, `bios/scsidriv.c:314`, `bios/ide.c:1379`, `bios/disk.c:162-215`, `bios/blkdev.c:266-309,626-638,766`, `bios/clock.c:1087-1125` | none | **missing** | Disk buffer pointer (3072 bytes in low ST-RAM, `bios/lowstram.c`); readers are the disk drivers, the boot-sector execution and the BPB scan, the RTC code (corrected in BIOS20: not "ACSI/floppy only"). Low impact; no ADR names it (ADR-032 covers XHDI/SCSI API only). |
+| `0x4C6` | `_dskbufp` | L | `bios/blkdev.c:91`; read `bios/acsi.c:156-670`, `bios/floppy.c:352`, `bios/scsi.c:387`, `bios/scsidriv.c:314`, `bios/ide.c:1379`, `bios/disk.c:162-215`, `bios/blkdev.c:266-309,626-638,766`, `bios/clock.c:1087-1125` | `tos-api/src/bdos/process/loader.rs:2289@DSKBUF_VA` | **served** | Points at a 3072-byte buffer in the process's private read-write page (`tos-api/src/bdos/process/loader.rs:2212@DSKBUF_VA`, `0x7F400`; decision Q6 (b)), zeroed at load; no NewTOS code reads or writes it. Readers on EmuTOS are the disk drivers, the boot-sector execution and the BPB scan, the RTC code (corrected in BIOS20: not "ACSI/floppy only"). Served since BIOS20. |
 | `0x4CA` | `_autopath` | L | none | none (zero page) | **served** | EmuTOS iterates `AUTO` itself (`bios/bios.c:846`); 0 on both sides. |
-| `0x4CE` | `_vbl_list` | 8L | `bios/bios.c:371` (NULL); `vdi/vdi_mouse.c:602,631` (slot 0 = `vb_draw`) | none | **hardware** | The queue behind `_vblqueue` (ADR-031 row, no VBL). Slots 1-7 equal (NULL); slot 0 is the VDI mouse draw routine on EmuTOS. |
+| `0x4CE` | `_vbl_list` | 8L | `bios/bios.c:371` (NULL); `vdi/vdi_mouse.c:602,631` (slot 0 = `vb_draw`) | none (page-0 zero fill, `tos-api/src/bdos/process/loader.rs:671@fill`); the eight slots watched by `tos-api/src/bdos/process/hooks.rs:285@VBL_SLOT0` | **hardware** | The queue behind `_vblqueue` (ADR-031, no VBL). Since BIOS20 `_vblqueue` points here and all eight slots read 0 at load; slot 0 is the VDI mouse draw routine on EmuTOS, NewTOS's `vb_draw` is kernel code. A routine a program enters is never called and warns (ADR-031 amendment 2026-11-20 item 3). |
 | `0x4EE` | `_dumpflg` | W | `bios/bios.c:357` (-1), `bios/xbios.c:493`, `bios/ikbd.c:596` (`++`), `bios/vectors.S:472`; read `:467` | `tos-api/src/bdos/process/loader.rs:1257@DUMPFLG_ADDR`; `tos-api/src/xbios/system.rs:65@write_unaligned` (`Scrdmp`) | **served** | Boot value -1 and `Scrdmp` as EmuTOS; Alt+Help does not increment it (`docs/DEVIATIONS.md`, KEYS05). |
 | `0x4F0` | `_prtabt` | W | none | none (zero page) | **served** | No EmuTOS reference; 0 on both sides. |
 | `0x4F2` | `_sysbase` | L | `bios/bios.c:358` | `tos-api/src/bdos/process/loader.rs:1268@OSHEADER_VA` | **served** | Static; read by TeraDesk, Doom, apitest (`sdk/overlays/teradesk/library/utility/gettos.c:31@_shell_p`). |
 | `0x4F6` | `_shell_p` | L | none | none (zero page) | **served** | 0 on both sides (`sdk/overlays/teradesk/library/utility/gettos.c:31@_shell_p` reads the neighbour). |
 | `0x4FA` | `_end_os` | L | `bios/biosmem.c:66,125` | `tos-api/src/bdos/process/loader.rs:1274@stram_start` | **served** | Static; EmuTOS moves it with `membot` (`biosmem.c:125`). |
 | `0x4FE` | `_exec_os` | L | `bios/bios.c:534`; read `:856-863` | none; watched `tos-api/src/bdos/process/hooks.rs:293@ExecOs` (default 0) | **hardware** | ADR-031 row (not served, warning): the AES entry has no EL0 value (`loader.rs` os_magic note). |
-| `0x502` | `_dump_vec` | L | `bios/chardev.c:84` (`just_rts`); called `bios/xbios.c:492`, `bios/vectors.S:469` | none; watched `tos-api/src/bdos/process/hooks.rs:294@DumpVec` (default 0) | **hardware** | ADR-031 row (not served). **Value 0 today, not the `just_rts` stub.** Decided (BIOS20, ADR-031 amendment 2026-11-20 items 1-2): the stub, and the watcher compares against it. |
+| `0x502` | `_dump_vec` | L | `bios/chardev.c:84` (`just_rts`); called `bios/xbios.c:492`, `bios/vectors.S:469` | `tos-api/src/bdos/process/loader.rs:2244@wr_long` (the `ret` stub); watched `tos-api/src/bdos/process/hooks.rs:294@DumpVec` (default the stub) | **served** | Holds the `ret` stub like EmuTOS `just_rts` (served as a cell); never called, `Scrdmp` included (ADR-031 amendment 2026-11-20 items 1-2: the warning fires when it differs from the stub). Served since BIOS20. |
 | `0x506` | `_prt_stat` | L | `bios/chardev.c:82` | `tos-api/src/bdos/process/loader.rs:1303@RET_STUB_VA` | **served** | Stub like EmuTOS `just_rts` (ADR-031 row `prt_stat`, `prt_vec`). |
 | `0x50A` | `_prt_vec` | L | `bios/chardev.c:83` | `tos-api/src/bdos/process/loader.rs:1304@RET_STUB_VA` | **served** | As `_prt_stat`. |
-| `0x50E` | `_aux_stat` | L | `bios/chardev.c:78` | none | **missing** | EmuTOS `just_rts`, NewTOS 0 today. Decided (BIOS20, ADR-031 amendment 2026-11-20 item 1): the stub; still no watcher (`tos-api/src/bdos/process/hooks.rs:755@silent`). |
-| `0x512` | `_aux_vec` | L | `bios/chardev.c:79` | none | **missing** | As `_aux_stat`. |
+| `0x50E` | `_aux_stat` | L | `bios/chardev.c:78` | `tos-api/src/bdos/process/loader.rs:2245@wr_long` (the `ret` stub) | **served** | The `ret` stub like EmuTOS `just_rts` (ADR-031 amendment 2026-11-20 item 1); never called, no watcher (`tos-api/src/bdos/process/hooks.rs:754@page0_hooks_are_not_the_cells_emutos_never_calls`). Served since BIOS20. |
+| `0x512` | `_aux_vec` | L | `bios/chardev.c:79` | `tos-api/src/bdos/process/loader.rs:2246@wr_long` (the `ret` stub) | **served** | As `_aux_stat`. Served since BIOS20. |
 | `0x516` | `_pun_ptr` | L | `bios/blkdev.c:161`; read `bdos/fsbuf.c:61` | none | **missing** | AHDI marker; ADR-032 covers XHDI/SCSI, not this cell. A program probing AHDI via `$516` reads 0 = no AHDI (low impact). |
 | `0x51A` | `_memval3` | L | `bios/memory.S:586`; read `:132,139` | `tos-api/src/bdos/process/loader.rs:1219@MEMVAL3_MAGIC` | **served** | Static; kernel reset compares it (S10). |
 | `0x51E` | `_bconstat_vec` | 8L | `bios/chardev.c:69`, `bios/serport.c:998-1001,1114-1117`; called `bios/bios.c:932` | none; not watched in `PAGE0_HOOKS` | **missing** | EmuTOS dispatches `Bconstat` through this table, so a program that patches a slot redirects the device; NewTOS dispatches natively and neither reads nor warns about it (ADR-031 rule 1 names no such hook). |
@@ -173,7 +185,8 @@ from the older table.
 
 ## 5. The "missing" variables: who reads them
 
-17 rows. "EmuTOS reader" is read from the source (cites above); "program" is
+17 rows at BIOS19; since TASK/BIOS20 only `_pun_ptr` and the four `bcon*_vec` tables
+are still "missing" (the others are served, table above). "EmuTOS reader" is read from the source (cites above); "program" is
 the survey of section 7 (none found means none of the searched trees names it).
 
 | Variable | EmuTOS code that reads it | Program in the searched trees | Weight (inferred) |
@@ -214,14 +227,15 @@ the survey of section 7 (none found means none of the searched trees names it).
    (32 longs) are hooks EmuTOS calls through (`bios/bios.c:932,976,1009,1161`)
    and `PAGE0_HOOKS` (`tos-api/src/bdos/process/hooks.rs:283@PAGE0_HOOKS`) does
    not watch them; the ADR-031 table does not list them either.
-3. **ADR-031 stub asymmetry:** `prt_stat`/`prt_vec` hold the `ret` stub like
+3. **ADR-031 stub asymmetry** (resolved by TASK/BIOS20: the three hold the stub): `prt_stat`/`prt_vec` hold the `ret` stub like
    EmuTOS `just_rts`; `dump_vec` (`bios/chardev.c:84`) and `aux_stat`/`aux_vec`
    (`bios/chardev.c:78-79`) hold 0 although EmuTOS boots them with
    `just_rts`. A program that chains to the old value branches to address 0.
 4. **Zero where EmuTOS has a value, observable by a plain read:** `_nflops` 0,
    `_seekrate` 0 (EmuTOS 3), `_fverify` 0 (EmuTOS 0xFF), `_sshiftmod` 0,
    `_longframe` 0, `_vbclock`/`_frclock` 0, `_v_bas_ad` 0. The first three, the
-   shifter copy and `_longframe` are "hardware"; the rest "missing".
+   shifter copy and `_longframe` are "hardware"; the rest "missing" (served since
+   TASK/BIOS20).
 5. **`_hz_200` is per process and live only while the process runs** (writer
    4 above): a process that is switched out and back sees its old value until
    the next 200 Hz tick; `_drvbits` and `_bootdev` are snapshots of load time.

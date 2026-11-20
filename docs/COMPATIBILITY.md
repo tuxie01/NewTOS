@@ -1447,7 +1447,9 @@ IMRB 0x60; user decision 2026-10-29, `docs/api/xbios/0d-mfpint.md`);
 NewTOS never calls it: <reason> (ADR-031)` to the serial log. Where it is
 seen: in `Setexc` (`etv_timer`, `etv_critic`, vectors `< 0x100`); in page 0
 (`hdv_rw`/`hdv_bpb`/`hdv_mediach`, `swv_vec`, `exec_os`, `resvector`,
-`dump_vec`, `vblqueue`, `bell_hook`/`kcl_hook`, and `etv_*` or CPU vector
+`dump_vec` — compared with the `ret` stub it holds since TASK/BIOS20 —, a routine
+in one of the eight `vblqueue` slots `$4CE`-`$4EA` (the cell `$456` points at them
+since BIOS20 and is not compared), `bell_hook`/`kcl_hook`, and `etv_*` or CPU vector
 cells written directly — those compared with the shared `Setexc` cell they
 copy, and `$008`–`$407` then taken over as the cell, TASK/BIOS16, below),
 compared with the loader's value **before** (TASK/BIOS16) and **after
@@ -2165,6 +2167,47 @@ kind of caller:
   super state" above); reads work always.
 - **m68k binaries** (Phase 10 emulator) get the variables at their real
   addresses too: the emulator maps the low-memory region, so direct pokes work.
+
+Which variables are served, which are absent by decision and which are not
+provided yet is the per-variable table in `docs/api/bios/_sysvars-contract.md`
+(84 assignments of `tosvars.ld`: served 51, hardware/ADR 23, free 3, not
+provided 5, not variables 2); a program reading a variable of the "not provided"
+group sees 0. Where a served cell still differs from EmuTOS (owner decisions of
+2026-11-20, TASK/BIOS20, spec `docs/api/bios/_sysvars-counters-contract.md`
+sections 5-13; the triggers are rows of `docs/DEVIATIONS.md`):
+
+- **Per process.** Every process has its own page 0, so a write to a cell
+  (`_vblsem`, a `vblqueue` slot, `_v_bas_ad`) is seen by that process only, and
+  the live counters `_hz_200`, `_frclock`, `_vbclock` are written into the
+  running process's copy only: by the 200 Hz tick, by `Vsync` before it returns
+  and whenever a process gets the CPU. A program that polls `_frclock` without
+  `Vsync` sees a frame boundary up to 5 ms late. Both frame counters follow the
+  60 Hz frame clock `Vsync` waits on, on every board (owner decision C1), and
+  start at 0 at boot; EmuTOS counts the VBL of the video mode, measured on the
+  oracle 60.0 Hz on tt and about 50.5 Hz on falcontc (probe C09b,
+  `measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT`). `_vbclock` is
+  `_frclock` minus the frames the process ran with its `_vblsem` at or below 0
+  (a process that was away loses nothing), so it equals `_frclock` while
+  `_vblsem` stays 1, where EmuTOS has an offset from its boot.
+- **`_vblsem`** (`$452`) is a kernel input (`docs/api/_super-state.md` S10):
+  at or below 0 in the running process `_vbclock` stops and the kernel's mouse
+  draw (`vb_draw`) is skipped, as the EmuTOS VBL skips its body; NewTOS has no
+  other VBL work to stop.
+- **`_v_bas_ad`** (`$44E`) always holds the address `Logbase` answers, but the
+  screen is mapped into a process only when it calls `Logbase` or `Physbase`:
+  a dereference before that ends the program with a bus error. A write to the
+  cell does not move the draw target (`Setscreen` does).
+- **`_vblqueue`** (`$456`) points at eight slots that read 0, slot 0 included
+  (EmuTOS: `vb_draw` after the VDI is up); a routine a program enters there is
+  never called and warns once (ADR-031 amendment of 2026-11-20).
+- **`_themd`** (`$48E`) holds the first memory descriptor as `Getmpb` fills it
+  at load; read by a running program the oracle shows the same field classes
+  on tt, on falcontc a length other than `memtop - membot` (probe C12,
+  `measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT`); **`_dskbufp`** (`$4C6`) points at a
+  3072-byte buffer of the process's own, which no NewTOS code uses;
+  **`_hdv_init`**, **`_dump_vec`**, **`_aux_stat`**, **`_aux_vec`** hold the
+  `ret` stub and **`_hdv_boot`** a stub that returns 4; none is called.
+  **`_pun_ptr`** stays 0 (no AHDI table; TASK/BIOS18.md).
 
 **Corrected 2026-07-24 (B1):** an earlier version of this section claimed
 native code never uses raw low-memory addresses ("not via a raw `*(LONG*)0x4BA`")
