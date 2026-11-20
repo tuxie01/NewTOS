@@ -99,3 +99,12 @@ section 17 is restated as decided.
 The owner approved the amendment's wording ("ok"); it is in `docs/MEMORY.md` (ADR-031, "Amendment (2026-11-20")
 with the commit of this note. Left before the developer: the researcher adds `_vblsem` to rule S10 in
 `docs/api/_super-state.md` and restates section 17 of the spec file as decided.
+
+## Spec ready (2026-11-20)
+
+Third pass READY, landed with the commit before this note: `docs/api/bios/_sysvars-counters-contract.md` is the
+decided contract with a developer checklist and the tester's cases; rule S10 lists `_vblsem`. Two values the
+researcher fixed inside the owner's decisions, reported to the owner and changeable by one constant or one row:
+the `_hdv_boot` stub returns 4 (EmuTOS's `bootcheck` returns 2, 3 or 4, `references/emutos/bios/blkdev.c:277-285`;
+4 is "not a valid boot sector"), and the `vblqueue` watcher compares the eight slots, no longer the cell `$456`.
+`_dskbufp` is `0x7F400` in the private read-write page.
