@@ -123,9 +123,13 @@ report names the area "system variables (page 0)".
 
 **S10 — the kernel reads page 0 only as input it documents, validated.**
 Everything else there is output (written by the loader or the kernel, never
-read back): `conterm` (`0x484`, bits 0-3 only, the rest ignored), and for the
-reset entry `memvalid`/`memval2`/`memval3` (`0x420`/`0x43A`/`0x51A`, exact
-32-bit magic compare). The `kbdvec`/`ikbdsys` slots and the `G_USERDEF`
+read back): `conterm` (`0x484`, bits 0-3 only, the rest ignored), `_vblsem`
+(`0x452`, a signed WORD, compared with 0 only: at or below 0 stops the
+`_vbclock` accounting and the kernel's mouse draw `vb_draw`, as the EmuTOS VBL
+skips its body, `references/emutos/bios/vectors.S:338-339`; ADR-031 amendment
+of 2026-11-20, item 4, `docs/MEMORY.md`; BIOS20), and for the reset entry
+`memvalid`/`memval2`/`memval3` (`0x420`/`0x43A`/`0x51A`, exact 32-bit magic
+compare). The `kbdvec`/`ikbdsys` slots and the `G_USERDEF`
 result move off page 0 (MEM12 E2). `Setexc(n < 0x200, v)` keeps reading and
 writing the cell through the kernel, in either state (MEM12 E5: the TOS API
 path, EmuTOS allows it).

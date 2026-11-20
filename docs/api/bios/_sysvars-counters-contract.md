@@ -1,20 +1,25 @@
 # System variables `_timer_ms`, `_v_bas_ad`, `_vblsem`, `_nvbls`, `_vbclock`, `_frclock`, `_hdv_init`, `_hdv_boot`, `_themd`, `_dskbufp`, `dump_vec`, `aux_stat`, `aux_vec`, `_pun_ptr`: contract [BIOS20]
 
-> Researcher output for TASK/BIOS20: first pass (work item 1, the six cells
-> `dump_vec`, `aux_stat`, `aux_vec`, `_frclock`, `_vbclock`, `_timer_ms`, landed
-> as `567d3b9b4`) and second pass (the eight cells the owner added on
-> 2026-11-20: `_v_bas_ad`, `_vblsem`, `_nvbls`, `_hdv_init`, `_hdv_boot`,
-> `_themd`, `_dskbufp`, `_pun_ptr`). File beside
-> `docs/api/bios/_sysvars-contract.md` (the 84-row table; its rows for these
-> cells say "missing"/"hardware" and are right for main, except two rows
-> corrected in the second pass, section 16; the developer moves the rest to
-> "served"). Source: EmuTOS `1a7484ab` (`references/emutos`); oracle values from
+> Researcher output for TASK/BIOS20: first pass (the six cells `dump_vec`,
+> `aux_stat`, `aux_vec`, `_frclock`, `_vbclock`, `_timer_ms`, landed as
+> `567d3b9b4`), second pass (the eight cells the owner added on 2026-11-20:
+> `_v_bas_ad`, `_vblsem`, `_nvbls`, `_hdv_init`, `_hdv_boot`, `_themd`,
+> `_dskbufp`, `_pun_ptr`, landed as `a2cd6a7a7`) and **third pass: the spec
+> restated as the owner decided it** (questions Q1 to Q8 answered on
+> 2026-11-20, ADR-031 amended the same day; TASK/BIOS20.md, sections "Spec gate
+> and owner decisions", "Second spec pass and owner answers", "ADR-031
+> amended"). Thirteen cells are served; `_pun_ptr` leaves this ticket and stays
+> 0 (TASK/BIOS18.md). File beside `docs/api/bios/_sysvars-contract.md` (the
+> 84-row table; its rows for these cells were corrected in the second pass,
+> section 16, and in the third pass where they contradicted the decision).
+> Source: EmuTOS `1a7484ab` (`references/emutos`); oracle values from
 > `references/emutos-oracle/1a7484ab`. Nothing here was measured (no QEMU, no
 > Hatari, by the handover). "Cited" = read in this run; "inferred" is marked.
-> Sections 1-4 are the first pass (unchanged except a gating note in section 2);
-> sections 5-7 restate the first pass as the owner decided it; sections 8-13 are
-> the second pass; sections 14-17 are the tester cases, the localization, the
-> corrections and the questions for the owner.
+> Sections 1-4 are the first pass (EmuTOS facts); sections 5-13 are the contract
+> per cell as decided (their former "option" and "question" passages now read as
+> the decision); section 14 the tester cases, 15 the localization, 16 the
+> corrections; **section 17 is the decided contract in one place: the values, the
+> developer checklist and the tester's cases.** The section numbers are kept.
 
 > **Contract vs. reference** (`docs/COMPATIBILITY.md`, "System variables"): the
 > value and meaning of a cell a program can read is contract; which EmuTOS
@@ -193,19 +198,39 @@ Owner decisions 2026-11-20: **C1**, the 60 Hz frame clock `Vsync` waits on
   `_frclock` + 1 always; `_vbclock` + 1 only if the process's own `_vblsem`
   cell is > 0 at that frame (boot value 1, section 9). Consequences:
   1. The kernel **reads** `_vblsem` from the running process's page 0 in the
-     timer interrupt. `docs/api/_super-state.md` S10 lets the kernel read page 0
-     only for documented inputs (`conterm`, the reset-entry magics),
-     "validated". `_vblsem` becomes a third documented input (a signed WORD,
-     compared `> 0`; `bios/vectors.S:338-339` tests the sign after `subq.w`).
-     That is an amendment of S10 (MEM12 spec, not an ADR); the lead decides who
-     edits it.
-  2. Per-process accounting of `_vbclock` for a process that was switched out
-     is **not** fixed by the decision: question Q1, section 17.
-  3. A program that writes `_vblsem = 0` on EmuTOS also stops the cursor blink,
-     the palette/screen-base load, the vblqueue and `vb_draw` (`bios/vectors.S:339`
-     skips them all). NewTOS's `vb_draw` is paced by the frame clock, not by
-     the cell (`kernel/src/vbl.rs:123@run_if_due`, first pass). Only `_vbclock`
-     obeys the cell under V2: Q2, section 17.
+     timer interrupt (and in `Vsync`, section 5): a signed WORD, compared with
+     0 only, "at or below 0" meaning down (`bios/vectors.S:338-339` tests the
+     sign after `subq.w`). Rule S10 of `docs/api/_super-state.md` lists the
+     cell (`0x452`) as a documented input beside `conterm` and the reset-entry
+     magics; the ADR-031 amendment of 2026-11-20 (`docs/MEMORY.md`, item 4) is
+     the authority and is an exception to its rule 4 ("for warnings only").
+  2. **`_vbclock` accounting, Q1 option (c).** `_vbclock = _frclock - lost`, with
+     `lost` the number of frames the process ran with its `_vblsem` at or below
+     0. The per-process word `lost` lives in the process record (kernel
+     private, not a page-0 cell; the placement is the developer's), one global
+     word `acct_fc` (the frame number up to which the running process has been
+     accounted) beside it. At every publish (timer interrupt, `Vsync`,
+     switch-in), with `fc = frame_clock() - frame_base`: first, if the running
+     process's `_vblsem <= 0`, `lost += fc - acct_fc`; then `acct_fc = fc`, and
+     the two counters are written (`_frclock = fc`, `_vbclock = fc - lost`).
+     At **switch-in** `acct_fc = fc` is set before the counters are written, so
+     the frames the process spent away are never added to `lost`: a process
+     that was away loses nothing. Frames between two publishes are charged by
+     the `_vblsem` seen at the later publish (granularity of the publish
+     period, inferred; the same 5 ms residual as section 5). A new process
+     starts with `lost = 0`.
+  3. **`vb_draw` gate, Q2 option (b).** The frame tick runs `vb_draw` once per
+     frame (`kernel/src/vbl.rs:123@run_if_due`; the frame test is the
+     `LAST_FRAME` swap, then `vb_draw`). The gate sits between them: when a
+     process runs and its `_vblsem` (read through
+     `tos-api/src/bdos/process.rs:1084@current_page0_kva`) is at or below 0,
+     the frame is skipped, no `vb_draw`. The frame stays consumed (a skipped
+     frame is not redone later), as the EmuTOS VBL skips its body for that
+     interrupt (`bios/vectors.S:339`). With no running process (EL1) the gate
+     does not apply and `vb_draw` runs. Cursor blink, palette and screen-base
+     load, `flopvbl` and the vblqueue are not NewTOS frame work and are not
+     gated (they do not exist here). These are the two kernel readers of the
+     cell; there is no third.
 
 `_timer_ms`: the value is the one `Tickcal` answers, 20
 (`tos-api/src/bios/mod.rs:95@TICKCAL_MS`; EmuTOS `bios/mfp.c:196`,
@@ -234,18 +259,12 @@ Consequences for the developer (cited):
    `DumpVec` watcher compares against the stub"). `aux_*` and `prt_*` have no
    watcher by design (`tos-api/src/bdos/process/hooks.rs:754@silent`; its test
    list names `$50E`/`$512`, unchanged).
-2. **ADR-031 amendment (owner, before the developer starts).** The table row
-   `dump_vec, swv_vec, exec_os, resvector/resvalid, vblqueue` says "not served,
-   warning"; the row `prt_stat, prt_vec` is the only stub row; rule 1 lists
-   `aux_stat`/`aux_vec` among the hooks EmuTOS never calls (`docs/MEMORY.md`,
-   ADR-031, read, not edited). Proposed wording for the lead (not entered
-   here): in the row `prt_stat, prt_vec` add `dump_vec`, `aux_stat`, `aux_vec`
-   ("default = the `just_rts` stub like EmuTOS, not 0"); in the first row keep
-   "the hook is never called" for `dump_vec` but take it out of the "not
-   served, warning" reading by naming the stub default; the `DumpVec`
-   watcher's default is the stub. Without it the table and `hooks.rs`
-   disagree. The amendment also decides Q3 and Q8 below if the owner answers
-   them with a stub or a pointer.
+2. **ADR-031 amendment (entered 2026-11-20, `docs/MEMORY.md`, ADR-031
+   "Amendment (2026-11-20", items 1-2).** `dump_vec`, `aux_stat`, `aux_vec` and
+   `hdv_init` hold the `just_rts` stub by default, `hdv_boot` a stub with a
+   defined code (section 10); the `DumpVec` warning fires when the cell differs
+   from the stub. NewTOS still calls none of them. `aux_*`/`hdv_*` keep no
+   watcher (rule 1).
 3. `tos-api/src/xbios/system.rs:56@scrdmp` and
    `tos-api/src/vdi/escape.rs:850@dump_vec` say "`dump_vec` not called"; both
    stay true.
@@ -321,10 +340,19 @@ and the `caller_view` doc above it).
   clean-and-invalidate per primitive
   (`tos-api/src/bdos/process/usermem.rs:136@uncached_shared_active`): publishing
   at load for **every** process would turn that on permanently.
-* **Refresh points** (inferred, from section 5's model): at load; after the
-  running process's own `Setscreen` moved the logical base; at switch-in
-  (another process may have moved the global draw base). A process that never
-  calls `Physbase`/`Logbase`/`Setscreen` is the case of the open question Q4.
+* **Decided, Q4 option (a).** The cell **always** holds the address `Logbase`
+  answers (the user address of `ScreenInfo.base`), also before the process has
+  called `Logbase`/`Physbase`, and the screen is not mapped for it. A program
+  that dereferences `*(char **)0x44E` before calling `Logbase` or `Physbase`
+  takes a translation fault and ends with "Bus Error" (S9-like). No publishing
+  at load, so the uncached-shared switch above stays off for such a process.
+  (Mapping the screen at the first access was named to the owner as a possible
+  later step; not examined here.)
+* **Refresh points** (inferred, from section 5's model): at load, after the
+  running process's own `Setscreen` moved the logical base, and at switch-in
+  (another process may have moved the global draw base). When there is no
+  screen at load the cell is not written (stays 0; inferred, not in the
+  decision, see Open points).
 
 ## 9. `_vblsem` (`$452`, WORD) and `_nvbls` (`$454`, WORD)
 
@@ -368,15 +396,17 @@ work runs from the timer IRQ and the trap-side pump
 (`tos-api/src/bdos/process/hooks.rs:285@Vblqueue`, default 0); `_vbl_list`
 (`$4CE`) reads 0. The ADR-031 table: `vblqueue` "not served, warning".
 
-**What NewTOS puts there to answer as EmuTOS.** `_vblsem` = 1 at load
-(`populate_sysvars`), WORD. It is read by the V2 counter rule (section 6) and
-by nothing else; the other EmuTOS effects of writing 0 are not reproduced (Q2).
-`_nvbls` = 8 as a static WORD. **The coupling is the unresolved point**:
-`_nvbls` = 8 with `_vblqueue` = 0 (today) lets a program that installs a VBL
-routine read its slots from address 0, where page 0's vector cells sit; in super
-state its store lands in a vector cell (`adopt_page0_write` takes `$008-$407`
-over as the shared cell, `tos-api/src/bios/vectors.rs:286@adopt_page0_write`).
-That is Q3 (section 17).
+**Decided.** `_vblsem` = 1 at load (`populate_sysvars`), WORD, read by the two
+kernel readers of section 6 (the `_vbclock` accounting and the `vb_draw` gate)
+and by nothing else. `_nvbls` = 8, WORD (static). **`_vblqueue` (`$456`) holds
+`$4CE`** and the eight LONG slots `$4CE`-`$4ED` of `_vbl_list` stay 0 (Q3
+option (b); ADR-031 amendment item 3): NewTOS's `vb_draw` is kernel code, so
+slot 0 stays 0 too. A program may enter a routine into a slot (in super
+state, page 0); NewTOS never calls it and warns (watcher, section 17.3). The
+classic installer (scan `_nvbls` slots from `*_vblqueue` for a NULL one) finds
+slot 0 free and stores there, instead of reading address 0 as in the
+state before this work. EmuTOS differs in slot 0, which holds `vb_draw` after
+the VDI is up (`vdi/vdi_mouse.c:602,631`).
 
 ## 10. `_hdv_init` (`$46A`, LONG) and `_hdv_boot` (`$47A`, LONG)
 
@@ -415,14 +445,32 @@ default 0 (`tos-api/src/bdos/process/hooks.rs:283@PAGE0_HOOKS`, rows `$472`,
 calls them; `tos-api/src/bdos/process/hooks.rs:754@silent`, test list `$46A`,
 `$47A`). So the five are all 0 today; EmuTOS fills all five from one place.
 
-**What NewTOS could put there.** The EmuTOS values are m68k code with floppy
-and block-driver effects that NewTOS has no counterpart for
-(`docs/analysis/deps/mapping.tsv:547` `flop_hdv_init` `design:hardware:floppy`;
-`:332` `blkdev_hdv_boot` unmapped; section 15). The value-only candidate is the
-shared `ret` stub (`tos-api/src/bdos/process/loader.rs:1303@RET_STUB_VA`): exact
-for `hdv_init` (`void`), but `hdv_boot` returns a LONG error code (0 means
-booted, never returns on success) which a `ret` stub does not set: x0 is
-whatever the caller left. Q8 (section 17).
+**Decided (Q8; ADR-031 amendment item 1).**
+* `_hdv_init` = `RET_STUB_VA` (the shared `ret`,
+  `tos-api/src/bdos/process/loader.rs:1303@RET_STUB_VA`): exact for `void`.
+* `_hdv_boot` = a new stub that returns the code **4**. EmuTOS's routine
+  `blkdev_hdv_boot` returns what `bootcheck` returns when it does not boot
+  (`bios/blkdev.c:258-270`): 2 "couldn't load" (boot device out of range,
+  `:277-278`), 3 "unreadable" (`:280-282`), 4 "not valid boot sector"
+  (checksum not `0x1234`, `:284-285`); 0 = bootable, and then it jumps into the
+  sector and does not return (`:262-267`). NewTOS has no boot sector to
+  execute: the boot drive exists (so not 2), nothing is read (so not 3), and
+  what it holds is not a boot sector, so the stub returns **4**. Choosing 4
+  among the three is the researcher's reading of "nothing can be booted"
+  (inferred); the value is one constant. The stub is two instructions,
+  `d2800080` (`mov x0, #4`) and `d65f03c0` (`ret`), placed in the free part of
+  the stub page's `KBDVEC_STUB_AREA` at `RET_STUB_VA + 0x20` (the region is
+  0x40 bytes: `ret` at `+0`, `kbdvec_default` at `+0x08..+0x20`,
+  `tos-api/src/bdos/process/loader.rs:1056@KBDVEC_STUB_AREA_VA`,
+  `tos-api/src/xbios/kbdvecs.rs:92@KBDVEC_DEFAULT_VA`; the new stub ends at
+  `+0x28`). The encoding of `mov x0,#4` is `0xD2800000 | 4<<5` (the
+  `kbdvecs.rs` stubs use the same MOVZ form, `d2800002`; to be checked with
+  clang as there). The cell value is `USER_VA_BASE + KBDVEC_STUB_AREA_VA + 0x20`
+  (`USER_VA_BASE = 0`, `tos-api/src/bdos/process/loader.rs:207@USER_VA_BASE`).
+* The five `hdv_*` cells: `hdv_bpb`, `hdv_rw`, `hdv_mediach` stay 0 (watched,
+  ADR-031 floppy/non-floppy use); `hdv_init`, `hdv_boot` hold stubs, unwatched.
+  The test `page0_hooks_are_not_the_cells_emutos_never_calls`
+  (`tos-api/src/bdos/process/hooks.rs:754@silent`) stays true.
 
 ## 11. `_themd` (`$48E`, 16 bytes): the first memory descriptor
 
@@ -464,14 +512,18 @@ read-only into a process only when that process calls `Getmpb`
 (page 0 zero). And it cannot hold the same bytes: the area `$48E-$4A1` is 20
 bytes, the public MD is 32.
 
-**What NewTOS would put there.** The m68k-layout 16-byte MD
-`{0, membot, memtop - membot, 0}` from the same `stram_range()` as `describe`,
-written at load in `populate_sysvars` (every field fits a 32-bit cell, below
-2 GiB). That is value-equal to what `getmpb` wrote on EmuTOS at `umem_init`, not
-to the live state after boot (above): no NewTOS object mirrors the first
-allocated block of the BDOS pool as an m68k MD. Whether to serve a static
-snapshot, the live state (which has no counterpart) or leave 0, and that the
-two layouts (32 bytes from `Getmpb`, 16 bytes at `$48E`) differ: Q5.
+**Decided, Q5 option (b): a 16-byte MD in the m68k layout with the extent at
+load.** Written at load in `populate_sysvars`, from the same `stram_range()`
+as `describe` (`tos-api/src/bdos/mem/init.rs:107@stram_range`, `(membot,
+memtop)`), four little-endian LONGs (as every page-0 LONG, e.g. `wr_long`,
+`tos-api/src/bdos/process/loader.rs:1123@wr_long`) at `$48E`, `$492`, `$496`,
+`$49A`: `m_link = 0`, `m_start = membot`, `m_length = memtop - membot`,
+`m_own = 0` (the layout of `include/bdosdefs.h:108-115`; the 16 bytes end at
+`$49D`, `____md` at `$49E` stays 0). It is the EmuTOS value at `getmpb` time,
+not the live state after boot (above); a program reading `$48E` after the first
+allocation sees the initial extent where EmuTOS shows the first allocated
+block. The 32-byte `Getmpb` answer keeps its LP64 layout; the two differ in
+size by design. No live mirror (Q5 option (c) rejected: no NewTOS object).
 
 ## 12. `_dskbufp` (`$4C6`, LONG): the disk buffer pointer
 
@@ -509,22 +561,25 @@ caller's buffer or its own block cache (`tos-api/src/bios/bpb.rs:315@scan`
 log-in reads the boot sector through its own buffer; no global disk buffer
 exists). So `$4C6` can only be served by a buffer that this work **provides**.
 
-**What NewTOS has to provide to answer as EmuTOS.** A writable, 4-byte-aligned
-region of at least 3072 bytes (EmuTOS's size; 1024 is the Atari minimum), at an
-EL0 address below 4 GiB, and the cell pointing at it. Three places exist in the
-per-process layout: page 0 is read-only in user state
-(`docs/api/_super-state.md` S2) and its free part `$670-$767` is 248 bytes
-(`tos-api/src/bdos/process/loader.rs:1149@populate_sysvars`, constants
-`COOKIE_JAR_VA` end `0x670`, `tos-api/src/bdos/process/loader.rs:1032@KEYTBL_AREA_VA`),
-too small; the per-slot private read-write page
-(`tos-api/src/bdos/process/mmu.rs:239@PRIV_PAGE`, EL0 read-write, 4 KiB, holds
-the `Kbdvbase` table at `+0` of 0x60 bytes,
-`tos-api/src/bdos/process/loader.rs:1048@KBDVECS_AREA_VA`, and `PARMBLK` scratch
-at `+0x100`, `tos-api/src/bdos/process/loader.rs:1022@PARMBLK_SCRATCH_VA`; no
-other use found in the cited constants) has room for 3072 bytes after `+0x128`
-(4096 - 0x128 = 3800 bytes left, read from the constants only); and a shared read-write page like the IOREC
-page (`tos-api/src/bdos/process/mmu.rs:248@IOREC_PAGE`) would be global to all
-processes. Which: Q6.
+**Decided, Q6 option (b): a 3072-byte buffer in the process's private
+read-write page.** The page is `tos-api/src/bdos/process/mmu.rs:239@PRIV_PAGE`
+(one per process slot, EL0 read-write, 4 KiB, mapped at `PRIV_PAGE_VA =
+0x7F000`, `tos-api/src/bdos/process/mmu.rs:259@PRIV_PAGE_VA`). What lives there
+today: the `Kbdvbase` table at `+0x00`..`+0x5F`
+(`tos-api/src/bdos/process/loader.rs:1048@KBDVECS_AREA_VA`, size `0x60`,
+`tos-api/src/bdos/process/loader.rs:1051@KBDVECS_AREA_SIZE`) and the `PARMBLK`
+scratch at `+0x100`..`+0x127`
+(`tos-api/src/bdos/process/loader.rs:1022@PARMBLK_SCRATCH_VA`, 40 bytes,
+asserted `tos-api/src/bdos/process/loader.rs:1078@PARMBLK_SCRATCH_VA`); the
+rest is free, no other user in `tos-api/src` or `kernel/src` (grep of
+`PRIV_PAGE_VA`, this run). The buffer takes **`+0x400`..`+0xFFF`** (0xC00 =
+3072 bytes: `DSKBUF_SIZE = 6 * 512`, above), so `_dskbufp = USER_VA_BASE +
+PRIV_PAGE_VA + 0x400 = 0x7F400`, 4-byte aligned (also 8), below 4 GiB. It is
+per process, never shared, and no kernel code uses it (no NewTOS counterpart).
+The loader zeroes it at load (inferred: a slot's page is reused, and a previous
+process's bytes must not show). The `+0x128`..`+0x3FF` gap stays free. The
+developer adds an assertion for the new range (`+0x400 + 0xC00 == PAGE_SIZE`)
+beside the two at `tos-api/src/bdos/process/loader.rs:1077@PARMBLK_SCRATCH_VA`.
 
 ## 13. `_pun_ptr` (`$516`, LONG): the AHDI info table
 
@@ -572,20 +627,16 @@ reproduced (no NewTOS counterpart): the AHDI `PUN_INFO` structure itself and
 and `kernel/src`: only comments in `bpb.rs` and `mod.rs`). Mapping row
 `docs/analysis/deps/mapping.tsv:350` records it ("no PUN_INFO/pun_ptr").
 
-**What NewTOS has to provide to answer as EmuTOS.** A table, 158 bytes in the
-m68k layout, built from the drive table and `MAX_SECT_SIZ`: `puns` = the number
-of physical devices (one SD card; the exact count is read from the drive table,
-not assumed), `pun[drive]`/`partition_start[drive]` for C: upward, the `'AHDI'`
-cookie, `cookie_ptr` to it, `version_num` `0x300`. Memory that must be allocated
-per process: page 0's free part (248 bytes) would hold it but is read-only in
-user state (a driver cannot write it, as it can on EmuTOS); the private
-read-write page (section 12) holds it with room. Setting the pointer makes
-programs believe an AHDI driver is present and trust `pun[]`/`partition_start[]`
-for raw access, a behaviour change against today's 0 ("no AHDI"): Q7.
+**Decided, Q7: `_pun_ptr` stays 0 and leaves this ticket.** It is taken up
+with TASK/BIOS18.md (partitions), after it is read whether `Rwabs` honours what
+a `PUN_INFO` consumer expects. The row of `_sysvars-contract.md` (`$516`
+"missing") stays; a probe reads 0 ("no AHDI") on NewTOS. The EmuTOS facts above
+(layout, 158 bytes, `'AHDI'` cookie) are the input for BIOS18, not a BIOS20
+work item.
 
-## 14. Measurable cases for the tester, all fourteen cells
+## 14. Measurable cases for the tester (the decided cells are in section 17)
 
-All addresses are 2 mod 4 (`$442`, `$44E`, `$452`, `$454`, `$462`, `$466`, `$46A`,
+All addresses are 2 mod 4 (`$442`, `$44E`, `$452`, `$454`, `$456`, `$462`, `$466`, `$46A`,
 `$47A`, `$48E`, `$4C6`, `$502`, `$50E`, `$512`, `$516`), so none is reachable by
 `Setexc(num, -1)`; a new `peek` case type is needed (`_sysvars-contract.md`
 section 8 proposes it; not built). `tosdump/probes/hkprobe.c:93@prt_stat_v` already
@@ -601,20 +652,19 @@ test run (TASK/BIOS20.md).
 | call through each of the three | returns | branch to 0: fault | returns |
 | `a = *$466; Vsync(); b = *$466` | `b - a >= 1` (inferred: exactly 1 at a steady VBL) | `b == a`, both 0 | `b - a >= 1` (the section 5 `Vsync` rule) |
 | `h0 = $4BA, f0 = $466; wait N Vsync; h1, f1` | `(f1-f0) >= N`; `(h1-h0)/(f1-f0)` = `200 / VBL rate` | 0 | ratio ~ 200/60 (C1) |
-| `*$462` against `*$466` after boot, `_vblsem == 1` | `$466 - $462 != 0` (inferred, section 2), constant between reads | both 0 | equal at load (both start 0, `_vblsem` 1): a documented difference |
-| V2: in `Supexec` set `$452 = 0`; `Vsync` x3; read `$462`, `$466` deltas; restore `$452 = 1` | `d(466) >= 3`, `d(462) == 0` (source-predicted; also stops blink and the mouse draw on the oracle) | cells 0 | `d(466) >= 3`, `d(462) == 0`; NewTOS keeps drawing the mouse (Q2) |
+| `*$462` against `*$466` after boot, `_vblsem == 1` | `$466 - $462 != 0` (inferred, section 2), constant between reads | both 0 | `$466 - $462 == 0` while `_vblsem` stayed 1 (both start 0): a documented difference |
+| V2: in `Supexec` set `$452 = 0`; `Vsync` x3; read `$462`, `$466` deltas; restore `$452 = 1` | `d(466) >= 3`, `d(462) == 0` (source-predicted; also stops blink and the mouse draw on the oracle) | cells 0 | `d(466) >= 3`, `d(462) == 0`; NewTOS also skips its mouse draw while the cell is at or below 0 (Q2 (b); visible on screen only) |
 | process switch: parent reads `$466`, child runs `Vsync` x3, parent reads | one global counter, strictly larger | n/a | strictly larger (P3 refresh); oracle cannot show per-process view |
 | `$452` WORD | 1 | 0 | 1 |
-| `$454` WORD | 8 | 0 | 8 (Q3 decides the `$456` partner) |
-| `$456` LONG next to `$454` | `$4CE` (map `:266`) | 0 | per Q3 |
-| `$44E` LONG | non-zero, `== Logbase()`; (inferred) `== *$436` | 0 | non-zero, `== Logbase()` of that process (Q4 decides the case "never called Logbase") |
+| `$454` WORD | 8 | 0 | 8 |
+| `$456` LONG next to `$454` | `$4CE` (map `:266`) | 0 | `$4CE`; eight slots at `$4CE` read 0 |
+| `$44E` LONG | non-zero, `== Logbase()`; (inferred) `== *$436` | 0 | non-zero, `== Logbase()` of that process (a process that never called `Logbase` reads the same address but faults when it dereferences it, Q4 (a)) |
 | `$44E` after `Setscreen(L,-1,-1,-1)` (L inside screen memory) | cell `== L`, `Logbase() == L`, `Physbase()` unchanged (`bios/screen.c:1106-1111`) | 0 | cell `== Logbase()` `== L`; `Physbase()` unchanged. NewTOS accepts only a base inside its screen memory on a page boundary (`tos-api/src/xbios/screen.rs:290@setscreen` doc): use `Logbase() + size` |
-| `$46A` LONG | `0x00e09712` on the oracle ROM (map `:589`); non-zero | 0 | per Q8 |
-| `$47A` LONG | non-zero (ROM address of `blkdev_hdv_boot`, not in the map) | 0 | per Q8 |
-| `$48E` 4 LONGs | `m_link` (maybe non-NULL), `m_start`, `m_length`, `m_own = run`: the first allocated block (inferred, section 11); compare field classes, not numbers | 0 | per Q5 |
-| `$4C6` LONG; read 1024 bytes through it | `0x00001004` (map `:309`); readable; (optional) write/restore 1024 bytes | 0 | non-zero, 4-aligned, 1024 bytes readable and writable (Q6) |
-| `$516` LONG; `*(ULONG*)(p+82)`, `*(ULONG*)(p+86)`, `*(UWORD*)(p+90)` | non-zero; `'AHDI'`; pointer to that cookie; `0x300` (offsets assume 2-aligned `ULONG`, inferred; `p+86 == p+82` is the check) | 0 | per Q7 |
-| `$516` `max_sect_siz` | `>= 512` | 0 | `>= 512`, equal to `MAX_SECT_SIZ` |
+| `$46A` LONG | `0x00e09712` on the oracle ROM (map `:589`); non-zero | 0 | non-zero, equal to `$506`; call returns |
+| `$47A` LONG | non-zero (ROM address of `blkdev_hdv_boot`, not in the map) | 0 | non-zero (own stub); call returns 4 (EmuTOS returns 2, 3, 4 or does not return, `bios/blkdev.c:258-285`) |
+| `$48E` 4 LONGs | `m_link` (maybe non-NULL), `m_start`, `m_length`, `m_own = run`: the first allocated block (inferred, section 11); compare field classes, not numbers | 0 | `{0, membot, memtop - membot, 0}` (section 11) |
+| `$4C6` LONG; read 1024 bytes through it | `0x00001004` (map `:309`); readable; (optional) write/restore 1024 bytes | 0 | non-zero, 4-aligned, 1024 bytes readable and writable (the buffer is 3072 bytes, section 12) |
+| `$516` LONG; `*(ULONG*)(p+82)`, `*(ULONG*)(p+86)`, `*(UWORD*)(p+90)` | non-zero; `'AHDI'`; pointer to that cookie; `0x300` (offsets assume 2-aligned `ULONG`, inferred; `p+86 == p+82` is the check) | 0 | stays 0 (Q7, BIOS18): a documented difference, not a case of this ticket |
 
 **What the pinned oracle cannot show:** (a) the per-process view across a
 switch (EmuTOS has one global page 0); (b) the NewTOS rate choice (the oracle
@@ -644,9 +694,9 @@ boot-dependent.
 | `logbase` | 0 | 2, all mapped | `:827` -> `xbios/screen.rs@logbase` |
 | `bios_init` | n/a | n/a | `:295` unmapped; `:296-297` mapped to `vectors.rs@default_of` and `populate_sysvars`: add `nvbls = 8`, `vblsem = 1` (`bios/bios.c:366,553`) -> `populate_sysvars` |
 | `screen_init_mode` | n/a | n/a | `:832` `design:hardware:video-shifter`: `vblsem = 0` at `bios/screen.c:501` has no counterpart by design (no Atari video) |
-| `getmpb` | 0 callees | `umem_init` (mapped), `bios_init`, `biosmain` (**unmapped**), `memdone` (design) | `:319-321` mapped; add a row if `$48E` is served (Q5) |
+| `getmpb` | 0 callees | `umem_init` (mapped), `bios_init`, `biosmain` (**unmapped**), `memdone` (design) | `:319-321` mapped; add a row: `$48E` is served at load (Q5 (b)) |
 | `blkdev_init` | 254 callees; **34 unmapped** in `bios` | `bios_init`, `biosmain` (**unmapped**) | `:334` **unmapped**: the `dskbufp`, `hdv_boot`, `hdv_init` stores have no row; add -> `populate_sysvars` |
-| `pun_info_setup` | 157 callees; 22 unmapped | `bios_init`, `biosmain`, `blkdev_init` (**unmapped**) | `:350` -> `bpb.rs@scan` ("no PUN_INFO/pun_ptr": the note changes if Q7 serves it) |
+| `pun_info_setup` | 157 callees; 22 unmapped | `bios_init`, `biosmain`, `blkdev_init` (**unmapped**) | `:350` -> `bpb.rs@scan` ("no PUN_INFO/pun_ptr": unchanged, Q7 leaves `$516` 0) |
 | `flop_hdv_init` | 15 callees; unmapped: `get_shift` | `bios_init`, `biosmain`, `blkdev_init` (**unmapped**) | `:547` `design:hardware:floppy` |
 | `blkdev_hdv_boot` | 109 callees; unmapped: itself, `bootcheck`, `disk_rw`, `flush_data_cache`, `hd_boot_read`, `invalidate_data_cache`, `invalidate_instruction_cache` | not run | `:332` **unmapped** |
 | `bufl_init`, `umem_init` | n/a | all mapped | `:82` -> `tos-api/src/bdos/fs/cache.rs`, `:245` -> `tos-api/src/bdos/mem/init.rs` |
@@ -666,8 +716,8 @@ the two big callee sets (`screen_init_address --down`: 30, `blkdev_init --down`:
 of them is the object of a cell here; they are listed because the ticket asked.
 
 NewTOS places the developer touches: `tos-api/src/bdos/process/loader.rs:1149@populate_sysvars`
-(static cells: `_timer_ms`, `_vblsem`, `_nvbls`, the three vectors, and per
-the owner's answers `_v_bas_ad`, `_hdv_*`, `_themd`, `_dskbufp`, `_pun_ptr`);
+(static cells: `_timer_ms`, `_vblsem`, `_nvbls`, `_vblqueue`, the three vectors, and
+`_v_bas_ad`, `_hdv_*`, `_themd`, `_dskbufp`; not `_pun_ptr`);
 `tos-api/src/bios/tick.rs:108@publish` or a sibling (counters, `_vblsem` read);
 `tos-api/src/bdos/process.rs:977@set_current` (switch-in refresh);
 `tos-api/src/xbios/system.rs:33@vsync` (publish before return);
@@ -697,149 +747,179 @@ source (checked: writers of `_vblsem`, `_nvbls`, `_hdv_init`, `_hdv_boot`,
 cite repair for the record: `_boot-init.md` section 7c (`vbclock` "keins
 gefunden") stays wrong as noted in BIOS19 section 6.1.
 
-## 17. Questions for the owner (worded, with options; none chosen here)
+## 17. The decided contract: values, developer checklist, tester cases
 
-**Q1. `_vbclock` under V2 for a process that was switched out.** `_vbclock` is
-per process and advances only while that process's `_vblsem > 0`. A process that
-does not run during some frames:
-(a) **Catch up at switch-in:** its `_vbclock` gets `+ frames elapsed` if its own
-`_vblsem > 0` at that moment, as if it had counted all along (the per-process
-page then behaves like EmuTOS's single global page); needs the frame number at
-switch-out (a per-process word).
-(b) **Freeze while away:** only frames in which the process ran count; a
-resumed process sees the value of its last run (matches `_hz_200`'s current
-behaviour, differs from `_frclock`, which P3 refreshes).
-(c) **Equal to `_frclock` unless the process itself wrote `_vblsem = 0`:**
-`_vbclock = _frclock - lost`, with `lost` the frames the process ran with
-`_vblsem <= 0`; a process away counts nothing as lost.
-What each unlocks: (a) and (c) keep `_frclock - _vbclock` meaning "frames with
-the semaphore down", (b) is the simplest. Cost: (a) and (c) add one word per
-process. The researcher's reading (inferred): (c) is the closest to the
-EmuTOS arithmetic.
+Owner decisions of 2026-11-20 (TASK/BIOS20.md, "Spec gate and owner decisions",
+"Second spec pass and owner answers", "ADR-031 amended"). This section replaces
+the former questions Q1 to Q8; the sections 5 to 13 above carry the reasoning.
 
-**Q2. Does `_vblsem = 0` also stop NewTOS's frame work?** On EmuTOS it stops
-cursor blink, `vb_draw`, palette/screen-base load and the vblqueue
-(`bios/vectors.S:339`). (a) Only `_vbclock` obeys the cell (decided V2);
-`vb_draw` runs anyway. A program that writes 0 to freeze the mouse cursor
-during its own drawing sees the cursor keep drawing: a documented difference.
-(b) `vb_draw` also skips frames while the running process's `_vblsem <= 0`:
-nearer EmuTOS, but the kernel then reads page 0 in the draw path for the
-running process (S10 amendment, a second reader), and the cell becomes
-semantically live. Cost of (b): one more kernel read of a program-writable
-cell; `vb_draw` is already outside the process's control today.
+### 17.1 The decisions
 
-**Q3. `_nvbls` = 8 with `_vblqueue` = 0?** The owner decided `_nvbls` is served
-with the EmuTOS boot value 8; its partner `_vblqueue` (`$456`) is "not served,
-warning" in ADR-031 and reads 0, and `_vbl_list` (`$4CE`) is zero cells.
-(a) **`_nvbls` = 8, `_vblqueue` stays 0:** a classic installer scans 8 slots from
-address 0 (page 0's vector cells), finds no NULL slot or a wrong one, and in
-super state may store its routine into a vector cell
-(`tos-api/src/bios/vectors.rs:286@adopt_page0_write`). No ADR change; the
-combination is the least coherent.
-(b) **`_nvbls` = 8 and `_vblqueue` = `$4CE`:** the queue exists as eight zero
-cells in page 0 (as EmuTOS after `bios_init`); an installer stores its routine
-there; NewTOS never calls it. The ADR-031 row `vblqueue` changes ("cell served,
-routine never called, warning on a non-NULL slot") and `PAGE0_HOOKS`
-(`tos-api/src/bdos/process/hooks.rs:285@Vblqueue`) watches `$4CE-$4EA`
-instead of `$456 == 0`. Slot 0 stays 0 (NewTOS's `vb_draw` is kernel code).
-(c) **`_nvbls` = 0 (today):** a program that scans finds zero slots: no hazard,
-but the cell is not "as EmuTOS" and the owner's decision would be revised.
-The researcher's reading (inferred): (b) is the only one that is both
-EmuTOS-valued and never silent (ADR-031 rule 1); (a) is hazardous.
+| Q | Decision | Where |
+|---|---|---|
+| (P1+P3) | Counters follow `_hz_200`'s model; switch-in refresh for every process; `Vsync` publishes before it returns | section 5 |
+| (C1) | `_frclock`/`_vbclock` follow the 60 Hz frame clock, start at 0 at boot | section 6 |
+| Q1 (c) | `_vbclock = _frclock - lost`; `lost` = frames the process ran with `_vblsem <= 0`; a process that was away loses nothing | section 6, consequence 2 |
+| Q2 (b) | `_vblsem <= 0` in the running process also skips `vb_draw`; S10 lists the cell | section 6, consequence 3; `docs/api/_super-state.md` S10 |
+| Q3 (b) | `_nvbls` = 8, `_vblqueue` = `$4CE`, eight empty slots in page 0; a program's routine there is never called, NewTOS warns | section 9 |
+| Q4 (a) | `_v_bas_ad` always holds the screen address; use before `Logbase`/`Physbase` ends in a bus error | section 8 |
+| Q5 (b) | `_themd` is a 16-byte MD in the m68k layout with the extent at load | section 11 |
+| Q6 (b) | `_dskbufp` points at a 3072-byte buffer in the private read-write page | section 12 |
+| Q7 | `_pun_ptr` stays 0, out of this ticket (TASK/BIOS18.md) | section 13 |
+| Q8 | `_hdv_init` = the `ret` stub; `_hdv_boot` = a stub that returns 4 | section 10 |
 
-**Q4. `_v_bas_ad` before the process has called `Physbase`/`Logbase`.** The
-address fits a LONG (section 8) but the screen memory is mapped for a process
-only after one of those calls.
-(a) **Write the address at load without mapping it:** the cell is always the
-EmuTOS value; a program that dereferences it before calling `Logbase` takes a
-translation fault (it ends with "Bus Error", S9-like). No cost.
-(b) **Publish the screen memory to every process at load:** the cell is valid
-for all; every process then holds the uncached shared mapping, so the VDI
-cleans and invalidates each primitive permanently
-(`tos-api/src/bdos/process/usermem.rs:136@uncached_shared_active`): a
-performance cost on the desktop for every program.
-(c) **Cell is 0 until the process calls `Physbase`/`Logbase`/`Setscreen`,** then
-the call writes the address: never a dangling address; a program that reads
-`*0x44E` without ever asking the OS still reads 0 (the status quo for that
-program).
-Related: the refresh after another process's `Setscreen` is the P3 switch-in
-refresh (section 8), not a question.
+### 17.2 The thirteen served cells (and the `$456` partner)
 
-**Q5. `_themd` at `$48E`.** (a) **Stay 0** ("missing", no counterpart for the
-live state). (b) **16-byte m68k MD snapshot** `{0, membot, memtop - membot, 0}`
-at load: equal to what EmuTOS's `getmpb` wrote, not to the live state after boot
-(section 11); differs in layout from the 32-byte `Getmpb` answer. (c) **A live
-mirror** of the first allocated block: no NewTOS object exists (the BDOS pool
-descriptor is internal and 24 bytes); it would need a new published view of the
-pool, a larger change. What each unlocks: (b) satisfies a program that expects
-the initial extent at `$48E`; (c) the live state, at the cost of a design.
+All cells are in each process's own page 0 (2 mod 4 addresses, unaligned
+stores as `wr_long`/`wr_word` in `populate_sysvars`,
+`tos-api/src/bdos/process/loader.rs:1149@populate_sysvars`). `RET` =
+`RET_STUB_VA` (`tos-api/src/xbios/kbdvecs.rs:90@RET_STUB_VA`); `HDVB` =
+`USER_VA_BASE + KBDVEC_STUB_AREA_VA + 0x20` (new, section 10).
 
-**Q6. `_dskbufp`: where is the buffer?** (a) **0** (status quo). (b) **A
-3072-byte region in the per-slot private read-write page**, cell pointing at it:
-no new memory (the page exists), per-process content, never shared; EmuTOS's
-single buffer is one global object, here each process has its own (a program
-cannot see another's). (c) **A shared read-write page** as the IOREC page is:
-global like EmuTOS, but a writable global kernel-owned page every process can
-scribble (cross-process interference; one new page). The kernel never uses it
-(no NewTOS counterpart), so the buffer is purely a program-visible object.
-The researcher's reading (inferred): (b).
+| # | Cell | Addr | Width | Value | Written by | Refreshed |
+|---|---|---|---|---|---|---|
+| 1 | `_timer_ms` | `$442` | W | 20 | `populate_sysvars` | never |
+| 2 | `_v_bas_ad` | `$44E` | L | user address of `ScreenInfo.base` = what `Logbase` answers (section 8) | `populate_sysvars`; `setscreen` (`tos-api/src/xbios/screen.rs:290@setscreen`) | own `Setscreen`; switch-in |
+| 3 | `_vblsem` | `$452` | W | 1 | `populate_sysvars` | never by the kernel (a program writes it in super state; it reads it back) |
+| 4 | `_nvbls` | `$454` | W | 8 | `populate_sysvars` | never |
+| 5 | `_vbclock` | `$462` | L | `fc - lost` (section 6), 0 at boot | the publish place (`tos-api/src/bios/tick.rs:108@publish` or a sibling) | timer IRQ, `Vsync`, switch-in |
+| 6 | `_frclock` | `$466` | L | `fc = frame_clock() - frame_base`, 0 at boot | as #5 | as #5 |
+| 7 | `_hdv_init` | `$46A` | L | RET | `populate_sysvars` | never |
+| 8 | `_hdv_boot` | `$47A` | L | HDVB (stub: `mov x0,#4; ret`, returns 4) | `populate_sysvars`; the stub bytes by `write_stubs` | never |
+| 9 | `_themd` | `$48E` | 16 B | LE LONGs `0`, `membot`, `memtop - membot`, `0` | `populate_sysvars` | never |
+| 10 | `_dskbufp` | `$4C6` | L | `USER_VA_BASE + PRIV_PAGE_VA + 0x400` = `0x7F400` | `populate_sysvars`; buffer zeroed at load | never |
+| 11 | `_dump_vec` | `$502` | L | RET | `populate_sysvars` | never |
+| 12 | `_aux_stat` | `$50E` | L | RET | `populate_sysvars` | never |
+| 13 | `_aux_vec` | `$512` | L | RET | `populate_sysvars` | never |
+| partner | `_vblqueue` | `$456` | L | `$4CE` | `populate_sysvars` | never |
+| partner | `_vbl_list[0..8]` | `$4CE`-`$4ED` | 8 x L | 0 | page 0 zero-fill (`tos-api/src/bdos/process/loader.rs:671@fill`) | never |
 
-**Q7. `_pun_ptr`: provide the AHDI table?** (a) **0** (status quo: "no AHDI").
-(b) **A `PUN_INFO` of 158 bytes in the private read-write page,** built from the
-drive table and `MAX_SECT_SIZ` at load: equal to EmuTOS's meaning; changes what
-programs conclude (AHDI present; `pun[]`/`partition_start[]` for raw access,
-which NewTOS's `Rwabs` then has to honour for the same drive numbers: not read in
-this run). (c) **In page 0's free part** (read-only in user state, so a driver
-cannot patch it; unlike EmuTOS). Cost: (b) one more page-0-like area and a
-refresh when the drive table changes (`bios::mount` re-scan,
-`tos-api/src/bios/mod.rs:48@mount`); risk of (b)/(c): a hard-disk tool starts trusting
-the table. ADR-032 (XHDI not provided) does not cover this cell.
+Not served: `_pun_ptr` `$516` stays 0 (Q7). Cells #5 and #6: `Vsync` keeps
+comparing raw `frame_clock` values; the cells are `frame_clock() - frame_base`
+with `frame_base` recorded once at boot (section 6). Cells #5 and #6 are the
+only ones with a per-process view beyond the static seed (section 5).
 
-**Q8. `_hdv_init` / `_hdv_boot` values.** (a) **0** (status quo; rule 1 gives
-them no warning). (b) **The shared `ret` stub** (`RET_STUB_VA`) in both: a
-program that chains to the old value reaches a valid entry; exact for
-`hdv_init` (`void`), but `hdv_boot` is `LONG` and EmuTOS's returns an error code
-or never returns, while the stub leaves x0 as the caller left it. (c) **`ret`
-stub for `hdv_init`, 0 for `hdv_boot`**, no new stub. A third value, a stub that
-returns a defined code, would need a new instruction word in the stub page
-(`tos-api/src/bdos/process/loader.rs:1056@KBDVEC_STUB_AREA_VA` region) and a
-word in ADR-031. The five `hdv_*` cells would then be unequal in form (three 0,
-two stubs), consistent with the ADR row.
+**Where the new stub and buffer live (cited).** The `HDVB` stub: the stub page
+(shared, execute-only, `STUB_PAGE_VA = 0x7E000`,
+`tos-api/src/bdos/process/mmu.rs:256@STUB_PAGE_VA`), area `KBDVEC_STUB_AREA_VA`
+(`STUB_PAGE_VA + 0x40`, 0x40 bytes, `tos-api/src/bdos/process/loader.rs:1056@KBDVEC_STUB_AREA_VA`,
+size `tos-api/src/bdos/process/loader.rs:1059@KBDVEC_STUB_AREA_SIZE`), `+0x20..+0x28` of it; the `ret` stub is at `+0`, `kbdvec_default` at
+`+0x08..+0x20` (`tos-api/src/xbios/kbdvecs.rs:92@KBDVEC_DEFAULT_VA`, 6 words).
+The `_dskbufp` buffer: private read-write page, `+0x400..+0xFFF` (section 12).
+
+### 17.3 The warning watcher (`tos-api/src/bdos/process/hooks.rs`)
+
+* `DumpVec` (`hooks.rs:294@DumpVec`): default becomes `RET_STUB_VA as u32`
+  (ADR-031 amendment item 2).
+* `Vblqueue`: the row `{addr 0x456, default 0}` is replaced. The watcher
+  compares the **eight slots**, `$4CE`, `$4D2`, ..., `$4EA` (LONGs, stride 4),
+  each with 0, and warns on a non-zero one (amendment item 3: "the warning
+  fires on a non-empty slot instead of on a `vblqueue` other than 0"). `$456`
+  itself is therefore no longer compared (literal reading of the amendment;
+  inferred). The slots are page-0 reads like the other hook cells
+  (`check_page0`, `hooks.rs:319@check_page0`).
+* `aux_*`, `hdv_init`, `hdv_boot`: no watcher (rule 1;
+  `hooks.rs:754@silent` keeps `$46A`, `$47A`, `$50E`, `$512` in its list).
+
+### 17.4 Rule S10
+
+`docs/api/_super-state.md` S10 now lists `_vblsem` (`0x452`, signed WORD,
+compared with 0 only) beside `conterm` and the reset-entry magics, citing the
+ADR-031 amendment of 2026-11-20 item 4 (`docs/MEMORY.md`). Its two readers are
+the `_vbclock` accounting (section 6, consequence 2, with the per-process word
+`lost`) and the `vb_draw` gate (consequence 3). Both read the **running**
+process's cell through `current_page0_kva`; no other cell of page 0 gains a
+kernel reader.
+
+### 17.5 Developer checklist
+
+Host-test model: `tos-api/src/bdos/process/loader.rs:2030@prt_stat` (calls
+`populate_sysvars` on a page buffer, reads LONGs back). A probe case is a case
+id of 17.6.
+
+| Cell | Value | Writer place | Host test | Probe case |
+|---|---|---|---|---|
+| `$442` | 20 | `populate_sysvars` | `rd16(0x442) == 20` and `== TICKCAL_MS` (`tos-api/src/bios/mod.rs:95@TICKCAL_MS`) | C01 |
+| `$44E` | `Logbase` address | `populate_sysvars`, `setscreen`, `set_current` refresh | with a host double: cell equals `logbase()`; after `setscreen` equals the new base | C02, C03 |
+| `$452` | 1 | `populate_sysvars` | `rd16(0x452) == 1` | C04 |
+| `$454` | 8 | `populate_sysvars` | `rd16(0x454) == 8` | C05 |
+| `$456`, slots | `$4CE`; 8 x 0 | `populate_sysvars` | `rd32(0x456) == 0x4CE`; slots zero; a non-zero slot makes the watcher warn, a zero one does not | C06 |
+| `$462` | `fc - lost` | publish place, `vsync`, `set_current` | feed `frame_clock`; `_vblsem = 1`: both equal; `_vblsem = 0` for n frames: `$466 - $462 == n`; a switch-away of k frames adds nothing to `lost` | C07, C08, C09 |
+| `$466` | `fc` | as `$462` | starts 0; advances with the host frame clock; `vsync` publishes before it returns; switch-in refresh | C07, C09 |
+| `$46A` | RET | `populate_sysvars` | equals `RET_STUB_VA`, equals `$506` | C10 |
+| `$47A` | HDVB | `populate_sysvars`, `write_stubs` | stub bytes `d2800080 d65f03c0` at HDVB; cell equals HDVB, differs from RET | C11 |
+| `$48E` | 16 bytes | `populate_sysvars` | the four LE LONGs equal `0, membot, memtop - membot, 0` from `stram_range()`; `$49E` still 0 | C12 |
+| `$4C6` | `0x7F400` | `populate_sysvars` | cell equals `PRIV_PAGE_VA + 0x400`; 4-aligned; `+0xC00` ends at the page end; buffer zero at load | C13 |
+| `$502` | RET | `populate_sysvars`; `DumpVec` default | equals `$506`; `check_page0` quiet at default, warns on another value | C10 |
+| `$50E`, `$512` | RET | `populate_sysvars` | equal `$506`; still not in `PAGE0_HOOKS` | C10 |
+
+Also: the `mapping.tsv` rows of section 15 (ratchet); the existing
+`silent` test and the `bios-r1`, `bios-core-r1`, `xbios-chardev-r1`,
+`xbios-system-r1` tables stay as the ticket's acceptance says.
+
+### 17.6 Tester's cases
+
+Read through a `Supexec` callback (the cells are 2 mod 4: `Setexc` cannot read
+them); pattern `tosdump/probes/hkprobe.c:93@prt_stat_v` (reads `CELL(0x506)`
+and calls through it). "Oracle" values are source-predicted, not measured; the
+oracle rate is measured in the run. Compare address cells as non-zero/equal/
+class, not as numbers (`0x1004`, `0x00e20ea4`, `0x00e09712` are the oracle's
+own).
+
+| Id | Case | Oracle (EmuTOS) | NewTOS |
+|---|---|---|---|
+| C01 | read `$442` WORD | 20 | 20 |
+| C02 | read `$44E`; compare with `Logbase()` | non-zero, equal | non-zero, equal (read after `Logbase`: before it a dereference faults, Q4) |
+| C03 | `Setscreen(L,-1,-1,-1)`, then `$44E`, `Logbase()`, `Physbase()` | cell `== L`, `Logbase == L`, `Physbase` unchanged | same (`L` inside the screen memory on a page boundary: `Logbase() + size`) |
+| C04 | read `$452` WORD | 1 | 1 |
+| C05 | read `$454` WORD | 8 | 8 |
+| C06 | read `$456`, then the 8 slots | `$4CE` (map `:266`); slot 0 non-NULL after the VDI is up, 1-7 NULL | `$4CE`; all 8 slots 0 (slot 0 differs by design) |
+| C07 | `a = *$466; Vsync(); b = *$466` and the same for `$462` | `b - a >= 1` | `b - a >= 1` (the `Vsync` publish) |
+| C08 | in `Supexec` set `$452 = 0`; `Vsync` x3; deltas of `$462` and `$466`; restore `$452 = 1` | `d466 >= 3`, `d462 == 0` | `d466 >= 3`, `d462 == 0` (Q1 (c)); the mouse draw stops while it is 0 (on screen only) |
+| C09 | `$466` in parent; child runs `Vsync` x3; parent reads again | one global counter, strictly larger | strictly larger (switch-in refresh); the oracle cannot show the per-process view |
+| C09b | `h0 = $4BA, f0 = $466`; N x `Vsync`; `h1, f1` | `(h1-h0)/(f1-f0)` = 200 / VBL rate | about 200/60 |
+| C10 | read `$46A`, `$502`, `$50E`, `$512`, `$506`, `$50A`; call each through its old value | `$46A` `0x00e09712` (`flop_hdv_init`, not `just_rts`: non-zero, calling it re-detects floppies: do not call it on the oracle); `$502`, `$50E`, `$512` equal to `$506`; calls return | all six non-zero, `$46A` `$502` `$50E` `$512` equal `$506`; calls return, no fault |
+| C11 | read `$47A`; call it | non-zero ROM address; the call would try to boot: **do not call on the oracle**; compare the cell as non-zero only | non-zero; the call returns 4 |
+| C12 | read 4 LONGs at `$48E` | first allocated block (field classes) | `{0, membot, memtop - membot, 0}`; field classes compared, no number |
+| C13 | read `$4C6`; read 1024 bytes through it; write and restore 1024 | `0x1004`; readable | non-zero, 4-aligned, 1024 bytes readable and writable (3072 available) |
+| C14 | read `$516` | non-zero | 0 (Q7: documented difference, not a failure of BIOS20) |
+
+Cannot be shown by the oracle: the per-process view (EmuTOS has one global page
+0); the NewTOS rate choice (oracle rate = Hatari's video mode); the stub, ROM
+and buffer addresses; the 5 ms publish lag (Hatari writes inside the VBL
+interrupt); `$48E` after the first free-list change; the effect of `hdv_boot`
+(calling it on the oracle starts a boot attempt).
 
 ## Open points
 
-- STOP (owner): Q1 to Q8 of section 17, each a design choice the source leaves
-  open or an ADR/S10 change: `_vbclock` accounting of a process that was away
-  (Q1), whether `_vblsem` also gates `vb_draw` (Q2), `_nvbls` against
-  `_vblqueue` (Q3), `_v_bas_ad` before the screen is mapped (Q4), `_themd` form
-  (Q5), `_dskbufp` buffer (Q6), `_pun_ptr` table (Q7), `_hdv_init`/`_hdv_boot`
-  values (Q8).
-- STOP (lead/owner): ADR-031 amendment (the stub row, section 7) before the
-  developer starts, as the owner decided; the S10 amendment for the kernel read
-  of `_vblsem` (section 6); a COMPATIBILITY/DEVIATIONS line for the cells that
-  stay different (`_v_bas_ad` write not honoured, `_vblsem = 0` not stopping the
-  mouse draw if Q2 = a, `_frclock - _vbclock` not offset at load, per-process
-  `_themd`/`_dskbufp`): files the lead owns, not edited.
-- Needs deeper analysis: the Hatari VBL rate for the oracle's TT profile and the
-  size of `_frclock - _vbclock` after boot (the oracle column of section 14 is a
-  prediction); the oracle `$46A`/`$47A`/`$48E`/`$4C6`/`$516` contents are
-  source-predicted (only `$4C6`'s buffer address `0x1004` and `_flop_hdv_init`
-  come from the generated map).
-- Needs deeper analysis: whether NewTOS's `Rwabs` honours raw device numbers the
-  way a `PUN_INFO` consumer expects (Q7): not read in this run.
-- Inferred, not read: `_frclock - _vbclock` constant > 0 on the oracle; the
-  5 ms `Vsync` publish lag; per-process monotonicity; that no process sees
-  another's write to `_timer_ms`; `bios_init` listed unmapped by `deps` despite
-  two rows in `mapping.tsv:296-297`; `_v_bas_ad == _memtop` on the oracle;
-  that an AUTO program sees `vblqueue[0] == NULL`; `$48E` after boot is the first
-  allocated block; `PUN_INFO` is 158 bytes (2-aligned `ULONG`); no other user of
-  the private read-write page beyond the two cited constants; a program that
-  writes `dskbuf` races with the BIOS.
-- Not searched: the gitignored upstream-source `Applications` tree, for programs
-  that read the fourteen cells (same gap as BIOS19); a "no local source" gap for
-  the standard image: unchanged from `_sysvars-contract.md` section 7 (every
-  listed executable maps to a `tools/make-sd-image.sh` recipe; the script was
-  not read past line 635).
-- Out of scope: the four `bcon*_vec` tables (BIOS22); `_vblqueue` and `_vbl_list`
-  beyond their coupling to `_nvbls`; `_fverify`, `_seekrate`, `_nflops`
-  (hardware rows, written by `flop_hdv_init`).
+- Inferred: the value 4 for `_hdv_boot` is the researcher's choice among the
+  three codes `bootcheck` returns (`bios/blkdev.c:277-285`); one constant if the
+  owner prefers 2 or 3. The encoding `d2800080` of `mov x0,#4` is derived from
+  the MOVZ form of the stubs in `kbdvecs.rs` and not run through clang here.
+- Inferred: the `Vblqueue` watcher no longer compares `$456` (literal reading of
+  ADR-031 amendment item 3); a program that points `_vblqueue` at its own table
+  is then not warned. The owner can add `$456 == $4CE` to the watcher by one
+  row.
+- Inferred: `lost` is charged by the `_vblsem` seen at the later publish
+  (period 5 ms); `acct_fc` is one global word; the per-process word lives in the
+  process record. The developer may choose another placement, the rule (frames
+  with the semaphore down, away time not charged) is the contract.
+- Inferred: the `_dskbufp` buffer is zeroed at load; `_v_bas_ad` stays 0 when
+  no screen exists at load (not in the decision).
+- Inferred, not read: `_frclock - _vbclock` constant > 0 on the oracle; the 5 ms
+  `Vsync` publish lag; `_v_bas_ad == _memtop` on the oracle; `vblqueue[0] ==
+  NULL` for an AUTO program; `$48E` after boot is the first allocated block; no
+  other user of the private page (grep this run).
+- Needs deeper analysis (not blocking): the Hatari VBL rate for the oracle's TT
+  profile and the size of `_frclock - _vbclock` after boot; the oracle contents
+  of `$46A`/`$47A`/`$48E`/`$4C6` are source-predicted (`$4C6` `0x1004` and
+  `_flop_hdv_init` come from the generated map).
+- Needs deeper analysis (BIOS18): whether `Rwabs` honours raw device numbers as a
+  `PUN_INFO` consumer expects; `_pun_ptr`.
+- Not searched: the gitignored upstream-source `Applications` tree for programs
+  that read these cells (as in BIOS19). The "no local source" gap for the
+  standard image is as in `_sysvars-contract.md` section 7.
+- Out of scope: the four `bcon*_vec` tables (BIOS22); `_fverify`, `_seekrate`,
+  `_nflops`; ADR-032 (XHDI); COMPATIBILITY/DEVIATIONS lines for the cells that
+  stay different (`_v_bas_ad` write not honoured, `_pun_ptr` 0, per-process
+  `_themd`/`_dskbufp`, `_vbclock` offset), files the lead owns.
