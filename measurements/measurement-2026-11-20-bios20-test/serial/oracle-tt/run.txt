@@ -1,0 +1,4 @@
+svprobe run, side emutos (2026-11-20T08:36:31Z)
+tree      3ae5333b041afa7ebd6e3e9fa6603b00ff99252b 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SVPROBE.PRG 90eea7eb9cf1f0700e934768d495d9f0ffdb691260e46dea38d36239438a16dd SVPROBE.NAP 703f0c4bc4e7a12b9b62475531a6ac1d52a2c032cb6619ab973687e9e812584c
+oracle    tools/hatari-oracle.sh tt (pinned ROM, tools/oracle/hatari.cfg)

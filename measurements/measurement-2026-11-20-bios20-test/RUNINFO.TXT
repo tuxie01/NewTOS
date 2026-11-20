@@ -1,0 +1,112 @@
+BIOS20 tester run, 2026-11-20. Agent aac830946bf028a6c (tester). Phase test, no accept (branch not landed). Verdict: PARTIAL (see OPEN).
+Scope: developer commit 3ae5333b0 on branch bios20: thirteen system-variable cells served as the decided contract says
+(docs/api/bios/_sysvars-counters-contract.md section 17; docs/api/_super-state.md S10; ADR-031 amendment 2026-11-20).
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.329 (claude --version); host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+Clones (scratch, gitignored), all under target-agents/agent-aac830946bf028a6c/ (whole dir 12G by du -sh at the end; wt 6.5G, wt-main 2.6G, wt-inj 2.0G, tmp 362M):
+  wt        detached 3ae5333b0 (the commit under test)
+  wt-main   detached c2140d9ef (main, parent of the commit: warnings baseline, negative control kernels)
+  wt-inj    detached 3ae5333b0 + the scratch IKBD injector (tools/inject-arm.py patches kernel/src only in this tree; never committed)
+  tmp       built kernels, cards, probes, logs
+Gitignored outputs cited (path under target-agents/agent-aac830946bf028a6c/, size, sha256), also in serial/gitignored-sha256.txt:
+  tmp/kernel8-bios20-rpi4.img          1.6M 675b46b3df262b48ca55b8e2e48028617a38fd9b091c0b0cc8e09bd5ef147fc7  (rpi4 debug, 3ae5333b0)
+  tmp/kernel8-main-rpi4.img            1.6M d6c23756df9705e8ad8bf0b8d9d36b8e26c71fa935c8596fd7dc52be992244ed  (rpi4 debug, c2140d9ef: negative control)
+  tmp/kernel8-inj-rpi4.img             1.6M 27b9b3663e4099e716d0a996f9489f0717769cee869528b80c570a70711c3e17  (rpi4 debug, 3ae5333b0 + injector armed launch:VBHOLD)
+  tmp/kernel8-inj-td2-rpi4-release.img 1.5M eeabb2eb55ed0f25086abc128fe907c838015005166bf4c1c799357930e7b8d3  (rpi4 release, 3ae5333b0 + injector armed up:DESKTOP=td2.script)
+  tmp/kernel-virt-elf                  15M  24eb4e8932a8986069d386a61e358e6503845ad80d6c77bea195a8a6abb81d22  (qemu-virt debug ELF, 3ae5333b0)
+  tmp/kernel-virt-main-elf             15M  13b5e378d8cf1365229c2292dff4664d62e2ab05b6c986ca2cc5e3dfae8147ad  (qemu-virt debug ELF, c2140d9ef)
+  wt/tosdump/build/SVPROBE.NAP 148K 703f0c4bc4e7a12b9b62475531a6ac1d52a2c032cb6619ab973687e9e812584c ; SVPROBE.PRG 124K 90eea7eb9cf1f0700e934768d495d9f0ffdb691260e46dea38d36239438a16dd
+  tmp/bin/APITEST.NCP 160K ec0b00abaadc4b320e3c32f95f77841e816d0d2afa85ce89a163f78e6a73674b (sdk/apps/apitest/build-apitest.sh, built in wt) ; PTERMCH.NCP 8K 30fa331eb3a5a5355664a3f6c7c4c1b8c68d9e1c642281db0a18c11acb64194e
+  tmp/bin/VB-MODE_HOLD.NAP d8c6164f..., VB-MODE_CTRL.NAP 597756ec..., VB-MODE_VBQ.NAP 2731b17b... (temporary tester programs, method/vbhold.c, own tree only)
+Run directory size: see `du -sh` of this directory in the commit (about 0.9M).
+
+COMMANDS (board, outcome)
+1. cargo xtask build --board qemu-virt, --board rpi4 (wt): both OK, "kernel 93 / tos-api 64" warning groups = 159 `warning` lines each; same at c2140d9ef in wt-main (159 / 159, serial/warnings-*.txt): warnings delta 0.
+   cargo clippy -p tos-api --all-targets: 118 lines both trees; cargo clippy -p kernel --features board-rpi4: 196 both trees (serial/clippy-counts.txt): new = 0. (qemu-virt kernel clippy not rerun.)
+   Harness note: the first build with an external CARGO_TARGET_DIR failed in programs/build.sh (as already recorded by the XBIOS11 run); rebuilt with the default wt/target. A second build for qemu-virt after rpi4 said "Finished in 1.0s"; I touched kernel/src/main.rs and tos-api/src/lib.rs to force a real rebuild before booting (cargo-xtask board target footgun).
+2. cargo xtask test (full, wt): exit 0, 2599 passed / 0 failed / 7 ignored over 224 results (serial/cargo-xtask-test.txt). Baseline main 2587/0/7 (docs/STATUS.md says 2587 on main per the brief); developer reports 2599/0/7: equal. tests/bios20_sysvars.rs ran inside.
+3. SVPROBE (tosdump/probes/run-svprobe.sh, one emulator at a time, serial/<side>/SVPROBE.LOG + run.txt):
+   oracle tt        (Hatari, pinned ROM)  serial/oracle-tt
+   oracle falcontc  (Hatari, pinned ROM)  serial/oracle-falcontc
+   NewTOS raspi4b, kernel of 3ae5333b0    serial/newtos-bios20  (BOOT-SERIAL.txt: 0 "[hook]" lines, 0 EXC/PANIC)
+   NEGATIVE CONTROL: NewTOS raspi4b, kernel of c2140d9ef, same probe  serial/newtos-main-negctl: C01 0, C04 0, C05 0, C10/C11/C13 not called (cell 0), C02 nonzero=0, C07 d466_ge1=0, C08 d466_ge3=0, C09 d466_gt0=0, C09b d466=0: the probe fails everywhere the work lies on main.
+4. Four tables on raspi4b via cargo xtask tosdump (method/run-tosdump.sh copied from measurements/measurement-2026-11-20-xbios11-test/method), one QEMU at a time, all "ended normally ... desktop up after DUMPBIOS.NAP, rc=0":
+   bios-r1 35/147 differ; bios-core-r1 2/44; xbios-chardev-r1 1/23; xbios-system-r1 9/43 (serial/tables.log, serial/tables/wt-*/tosdiff-*.txt).
+   The four tosdiff texts, with paths and sha stripped, are byte-identical to measurements/measurement-2026-11-20-xbios11-test/serial/tables/wt-<table>/tosdiff-EMUTOS-*.txt (24369 / 587 / 392 / 3017 bytes, diff empty): no case equal before differs newly.
+5. APITEST on raspi4b (card via tools/mkcard.sh, C:\APITEST.NCP via #Z, C:\PTERMCH.NCP; method/runapi.sh): branch kernel TOTAL 110 / 0 / 6, main kernel TOTAL 110 / 0 / 6, per-test lines identical (serial/apitest-bios20.log, apitest-main.log). 0 EXC/PANIC; the two "[hook] warning" lines in both logs are APITEST's deliberate IKBD and vector-0x20 writes and occur identically on main.
+6. _vblsem hold, mouse and counters on raspi4b (temporary VBHOLD.NAP, method/vbhold.c; scratch injector feeds relative mouse packets, method/vb.script; method/vbdrive.py takes QMP screendumps relative to the injector's "armed" line):
+   hold (serial/vb-hold, screendumps/hold-s0..s2): VBHOLD.LOG: t1s vbclock 970 frclock 970; _vblsem set to 0; t7s vbclock 970 (stands still) frclock 1330 (+360 frames in 6 s = 60 Hz); _vblsem restored to 1; t10s vbclock 1150 frclock 1510 (both +180 in 3 s, resumed).
+   screendump while held and the mouse fed 30 packets (hold-s1.png, Read and viewed): the pointer stays at the old position (about 320,245). After release (hold-s2.png) it is at the final position (about 505,340).
+   control, same program without the hold (serial/vb-ctrl, ctrl-s1.png): pointer at the final position (about 505,340) during the same window; counters vbclock == frclock throughout (971, 1331, 1511).
+   Result: the gate stops the pointer redraw and _vbclock while _vblsem <= 0 and both resume. On screen only; nothing in a log shows the redraw.
+7. vblqueue slot (serial/vb-vbq, method/vbhold.c MODE_VBQ, run with the injector kernel of the same code): a routine entered into slot 0 ($4CE): exactly one line "[hook] warning: slot 0 (PD 0x01a07000) installed vblqueue = 0x1a0831c via page 0; NewTOS never calls it ..."; the program counted 30 Vsyncs and read "routine called 0 times"; counters advanced 913 -> 943. After the program cleared the slot no further warning. A process without any of this (the SVPROBE run, item 3; the hold/ctrl runs) ended with 0 "[hook]" lines (the DumpVec default is the stub).
+8. Desktop boot, headless QEMU, raspi4b (card; serial=on): TeraDesk started by #Z (up:DESKTOP injector, release kernel eeabb2eb...), QED launched from its icon and left, then TeraDesk quit through Ctrl-Q + the Quit button: (td2-s2.png) the EmuTOS desktop is back, pointer drawn at the click position (about 318,315); serial "'C:\Apps\TERADESK\DESKTOP.NAP' exited with rc=0", "[desk] desktop up (1 drives)", 0 EXC/PANIC (serial/vb-td, vb-td2). td-s0/s1: QED's menu bar, td-s2: back at TeraDesk with the pointer on the QED icon, td-s3: Quit/Shutdown dialog. The released QED/TeraDesk path ran with the new vb_draw gate and tick path.
+9. Desktop boot, headless QEMU qemu-virt (ramfb, usb-kbd, usb-mouse), debug ELF 24eb4e89...: serial "[desk] desktop up (0 drives)", 0 EXC/PANIC/hook lines; pointer drawn at screen centre (screendumps/virt-a.png, Read). 20 relative QMP mouse events (virt-b.png): the pointer did NOT move. The same on the main kernel (virt-main-a/b.png identical, also with a 15 s wait): a harness limitation, the same as recorded in measurements/measurement-2026-11-18-xbios22-test/RUNINFO.TXT (item "qemu-virt mouse check"). Not examined further.
+10. cargo xtask doc-check docs/COMPATIBILITY.md docs/DEVIATIONS.md docs/api/bios/_sysvars-contract.md docs/api/bios/_sysvars-counters-contract.md: 6 failures in wt, all "missing" cites into gitignored sdk/ trees (COMPATIBILITY.md:592, :2301 etc.); the same files on main give 9 (the sdk trees differ with what was built in each tree): none concerns BIOS20 text.
+
+VERDICT PER CHECKLIST ROW OF SECTION 17 (17.5 / 17.6). K = shown on the booted NewTOS kernel (raspi4b), O = also on the oracle (Hatari), H = host test only.
+C01 $442 = 20: PASS. K O. NewTOS 20, oracle tt 20, falcontc 20 (neg. control 0). Host tests in the 2599.
+C02 $44E == Logbase(), nonzero: PASS. K O (oracle eq_logbase=1 both; NewTOS 1; main 0).
+C03 Setscreen(L): cell == L, Logbase == L, Physbase unchanged, restored: PASS. K O (all 1 on both sides; main cell_eq_L=0).
+C04 $452 = 1: PASS. K O. C05 $454 = 8: PASS. K O.
+C06 $456 = $4CE; eight slots 0: PASS (decided difference: oracle slot 0 non-NULL, NewTOS null). K O. NewTOS "vblqueue=4ce slot0=null nonnull=0"; oracle "4ce slot0=set nonnull=1". Spec names slot 0 as decided.
+C07 Vsync publishes (b - a >= 1 for $466 and $462): PASS. K O (both sides d466_ge1=1 d462_ge1=1; main 0 0). Boot "_frclock - _vbclock": NewTOS 0, oracle nonzero (both profiles): decided difference (C1/Q1(c)), DEVIATIONS row present.
+C08 $452 = 0, Vsync x3: d466 >= 3, d462 == 0, restored: PASS. K O (both d466_ge3=1 d462=0). Mouse stop: item 6 (raspi4b, screendump, control), O not applicable (oracle mouse not driven).
+C09 child Vsync x3 then parent read strictly larger (per-process refresh): PASS. K (NewTOS d466_gt0=1 ge3=1); the oracle shows the same line but cannot show the per-process view (global counter), as the spec says.
+C09b 200 / frame rate: PASS. K O. NewTOS d466=30, d4ba=100, ratio100=333 (60 Hz). ORACLE RATE MEASURED: tt d466=30 d4ba=100 ratio100=333 = 60.0 Hz; falcontc d466=30 d4ba=119 ratio100=396 = about 50.5 Hz (200/3.96). NewTOS' 60 Hz equals tt, differs from falcontc: the rate is a decided choice (C1, spec section 6) and the oracle rate is Hatari's video mode of the profile.
+C10 $46A $502 $50E $512 non-zero; $502/$50E/$512 equal $506; calls return: PASS. K O. NewTOS: all four equal prt_stat (hdv_init eq_prt_stat=1), calls return ret=12345678; oracle: dump_vec/aux_stat/aux_vec eq=1, hdv_init eq_prt_stat=0 (flop_hdv_init, not called on the oracle) = decided difference (spec C10 row, DEVIATIONS row).
+C11 $47A non-zero, call returns 4: PASS. K. NewTOS "hdv_boot nonzero=1 eq_prt_stat=0", "call hdv_boot ret=4"; oracle cell non-zero, not called (would boot).
+C12 $48E four LONGs {0, membot, memtop-membot, 0}: PASS on NewTOS (all four classes 1). K O. Oracle tt: link_zero=1 start_eq_membot=1 len_eq=1 own_zero=1 (same classes as NewTOS at boot); oracle falcontc: len_eq_memtop_minus_membot=0 (the other three 1). See OBSERVATION 2.
+C13 $4C6 non-zero, 4-aligned, 1024 bytes read, written, restored: PASS. K O (both sides nonzero=1 aligned4=1 read1024=1 write_restore1024=1; main cell 0).
+C14 $516: PASS as documented difference (NewTOS 0, oracle non-zero; Q7, BIOS18). K O.
+Rows from 17.5 only by host test: "$44E == logbase()" itself (the probe C02 shows it on the kernel); "a new process starts with lost = 0" (probe C07 boot line frclock_minus_vbclock_zero=1 shows it for the first process). H: the 12 added tests (2 unit + 10 in tests/bios20_sysvars.rs), inside the 2599/0/7.
+Section 17.3 watcher: DumpVec default = stub (no warning in any probe/APITEST-free run, item 3/7), vblqueue slot warning once and not called (item 7): PASS K. aux_*/hdv_*: no watcher: no warning seen. Section 17.4 S10 and the vb_draw gate: PASS K (item 6, raspi4b screendumps).
+
+VERDICT PER ACCEPTANCE LINE OF TASK/BIOS20.md
+A1 Host tests (boot values, counters advance, stub address equals the prt_* one): PASS (2599/0/7; bios20_sysvars.rs, loader unit tests).
+A2 On the booted kernel (raspi4b): probe reads the cells, calls the three vectors through their old value without a crash, sees _frclock and _vbclock advance: PASS (item 3, 6).
+A3 The same reads on the pinned oracle where it can show them, others named: PASS (item 3; cells the oracle cannot show: per-process view, stub/ROM/buffer addresses, the 5 ms publish lag, hdv_boot effect, NewTOS rate choice).
+A4 No case equal before newly differs in the four tables: PASS (item 4, text-identical to the last committed run of the same tables). cargo xtask test green: PASS. Both boards build: PASS. Warnings delta 0: PASS (build 159/159; clippy 118/118 and 196/196). doc-check of the edited docs 0 new failures: PASS (item 10; the 6 "missing" cites are gitignored sdk trees, also present on main).
+
+ORACLE VALUES THAT DIFFER FROM NewTOS, and whether the spec names them as decided
+ C06 slot 0 (oracle non-NULL after the VDI): named (spec 17.6 C06, ADR-031 amendment item 3, DEVIATIONS row).
+ C07 boot _frclock - _vbclock (oracle != 0, NewTOS 0): named (spec 17.6 C07/section 6 consequence, DEVIATIONS row).
+ C09b falcontc rate 50.5 Hz vs NewTOS 60 Hz: named (spec C09b "about 200/60", C1: "oracle rate is Hatari's video mode, measured in the test run"). The measured values are above; DEVIATIONS/COMPATIBILITY do not record the oracle rates.
+ C10 $46A (oracle flop_hdv_init, NewTOS the ret stub): named (spec C10 row, DEVIATIONS row).
+ C11 $47A (oracle ROM routine not called, NewTOS stub returns 4): named (spec C11, DEVIATIONS row).
+ C12 falcontc len != memtop - membot: the spec's C12 row says "first allocated block (field classes)" and compares classes only; the oracle's own classes at boot are, on tt, equal to NewTOS' and, on falcontc, differ in the length class. Not a NewTOS failure; see OBSERVATION 2.
+ C14 $516 (oracle non-zero, NewTOS 0): named (Q7, DEVIATIONS row).
+ No unnamed difference.
+
+DOCS vs MEASURED
+ docs/api/bios/_sysvars-contract.md rows (13 cells "served", `_vbl_list` "hardware", counts 51/23/5/3/2): consistent with what the probe shows (served cells hold the contract values; `_pun_ptr` 0 and the four bcon*_vec tables not touched: the row counts say 5 missing = `_pun_ptr` + 4 tables). I did not re-count the 84 assignments.
+ docs/COMPATIBILITY.md added lines: consistent with measurements (per-process counters, _vblsem gate on the pointer, _vblqueue slots read 0 and warn once, stubs return, hdv_boot returns 4, _pun_ptr 0, _v_bas_ad equals Logbase). The _v_bas_ad bus-error-before-Logbase claim was not driven by me (Q4 (a): the probe reads the cell after Logbase, as the spec says).
+ docs/DEVIATIONS.md ten rows: all behaviours I could drive match; one row text disagrees with the oracle measurement: the `_themd` row says the oracle holds "the live BDOS descriptor (inferred: the first allocated block)" and "the oracle value is a measurement still to make". The probe now measured the oracle at boot: on tt the cell has link 0, start == membot, length == memtop - membot, own 0 (the getmpb-time values, same classes as NewTOS), on falcontc the length differs from memtop - membot. The row's inference is not what was measured at boot.
+
+DROVE: host tests, both board builds, clippy deltas, SVPROBE on both oracle profiles and NewTOS + negative control, the four tables, APITEST x2, _vblsem hold with mouse and screendumps (+control), vblqueue slot warning, a clean process without warnings, TeraDesk + QED start/leave with pointer, desktop boot of both boards, doc-check.
+COULD NOT VERIFY: pointer following the mouse on qemu-virt (QMP relative events do not move the pointer even on main; harness limitation); `cargo xtask run` itself (I booted the same built images with the same flags directly); Q4 (a) bus error on a dereference before Logbase (not a case of the probe; spec-named); the qemu-virt kernel's clippy.
+REAL-PI4-ONLY (not claimed): the same probe and the pointer on the real Pi 4 (frame clock and 200 Hz tick from the generic timer; the Pi is the acceptance gate); interactive mouse via USB-HID; HDMI; cache coherence of the page-0 publishes; the QUIRK-001 TTBR0 wedge; the 5 ms publish lag as a real-time effect.
+
+OPEN
+ 1. qemu-virt mouse movement could not be shown on either kernel (item 9): pointer drawn on qemu-virt, movement shown only on raspi4b via the scripted injector. Someone must decide whether that counts as the "mouse drawn and moving" row for qemu-virt or provide a working virt input route.
+ 2. docs/DEVIATIONS.md `_themd` row text (see DOCS vs MEASURED, OBSERVATION 2): the oracle measurement is available now; the developer/lead may correct the row.
+ No FAIL item.
+
+OBSERVATIONS (out of scope or informational)
+ 1. The scripted injector measurements use debug kernels (items 6, 7); the TeraDesk run uses a release kernel (item 8). Same code, scratch injector in wt-inj only.
+ 2. Oracle _themd (C12): tt boot equals NewTOS' classes, falcontc length differs from memtop - membot. Measured, not explained.
+ 3. The "FAIL rc=-33" lines in the APITEST totals are its SKIP rows (6 SKIP in both logs, identical on main).
+ 4. falcontc probe frame rate ~50.5 Hz, tt 60 Hz.
+
+IMAGE MANIFESTS (copies in serial/**/card.img.manifest and serial/apitest.img.manifest), every one host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) and the line `optional_missing none` (quoted verbatim):
+  serial/newtos-bios20/card.img.manifest            image_sha256 a7924e018253f70e27c0a499290d6df0c0aee0bfa172105f6c81ac2041f3965d  optional_missing none   (booted clone after run: 7c2ea9a4b9fd205a...)
+  serial/newtos-main-negctl/card.img.manifest       image_sha256 3946a26d94bfd3548cc8a48dd8e9dc79638bdbf9722c8d67690472f87b36988e  optional_missing none
+  serial/apitest.img.manifest                       image_sha256 605cc2899e24171ae9373d8588c1aa45e0dffa57636d9cb630e7611270a8c94c  optional_missing none
+  serial/vb-hold, vb-ctrl, vb-vbq, vb-td(=vb-td2) card.img.manifest: cf794b24..., b9213c1f..., 03f0630b..., bca23834...  optional_missing none (each)
+  serial/tables/wt-bios-r1 a47dffe7..., wt-bios-core-r1 8a79a0d8..., wt-xbios-chardev-r1 5ad5aad3..., wt-xbios-system-r1 18c9ade1...  optional_missing none (each)
+  (full 64-hex values in the manifests)
+Oracle: pinned ROM via tools/hatari-oracle.sh (tt and falcontc); Hatari run logs in serial/oracle-*/hatari.log.
+Reproducing commands (all in the clone wt, SVPROBE_SCRATCH under target-agents/agent-aac830946bf028a6c/tmp/scr):
+  tosdump/probes/run-svprobe.sh emutos tt <out> | emutos falcontc <out> | newtos <out> <kernel8.img>
+  bash method/run-tosdump.sh <wt> wt <out-root>  (four tables)
+  method/vbdrive.py <kernel> <card> <tag> <shot offsets>  (injector kernel; method/vb.script, td2.script)
+  method/virtdrive.py <qemu-virt ELF> <tag>

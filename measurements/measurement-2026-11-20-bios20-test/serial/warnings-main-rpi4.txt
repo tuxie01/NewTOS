@@ -1,0 +1,2 @@
+warning: `tos-api` (lib) generated 64 warnings
+warning: `kernel` (lib) generated 93 warnings

@@ -1,0 +1,21 @@
+SVPROBE TASK/BIOS20
+C01 timer_ms=20
+C04 vblsem=1
+C05 nvbls=8
+C06 vblqueue=4ce slot0=null nonnull=0
+C10 hdv_init nonzero=1 eq_prt_stat=1 dump_vec eq=1 aux_stat eq=1 aux_vec eq=1 prt_stat nonzero=1 eq_prt_vec=1
+C11 hdv_boot nonzero=1 eq_prt_stat=0
+C13 dskbufp nonzero=1 aligned4=1
+C14 pun_ptr nonzero=0
+C12 themd link_zero=1 start_eq_membot=1 len_eq_memtop_minus_membot=1 own_zero=1
+C10 calls ret=12345678
+C11 call hdv_boot ret=4
+C13 read1024=1 write_restore1024=1
+C02 v_bas_ad nonzero=1 eq_logbase=1
+C03 moved=1 cell_eq_L=1 logbase_eq_L=1 cell_eq_logbase=1 physbase_unchanged=1 restored=1
+C07 boot frclock_minus_vbclock_zero=1
+C07 vsync d466_ge1=1 d462_ge1=1
+C08 vblsem0 d466_ge3=1 d462=0
+C09 child rc=0 d466_gt0=1 d466_ge3=1
+C09b d466=30 d4ba=100 ratio100=333
+end

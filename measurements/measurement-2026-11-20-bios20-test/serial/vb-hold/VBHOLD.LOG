@@ -1,0 +1,4 @@
+start hz=3032 vbclock=910 frclock=910
+t1s hz=3232 vbclock=970 frclock=970
+t7s hz=4432 vbclock=970 frclock=1330
+t10s hz=5032 vbclock=1150 frclock=1510

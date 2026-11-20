@@ -1,0 +1,21 @@
+SVPROBE TASK/BIOS20
+C01 timer_ms=0
+C04 vblsem=0
+C05 nvbls=0
+C06 vblqueue=zero slot0=set nonnull=8
+C10 hdv_init nonzero=0 eq_prt_stat=0 dump_vec eq=0 aux_stat eq=0 aux_vec eq=0 prt_stat nonzero=1 eq_prt_vec=1
+C11 hdv_boot nonzero=0 eq_prt_stat=0
+C13 dskbufp nonzero=0 aligned4=1
+C14 pun_ptr nonzero=0
+C12 themd link_zero=1 start_eq_membot=0 len_eq_memtop_minus_membot=0 own_zero=1
+C10 calls not made (a cell is 0)
+C11 call hdv_boot not made (cell 0)
+C13 not accessed (cell 0)
+C02 v_bas_ad nonzero=0 eq_logbase=0
+C03 moved=1 cell_eq_L=0 logbase_eq_L=1 cell_eq_logbase=0 physbase_unchanged=1 restored=0
+C07 boot frclock_minus_vbclock_zero=1
+C07 vsync d466_ge1=0 d462_ge1=0
+C08 vblsem0 d466_ge3=0 d462=0
+C09 child rc=0 d466_gt0=0 d466_ge3=0
+C09b d466=0 d4ba=100 ratio100=0
+end

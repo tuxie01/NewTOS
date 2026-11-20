@@ -1,0 +1,7 @@
+svprobe run, side newtos (2026-11-20T08:36:58Z)
+tree      3ae5333b041afa7ebd6e3e9fa6603b00ff99252b 0 dirty paths in kernel tos-api tos-types tosdump/probes
+probes    SVPROBE.PRG 90eea7eb9cf1f0700e934768d495d9f0ffdb691260e46dea38d36239438a16dd SVPROBE.NAP 703f0c4bc4e7a12b9b62475531a6ac1d52a2c032cb6619ab973687e9e812584c
+kernel    675b46b3df262b48ca55b8e2e48028617a38fd9b091c0b0cc8e09bd5ef147fc7 /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aac830946bf028a6c/tmp/kernel8-bios20-rpi4.img
+card      a7924e018253f70e27c0a499290d6df0c0aee0bfa172105f6c81ac2041f3965d (tools/mkcard.sh, C:\SVPROBE.NAP, #Z autorun)
+qemu      done
+card      after 7c2ea9a4b9fd205ab5912aef0aa70f0a93a0f7428599739f0393a76ef1c59208 (the booted clone)

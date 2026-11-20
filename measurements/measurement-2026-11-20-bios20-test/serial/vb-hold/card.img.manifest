@@ -1,0 +1,12 @@
+# NewTOS SD image manifest v1 -- written by tools/mkcard.sh
+image /Volumes/Daten/Development/PiRusTOS/target-agents/agent-aac830946bf028a6c/tmp/vb-hold.img
+image_sha256 cf794b2491b49f1c234d571371377c3416c43677914e26f4a76f1bf58a5662ee
+size_mib 64
+created 2026-11-20T08:44:40Z
+host_clang Apple clang version 21.0.0 (clang-2100.4.1.1)
+host_cflow /opt/homebrew/bin/cflow (GNU cflow) 1.8
+switch n/a
+optional_missing none
+# file <sha256> <bytes> <path on the card> / metadata <path> (macOS, not hashed)
+file a120c96a81ad7e16e33907915ad2e12618bd6963267bc886e8cfb93809c38340 29 C:\NEWDESK.INF
+file d8c6164fcc1678d3b118d4f09108ee28cb0f4d198aa22ee2a6609b965028297d 144312 C:\VBHOLD.NAP

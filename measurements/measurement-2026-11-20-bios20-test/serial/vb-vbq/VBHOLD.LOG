@@ -1,0 +1,3 @@
+start hz=3044 vbclock=913 frclock=913
+after30vsync hz=3142 vbclock=943 frclock=943
+routine called 0 times
