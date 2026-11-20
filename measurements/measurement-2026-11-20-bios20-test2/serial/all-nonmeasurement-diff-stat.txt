@@ -1,0 +1,6 @@
+ TASK/BIOS20-STATUS-UNFINISHED.MD            | 22 ++++++++++++++++++++++
+ docs/COMPATIBILITY.md                       |  9 +++++++--
+ docs/DEVIATIONS.md                          |  3 ++-
+ docs/api/bios/_sysvars-contract.md          |  2 +-
+ docs/api/bios/_sysvars-counters-contract.md | 11 ++++++++---
+ 5 files changed, 40 insertions(+), 7 deletions(-)

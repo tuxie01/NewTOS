@@ -1,0 +1,24 @@
+BIOS20 tester re-test, 2026-11-20. Agent aac830946bf028a6c (tester). Phase test, no accept. Verdict: PASS.
+Scope: branch bios20 head dbb8620b8 (docs rework, merge c461f7c17 of main) after the PARTIAL of measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT (immutable). Narrow re-test: code unchanged, edited statements, doc-check.
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.329; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (no image booted in this run).
+Clone: target-agents/agent-aac830946bf028a6c/wt (detached dbb8620b8 for this run), wt-main (c2140d9ef) for the main-side doc-check; whole agent dir about 12G (du -sh). No gitignored output cited.
+
+1. git diff 3ae5333b0 dbb8620b8 over kernel/ tos-api/ tos-types/ programs/ sdk/ tosdump/ tools/: EMPTY (0 lines; serial/code-diff-stat.txt empty). Outside measurements/ the branch changed only TASK/BIOS20-STATUS-UNFINISHED.MD, docs/COMPATIBILITY.md, docs/DEVIATIONS.md, docs/api/bios/_sysvars-contract.md, docs/api/bios/_sysvars-counters-contract.md (serial/all-nonmeasurement-diff-stat.txt). So the tested kernels, probes and results of the first run stand; nothing re-run.
+
+2. Edited statements against the first run's RUNINFO (probe C12, C09b), each right:
+ - DEVIATIONS `_themd` row ("tt the same classes as NewTOS: link 0, start membot, length memtop - membot, owner 0; falcontc the length differs, the other three as tt; measured, falcontc length not explained"): RIGHT (C12: tt all four 1; falcontc len_eq_memtop_minus_membot=0, link/start/own 1).
+ - DEVIATIONS new frame-rate row ("NewTOS 60 Hz on every board; oracle 60.0 Hz tt, about 50.5 Hz falcontc; ticks per frame 3.33 and 3.96; measured C09b"): RIGHT (tt d466=30 d4ba=100 ratio 333; falcontc d4ba=119 ratio 396; NewTOS 333).
+ - COMPATIBILITY frame-clock bullet (60 Hz on every board, owner decision C1; oracle 60.0 tt / about 50.5 falcontc): RIGHT.
+ - COMPATIBILITY `_themd` bullet ("same field classes on tt, on falcontc a length other than memtop - membot"): RIGHT.
+ - _sysvars-contract.md `0x48E` row (Q5 (b) value; measured tt same classes, falcontc other length; "first allocated block" inference no longer asserted as the oracle's boot value): RIGHT.
+ - _sysvars-counters-contract.md section 11 "Measured" note and C12 row of 17.6: RIGHT (the inference is labelled inferred and the measurement says it does not hold at boot; falcontc length unexplained, as measured).
+ - _sysvars-counters-contract.md C09b row (tt 3.33 / 60.0 Hz, falcontc 3.96 / about 50.5 Hz, NewTOS about 200/60, measured 3.33): RIGHT.
+ Remark (no action): the EmuTOS-source column of the `0x48E` row still says "afterwards live BDOS state"; that is the source reading, not a measured claim, and the measured note beside it limits it.
+
+3. cargo xtask doc-check --base main on the four edited docs (serial/doc-check-base-main.txt): 6 failures, 4 files, 1395 path cites, 121 ADR cites; every failure is "missing" for a cite into a gitignored sdk/ tree: COMPATIBILITY.md:255 (a_wind_get.c, a_graf_xhandle.c), :397, :482, :592, :2306. None is on a line the branch edited (the branch's COMPATIBILITY edits are the frame-clock and _themd bullets). The same cites fail on main (wt-main, serial/doc-check-main-failures.txt: 255 x2, 397, 482, 592, and fsnorm.c at :2263, the line shift being the branch's added lines); main shows three more (alglobal.c, linea.h x2) only because that scratch tree has no built libc. CONFIRMED: the 6 are old and fail on main too; the branch introduces none.
+
+Open item 1 of the first run (pointer movement on qemu-virt) is taken, per the coordinator, as a rig limit, shown on raspi4b: it goes on the real-Pi list and does not hold the verdict.
+REAL-PI4-ONLY (not claimed): the probe and the pointer on the real Pi 4; USB-HID mouse; HDMI; cache coherence of the page-0 publishes; QUIRK-001 TTBR0 wedge; pointer follow on qemu-virt as a rig limit.
+DROVE: git diff over the code trees, reading of the seven edited statements against the first run, doc-check --base main on the branch and doc-check on main.
+COULD NOT VERIFY: nothing new beyond the first run's list.
+Whole-ticket verdict: first run found no failure and two items (virt rig limit, _themd text); both closed. PASS.
