@@ -41,3 +41,20 @@ The documentation rests the review of the parked tickets found
 - `docs/api/xbios/11-random.md`, Pi binding: says there is no 200 Hz counter; stale since `_hz_200` is live.
 
 After the landing the lead brings BIOS13 and XBIOS07 to the owner for closing.
+
+## Landed (2026-11-20)
+
+Researcher READY `120ab706d`, landed as `95eddbb26`. Every
+`CONF_WITH_*` switch the triage named is 1 in the reference build and the XBIOS table runs to 0x8D; the rows give
+the real reasons. The document rests of TASK/BIOS13.md and TASK/XBIOS07.md are corrected.
+
+For the owner, found and not changed: differences to EmuTOS without a row in `docs/DEVIATIONS.md`: `Giaccess`,
+`Ongibit`, `Offgibit` and `Dosound` (the oracle drives the PSG, NewTOS returns the values of a build without one);
+`Midiws` and `Ikbdws` (the oracle transmits through the ACIA, NewTOS drops the bytes); `Jdisint` and `Jenabint`
+(TASK/XBIOS16.md). Code comments that compare with "an EmuTOS build without the switch" although the pinned build
+has it on: `tos-api/src/xbios/system.rs:101@YM2149`, `tos-api/src/vdi/escape.rs:705@bell`,
+`tos-api/src/gemdos/console.rs:552@cprnout` and `tos-api/src/gemdos/console.rs:1089@cprnos`; for the developer who
+next touches those files.
+
+A documentation-only ticket: it cannot reach DONE through `accept`; the lead brings it, BIOS13 and XBIOS07 to the
+owner.
