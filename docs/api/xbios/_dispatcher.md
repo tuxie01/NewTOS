@@ -176,8 +176,14 @@ Beyond 0x57: Videl (0x58–0x5F, `CONF_WITH_VIDEL`; the four screen queries 0x58
 > Note: the 25 in-scope functions are the ones present with a real handler
 > in the NewTOS TT-shifter profile *and* documented as their own spec file.
 > The floppy/DMA (`_floppy-stubs.md`), PSG (`_psg-group.md`) and TT-shifter
-> (`_tt-shifter.md`) entries are present in the table but grouped; the MFP
-> (0x0D/0x1A/0x1B/0x1F) entries are `xbios_unimpl` in the profile. The NVRAM
+> (`_tt-shifter.md`) entries are present in the table but grouped. The MFP
+> entries (0x0D/0x1A/0x1B/0x1F) are **not** `xbios_unimpl` in the reference build
+> either: `CONF_WITH_MFP` is 1 there (`references/emutos-oracle/1a7484ab/include/config.h:929-930`;
+> the oracle ROM links `_mfpint`, `_jdisint`, `_jenabint`, `_xbtimer`, `emutos.map:650-654`;
+> `bios/xbios.c:1299-1300,1316-1318,1326-1327`). On NewTOS `Mfpint` and `Xbtimer`
+> are warned installers (`tos-api/src/xbios/mod.rs:140@MFPINT`, `:141@XBTIMER`; BIOS15, ADR-031) and
+> `Jdisint`/`Jenabint` take the catch-all arm and answer their number
+> (`tos-api/src/xbios/mod.rs:162@other`; the Pi has no MFP, return value not measured, `TASK/XBIOS16.md`). The NVRAM
 > entry (0x2E) is **not** `xbios_unimpl` in the reference build:
 > `CONF_WITH_NVRAM` is 1 there (`include/config.h:1161-1163`; the oracle ROM
 > links `_nvmaccess`, `emutos.map:688`), so the slot holds `nvmaccess`
@@ -187,11 +193,11 @@ Beyond 0x57: Videl (0x58–0x5F, `CONF_WITH_VIDEL`; the four screen queries 0x58
 > `has_nvram`); owner decision 2026-11-12, `docs/COMPATIBILITY.md`, "XBIOS for
 > absent Atari hardware" (TASK/XBIOS10).
 >
-> **Setprt (0x21) is not in that unimpl group** despite `CONF_WITH_PRINTER_PORT`
-> being off in the NewTOS profile: `setprt()` (`bios/parport.c:49-57`) is a
+> **Setprt (0x21)** is a real handler in the reference build (`CONF_WITH_PRINTER_PORT` = 1,
+> `include/config.h:987-988` of the oracle tree, `emutos.map:697`) and is implemented on NewTOS:
+> `setprt()` (`bios/parport.c:49-57`) is a
 > pure software config-word getter/setter with no hardware dependency — only
-> the paired `prnout()` output path needs the (absent) parallel port. NewTOS
-> honours the `Setprt` contract regardless of the config gate; see
+> the paired `prnout()` output path touches the actual printer port. See
 > `docs/api/xbios/21-setprt.md` and `docs/api/_discrepancies.md` D-060.
 
 ---
@@ -229,6 +235,8 @@ ABI tables live in each function spec.
 
 ## Open points
 
+- Corrected (SPEC07): the MFP sentence of the §5 note and the Setprt paragraph (both said or implied a switch was off); the values are cited from the oracle tree. The §4 table-length text was already right (0x8D).
+- Inferred: that `make 512` sets no override of these switches (`Makefile:561`, no `localconf.h`); same inference as `_triage.md`.
+
 - Corrected (TASK/XBIOS13): the NVRAM (0x2E) `xbios_unimpl` statement, now cited against `include/config.h:1161-1163`, `bios/xbios.c:1348-1349` and `emutos.map:688` of the oracle's build tree.
-- Out of scope: the MFP entries (0x0D/0x1A/0x1B/0x1F) are described as `xbios_unimpl` in the same sentence; `docs/api/xbios/_full-function-inventory.md:72` says `CONF_WITH_MFP` = 1 in the reference build. Not checked here.
 - Inferred: that the oracle's macro value is 1 follows from the default and the linked symbol, not from a preprocessor run of the oracle tree.

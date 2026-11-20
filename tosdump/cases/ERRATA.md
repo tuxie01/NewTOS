@@ -89,10 +89,16 @@ itself stays: `TASK/M10.md`.
 **Item 1 — the rule of lines 53–57.** *Where:* `Setexc(n,-1)` for `0x2`, `0x21`,
 `0x100`, `0x101`, `0x102`, compared as `NONZERO`. *What is wrong:* a vector
 inquiry returns a TOS address, and `NONZERO` also passes a non-zero value
-that is no address — NewTOS' placeholders for `etv_timer/critic/term` are
-64-bit tokens (`tos-api/src/bios/vectors.rs:45@ETV_DEFAULT_JUST_RTS`,
-`:54@ETV_DEFAULT_CRITIC`), while EmuTOS returns ROM addresses
-(`references/emutos/bios/bios.c:1070-1080`). *Evidence:* `docs/audits/2026-10-28-bios-core.md`
+that is no address — NewTOS' placeholders for `etv_timer/critic/term` were
+64-bit tokens (the `ETV_DEFAULT_JUST_RTS` and `ETV_DEFAULT_CRITIC` constants of
+`tos-api/src/bios/vectors.rs`), while EmuTOS returns ROM addresses
+(`references/emutos/bios/bios.c:1070-1080`). *State when written (2026-10-28);
+those two constants were removed by BIOS07 (2026-10-29, `TASK/BIOS13.md`
+addendum). At `main` the boot value of these vectors is the shared stub
+`JUST_RTS` = `xbios::kbdvecs::RET_STUB_VA` (`tos-api/src/bios/vectors.rs:71@JUST_RTS`),
+a 32-bit address below `0x8000_0000` (`:73@JUST_RTS`) in the stub page, no longer a
+token; the erratum's conclusion (a `NONZERO` pass does not show an address in
+the EmuTOS sense) is not re-measured here.* *Evidence:* `docs/audits/2026-10-28-bios-core.md`
 BIOS-CORE-005 (probe S01–S03). *What follows:* a pass of lines 55–57 does not
 show that the value is an address. `tosdump/cases/bios-core-r1.tsv` lines
 55–57 state the stronger rule (`PTR_RAM`, "not < 0x80000000") and are the
@@ -114,3 +120,11 @@ comments name lines of the EmuTOS source that stand elsewhere at the pin
 Not checked here: lines 189 (`bios/nvram.c:30,183-197`) and 118
 (`bios/floppy.c:731-735`), which the audit does not name. The measured values are
 unaffected; the comments are only wrong as cites.
+
+---
+
+## Open points
+
+- Corrected (SPEC07): `bios-r1.tsv` item 1 no longer cites the removed `ETV_DEFAULT_*` constants as live symbols; it names them as removed and cites `JUST_RTS` (`tos-api/src/bios/vectors.rs:71@JUST_RTS`).
+- Inferred: that the removal by BIOS07 is complete (a grep of `tos-api/src/bios/vectors.rs` finds no `ETV_DEFAULT`); other files were not searched.
+- Not re-measured: whether the stub address satisfies `PTR_RAM` of `bios-core-r1.tsv`; that is the tester's measurement, not a reading.

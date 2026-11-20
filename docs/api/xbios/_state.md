@@ -55,16 +55,19 @@ struct lives in BIOS BSS, process-lifetime stable.
 > (`ikbdstate`, `kbdlength`) adjacent to the table in `bios/aciavecs.S`.
 > **Correction (KEYS02):** `ikbdstate` is the Compendium's documented
 > `drvstat` and *is* contract surface; only `kbdlength` is internal
-> (`22-kbdvbase.md`, Korrekturen 3).
+> (`22-kbdvbase.md`, "Corrections to the earlier version" item 3).
 
-**NewTOS (KEYS02, built 2026-10-04):** one table **per process**, in page 0 of
-its TPA at `0x9A0` with **8-byte** slots (LP64): `mousexvec` `0x9A0`, `kbdvec`
-`0x9A8`, the nine slots from `0x9B0` (= `Kbdvbase()`), `drvstat`/`kbdlength`
-`0x9F8`/`0x9F9` (always 0). Defaults are EL0 stubs (`ret` at `0xA00`;
-`kbdvec_default` at `0xA08` → `Ssystem(2002)` → the kernel decoder). Only
+**NewTOS (KEYS02, built 2026-10-04; location moved by MEM12):** one table **per process**, in the
+private read-write page at `0x7F000` (`tos-api/src/bdos/process/loader.rs:1048@KBDVECS_AREA_VA` `=
+mmu::PRIV_PAGE_VA`, `tos-api/src/bdos/process/mmu.rs:259@PRIV_PAGE_VA`) with **8-byte** slots (LP64;
+`tos-api/src/xbios/kbdvecs.rs:75@OFF_MOUSEXVEC`): `mousexvec` `0x7F000`, `kbdvec`
+`0x7F008`, the nine slots from `0x7F010` (= `Kbdvbase()`), `drvstat`/`kbdlength`
+`0x7F058`/`0x7F059` (always 0). (KEYS02 first built it in page 0 of the TPA at `0x9A0`;
+MEM12 moved it, `22-kbdvbase.md` Part D "D1-new".) Defaults are EL0 stubs in the shared stub page (`ret` at `0x7E040`;
+`kbdvec_default` at `0x7E048` → `Ssystem(2002)` → the kernel decoder). Only
 `kbdvec` is called — as an EL0 upcall at the next syscall return, one byte per
 upcall, `x0` = scancode, `x1` = 0; the other slots are present but not called
-(documented gap). Full binding: `22-kbdvbase.md` Teil B/C; code
+(documented gap). Full binding: `22-kbdvbase.md` Parts B/C; code
 `tos-api/src/xbios/kbdvecs.rs`.
 
 ---
@@ -205,8 +208,8 @@ therefore unchanged.
 |-------:|--------|------|---------|
 | 0x00   | `buf`  | `UBYTE *` | ring buffer base |
 | 0x04   | `size` | `WORD` | buffer size in bytes |
-| 0x06   | `head` | `volatile WORD` | write index (ISR advances) |
-| 0x08   | `tail` | `volatile WORD` | read index (consumer advances) |
+| 0x06   | `head` | `volatile WORD` | read index (consumer advances) |
+| 0x08   | `tail` | `volatile WORD` | write index (the producer advances it when it pushes; `bios/ikbd.c:159-172`) |
 | 0x0A   | `low`  | `WORD` | low-water mark (resume flow) |
 | 0x0C   | `high` | `WORD` | high-water mark (assert flow) |
 
@@ -337,7 +340,9 @@ NewTOS: preserve both vars; a NewTOS default `dump_vec` may write a PNG.
 
 `sndtable` / `snddelay` drive the `Dosound` script from the VBL when
 `CONF_WITH_YM2149` is set. Without it, `Giaccess`/`Dosound` return `0` and
-`Ongibit`/`Offgibit` are no-ops (`_psg-group.md`). NewTOS profile: no YM2149.
+`Ongibit`/`Offgibit` are no-ops (`bios/sound.c:110-112,157-159`). The reference build has
+`CONF_WITH_YM2149` = 1 (`references/emutos-oracle/1a7484ab/include/config.h:980-981`), so on the oracle these four act on a
+PSG; NewTOS has no YM2149 (the Pi lacks the chip) and answers the `#else` values (`_psg-group.md`).
 
 ---
 
@@ -386,3 +391,11 @@ serialised per-CPU, so the ABI surface still ignores SMP.
 - GEMDOS state — `docs/api/gemdos/_state.md` (§12 shares the date/time
   globals `Settime`/`Gettime` write).
 - Structures — `docs/api/structures/`.
+
+---
+
+## Open points
+
+- Corrected (SPEC07): the NewTOS IKBD table address (`0x9A0` in TPA page 0, now `0x7F000` / `Kbdvbase()` `0x7F010`, stubs `0x7E040`/`0x7E048`), head/tail of the `IOREC` table (`tail` is the write index, `bios/ikbd.c:159-172`), and the YM2149 statement in §6.
+- Inferred: none added; the rest of this file was not re-read in SPEC07 (scope: the three statements and the PSG sentence).
+- Out of scope: `0e-iorec.md:36,76,162` still contain German text (not touched here).

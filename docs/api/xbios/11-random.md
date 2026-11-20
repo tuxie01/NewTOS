@@ -303,5 +303,5 @@ R01-R03 and P08 (generator unchanged). The zero seed is not probed.
 - `xsseed.c` is a permanent probe under `tosdump/probes/` (XBIOS11); a tosdiff
   table case would need the first `Random` before any other, so it stays a probe
   until a follow-up ticket finds a table form (CLAUDE.md, Testing, probe rule).
-- Out of scope: `docs/api/xbios/_state.md:347-351` already states the EmuTOS seed
+- Out of scope: `docs/api/xbios/_state.md:349-357` already states the EmuTOS seed
   correctly; `docs/COMPATIBILITY.md` has no `Random` entry (lead's call).

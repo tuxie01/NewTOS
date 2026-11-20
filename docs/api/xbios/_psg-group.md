@@ -4,10 +4,19 @@
 > "own-spec" set). Source: EmuTOS @ `1a7484ab` — `bios/sound.c`.
 > Cite-never-paste: no C bodies; constants/register tables as data.
 >
-> NewTOS profile: no YM2149 hardware. With `CONF_WITH_YM2149` off, all four
-> take the EmuTOS `#else` branch — `Giaccess`/`Dosound` return `0`,
-> `Ongibit`/`Offgibit` are no-ops. This is **not** the `xbios_unimpl`
-> function-number pattern; callers see plausible zero defaults.
+> **Reference build vs. NewTOS (SPEC07).** The pinned reference build (`make 512`,
+> oracle ROM `COUNTRY=de`) has `CONF_WITH_YM2149` = **1**
+> (`references/emutos-oracle/1a7484ab/include/config.h:980-981`, the default; the
+> only 0-setting, `:704-705`, sits in the `!CONF_ATARI_HARDWARE` block that starts at `:673`, and `CONF_ATARI_HARDWARE` defaults to 1, `:665-667`; the oracle's `emutos.map:749-752` links
+> `_giaccess`, `_ongibit`, `_offgibit`, `_dosound`). So on the oracle `Giaccess`/`Ongibit`/`Offgibit` act on a PSG
+> (`bios/sound.c:95-109,116-126,131-141`) and `Dosound` installs the script and returns the old `sndtable`
+> (`bios/sound.c:147-156`). The `#else` branch quoted below (`Giaccess`/`Dosound` return `0`,
+> `Ongibit`/`Offgibit` do nothing, `bios/sound.c:110-112,157-159`) is **not** what the reference build runs. NewTOS has no
+> YM2149 (the BCM2711 board has no such chip; ADR-012 amendment 2026-11-12 in `docs/MEMORY.md`: "no YM2149, `Dosound` and `Giaccess` stay
+> plausible-zero no-ops", `SND_PSG` bit not set) and returns the same values as that `#else` branch. This is **not** the `xbios_unimpl`
+> function-number pattern; callers see plausible zero defaults. **Difference to the reference build:** against the oracle every
+> PSG register read/write and every `Dosound` script differs; no `docs/DEVIATIONS.md` row names it (the ADR-012 amendment is
+> the only record; see Open points).
 
 | ID    | Name      | Native ABI (`include/xbiosbind.h`) | Args | NewTOS return |
 |------:|-----------|------------------------------------|------|---------------|
@@ -98,7 +107,7 @@ effects, classic games' music.
 
 ## Configuration
 
-- `CONF_WITH_YM2149`. NewTOS profile: not present.
+- `CONF_WITH_YM2149` = 1 in the reference build (`references/emutos-oracle/1a7484ab/include/config.h:980-981`). NewTOS: no chip, the `#else` values are returned (see the top of this file).
 
 ## NewTOS implementation notes
 
@@ -108,3 +117,12 @@ effects, classic games' music.
 so NewTOS returns `0` to avoid breaking programs that probe `Giaccess(0, n)`
 for `== 0`. A future NewTOS audio extension (`Dosound` stays a no-op) can
 expose PCM playback via the VideoCore audio block at a reserved XBIOS slot.
+
+---
+
+## Open points
+
+- Corrected (SPEC07): "`CONF_WITH_YM2149` off / NewTOS profile takes the `#else` branch" (header and *Configuration*): the reference build has it on; NewTOS merely returns the `#else` values because the Pi has no PSG.
+- Cited from the source: the macro default and the linked symbols; inferred: that `make 512` sets no override (`Makefile:561` defines only `-DTARGET_512`; same inference as `_triage.md`).
+- For the lead: no `docs/DEVIATIONS.md` row covers `Giaccess`/`Ongibit`/`Offgibit`/`Dosound` against the oracle (only the ADR-012 amendment, `docs/MEMORY.md`, which names the `_SND` bit).
+- Code comment for the next developer: `tos-api/src/xbios/system.rs:101@YM2149` ("As on an EmuTOS build without `CONF_WITH_YM2149`, these take the `#else` branch") compares with a build the pin does not use; the values are right, the reason is the missing chip. Similar comparisons: `tos-api/src/vdi/escape.rs:705@bell`, `tos-api/src/gemdos/console.rs:552@cprnout` and `:1089@cprnos` (`CONF_WITH_PRINTER_PORT`) — not changed.

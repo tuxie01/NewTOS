@@ -1,768 +1,784 @@
-# `Kbdvbase` (XBIOS 0x22) — der Tastatur-/IKBD-Vektor
+# `Kbdvbase` (XBIOS 0x22) — the keyboard/IKBD vector table
 
-> **Status: FREIGEGEBEN (Anwender 2026-10-04)** — D1–D8 wie empfohlen: Tabelle je Prozess in TPA-Seite 0 bei `0x9A0` (D1); AAPCS64, `x0` = Scancode/Paketzeiger, `x1` = 0 bei `kbdvec` bis `Iorec(1)` (D2/D2a); Ring 64 Eintraege je Prozess + Upcall-Kette (D3/D3a); `ikbdsys`-Wechsel-Stopp nachbauen (D4); `drvstat` = 0 (D5); Syscall-Nummer vergibt der Lead beim Bau aus dem freien internen Bereich (D6); Minimum jetzt = `kbdvec` + gueltige Stubs in allen Slots, uebrige Haken Folgeticket, Luecke in STATUS „Blocked“ (D7); Haken verschwindet mit dem Prozess, in COMPATIBILITY.md (D8). Vorherige Kennzeichnung: ENTWURF (KEYS02, Schritt 1 / Regel 5). Bei der Freigabe
-> war nichts davon gebaut; **der Kernteil (D7-Minimum) ist seit 2026-10-04 gebaut —
-> Teil C** (Syscall-Nummer D6 = `Ssystem` Modus **2002**, O1 geklaert). Teil A (EmuTOS-Referenz) ist aus dem Quelltext belegt; Teil B
-> (NewTOS-Abbildung) ist ein **Vorschlag**, jede Stelle mit `ENTSCHEIDUNG D<n>`
-> braucht ein Ja/Nein des Anwenders (Liste am Ende).
+> **Status: APPROVED (owner 2026-10-04)** — D1–D8 as recommended: table per process (D1; first in TPA page 0 at `0x9A0`, **moved by MEM12 to the private read-write page `0x7F000`, see Part D "D1-new"**); AAPCS64, `x0` = scancode/packet pointer, `x1` = 0 for `kbdvec` until `Iorec(1)` (D2/D2a); ring of 64 entries per process + upcall chain (D3/D3a); rebuild the `ikbdsys`-change stop (D4); `drvstat` = 0 (D5); the lead assigns the syscall number at build time from the free internal range (D6); minimum now = `kbdvec` + valid stubs in all slots, other hooks a follow-up ticket, gap in STATUS "Blocked" (D7); the hook disappears with the process, recorded in COMPATIBILITY.md (D8). Earlier marking: DRAFT (KEYS02, step 1 / rule 5). At approval
+> nothing of it was built; **the core part (D7 minimum) has been built since 2026-10-04 —
+> Part C** (syscall number D6 = `Ssystem` mode **2002**, O1 settled). Part A (EmuTOS reference) is cited from the source; Part B
+> (NewTOS mapping) is a **proposal**, every place marked `DECISION D<n>`
+> needed a yes/no from the owner (list at the end).
 >
-> Quelle: EmuTOS @ `1a7484ab` (`references/emutos`), FreeMiNT
-> (`references/freemint`), Atari Compendium als tos.hyp (WebFetch, siehe
-> "Querverweise"). Bearbeitet 2026-10-04 durch den Researcher; ersetzt die
-> Phase-00-Fassung dieser Datei (Korrekturen: Abschnitt "Korrekturen an der
-> Vorfassung").
+> Source: EmuTOS @ `1a7484ab` (`references/emutos`), FreeMiNT
+> (`references/freemint`), Atari Compendium as tos.hyp (WebFetch, see
+> "Cross-references"). Edited 2026-10-04 by the researcher; replaces the
+> Phase-00 version of this file (corrections: section "Corrections to the
+> earlier version").
 >
-> **Vertrag vs. Interna** (`docs/COMPATIBILITY.md`): Vertrag ist, was ein
-> Programm beobachtet: Trap-ID, der Rueckgabezeiger, Reihenfolge der Slots,
-> `kbdvec` direkt vor Slot 0, Registerinhalt bei Aufruf, Bit 7 = Break,
-> Verkettbarkeit (Slot lesen, sichern, spaeter rufen). Intern (frei) sind ACIA,
-> MFP-Interrupt, Paketpuffer-Layout in BSS.
+> **Contract vs. internals** (`docs/COMPATIBILITY.md`): the contract is what a
+> program observes: trap ID, the returned pointer, order of the slots,
+> `kbdvec` directly before slot 0, register contents at the call, bit 7 = break,
+> chainability (read a slot, save it, call it later). Internal (free): ACIA,
+> MFP interrupt, layout of the packet buffer in BSS.
 
 ---
 
-# Teil A — EmuTOS-Referenz (belegt)
+# Part A — EmuTOS reference (cited)
 
-## A1. Aufruf und Rueckgabe
+## A1. Call and return
 
-`Kbdvbase()` = XBIOS 0x22, keine Parameter (`bios/xbios.c:716-719`:
-`return (LONG)&kbdvecs;`), Slot 0x22 der Tabelle `xbios_vecs[]`
-(`bios/xbios.c:1337`). Ergebnis in D0: Zeiger auf `kbdvecs`. Stabil (Zeiger
-aendert sich nie, Struktur liegt in BSS: `bios/aciavecs.S:126-141`).
+`Kbdvbase()` = XBIOS 0x22, no parameters (`bios/xbios.c:716-719`:
+`return (LONG)&kbdvecs;`), slot 0x22 of the table `xbios_vecs[]`
+(`bios/xbios.c:1337`). Result in D0: pointer to `kbdvecs`. Stable (the pointer
+never changes, the structure lives in BSS: `bios/aciavecs.S:126-141`).
 
-## A2. Speicherlayout rund um den Zeiger
+## A2. Memory layout around the pointer
 
-`bios/aciavecs.S:36-57` (Kommentar) und `:126-141` (Definition). Der
-Rueckgabezeiger zeigt auf `midivec`; **davor** liegt `kbdvec`, und mit
-`CONF_WITH_EXTENDED_MOUSE` davor `mousexvec`:
+`bios/aciavecs.S:36-57` (comment) and `:126-141` (definition). The returned
+pointer points to `midivec`; **before** it lies `kbdvec`, and with
+`CONF_WITH_EXTENDED_MOUSE` before that `mousexvec`:
 
 ```
-  kbdvbase-8   mousexvec   (nur #if CONF_WITH_EXTENDED_MOUSE, aciavecs.S:126-128)
+  kbdvbase-8   mousexvec   (only #if CONF_WITH_EXTENDED_MOUSE, aciavecs.S:126-128)
   kbdvbase-4   kbdvec      (aciavecs.S:129, "must be right before _kbdvecs")
-  kbdvbase+0x00 midivec    MIDI-Eingang               (aciavecs.S:131)
-  kbdvbase+0x04 vkbderr    IKBD-Fehler                (:132)
-  kbdvbase+0x08 vmiderr    MIDI-Fehler                (:133)
-  kbdvbase+0x0C statvec    IKBD-Status                (:134)
-  kbdvbase+0x10 mousevec   Maus                       (:135)
-  kbdvbase+0x14 clockvec   IKBD-Uhr                   (:136)
-  kbdvbase+0x18 joyvec     Joystick                   (:137)
-  kbdvbase+0x1C midisys    Haupt-MIDI-Vektor          (:138)
-  kbdvbase+0x20 ikbdsys    Haupt-IKBD-Vektor          (:139)
-  kbdvbase+0x24 ikbdstate  Byte, Paketstatus          (:140)
-  kbdvbase+0x25 kbdlength  Byte, Restbytes im Paket   (:141)
+  kbdvbase+0x00 midivec    MIDI input                 (aciavecs.S:131)
+  kbdvbase+0x04 vkbderr    IKBD error                 (:132)
+  kbdvbase+0x08 vmiderr    MIDI error                 (:133)
+  kbdvbase+0x0C statvec    IKBD status                (:134)
+  kbdvbase+0x10 mousevec   mouse                      (:135)
+  kbdvbase+0x14 clockvec   IKBD clock                 (:136)
+  kbdvbase+0x18 joyvec     joystick                   (:137)
+  kbdvbase+0x1C midisys    main MIDI vector           (:138)
+  kbdvbase+0x20 ikbdsys    main IKBD vector           (:139)
+  kbdvbase+0x24 ikbdstate  byte, packet status        (:140)
+  kbdvbase+0x25 kbdlength  byte, bytes left in packet (:141)
 ```
 
-Alle Slots sind 4-Byte-Zeiger (`.ds.l`) auf m68k. `struct kbdvecs`
-(`include/biosdefs.h:105-116`) enthaelt nur die neun dokumentierten Slots;
-`kbdvec`, `mousexvec`, `ikbdstate`, `kbdlength` sind **nicht** in der C-Struktur.
+All slots are 4-byte pointers (`.ds.l`) on the m68k. `struct kbdvecs`
+(`include/biosdefs.h:105-116`) holds only the nine documented slots;
+`kbdvec`, `mousexvec`, `ikbdstate`, `kbdlength` are **not** in the C structure.
 
-Konfigurationsabhaengigkeit: `mousexvec` nur mit `CONF_WITH_EXTENDED_MOUSE`
-(`include/config.h:1496-1497`: Standard 1; laut `docs/api/_emutos-config.md:183,255`
-in manchen Maschinenprofilen 0). `midisys` wird nur bei `CONF_WITH_MIDI_ACIA`
-gesetzt (`aciavecs.S:180-187`), `ikbdsys` nur bei `CONF_WITH_IKBD_ACIA`
-(`:188-195`, Standard 1: `include/config.h:1001-1002`), `clockvec` nur bei
-`CONF_WITH_IKBD_CLOCK` (`:169-178`, Standard 1: `include/config.h:1008-1009`); sonst
-bleibt der Slot `just_rts` bzw. (midisys/ikbdsys) unbelegt = 0 (BSS). Das
-Falcon-Profil (Zielbild, `_emutos-config.md`) hat ACIA, IKBD-Uhr und
-erweiterte Maus an.
+Configuration dependency: `mousexvec` only with `CONF_WITH_EXTENDED_MOUSE`
+(`include/config.h:1496-1497`: default 1; according to `docs/api/_emutos-config.md:183,255`
+0 in some machine profiles). `midisys` is set only with `CONF_WITH_MIDI_ACIA`
+(`aciavecs.S:180-187`), `ikbdsys` only with `CONF_WITH_IKBD_ACIA`
+(`:188-195`, default 1: `include/config.h:1001-1002`), `clockvec` only with
+`CONF_WITH_IKBD_CLOCK` (`:169-178`, default 1: `include/config.h:1008-1009`); otherwise
+the slot stays `just_rts` or (midisys/ikbdsys) unset = 0 (BSS). The
+Falcon profile (target image, `_emutos-config.md`) has the ACIA, the IKBD clock and
+the extended mouse on.
 
-`ikbdstate` (Compendium: `drvstat`): Quelltext-Kommentar `aciavecs.S:54-57`;
-tos.hyp fuehrt `drvstat` als **dokumentiertes** Feld der `KBDVBASE` direkt hinter
+`ikbdstate` (Compendium: `drvstat`): source comment `aciavecs.S:54-57`;
+tos.hyp lists `drvstat` as a **documented** field of `KBDVBASE` directly behind
 `ikbdsys` ("non-zero when the IKBD is in the process of sending a packet",
-`xbios_structures.html#KBDVBASE`). EmuTOS-Kommentar: ungleich 0 = ein Paket wird
-gerade empfangen (nicht die Anzahl, `aciavecs.S:54-57`).
+`xbios_structures.html#KBDVBASE`). EmuTOS comment: non-zero = a packet is
+being received right now (not the count, `aciavecs.S:54-57`).
 
-## A3. Vorgabebelegung (`_init_acia_vecs`, `aciavecs.S:146-223`)
+## A3. Default assignment (`_init_acia_vecs`, `aciavecs.S:146-223`)
 
-| Slot | Vorgabe | Beleg |
+| Slot | Default | Evidence |
 |---|---|---|
 | `kbdvec` | `_kbdvec` -> `kbd_int` | `:154-158`, `_kbdvec` `:372-376` |
-| `midivec` | `_midivec` (schreibt in MIDI-iorec) | `:160-164`, `:315-332` |
+| `midivec` | `_midivec` (writes into the MIDI iorec) | `:160-164`, `:315-332` |
 | `vkbderr`, `vmiderr`, `statvec`, `mousevec`, `joyvec` | `just_rts` (`rts`) | `:148,165-168,179`, `just_rts:` `:377` |
-| `clockvec` | `_clockvec` (`bios/clock.c:969`) bzw. `just_rts` | `:169-178` |
-| `midisys` | `_midisys` (nur MIDI-ACIA) | `:180-187` |
-| `ikbdsys` | `_ikbdsys` (nur IKBD-ACIA) | `:188-195` |
-| `mousexvec` | `just_rts` (VDI ersetzt sie: `vdi/vdi_mouse.c:611`) | `:150-152` |
+| `clockvec` | `_clockvec` (`bios/clock.c:969`) or `just_rts` | `:169-178` |
+| `midisys` | `_midisys` (MIDI ACIA only) | `:180-187` |
+| `ikbdsys` | `_ikbdsys` (IKBD ACIA only) | `:188-195` |
+| `mousexvec` | `just_rts` (the VDI replaces it: `vdi/vdi_mouse.c:611`) | `:150-152` |
 
-`ikbdstate` wird auf 0 gesetzt (`:206-207`). Danach IKBD-Daten-Register leer lesen
-(`:210-214`) und der ACIA-Interrupt eingehaengt (`_mfpint(6, _int_acia)`,
-`:217-221`). Die Belegung der Slots geschieht in `init_acia_vecs()`
-(`bios/bios.c:457-458`), nach `kbd_init()` (`:453-454`).
+`ikbdstate` is set to 0 (`:206-207`). Then the IKBD data register is read empty
+(`:210-214`) and the ACIA interrupt is hooked in (`_mfpint(6, _int_acia)`,
+`:217-221`). The slots are assigned in `init_acia_vecs()`
+(`bios/bios.c:457-458`), after `kbd_init()` (`:453-454`).
 
-## A4. Wann wird welcher Vektor mit was gerufen
+## A4. When which vector is called with what
 
-Kette (alles im ACIA-Interrupt, IPL 6, endet mit `rte`):
+Chain (all inside the ACIA interrupt, IPL 6, ends with `rte`):
 
 ```
-MFP-Int 6 -> _int_acia (aciavecs.S:249)
-  retet d0-d3/a0-a3 (:253-259) ; Kommentar :250-252: es gibt keine Spezifikation,
-  welche Register die Vektoren verwenden duerfen; d0-d1/a0-a1 reichten theoretisch
+MFP int 6 -> _int_acia (aciavecs.S:249)
+  saves d0-d3/a0-a3 (:253-259) ; comment :250-252: there is no specification
+  which registers the vectors may use; d0-d1/a0-a1 would theoretically suffice
   loop (:262-273):
      [MIDI]  move.l midisys,a0 ; jsr (a0)                     (:263-266)
      [IKBD]  move.l ikbdsys,a0 ; jsr (a0)                     (:267-270)
-     solange GPIP Bit 4 == 0 (Interrupt steht noch) wiederholen   (:271-273)
-  End-of-Interrupt (:274), Register zurueck (:277-283), rte
+     repeat while GPIP bit 4 == 0 (interrupt still pending)       (:271-273)
+  end of interrupt (:274), restore registers (:277-283), rte
 ```
 
-* `ikbdsys` (Vorgabe `_ikbdsys`, `:382-400`): liest ACIA-Status/-Daten selbst
-  (`ikbd_acia_stat/data`), wenn Daten da sind, ruft `ikbdraw` mit **d0 = Datenbyte**
-  (`:391`); bei Overrun (Statusbit 5) liest es das Datenbyte nochmal und ruft
-  **`vkbderr` mit d0 = Inhalt des ACIA-Datenregisters** (`:393-397`).
-  `ikbdsys` bekommt selbst keine Argumente.
-* `ikbdraw` (`:407-414`): ist `ikbdstate == 0` und Byte `< 0xF6`, ist es ein
-  **Tastaturbyte** -> `a0 = &ikbdiorec`, `d0 =` Byte, Sprung (`rts`-Trick, kein
-  `jsr`) in **`kbdvec`**. Die Rueckkehr der `kbdvec`-Routine geht daher direkt
-  zum Aufrufer von `ikbdraw` (`_ikbdsys`).
-* Bytes `0xF6..0xFF` beginnen ein Paket (`begin_packet` `:416-432`, Tabellen
-  `:433-437`); weitere Bytes sammelt `in_packet` (`:439-463`); beim letzten Byte
+* `ikbdsys` (default `_ikbdsys`, `:382-400`): reads ACIA status/data itself
+  (`ikbd_acia_stat/data`), when data is there it calls `ikbdraw` with **d0 = data byte**
+  (`:391`); on overrun (status bit 5) it reads the data byte again and calls
+  **`vkbderr` with d0 = contents of the ACIA data register** (`:393-397`).
+  `ikbdsys` itself receives no arguments.
+* `ikbdraw` (`:407-414`): if `ikbdstate == 0` and the byte is `< 0xF6`, it is a
+  **keyboard byte** -> `a0 = &ikbdiorec`, `d0 =` byte, jump (`rts` trick, no
+  `jsr`) into **`kbdvec`**. The return of the `kbdvec` routine therefore goes
+  straight to the caller of `ikbdraw` (`_ikbdsys`).
+* Bytes `0xF6..0xFF` start a packet (`begin_packet` `:416-432`, tables
+  `:433-437`); further bytes are collected by `in_packet` (`:439-463`); at the last byte
   `got_packet` (`:465-475`) -> `action_table` (`:476-482`):
 
-| Paket | Aktion | Vektor | Zeiger `a0` (UND als Langwort auf dem Stack) |
+| Packet | Action | Vector | Pointer `a0` (AND as a longword on the stack) |
 |---|---|---|---|
-| `F6 a1..a7` | `kbd_status` `:484-487` | `statvec` | `kbdbuf+1` (hinter dem Header, 7 Bytes) |
-| `F7 0b xh xl yh yl` | `kbd_abs_mouse` `:488-489` | `mousevec` | `kbdbuf+1` (hinter dem Header) |
-| `F8..FB dx dy` | `kbd_rel_mouse` `:490-492` | `mousevec` | `kbdbuf` (**inkl.** Header-Byte) |
-| `FC yy MM dd hh mm ss` | `kbd_clock` `:493-496` | `clockvec` | `kbdbuf+1` (6 Bytes) |
+| `F6 a1..a7` | `kbd_status` `:484-487` | `statvec` | `kbdbuf+1` (behind the header, 7 bytes) |
+| `F7 0b xh xl yh yl` | `kbd_abs_mouse` `:488-489` | `mousevec` | `kbdbuf+1` (behind the header) |
+| `F8..FB dx dy` | `kbd_rel_mouse` `:490-492` | `mousevec` | `kbdbuf` (**including** the header byte) |
+| `FC yy MM dd hh mm ss` | `kbd_clock` `:493-496` | `clockvec` | `kbdbuf+1` (6 bytes) |
 | `FD j0 j1` | `kbd_joys` `:513-514` | `joyvec` | `joybuf` = `[j0, j1]` |
-| `FE bj` | `kbd_joy0` `:515-517` | `joyvec` | `joybuf` = `[0xFE, bj, (alter 3. Wert)]` |
-| `FF bj` | `kbd_joy1` `:518-519` | `joyvec` | `joybuf` = `[0xFF, (alter 2. Wert), bj]` |
+| `FE bj` | `kbd_joy0` `:515-517` | `joyvec` | `joybuf` = `[0xFE, bj, (old 3rd value)]` |
+| `FF bj` | `kbd_joy1` `:518-519` | `joyvec` | `joybuf` = `[0xFF, (old 2nd value), bj]` |
 
-  Aufruf: `kbd_jump_vec` (`:527-533`): `move.l a0,-(sp); jsr (a1); addq.l #4,sp;
-  clr.b ikbdstate`. Der Zeiger liegt also **in a0 und als C-Argument auf dem
-  Stack**; Rueckkehr per `rts`; Rueckgabewert wird nicht ausgewertet. Danach
-  wird `ikbdstate` geloescht. **Undokumentiert, "bis mindestens TOS 3.06"**
-  (`aciavecs.S:508-510`): beim Eintritt in `joyvec` steht in d0.b das zuletzt
-  empfangene Datenbyte. (Dass d0 auch bei den anderen Paketvektoren noch das
-  letzte Byte hat, folgt aus dem Codepfad `:465-475` -> `:527`, ist dort aber
-  nicht als Zusage kommentiert: **gelesen, nicht Vertrag**.)
-* `midisys` (`:295-312`): liest MIDI-ACIA, ruft `midivec` mit **d0 = Datenbyte**
-  (`:302-304`), bei Overrun `vmiderr` mit d0 = Datenregister (`:307-310`).
-* tos.hyp (Compendium) dazu: Adresse des Pakets bei `clockvec`/`joyvec` in A0
-  **und** auf dem Stack, Routinen mit `RTS` beenden, wenn moeglich nicht laenger
-  als 1 ms (`xbios_structures.html#KBDVBASE`); vor einer Aenderung eines Vektors
-  muss `drvstat == 0` sein, Interrupts sperren und erneut pruefen
-  (`xbios_interface.html`, Abschnitt Kbdvbase). *(Beide Stellen wurden ueber
-  WebFetch zusammengefasst gelesen, nicht im Wortlaut geprueft.)*
+  Call: `kbd_jump_vec` (`:527-533`): `move.l a0,-(sp); jsr (a1); addq.l #4,sp;
+  clr.b ikbdstate`. So the pointer is **in a0 and as a C argument on the
+  stack**; return by `rts`; the return value is not evaluated. Afterwards
+  `ikbdstate` is cleared. **Undocumented, "up to at least TOS 3.06"**
+  (`aciavecs.S:508-510`): on entry to `joyvec` d0.b holds the last received
+  data byte. (That d0 also still holds the last byte for the other packet
+  vectors follows from the code path `:465-475` -> `:527`, but is not commented
+  there as a promise: **read, not contract**.)
+* `midisys` (`:295-312`): reads the MIDI ACIA, calls `midivec` with **d0 = data byte**
+  (`:302-304`), on overrun `vmiderr` with d0 = data register (`:307-310`).
+* tos.hyp (Compendium) on this: address of the packet at `clockvec`/`joyvec` in A0
+  **and** on the stack, end the routines with `RTS`, if possible not longer than
+  1 ms (`xbios_structures.html#KBDVBASE`); before changing a vector
+  `drvstat == 0` must hold, disable interrupts and check again
+  (`xbios_interface.html`, section Kbdvbase). *(Both places were read as a
+  WebFetch summary, not checked verbatim.)*
 
-### Der Standard-`kbdvec`
+### The default `kbdvec`
 
 `_kbdvec` (`aciavecs.S:372-376`): `move.w d0,-(sp); jsr _kbd_int; addq.l #2,sp;
-rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). Das Byte ist ein
-**IKBD-Scancode**: Bit 7 gesetzt = Break (`KEY_RELEASED 0x80`, `ikbd.c:48`,
-`:777`), sonst Make. `kbd_int` (`ikbd.c:725-910`) macht der Reihe nach:
+rts` -> `void kbd_int(UBYTE scancode)` (`bios/ikbd.c:725`). The byte is an
+**IKBD scancode**: bit 7 set = break (`KEY_RELEASED 0x80`, `ikbd.c:48`,
+`:777`), else make. `kbd_int` (`ikbd.c:725-910`) does, in order:
 
 1. Ctrl-Alt-Del / Ctrl-Alt-RShift-Del -> `warm_reset()`/`cold_reset()` (`:734-747`; exact key-state conditions in `docs/api/bios/_reset-warm-cold.md` §2);
-2. Scancodes `0x37,0x5e,0x5f,0x59,0x5a,0x5c,0x5d` (`CONF_WITH_EXTENDED_MOUSE`) ->
-   `mousexvec(scancode)` und **Rueckkehr** (`:748-760`);
-3. Break (`:777`): Modifier-Bits loeschen (`:779-806`), Alt-Release mit
-   Alt-Numpad (`:788-799`), Home/Insert-Break stoppt Wiederholung (`:807-814`),
-   anderer Break: `if (scancode_only == kb_last_actual) kb_ticks = 0;` (`:815-817`);
-   Mausemulation (`handle_mouse_mode`, `:821`); Rueckkehr — **ein Break landet
-   nie in der iorec**;
-4. Make: Modifier setzen `shifty` (`:825-870`); Nicht-Modifier: `kb_last_actual =
+2. scancodes `0x37,0x5e,0x5f,0x59,0x5a,0x5c,0x5d` (`CONF_WITH_EXTENDED_MOUSE`) ->
+   `mousexvec(scancode)` and **return** (`:748-760`);
+3. break (`:777`): clear modifier bits (`:779-806`), Alt release with
+   Alt-numpad (`:788-799`), Home/Insert break stops the repeat (`:807-814`),
+   other break: `if (scancode_only == kb_last_actual) kb_ticks = 0;` (`:815-817`);
+   mouse emulation (`handle_mouse_mode`, `:821`); return — **a break never
+   lands in the iorec**;
+4. make: modifiers set `shifty` (`:825-870`); non-modifiers: `kb_last_actual =
    scancode` (`:875`), `convert_scancode` (`:887`), `kb_ticks = kb_initial`
-   (`:891`), Tastenklick, `kb_last` und `kb_last_ikbdsys = kbdvecs.ikbdsys`
-   merken (`:898-903`), und `push_ikbdiorec(kb_last.key)` (`:909`, Format
-   `shifty<<24 | scancode<<16 | ascii`, `ikbd.c:428-434`; iorec-Push mit
-   Voll-Verwerfen `:157-173`).
+   (`:891`), key click, remember `kb_last` and `kb_last_ikbdsys = kbdvecs.ikbdsys`
+   (`:898-903`), and `push_ikbdiorec(kb_last.key)` (`:909`, format
+   `shifty<<24 | scancode<<16 | ascii`, `ikbd.c:428-434`; iorec push with
+   discard-when-full `:157-173`).
 
-## A5. Tastenwiederholung und `ikbdsys`
+## A5. Key repeat and `ikbdsys`
 
-`do_key_repeat()` (`ikbd.c:451-528`, 50 Hz aus `kb_timerc_int` `:533-536`):
+`do_key_repeat()` (`ikbd.c:451-528`, 50 Hz from `kb_timerc_int` `:533-536`):
 
 * `:453`: `if (kb_ticks > 0 && kbdvecs.ikbdsys != kb_last_ikbdsys)` -> `kb_ticks = 0`,
-  Rueckkehr. Kommentar `:454-470`: Anlass war FreeMiNT, das seinen `ikbdsys`
-  einhaengt, waehrend eine Taste gehalten ist. **Nur `ikbdsys` wird verglichen,
-  nicht `kbdvec`**: ein Spiel, das `kbdvec` ersetzt, stoppt die Wiederholung
-  nicht dadurch.
-* Die Wiederholung legt das Wort **direkt in die iorec** (`push_ikbdiorec`,
-  `:524`) und ruft **nie `kbdvec`** auf. Ein `kbdvec`-Haken sieht daher
-  Make und Break, **keine** Wiederholungen (das Software-Repeat entsteht erst
-  *hinter* `kbd_int`).
-* Die Wiederholung entsteht nur, wenn `kbd_int` lief (`kb_ticks` wird nur
-  dort gesetzt: `:891`, `kb_last*` `:898-903`). Ein Haken, der den Standard-
-  `kbdvec` **nicht** ruft, bekommt also: keine iorec-Eintraege, keine
-  Wiederholung, keine Aktualisierung von `shifty`/`Kbshift` (`:779-870`), keinen
-  Reset-Check (`:732-742`).
+  return. Comment `:454-470`: the cause was FreeMiNT, which hooks in its `ikbdsys`
+  while a key is held. **Only `ikbdsys` is compared,
+  not `kbdvec`**: a game that replaces `kbdvec` does not stop the repeat by that.
+* The repeat puts the word **directly into the iorec** (`push_ikbdiorec`,
+  `:524`) and **never calls `kbdvec`**. A `kbdvec` hook therefore sees
+  make and break, **no** repeats (the software repeat arises only
+  *behind* `kbd_int`).
+* The repeat arises only if `kbd_int` ran (`kb_ticks` is set only
+  there: `:891`, `kb_last*` `:898-903`). A hook that does **not** call the default
+  `kbdvec` therefore gets: no iorec entries, no repeat, no update of
+  `shifty`/`Kbshift` (`:779-870`), no reset check
+  (`:732-742`).
 
-## A6. Was ein Programm tun muss (aus dem Code abgeleitet, **nicht** im Quelltext als Anleitung)
+## A6. What a program has to do (derived from the code, **not** given as instructions in the source)
 
-*Die folgende Abfolge ist Schlussfolgerung aus A2-A5, kein EmuTOS-Zitat.*
+*The following sequence is a conclusion from A2-A5, not an EmuTOS quotation.*
 
-1. Im Supervisor-Modus `p = Kbdvbase()`, `old = ((void**)p)[-1]` (der `kbdvec`-Slot)
-   lesen und sichern. (Die API gibt keinen alten Vektor zurueck; der Quelltext
-   enthaelt keinen Mechanismus, der das uebernimmt.)
-2. Eigene Routine in den Slot schreiben. Die Routine bekommt **d0.b =
-   Scancode (Bit 7 = Break), a0 = iorec**.
-3. Wer die normale Tastaturbehandlung (BIOS-Warteschlange `Bconin`, AES,
-   Shift-Zustand, Wiederholung) behalten will, **verkettet**: am Ende zum
-   gesicherten `old` springen mit unveraendertem d0/a0 (der Aufruf kam per
-   `rts`-Trick, `old` muss mit `rts` zum selben Aufrufer zurueckkehren). Ohne
-   Verkettung sieht der restliche TOS-Tastaturweg diese Tasten nie (A5).
-4. Beim Programmende (`Pterm`, besser ueber den `etv_term`-Vektor, `bdos/proc.c:
-   606-607`) den alten Wert zurueckschreiben. Muster in EmuTOS selbst:
-   `vdimouse_exit` stellt `statvec` aus `old_statvec` wieder her
-   (`vdi/vdi_mouse.c:638-639`); `wheel_int` verkettet am Ende per
-   `move.l _old_statvec,-(sp); rts` (`vdi/vdi_asm.S:476`). Die Haken rufen
-   keine Betriebssystemfunktionen auf (Interrupt-Kontext).
-5. Wer **nicht** verkettet, bekommt trotzdem jede Make/Break-Meldung genau
-   einmal je Byte; Wiederholungen entstehen nicht (A5).
+1. In supervisor mode read and save `p = Kbdvbase()`, `old = ((void**)p)[-1]` (the `kbdvec` slot).
+   (The API returns no old vector; the source contains no mechanism that takes
+   this over.)
+2. Write your own routine into the slot. The routine gets **d0.b =
+   scancode (bit 7 = break), a0 = iorec**.
+3. Whoever wants to keep the normal keyboard handling (BIOS queue `Bconin`, AES,
+   shift state, repeat) **chains**: at the end jump to the saved `old` with
+   d0/a0 unchanged (the call came by the `rts` trick, `old` must return with
+   `rts` to the same caller). Without chaining the rest of the TOS keyboard
+   path never sees these keys (A5).
+4. At program end (`Pterm`, better through the `etv_term` vector, `bdos/proc.c:
+   606-607`) write the old value back. Pattern in EmuTOS itself:
+   `vdimouse_exit` restores `statvec` from `old_statvec`
+   (`vdi/vdi_mouse.c:638-639`); `wheel_int` chains at the end by
+   `move.l _old_statvec,-(sp); rts` (`vdi/vdi_asm.S:476`). The hooks call
+   no operating system functions (interrupt context).
+5. Whoever does **not** chain still gets every make/break message exactly
+   once per byte; repeats do not arise (A5).
 
-## A7. Welche TOS-Versionen haben `kbdvec`
+## A7. Which TOS versions have `kbdvec`
 
-* EmuTOS: immer (`aciavecs.S:129`, `ikbdraw` `:407-414`). Der Kommentar nennt es
+* EmuTOS: always (`aciavecs.S:129`, `ikbdraw` `:407-414`). The comment calls it
   "undocumented feature of TOS >= 2.0" (`aciavecs.S:52`).
-* FreeMiNT: `has_kbdvec = true` genau wenn `tosvers >= 0x200` oder EmuTOS
+* FreeMiNT: `has_kbdvec = true` exactly when `tosvers >= 0x200` or EmuTOS
   (`references/freemint/sys/keyboard.c:1938-1941`); "TOS < 2.00 doesn't know
-  about this vector" (`sys/arch/init_intr.c:94-98`). Fuer solche TOS haengt
-  MiNT stattdessen `ikbdsys` ein und ruft den `KBDVEC`-Slot selbst
+  about this vector" (`sys/arch/init_intr.c:94-98`). For such TOS versions MiNT hooks
+  `ikbdsys` instead and calls the `KBDVEC` slot itself
   (`init_intr.c:79-87`, `sys/arch/acia.S:146-149`).
-* **TT TOS 3.06 (0x306): ja, ABGELEITET** aus der Regel `tosvers >= 0x200`; kein
-  Quelltext sagt ausdruecklich "3.06 hat `kbdvec`". Belegt ist nur, dass der
-  EmuTOS-Autor das Verhalten des `joyvec`-d0-Details "bis mindestens TOS 3.06"
-  kennt (`aciavecs.S:508`) — das betrifft `joyvec`, nicht `kbdvec`.
-  **Gemessen 2026-10-04 (KEYS02; eingetragen 2026-10-26, schliesst O3): ja.**
-  Im ROM `tos306de.rom` liefert XBIOS `$22` (`$E03A96`)
-  `move.l #$0000106A,d0 / rts`, und `ikbdraw`
-  (`$E032DA`) springt mit `move.l $1066.w,-(sp) / rts` ueber `kbdvec` =
-  `Kbdvbase()-4` — derselbe `rts`-Trick wie EmuTOS `aciavecs.S:407-414`. Zur
-  Laufzeit (Hatari 2.6.1 TT, Debugger) steht in `$1066` `$00E033EA`, TOS 3.06s
-  `kbd_int` (Shift-Zustand). Belege
+* **TT TOS 3.06 (0x306): yes, DERIVED** from the rule `tosvers >= 0x200`; no
+  source says explicitly "3.06 has `kbdvec`". All that is attested is that the
+  EmuTOS author knows the behaviour of the `joyvec` d0 detail "up to at least TOS 3.06"
+  (`aciavecs.S:508`) — that concerns `joyvec`, not `kbdvec`.
+  **Measured 2026-10-04 (KEYS02; entered 2026-10-26, closes O3): yes.**
+  In the ROM `tos306de.rom` XBIOS `$22` (`$E03A96`) returns
+  `move.l #$0000106A,d0 / rts`, and `ikbdraw`
+  (`$E032DA`) jumps with `move.l $1066.w,-(sp) / rts` through `kbdvec` =
+  `Kbdvbase()-4` — the same `rts` trick as EmuTOS `aciavecs.S:407-414`. At
+  run time (Hatari 2.6.1 TT, debugger) `$1066` holds `$00E033EA`, TOS 3.06's
+  `kbd_int` (shift state). Evidence
   `measurements/measurement-2026-10-04-keys02-doom/RUNINFO.TXT:75-92`,
-  `measurements/measurement-2026-10-04-keys02-doom/hatari/o3-tos306-debugger.log:20,30,34`; Doom meldet dort
+  `measurements/measurement-2026-10-04-keys02-doom/hatari/o3-tos306-debugger.log:20,30,34`; Doom reports there
   `Kbdvbase 0000106a, kbdvec was 00e033ea`
   (`measurements/measurement-2026-10-04-keys02-tt/RUNINFO.TXT:20`).
-* Ausnahme-Hinweis: FireTOS und CT60-TOS-2.xx rufen `kbdvec` **nicht** aus ihrem
-  `ikbdsys` auf (`init_intr.c:104-111`) — dort ist ein `kbdvec`-Haken wirkungslos.
-  Auf diesen ROMs ist `ikbdsys` der verlaessliche Weg.
-* In tos.hyp wurde `kbdvec` in den abgerufenen Seiten nicht gefunden (nur
-  `drvstat`, kein Slot -4): bestaetigt "undokumentiert".
+* Exception note: FireTOS and CT60-TOS-2.xx do **not** call `kbdvec` from their
+  `ikbdsys` (`init_intr.c:104-111`) — there a `kbdvec` hook has no effect.
+  On those ROMs `ikbdsys` is the reliable way.
+* In tos.hyp `kbdvec` was not found in the pages retrieved (only
+  `drvstat`, no slot -4): confirms "undocumented".
 
-## A8. Verhalten beim Programmende, wenn ein Haken installiert bleibt
+## A8. Behaviour at program end when a hook stays installed
 
-* **EmuTOS:** Nichts. `xterm` ruft `etv_term` (`bdos/proc.c:606-607`), setzt
-  `run` zurueck und `ixterm` schliesst Dateien, gibt Verzeichnisse frei und
-  `free_all_owned` (`bdos/proc.c:110-140`) — keine Stelle fasst `kbdvecs` an. Eine
-  Suche ueber `*.c/*.h/*.S` im ganzen Baum findet `kbdvecs`/`mousevec`/
-  `statvec`/`joyvec`/`ikbdsys` nur in `bios/aciavecs.S`, `bios/ikbd.c`,
+* **EmuTOS:** nothing. `xterm` calls `etv_term` (`bdos/proc.c:606-607`), resets
+  `run`, and `ixterm` closes files, frees directories and
+  `free_all_owned` (`bdos/proc.c:110-140`) — no place touches `kbdvecs`. A
+  search over `*.c/*.h/*.S` in the whole tree finds `kbdvecs`/`mousevec`/
+  `statvec`/`joyvec`/`ikbdsys` only in `bios/aciavecs.S`, `bios/ikbd.c`,
   `bios/mouse.c:117,120`, `bios/xbios.c:718`, `bios/clock.c`, `vdi/vdi_mouse.c`,
-  `bios/amiga*.{c,S}`, `bios/lisa.c`, `bios/bios.h`, `include/biosdefs.h`; nie in
-  `bdos/`. **Schluss (gefolgert aus dem Fehlen):** der Zeiger bleibt auf den
-  nun freigegebenen (und ggf. neu vergebenen) Speicher stehen; der naechste
-  Tastendruck springt dorthin. Der Programmierer muss selbst zuruecksetzen
-  (daher A6.4).
-* **FreeMiNT:** Der Kernel verfolgt Haken einzelner Programme **nicht**; es gibt
-  keine Zeile in `sys/` ausser `keyboard.c`, `sys/arch/init_intr.c`, `sys/arch/acia.S`,
-  `sys/arch/intr.S`, `dev-mouse.c` und den USB-Treibern, die `kbdvecs` anfasst
-  (Suche `kbdvec|ikbdsys|kbdvbase` in `references/freemint/sys`). Was MiNT tut:
-  * Es haengt **seinen** `kbdvec_handler` ein, mit XBRA-Kopf davor
+  `bios/amiga*.{c,S}`, `bios/lisa.c`, `bios/bios.h`, `include/biosdefs.h`; never in
+  `bdos/`. **Conclusion (inferred from the absence):** the pointer stays on the
+  now freed (and possibly reallocated) memory; the next key press
+  jumps there. The programmer has to reset it (hence A6.4).
+* **FreeMiNT:** the kernel does **not** track the hooks of individual programs; there is
+  no line in `sys/` apart from `keyboard.c`, `sys/arch/init_intr.c`, `sys/arch/acia.S`,
+  `sys/arch/intr.S`, `dev-mouse.c` and the USB drivers that touches `kbdvecs`
+  (search `kbdvec|ikbdsys|kbdvbase` in `references/freemint/sys`). What MiNT does:
+  * It hooks **its own** `kbdvec_handler`, with an XBRA header in front
     (`sys/arch/intr.S:629-639`; `install_vector`, `init_intr.c:48-57`;
-    Eintrag `:101`), und sichert den alten Wert in `old_kbdvec`. Der Handler
-    ruft `ikbd_scan(scancode, kbd_iorec)` und kehrt per `rts` zurueck
-    (`intr.S:638-661`), **ohne** an `old_kbdvec` weiterzuleiten, ausser fuer
-    "verwaiste" Breaks (`chain_oldkeys`, `intr.S:671-683`, Ausloeser
+    entry `:101`), and saves the old value in `old_kbdvec`. The handler
+    calls `ikbd_scan(scancode, kbd_iorec)` and returns by `rts`
+    (`intr.S:638-661`), **without** forwarding to `old_kbdvec`, except for
+    "orphaned" breaks (`chain_oldkeys`, `intr.S:671-683`, trigger
     `keyboard.c:1030-1043`).
-  * Ein Programm, das *nach* MiNT seinen Haken einhaengt und `old` (= MiNTs
-    Handler) verkettet, funktioniert; das Aushaengen bleibt Sache des Programms.
-    (*Gefolgert*, nicht als Zusage im Quelltext.)
-  * Beim **Ende von MiNT selbst** wird die ganze Tabelle auf den gesicherten
-    Stand zurueckgesetzt (`restore_TOS_vectors`, `init_intr.c:243-264`),
-    mit dem Kommentar "BUG: we should restore *all* vectors, not just the ones
+  * A program that hooks in *after* MiNT and chains `old` (= MiNT's
+    handler) works; unhooking remains the program's business.
+    (*Inferred*, not a promise in the source.)
+  * At the **end of MiNT itself** the whole table is reset to the saved
+    state (`restore_TOS_vectors`, `init_intr.c:243-264`),
+    with the comment "BUG: we should restore *all* vectors, not just the ones
     that MiNT caught" (`:238-241`).
-  * `/dev/mouse` sichert `mousevec`/`joyvec` beim Oeffnen und stellt sie beim
-    Schliessen wieder her (`sys/dev-mouse.c:190-231`) — das ist eine
-    Geraete-Schliessen-Aktion, kein Prozessende-Hook fuer fremde Programme.
-  * Die USB-Treiber (`udd/hid/mouse*/usb_mouse.c:507-522`,
-    `sys/usb/src.km/udd/hid/tablet/usb_tablet.c:1010-1026`) senden Tasten/Maus selbst ueber die
-    `KBDVEC`-Struktur, wenn GEMDOS >= 0x19: das ist der FreeMiNT-Praezedenzfall,
-    dass ein **nicht-ACIA-Treiber** die Vektoren aufruft (wie es NewTOS' HID-
-    Uebersetzer tun wuerde). FreeMiNT-Struktur: `struct kbdvbase` mit `drvstat`
-    hinter `ikbdsys` (`sys/mint/struct_kbdvbase.h`).
+  * `/dev/mouse` saves `mousevec`/`joyvec` on open and restores them on
+    close (`sys/dev-mouse.c:190-231`) — that is a device-close action, not a
+    process-end hook for foreign programs.
+  * The USB drivers (`udd/hid/mouse*/usb_mouse.c:507-522`,
+    `sys/usb/src.km/udd/hid/tablet/usb_tablet.c:1010-1026`) send keys/mouse themselves through the
+    `KBDVEC` structure when GEMDOS >= 0x19: that is the FreeMiNT precedent
+    that a **non-ACIA driver** calls the vectors (as NewTOS' HID
+    translator would). FreeMiNT structure: `struct kbdvbase` with `drvstat`
+    behind `ikbdsys` (`sys/mint/struct_kbdvbase.h`).
 
-## A9. Praezedenz: EmuTOS ruft die Vektoren auch aus nicht-ACIA-Quellen
+## A9. Precedent: EmuTOS calls the vectors from non-ACIA sources too
 
-Amiga: `move.l _kbdvecs-4,a0 ; jsr (a0)` ruft `kbdvec` (`bios/amiga2.S:201-202`),
+Amiga: `move.l _kbdvecs-4,a0 ; jsr (a0)` calls `kbdvec` (`bios/amiga2.S:201-202`),
 `call_ikbdraw` (`aciavecs.S:556-568`), `call_mousevec` (`:538-554`),
-`call_joyvec` (`:570-590`, nur Amiga). Ein Treiber ohne ACIA erzeugt also die
-IKBD-Bytes und laeuft durch dieselben Slots — genau das Zielmodell fuer NewTOS.
+`call_joyvec` (`:570-590`, Amiga only). A driver without an ACIA therefore produces the
+IKBD bytes and runs through the same slots — exactly the target model for NewTOS.
 
 ---
 
-# Teil B — NewTOS-Abbildung (VORSCHLAG, braucht Freigabe)
+# Part B — NewTOS mapping (PROPOSAL, needed approval)
 
-## B0. Ist-Zustand (gelesen)
+## B0. As-is state (read, 2026-10-04 — historical; line numbers of NewTOS code dropped in SPEC07, the code has moved since)
 
-* `Kbdvbase` liefert `&KBDVECS`, neun `usize`-Slots, **alle 0**, in Kernel-
-  Speicher (`tos-api/src/xbios/system.rs:63-98`), **kein** `kbdvec`-Slot davor.
-  Kernel-Adresse, nur EL1 gemappt (`kernel/src/arch/aarch64/mmu.rs:82-83,179`;
-  Diagnose `TASK/PORT06-KEYS-DIAGNOSIS.MD` Frage 4).
-* Der Dekoder `kernel/src/ikbd.rs:feed/decode_key` ruft keinen Vektor; er legt
-  Makes in `console::push_rx` ab, verwirft gewoehnliche Breaks
-  (`ikbd.rs:148-190`, Make-Zweig und `_ =>`-Break), Maus geht direkt nach `vdi::feed_relative`
-  (`ikbd.rs:125`), `0x37/0x59/...` nur an das kernel-interne `mousexvec`
+* `Kbdvbase` returned `&KBDVECS`, nine `usize` slots, **all 0**, in kernel
+  memory (`tos-api/src/xbios/system.rs`), **no** `kbdvec` slot before it.
+  Kernel address, mapped for EL1 only (`kernel/src/arch/aarch64/mmu.rs`;
+  diagnosis `TASK/PORT06-KEYS-DIAGNOSIS.MD` question 4).
+* The decoder `kernel/src/ikbd.rs:feed/decode_key` calls no vector; it puts
+  makes into `console::push_rx`, discards ordinary breaks
+  (`ikbd.rs`, make branch and `_ =>` break), the mouse goes directly to `vdi::feed_relative`
+  (`ikbd.rs`), `0x37/0x59/...` only to the kernel-internal `mousexvec`
   (`ikbd.rs:148-163`).
-* Die Wiederholung (KEYS01) legt Woerter ebenfalls direkt in `push_rx`
-  (`ikbd.rs:222-231`) — **wie EmuTOS** (A5), sie ruft keinen Vektor.
-* Eingabe wird **gepollt**: `host_env::pump_input` (`kernel/src/host_env.rs:84-123`)
-  -> `usb::poll()` -> `ikbd::feed` -> `poll_repeat`, aus jeder AES-Warteschleife,
-  jedem blockierenden Lesen, `Bconstat` bei leerer Schlange (KEYS01-STATUS).
-  Kein Interrupt. *(Nachtrag INPUT01, 2026-10-08: zusaetzlich pumpt der
-  200-Hz-Timer-Interrupt, wenn er ein Programm an EL0 unterbricht und kein
-  Upcall/kein angehaltener AES-Aufruf laeuft — `kernel/src/input_gate.rs`,
-  abschaltbar mit `input=aes`. Er dekodiert aber **nur reine Zeigerbewegung**;
-  ein Bericht mit Tastenbyte, Knopfwechsel oder Mausrad bleibt zurueckgehalten
-  bis zur naechsten Pumpe im Trap-Pfad. Tastenbytes erreichen `route_key` und
-  den Haken-Ring also weiter nur aus dem Trap-Pfad; aus dem Interrupt wird nie
-  zugestellt.)*
-* EL0-Rueckruf: `deliver_upcall` (`kernel/src/arch/aarch64/exceptions.rs:1310-1373`)
-  sichert alle 30 GPRs + lr/elr/spsr/sp_el0 im Kernel, setzt `x0..x3` aus
-  `UpcallDesc.args`, `elr = handler_va`, `lr = TRAMPOLINE_VA` (0x700, ruft
-  `Psigreturn`), SP 16-ausgerichtet + 0x20 Red Zone. Zustellpunkt:
-  Rueckkehr eines Syscalls nach EL0 (`complete_call_tail`, `exceptions.rs:
-  538-557`; auch `:1041`), **nicht** im Interrupt. Geschachtelt bis
-  `MAX_UPCALL_NEST = 8` (`tos-api/src/bdos/process.rs:74`), sonst `Pterm(-998)`.
-  `Psigreturn` (`exceptions.rs:1390ff`) stellt den Kontext wieder her (inkl. des
-  Syscall-Ergebnisses in `x0`).
-* **Bestehender Verbraucher mit demselben Muster:** `vex_wheelv`
-  (`tos-api/src/vdi/mouse.rs:421-428, 565-590, 960-973`): EL0-Vektor + Slot des
-  Besitzers, Aufruf nur wenn der Besitzer der laufende Prozess ist, Rueckgabe
-  des Vektors an die Vorgabe beim Prozessende (`release_wheel_vector`, aus
-  `free_slot` `process.rs:991`). Begruendung dort: ein EL0-VA bedeutet nichts
-  in einem fremden Adressraum.
-* `post_upcall` hat **einen** Wartesteckplatz je Prozess, "last writer wins"
-  (`process.rs:850-856`). Fuer Tastenereignisse reicht das nicht (siehe B4).
-* Die erste Seite jedes Prozesses (TPA-Beginn, `[0, 0x1000)`) ist
-  `UserRwExec` gemappt und enthaelt Basepage + Sysvars + Trampoline
-  (`loader.rs:195-201`, `:730`); der Kernel liest/schreibt sie ueber den
-  Kernel-Alias (`bios::chardev::current_conterm`, `chardev.rs:75-85`, liest
-  `$484` des **laufenden** Prozesses; `KEYTBL_AREA_VA`, `loader.rs:~790`
-  belegt `[0x768, 0x9A0)`). Frei bleibt `[0x9A0, 0x1000)`.
-* App-ABI: nur noch LP64; ELFCLASS32 wird vom Lader abgewiesen
-  (`loader.rs:99-101, 397-412`), der ILP32-Build-Pfad ist stillgelegt
-  (`docs/MEMORY.md` ADR-020 Nachtrag 2026-09-04).
+* The repeat (KEYS01) also puts words directly into `push_rx`
+  (`ikbd.rs`) — **as EmuTOS** (A5), it calls no vector.
+* Input is **polled**: `host_env::pump_input` (`kernel/src/host_env.rs`)
+  -> `usb::poll()` -> `ikbd::feed` -> `poll_repeat`, from every AES wait loop,
+  every blocking read, `Bconstat` on an empty queue (KEYS01-STATUS).
+  No interrupt. *(Addendum INPUT01, 2026-10-08: in addition the
+  200 Hz timer interrupt pumps when it interrupts a program at EL0 and no
+  upcall/no suspended AES call is running — `kernel/src/input_gate.rs`,
+  switchable off with `input=aes`. It decodes **only pure pointer movement**,
+  though; a report with a key byte, button change or mouse wheel is held back
+  until the next pump in the trap path. Key bytes therefore still reach `route_key` and
+  the hook ring only from the trap path; nothing is ever delivered from the interrupt.)*
+* EL0 callback: `deliver_upcall` (`kernel/src/arch/aarch64/exceptions.rs`)
+  saves all 30 GPRs + lr/elr/spsr/sp_el0 in the kernel, sets `x0..x3` from
+  `UpcallDesc.args`, `elr = handler_va`, `lr = TRAMPOLINE_VA` (0x700, calls
+  `Psigreturn`), SP 16-aligned + 0x20 red zone. Delivery point:
+  return of a syscall to EL0 (`complete_call_tail`, `exceptions.rs:
+  538-557`; also `:1041`), **not** in the interrupt. Nested up to
+  `MAX_UPCALL_NEST = 8` (`tos-api/src/bdos/process.rs`), else `Pterm(-998)`.
+  `Psigreturn` (`exceptions.rs:1390ff`) restores the context (including the
+  syscall result in `x0`).
+* **Existing consumer with the same pattern:** `vex_wheelv`
+  (`tos-api/src/vdi/mouse.rs:421-428, 565-590, 960-973`): EL0 vector + slot of the
+  owner, called only if the owner is the running process, the vector is returned
+  to the default at process end (`release_wheel_vector`, from
+  `free_slot` `process.rs`). Reason given there: an EL0 VA means nothing
+  in a foreign address space.
+* `post_upcall` has **one** wait slot per process, "last writer wins"
+  (`process.rs`). That is not enough for key events (see B4).
+* The first page of every process (TPA start, `[0, 0x1000)`) is mapped
+  `UserRwExec` and holds basepage + sysvars + trampoline
+  (`loader.rs`, `:730`); the kernel reads/writes it through the
+  kernel alias (`bios::chardev::current_conterm`, `chardev.rs`, reads
+  `$484` of the **running** process; `KEYTBL_AREA_VA`, `loader.rs:~790`
+  occupies `[0x768, 0x9A0)`). `[0x9A0, 0x1000)` remains free. *(State when
+  written; the table has not been in page 0 since MEM12, see Part D.)*
+* App ABI: LP64 only now; ELFCLASS32 is rejected by the loader
+  (`loader.rs:99-101, 397-412`), the ILP32 build path is shut down
+  (`docs/MEMORY.md` ADR-020 addendum 2026-09-04).
 
-## B1. Wo die Tabelle liegt  (ENTSCHEIDUNG D1)
+## B1. Where the table lives  (DECISION D1)
 
-**Vorschlag:** je Prozess in der ersten TPA-Seite, neuer fester Bereich
-`KBDVECS_AREA_VA = 0x9A0` (nach dem Keytbl-Bereich, vor `RESERVED_LOW_END`),
-vom Lader beim Start mit den Standardwerten beschrieben (wie `populate_sysvars`).
-`Kbdvbase()` liefert **den EL0-VA** dieses Prozesses (Ergebnis in `x0`, volle
-64 Bit). Layout (LP64, 8-Byte-Slots, Reihenfolge wie EmuTOS):
+**Proposal (superseded by Part D "D1-new"):** per process in the first TPA page, a new fixed region
+`KBDVECS_AREA_VA = 0x9A0` (after the Keytbl region, before `RESERVED_LOW_END`),
+written by the loader at start with the default values (like `populate_sysvars`).
+`Kbdvbase()` returns **the EL0 VA** of this process (result in `x0`, full
+64 bits). Layout (LP64, 8-byte slots, order as EmuTOS), offsets relative to the region start:
 
 ```
-  +0x00 mousexvec   (nur falls kernel-intern EL0-faehig; D3)
+  +0x00 mousexvec   (only if kernel-internally EL0-capable; D3)
   +0x08 kbdvec      <- (void**)Kbdvbase()[-1]
-  +0x10 midivec  <- Kbdvbase() zeigt hierher
+  +0x10 midivec  <- Kbdvbase() points here
   +0x18 vkbderr   +0x20 vmiderr   +0x28 statvec  +0x30 mousevec
   +0x38 clockvec  +0x40 joyvec    +0x48 midisys  +0x50 ikbdsys
-  +0x58 drvstat (Byte, immer 0, D5)   +0x59 kbdlength (Byte, 0)
+  +0x58 drvstat (byte, always 0, D5)   +0x59 kbdlength (byte, 0)
 ```
 
-Begruendung (Schluss, nicht Zitat): Jeder Prozess hat einen eigenen Adressraum;
-ein Vektor ist ein EL0-VA und nur dort gueltig (derselbe Grund wie
-`vex_wheelv`, `mouse.rs:486-503`). Die Seite gehoert zur TPA und verschwindet mit
-ihr — **ein haengender Zeiger ist damit unmoeglich** (strikt besser als EmuTOS,
-A8). Der Kernel liest den Slot des laufenden Prozesses wie `current_conterm()`
-ueber den Alias (Praezedenz). Vorgabe-Werte siehe B3.
-Nachteil/Grenze (muss der Anwender kennen): ein TSR/Tastaturerweiterer, der per
-`Ptermres` einen Haken fuer *alle spaeteren* Programme installieren will, geht
-nicht — er koennte nirgends laufen, auch nicht mit globaler Tabelle (anderer
-Adressraum). Keine Rolle fuer Doom.
-Alternative (verworfen): globale Kerneltabelle mit Besitzer-Slot wie beim Rad.
-Aber dann liest EL0 eine Kernel-Adresse (Mapping noetig) und Kbdvbase-Chaining
-("alten Wert merken") braeuchte einen Kernel-Zustand je Besitzer ohne Gewinn.
-ILP32: nicht unterstuetzt (Lader weist ELFCLASS32 ab); der Slot-Typ ist `u64`.
+Reason (conclusion, not quotation): every process has its own address space;
+a vector is an EL0 VA and valid only there (the same reason as
+`vex_wheelv`, `mouse.rs`). The page belongs to the TPA and disappears with
+it — **a dangling pointer is thereby impossible** (strictly better than EmuTOS,
+A8). The kernel reads the slot of the running process like `current_conterm()`
+through the alias (precedent). Default values see B3.
+Drawback/limit (the owner must know it): a TSR/keyboard extender that wants to install a hook
+for *all later* programs by `Ptermres` does not work — it could run nowhere, not even with a global table
+(other address space). Irrelevant for Doom.
+Alternative (rejected): global kernel table with an owner slot as for the wheel.
+But then EL0 reads a kernel address (mapping needed) and Kbdvbase chaining
+("remember the old value") would need kernel state per owner without gain.
+ILP32: not supported (the loader rejects ELFCLASS32); the slot type is `u64`.
 
-## B2. Aufrufkonvention fuer native aarch64-Programme  (ENTSCHEIDUNG D2)
+## B2. Calling convention for native aarch64 programs  (DECISION D2)
 
-Die Ersetzung fuer `d0`/`a0`. Alle Haken sind **AAPCS64-Funktionen**
-`void h(uint64 a, uint64 b)` mit Rueckkehr per `ret` (Trampolin-`lr`):
+The replacement for `d0`/`a0`. All hooks are **AAPCS64 functions**
+`void h(uint64 a, uint64 b)` returning by `ret` (trampoline `lr`):
 
-| Vektor | x0 (ersetzt d0 / Stack-Arg) | x1 (ersetzt a0) | Quelle EmuTOS |
+| Vector | x0 (replaces d0 / stack arg) | x1 (replaces a0) | EmuTOS source |
 |---|---|---|---|
-| `kbdvec` | Scancode in Bit 0-7, **Bit 7 = Break**, obere Bits 0 | Zeiger auf den IKBD-`IOREC` (D2a, seit XBIOS01) | `ikbdraw` `:407-414` |
-| `midivec`, `vkbderr`, `vmiderr` | Byte | 0 | `:302-304, :393-397` |
-| `statvec`, `mousevec`, `clockvec`, `joyvec` | Zeiger auf Paket (ersetzt Stack-Argument UND a0), Layout wie A4 | gleicher Zeiger | `kbd_jump_vec` `:527-533` |
-| `midisys`, `ikbdsys` | — | — | siehe B6 |
+| `kbdvec` | scancode in bits 0-7, **bit 7 = break**, upper bits 0 | pointer to the IKBD `IOREC` (D2a, since XBIOS01) | `ikbdraw` `:407-414` |
+| `midivec`, `vkbderr`, `vmiderr` | byte | 0 | `:302-304, :393-397` |
+| `statvec`, `mousevec`, `clockvec`, `joyvec` | pointer to packet (replaces stack argument AND a0), layout as A4 | same pointer | `kbd_jump_vec` `:527-533` |
+| `midisys`, `ikbdsys` | — | — | see B6 |
 
-`x2`/`x3` = 0. Aufrufer-gesicherte Register (x19-x28, sp, x29) erhaelt der
-Haken nach AAPCS64; der Kernel sichert **alle** Register des unterbrochenen
-Kontexts (`deliver_upcall`), der Haken darf also jedes Register veraendern —
-strikt mehr Spielraum als `d2-d7/a2-a6` unter EmuTOS (`:250-259`).
-D2a: `IOREC`-Zeiger. **[XBIOS01, 2026-10-29, E6]** `x1` = der IKBD-`IOREC`
-(dieselbe Adresse wie `Iorec(1)`, `tos-api/src/xbios/iorec.rs:146@IKBD_IOREC_VA`,
-gesetzt in `kernel/src/arch/aarch64/exceptions.rs:871@IKBD_IOREC_VA`), wie EmuTOS
-`a0 = &ikbdiorec` (`bios/aciavecs.S:412`); die Tastenschlange **ist** seit
-XBIOS01 dieser Ring (`docs/api/xbios/0e-iorec.md`). Vorher: `x1 = 0`, weil
-`Iorec` nicht verdrahtet und die Schlange `console::push_rx` kein `IOREC` war.
-Die Paketpuffer (`statvec` usw.) liegen in der ersten Seite (neuer Bereich
-hinter der Tabelle, oder `PARMBLK`-aehnlich) und werden vor dem Aufruf
-vom Kernel beschrieben.
+`x2`/`x3` = 0. Callee-saved registers (x19-x28, sp, x29) the hook preserves
+per AAPCS64; the kernel saves **all** registers of the interrupted
+context (`deliver_upcall`), so the hook may change any register —
+strictly more room than `d2-d7/a2-a6` under EmuTOS (`:250-259`).
+D2a: `IOREC` pointer. **[XBIOS01, 2026-10-29, E6]** `x1` = the IKBD `IOREC`
+(the same address as `Iorec(1)`, `tos-api/src/xbios/iorec.rs:146@IKBD_IOREC_VA`,
+set in `kernel/src/arch/aarch64/exceptions.rs:871@IKBD_IOREC_VA`), as EmuTOS
+`a0 = &ikbdiorec` (`bios/aciavecs.S:412`); the key queue **is** this ring since
+XBIOS01 (`docs/api/xbios/0e-iorec.md`). Before: `x1 = 0`, because
+`Iorec` was not wired and the queue `console::push_rx` was no `IOREC`.
+The packet buffers (`statvec` etc.) lie in the first page (a new region
+behind the table, or `PARMBLK`-like) and are written by the
+kernel before the call.
 
-**Verkettung** (Slot lesen, merken, spaeter aufrufen) funktioniert nur, wenn die
-Vorgabe-Slots **gueltige EL0-Einsprungadressen** enthalten (B3). Verkettung ist
-ein Tail-Call `br old` mit unveraendertem x0/x1.
+**Chaining** (read a slot, remember it, call it later) works only if the
+default slots hold **valid EL0 entry addresses** (B3). Chaining is
+a tail call `br old` with x0/x1 unchanged.
 
-## B3. Standard-Haken im Prozess (Stubs, EmuTOS-`just_rts`-treu)
+## B3. Default hooks in the process (stubs, faithful to EmuTOS `just_rts`)
 
-Beim Laden schreibt der Lader (wie `write_upcall_trampoline`, `loader.rs:1136ff`)
-ein kleines Stubfeld (z. B. `[0xA00, 0xA40)`), und die Vorgabe der Slots zeigt
-darauf:
+At load the loader (like `write_upcall_trampoline`, `loader.rs:1136ff`) writes
+a small stub field (e.g. `[0xA00, 0xA40)`), and the default of the slots points
+to it *(superseded by D1-new: the stubs sit in the shared stub page)*:
 
-* `ret_stub` (ein `ret`) — Vorgabe fuer `vkbderr, vmiderr, statvec, mousevec,
-  clockvec, joyvec, midivec, midisys, ikbdsys, mousexvec` (EmuTOS-Vorgabe ist
-  `just_rts` fuer die meisten, `aciavecs.S:148-168,179`; fuer `midisys/ikbdsys/
-  clockvec/midivec` ist es dort ein echter Treiber, hier gibt es kein ACIA/MIDI;
-  `Initmous`/AES-Maus laufen intern ueber `vdi::feed_relative`).
-* `kbdvec_default` — `mov x8,#<NR>; svc #1; ret`: ein **neuer interner
-  Syscall (ENTSCHEIDUNG D6, Nummer vom Lead)**, der im Kernel die heutige
-  `decode_key(byte)` (Modifier, ASCII, `push_rx`, Wiederholungsstart) ausfuehrt.
-  Das ist das Gegenstueck zu `_kbdvec -> kbd_int`.
+* `ret_stub` (one `ret`) — default for `vkbderr, vmiderr, statvec, mousevec,
+  clockvec, joyvec, midivec, midisys, ikbdsys, mousexvec` (the EmuTOS default is
+  `just_rts` for most, `aciavecs.S:148-168,179`; for `midisys/ikbdsys/
+  clockvec/midivec` it is a real driver there, here there is no ACIA/MIDI;
+  `Initmous`/AES mouse run internally through `vdi::feed_relative`).
+* `kbdvec_default` — `mov x8,#<NR>; svc #1; ret`: a **new internal
+  syscall (DECISION D6, number from the lead)** that executes in the kernel today's
+  `decode_key(byte)` (modifiers, ASCII, `push_rx`, repeat start).
+  This is the counterpart of `_kbdvec -> kbd_int`.
 
-Damit ist "Haken ruft den Standard auf" = `br old` und "Haken ruft ihn nicht
-auf" = EmuTOS-treu (A5): die BIOS-Schlange, `Kbshift`, Wiederholung und
-Reset-Check bleiben aus (Reset-Check hat `ikbd.rs` ohnehin nicht).
+So "hook calls the default" = `br old` and "hook does not call it" =
+faithful to EmuTOS (A5): the BIOS queue, `Kbshift`, repeat and
+reset check stay off (`ikbd.rs` has no reset check anyway).
 
-## B4. Wann es laeuft und wie nichts verloren geht  (ENTSCHEIDUNG D3)
+## B4. When it runs and how nothing is lost  (DECISION D3)
 
-* Ort: `ikbd::feed()`, an der Stelle, wo ein Byte `< 0xF6` als Taste erkannt wird
-  (jetzt `decode_key`, `ikbd.rs:~144`). Lauf im **gepollten Pump** (KEYS01),
-  nicht im Interrupt; Zustellung am naechsten Syscall-Rueckgang nach EL0
+* Place: `ikbd::feed()`, where a byte `< 0xF6` is recognised as a key
+  (now `decode_key`, `ikbd.rs:~144`). Runs in the **polled pump** (KEYS01),
+  not in the interrupt; delivery at the next syscall return to EL0
   (`complete_call_tail`).
-* Schnellpfad: Steht in `kbdvec` des laufenden Prozesses noch `kbdvec_default`
-  (Adresse = Konstante), oder gibt es keinen laufenden Prozess (Desktop/Boot,
-  `current() == null`, wie `current_conterm`), ruft der Kernel `decode_key`
-  **direkt** wie heute -> normale Programme unveraendert (Abnahme).
-* Sonst: Byte in einen Kernel-Ring je Prozess-Slot (Vorschlag 64 Eintraege, bei
-  Ueberlauf aelteste/neueste verwerfen -> D3a) und **einen** Upcall mit
-  `x0 = Byte`. Beim `Psigreturn` des Hakens: ist der Ring nicht leer, naechstes
-  Byte zustellen (derselbe Kniff wie die Userdef-Kette, `exceptions.rs:
-  1410ff`), sonst Kontext wiederherstellen. Schachtelungstiefe bleibt 1.
-  **Warum nicht `post_upcall` direkt:** ein Steckplatz, "last writer wins"
-  (`process.rs:850-856`) — ein Make und sein Break im selben Poll wuerden das Make
-  verlieren; genau der Fehler, den Doom nicht haben darf.
-* Neues Maskenbit `UPCALL_MASK_KBDVEC = 1 << 3` (nach `process.rs:541-553`).
-* Der Besitzer-Test: nur wenn der laufende Prozess die Tabelle besitzt — trivial
-  erfuellt, da der Kernel die Tabelle des *laufenden* Prozesses liest (kein
-  Fremdzugriff wie beim Rad noetig).
-* Verzoegerung: Zustellung ist durch die Poll-Frequenz begrenzt (KEYS01-Zusage:
-  mindestens einmal je Tick in jeder AES-Warteschleife; Doom ruft
-  `evnt_multi`, `sdk/apps/doom/doomgeneric_gem.c:1699`). **Zu pruefen beim Bau:**
-  dass der AES-Weg nach `evnt_multi` ebenfalls durch `complete_call_tail` (also
-  Upcall-Zustellung) laeuft — hier nicht belegt (`exceptions.rs:538-557` zeigt
-  es fuer den gewoehnlichen Trap-Pfad).
-* Nicht-Verlass: Ein Haken, der nie zurueckkehrt, haelt den Prozess an (wie auf
-  TOS); kein Watchdog vorgeschlagen.
+* Fast path: if `kbdvec` of the running process still holds `kbdvec_default`
+  (address = constant), or there is no running process (desktop/boot,
+  `current() == null`, like `current_conterm`), the kernel calls `decode_key`
+  **directly** as today -> normal programs unchanged (acceptance).
+* Otherwise: byte into a kernel ring per process slot (proposal 64 entries, on
+  overflow discard oldest/newest -> D3a) and **one** upcall with
+  `x0 = byte`. At the `Psigreturn` of the hook: if the ring is not empty, deliver the next
+  byte (the same trick as the userdef chain, `exceptions.rs:
+  1410ff`), else restore the context. Nesting depth stays 1.
+  **Why not `post_upcall` directly:** one slot, "last writer wins"
+  (`process.rs`) — a make and its break in the same poll would lose the
+  make; exactly the error Doom must not have.
+* New mask bit `UPCALL_MASK_KBDVEC = 1 << 3` (after `process.rs`).
+* The owner test: only if the running process owns the table — trivially
+  satisfied, since the kernel reads the table of the *running* process (no
+  foreign access as for the wheel needed).
+* Delay: delivery is limited by the poll frequency (KEYS01 promise:
+  at least once per tick in every AES wait loop; Doom calls
+  `evnt_multi`, `sdk/apps/doom/doomgeneric_gem.c`). **To check at build:**
+  that the AES path after `evnt_multi` also runs through `complete_call_tail` (so
+  upcall delivery) — not evidenced here (`exceptions.rs` shows
+  it for the ordinary trap path).
+* No guarantee: a hook that never returns stops the process (as on
+  TOS); no watchdog proposed.
 
-## B5. Pro Prozess oder global / Prozessende  (ENTSCHEIDUNG D1, Folge)
+## B5. Per process or global / process end  (DECISION D1, consequence)
 
-Pro Prozess (B1). Prozessende: Tabelle und Stubs verschwinden mit der TPA
-(`free_slot`, `process.rs:944`); zusaetzlich im `free_slot` den Kernel-Ring des
-Slots leeren (so wie `release_wheel_vector` dort aufgerufen wird,
-`process.rs:991`). Ein ausstehender Upcall wird dort schon verworfen
-(`process.rs:971-978`). **Nichts bleibt haengen.** Das ist eine bewusste
-Abweichung von EmuTOS (A8: dort haengt der Zeiger) und gehoert in
-`docs/COMPATIBILITY.md` "Sanctioned deviations" nach Freigabe. Zusaetzlich:
-ein Kind (`Pexec`) startet mit Standardwerten; ein Elternhaken wirkt nicht im
-Kind (EmuTOS: globale Tabelle, wirkt).
+Per process (B1). Process end: table and stubs disappear with the TPA
+(`free_slot`, `process.rs`); in addition in `free_slot` empty the kernel ring of the
+slot (the way `release_wheel_vector` is called there,
+`process.rs`). A pending upcall is already discarded there
+(`process.rs`). **Nothing stays dangling.** This is a deliberate
+deviation from EmuTOS (A8: there the pointer dangles) and belongs in
+`docs/COMPATIBILITY.md` "Sanctioned deviations" after approval. In addition:
+a child (`Pexec`) starts with default values; a parent's hook does not act in the
+child (EmuTOS: global table, acts).
 
-## B6. Wechselwirkung mit KEYS01-Wiederholung und `ikbdsys`  (ENTSCHEIDUNG D4)
+## B6. Interaction with KEYS01 repeat and `ikbdsys`  (DECISION D4)
 
-* Wiederholungen rufen `kbdvec` nicht (A5) — NewTOS tut es heute schon so
-  (`ikbd.rs:222-231`); **unveraendert lassen**. Ein Spiel mit Haken sieht
-  Make/Break genau einmal; laeuft der Standard (Verkettung), kommen
-  Wiederholungen in die BIOS-Schlange wie unter EmuTOS.
-* `ikbdsys`-Wechsel (`ikbd.c:453, 507, 903`): in der Zeit des ACIA-Interrupts
-  ruft EmuTOS `ikbdsys`. NewTOS hat **keinen** ACIA-Interrupt, `ikbdsys` wird
-  nie gerufen (jede Eingabe laeuft durch `feed`). Vorschlag: Slot vorhanden,
-  Vorgabe `ret_stub`, **wird nicht gerufen**; ein Programm, das `ikbdsys` ersetzt
-  und selbst ACIA-Register liest (TOS-1.x-Spiele), geht auf der Pi ohnehin nicht
-  (kein ACIA) und erhaelt keine Tasten — als *nicht unterstuetzt* dokumentiert.
-  Die Stopp-Regel kann EmuTOS-treu nachgebaut werden: beim Make `ikbdsys` aus der
-  Tabelle merken (`KeyRepeat::make`), in `poll_repeat` vergleichen, bei
-  Abweichung Wiederholung stoppen (`ikbd.c:453-471`). Aufwand klein
-  (`kernel/src/key_repeat.rs` + Lesen des Slots). D4 entscheidet: nachbauen
-  (EmuTOS-treu, Standardregel "match it") oder weglassen (KEYS01 hat es bereits
-  als "nicht nachgebildet" vermerkt, (cite stale 2026-10-26: _state.md:164, the KEYS01 "not modelled" note in docs/api/xbios/_state.md)).
-* BIOS-Schlange: laeuft nur ueber den Standard-`kbdvec` (A4.4/A5). Verkettet das
-  Spiel, fuellt der Standard die Schlange (`push_rx`) wie bisher und startet die
-  Wiederholung; wer nicht verkettet, bekommt (und liefert) EmuTOS-gemaess nichts
-  weiter.
+* Repeats do not call `kbdvec` (A5) — NewTOS already does it this way today
+  (`ikbd.rs`); **leave unchanged**. A game with a hook sees
+  make/break exactly once; if the default runs (chaining), repeats come into
+  the BIOS queue as under EmuTOS.
+* `ikbdsys` change (`ikbd.c:453, 507, 903`): during the ACIA interrupt
+  EmuTOS calls `ikbdsys`. NewTOS has **no** ACIA interrupt, `ikbdsys` is
+  never called (all input runs through `feed`). Proposal: slot present,
+  default `ret_stub`, **is not called**; a program that replaces `ikbdsys`
+  and reads ACIA registers itself (TOS 1.x games) does not work on the Pi anyway
+  (no ACIA) and receives no keys — documented as *not supported*.
+  The stop rule can be rebuilt faithfully to EmuTOS: at make remember `ikbdsys` from the
+  table (`KeyRepeat::make`), compare in `poll_repeat`, on
+  difference stop the repeat (`ikbd.c:453-471`). Small effort
+  (`kernel/src/key_repeat.rs` + reading the slot). D4 decides: rebuild
+  (faithful to EmuTOS, standard rule "match it") or omit (KEYS01 has already
+  noted it as "not modelled", (cite stale 2026-10-26: _state.md:164, the KEYS01 "not modelled" note in docs/api/xbios/_state.md)).
+* BIOS queue: runs only through the default `kbdvec` (A4.4/A5). If the
+  game chains, the default fills the queue (`push_rx`) as before and starts
+  the repeat; whoever does not chain gets (and delivers), per EmuTOS, nothing
+  further.
 
-## B7. Umfang  (ENTSCHEIDUNG D7)
+## B7. Scope  (DECISION D7)
 
-**Minimum fuer Doom** (empfohlen als Bauauftrag KEYS02):
-1. Tabelle je Prozess + `Kbdvbase` liefert den EL0-VA, **inklusive** `kbdvec`
-   bei `-8` Byte und aller neun Slots mit gueltigen Vorgabe-Stubs (B1, B3).
-2. `kbdvec`-Zustellung mit Ring und Kettenzustellung (B4), `kbdvec_default`-
-   Syscall (D6).
-3. Aufraeumen in `free_slot` (B5).
-4. Optional im selben Zug: `ikbdsys`-Stopp (D4), weil klein.
-Damit: Make **und Break** jeder Taste (auch Pfeile, Mehrfachtasten), Verketten
-zur BIOS-Schlange, Programmende sicher.
+**Minimum for Doom** (recommended as build order KEYS02):
+1. Table per process + `Kbdvbase` returns the EL0 VA, **including** `kbdvec`
+   at `-8` bytes and all nine slots with valid default stubs (B1, B3).
+2. `kbdvec` delivery with ring and chain delivery (B4), `kbdvec_default`
+   syscall (D6).
+3. Clean-up in `free_slot` (B5).
+4. Optionally in the same go: `ikbdsys` stop (D4), because it is small.
+Thereby: make **and break** of every key (also arrows, multiple keys), chaining
+to the BIOS queue, safe program end.
 
-**Vollumfang (spaeter, eigene Tickets):** `mousevec` (Paket nach A4, Aufruf bei
-Maus-Paketen; heutiger Weg `feed_relative` bleibt als Standardpfad -> hier waere
-ebenfalls Stub-Vergleich), `joyvec` (HID-Gamepad -> IKBD-Joystickpaket
-`FD/FE/FF`, `docs/api` muss zuerst klaeren, was der HID-Treiber liefert),
-`statvec`/`clockvec` (setzen die IKBD-Befehlsseite `Ikbdws` voraus, Antwortpakete;
-ausserhalb), `midivec`/`midisys`/`vmiderr`/`vkbderr` (keine Hardware).
-Diese Slots **existieren** im Minimum mit `ret_stub`, aber **ein dort eingehaengter
-Programm-Haken wird nicht gerufen**. Das ist eine dokumentierte, nicht
-getarnte Luecke (nach Regel 2 in `STATUS.md` unter "Blocked" eintragen — das
-tut der Lead, nicht diese Spec) und kein Verstecken hinter einem
-Stub-Rueckgabewert.
+**Full scope (later, own tickets):** `mousevec` (packet per A4, called on
+mouse packets; today's path `feed_relative` stays as the default path -> here
+a stub comparison would be needed as well), `joyvec` (HID gamepad -> IKBD joystick packet
+`FD/FE/FF`, `docs/api` must first clarify what the HID driver delivers),
+`statvec`/`clockvec` (presuppose the IKBD command side `Ikbdws`, reply packets;
+outside), `midivec`/`midisys`/`vmiderr`/`vkbderr` (no hardware).
+These slots **exist** in the minimum with `ret_stub`, but **a program hook hung
+there is not called**. That is a documented, not
+disguised gap (to be entered per rule 2 in `STATUS.md` under "Blocked" — the
+lead does that, not this spec) and no hiding behind a
+stub return value.
 
-## B8. Abnahme (Vorschlag, aus der TASK abgeleitet)
+## B8. Acceptance (proposal, derived from the TASK)
 
-* Test: Haken installiert, `br old`-Verkettung; Make A, Make B, Break A, Break B
-  in einem Poll -> vier Zustellungen in dieser Reihenfolge.
-* Ohne Verkettung: `Bconstat` bleibt leer, `Kbshift` unveraendert.
-* Prozessende mit installiertem Haken -> naechster Prozess/Desktop reagiert normal.
-* `Kbdvbase()[-1] == kbdvec`-Slot, `Kbdvbase()` stabil; Slots nie 0.
-* Doom (Pi, TT): Laufen + Drehen gleichzeitig, Antippen dreht kurz.
+* Test: hook installed, `br old` chaining; make A, make B, break A, break B
+  in one poll -> four deliveries in this order.
+* Without chaining: `Bconstat` stays empty, `Kbshift` unchanged.
+* Process end with an installed hook -> next process/desktop reacts normally.
+* `Kbdvbase()[-1] == kbdvec` slot, `Kbdvbase()` stable; slots never 0.
+* Doom (Pi, TT): running + turning at the same time, a tap turns briefly.
 
 ---
 
-# Teil C — Bau (KEYS02 Kernteil, 2026-10-04)
+# Part C — Build (KEYS02 core part, 2026-10-04)
 
-Umfang = D7-Minimum. Teil B gilt mit den folgenden Festlegungen; Abweichungen
-von Teil B sind hier ausdruecklich genannt.
+Scope = D7 minimum. Part B applies with the following fixings; deviations
+from Part B are named here explicitly.
 
-## C1. Tabelle, Stubs, `Kbdvbase` (B1/B3)
+## C1. Table, stubs, `Kbdvbase` (B1/B3)
 
-* Layout wie B1, Bereich `[0x9A0, 0xA00)` der ersten TPA-Seite
-  (`loader::KBDVECS_AREA_VA`, Groesse 0x60, 0x5A belegt). `Kbdvbase()` = `0x9B0`
-  (EL0-VA von `midivec`), `kbdvec` bei `0x9A8`, `mousexvec` bei `0x9A0`,
-  `ikbdsys` bei `0x9F0`, `drvstat`/`kbdlength` bei `0x9F8`/`0x9F9` (beide 0, D5).
-* Stubs in `[0xA00, 0xA40)` (`loader::KBDVEC_STUB_AREA_VA`):
-  `ret_stub` bei `0xA00` (`ret`), `kbdvec_default` bei `0xA08`:
-  `mov x1,x0; mov x0,#2002; mov x2,#0; mov x8,#0x154; svc #1; ret`
-  (Kodierungen mit clang/llvm-objdump geprueft).
-* Geschrieben vom Lader bei jedem Laden (`xbios::kbdvecs::write_defaults`, aus
-  `populate_and_map` neben den Upcall-Trampolinen, vor der Code-Cache-Pflege).
-* **Ergaenzung (in B1 nicht geregelt):** ein EL1-Aufrufer ohne Prozess (Desktop,
-  Boot, `RUN == null`) bekommt eine Kernel-Tabelle gleichen Layouts mit denselben
-  Vorgabewerten. Durch sie wird nie gerufen (ohne Prozess laeuft immer der
-  Standardweg); sie beantwortet nur den Zeiger — dieselbe Regel wie `Keytbl`.
+* **Address as built, 2026-10-04: first TPA page `[0x9A0, 0xA00)`; superseded by MEM12 (Part D, "D1-new"). Current state (read at `main`):** the table starts at
+  the private read-write page `KBDVECS_AREA_VA = mmu::PRIV_PAGE_VA = 0x7F000`
+  (`tos-api/src/bdos/process/loader.rs:1048@KBDVECS_AREA_VA`,
+  `tos-api/src/bdos/process/mmu.rs:259@PRIV_PAGE_VA`), size 0x60 (0x5A used,
+  `loader.rs:1051@KBDVECS_AREA_SIZE`). Layout as B1 relative to that start
+  (`tos-api/src/xbios/kbdvecs.rs:75@OFF_MOUSEXVEC`..`:85@OFF_KBDLENGTH`): `mousexvec` at `0x7F000`,
+  `kbdvec` at `0x7F008`, `Kbdvbase()` = `0x7F010` (EL0 VA of `midivec`,
+  `tos-api/src/xbios/kbdvecs.rs:199@kbdvbase`), `ikbdsys` at `0x7F050`,
+  `drvstat`/`kbdlength` at `0x7F058`/`0x7F059` (both 0, D5). The value `0x7F010` is
+  also measured (`docs/COMPATIBILITY.md`, "The IKBD vector table is per process").
+* **Stubs as built: `[0xA00, 0xA40)`; current state: in the shared stub page
+  `mmu::STUB_PAGE_VA = 0x7E000`**
+  (`tos-api/src/bdos/process/mmu.rs:256@STUB_PAGE_VA`), region
+  `KBDVEC_STUB_AREA_VA = STUB_PAGE_VA + 0x40 = 0x7E040`
+  (`loader.rs:1056@KBDVEC_STUB_AREA_VA`): `ret_stub` at `0x7E040` (`ret`), `kbdvec_default` at `0x7E048`
+  (`tos-api/src/xbios/kbdvecs.rs:90@RET_STUB_VA`, `:92@KBDVEC_DEFAULT_VA`; `USER_VA_BASE = 0`,
+  `loader.rs:207@USER_VA_BASE`): `mov x1,x0; mov x0,#2002; mov x2,#0; mov x8,#0x154; svc #1; ret`
+  (encodings checked with clang/llvm-objdump).
+* Written by the loader at every load (`xbios::kbdvecs::write_defaults`, from
+  `populate_and_map` next to the upcall trampolines, before the code-cache maintenance).
+* **Addendum (not regulated in B1):** an EL1 caller without a process (desktop,
+  boot, `RUN == null`) gets a kernel table of the same layout with the same
+  default values. It is never called through it (without a process the default path always runs);
+  it only answers the pointer — the same rule as `Keytbl`.
 
-## C2. D6 — die Syscall-Nummer
+## C2. D6 — the syscall number
 
-`kbdvec_default` ruft **`Ssystem(S_NEWTOS_KBDVEC = 2002, scancode, 0)`**
-(GEMDOS 0x154). Der NewTOS-eigene Bereich ist `Ssystem` 2000+
-(`docs/api/gemdos/154-ssystem.md`, belegt 2000/2001); 2002 ist die naechste freie
-Nummer. Vertrag: `arg1` = Byte (0..0xFF, sonst `EINVAL`), `arg2` = 0 (sonst
-`EINVAL`), Ergebnis `E_OK`, `ERROR` ohne Tastaturdekoder (Host ohne Dekoder).
-Die Nummer steht nur im kernel-geschriebenen Stub; kein Programm-Binaerbild
-enthaelt sie, ein Umnummerieren braeche nichts.
+`kbdvec_default` calls **`Ssystem(S_NEWTOS_KBDVEC = 2002, scancode, 0)`**
+(GEMDOS 0x154). The NewTOS-own range is `Ssystem` 2000+
+(`docs/api/gemdos/154-ssystem.md`, 2000/2001 taken); 2002 is the next free
+number. Contract: `arg1` = byte (0..0xFF, else `EINVAL`), `arg2` = 0 (else
+`EINVAL`), result `E_OK`, `ERROR` without a keyboard decoder (host without decoder).
+The number appears only in the kernel-written stub; no program binary
+contains it, a renumbering would break nothing.
 
-## C3. Zustellung (B4, D3/D3a)
+## C3. Delivery (B4, D3/D3a)
 
-* `ikbd::feed` → `kbdvecs::route_key(byte)` fuer jedes Byte `< 0xF6`:
-  kein laufender Prozess **oder** `kbdvec == 0xA08` → `decode_key` direkt
-  (Schnellpfad, unveraendert). Sonst Byte in den Ring des Prozess-Slots
-  (64, bei vollem Ring wird das **neueste** verworfen).
-* Zustellung (`exceptions.rs::deliver_pending_kbdvec`) an jeder Rueckkehr nach
-  EL0 (`complete_call_tail`, Resume nach Scheduler-Wechsel in `apply_switch`,
-  Resume-`Psigreturn`): ein Byte je Upcall, `x0` = Scancode, `x1` = 0,
-  Ziel = der **aktuelle** `kbdvec`-Wert, Maskenbit `UPCALL_MASK_KBDVEC = 1 << 3`.
-  Solange das Bit gesetzt ist, wird kein weiteres Byte zugestellt (Tiefe 1);
-  das naechste folgt beim `Psigreturn` des Hakens (Kette). Ein schon
-  gepostetes anderes Upcall hat Vorrang. Steht beim Zustellen wieder die
-  Vorgabe im Slot, wird das Byte direkt dekodiert.
-* **O1 — geklaert, war nicht gegeben, ist gebaut.** Eine blockierende AES-Warte
-  (`evnt_*` → `sched::sleep`) und die blockierenden Einzeltasten-Lesungen
-  (`Cconin`, `Cnecin`, `Crawcin`, `Bconin(2)`) kehrten nie nach EL0 zurueck,
-  solange keine Taste in der BIOS-Schlange lag — die legt bei einem verkettenden
-  Haken aber erst der Haken selbst hinein: Verklemmung. Jetzt **weichen sie aus**:
-  `sleep` liefert bei wartenden Ring-Bytes (vor dem Blockieren und nach dem
-  eigenen Pump) `Yield(switch_restart_for_upcall())`, die Lesungen
+* `ikbd::feed` → `kbdvecs::route_key(byte)` for every byte `< 0xF6`:
+  no running process **or** `kbdvec == KBDVEC_DEFAULT_VA` (as built `0xA08`, now `0x7E048`, C1) → `decode_key` directly
+  (fast path, unchanged). Otherwise byte into the ring of the process slot
+  (64, with a full ring the **newest** is discarded).
+* Delivery (`exceptions.rs::deliver_pending_kbdvec`) at every return to
+  EL0 (`complete_call_tail`, resume after scheduler switch in `apply_switch`,
+  resume `Psigreturn`): one byte per upcall, `x0` = scancode, `x1` = 0,
+  target = the **current** `kbdvec` value, mask bit `UPCALL_MASK_KBDVEC = 1 << 3`.
+  As long as the bit is set, no further byte is delivered (depth 1);
+  the next follows at the `Psigreturn` of the hook (chain). An already
+  posted other upcall takes precedence. If the default is in the slot again at delivery,
+  the byte is decoded directly.
+* **O1 — settled, was not given, is built.** A blocking AES wait
+  (`evnt_*` → `sched::sleep`) and the blocking single-key reads
+  (`Cconin`, `Cnecin`, `Crawcin`, `Bconin(2)`) never returned to EL0
+  as long as no key lay in the BIOS queue — but with a chaining
+  hook only the hook itself puts one there: deadlock. Now they **give way**:
+  `sleep` returns, with waiting ring bytes (before blocking and after its
+  own pump), `Yield(switch_restart_for_upcall())`, the reads
   `Host::console_read_key_restartable() == None` + `kbdvecs::request_restart()`.
-  Der Trap-Handler bricht den Aufruf wie einen S2-Yield ab (`elr` auf das `svc`
-  zurueck, nichts festgeschrieben), stellt den Haken zu, und nach dessen
-  `Psigreturn` laeuft das `svc` erneut (`evnt_multi`-Zeitgrenze bleibt ueber
-  `syscall_deadline` erhalten). Gemessen in QEMU: `evnt_multi(MU_KEYBD)` **ohne**
-  Timer und `Bconin(2)` liefern die vom Haken verkettete Taste; zwei Breaks im
-  selben Poll erreichen den Haken beide, in Reihenfolge, das zweite ueber die
-  `Psigreturn`-Kette (`measurements/measurement-2026-10-04-keys02/`).
-  **[XBIOS18] 2026-10-29:** ebenso das Warten von `Bconin(1)` (auch `Cauxin`
-  und ein Ein-Byte-`Fread` auf AUX) auf qemu-virt, wo AUX ein Treiber ist
-  (XBIOS15): `AuxSerial::bconin_restartable` liefert bei wartenden Ring-Bytes
-  `None` (`kernel/src/console.rs:231@aux_read_blocking`), der Trap startet nach
-  dem Haken neu. Vorher bekam der Haken seine Bytes erst mit dem naechsten
-  seriellen Byte; EmuTOS ruft ihn aus dem IKBD-Interrupt, waehrend `bconin1`
-  wartet (`bios/aciavecs.S:407-414`, `bios/serport.c:202-210`). Gemessen mit
-  `tosdump/probes/axprobe.c` gegen tt und falcontc
-  (`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`). Auf echter Pi 4
-  wartete `Bconin(1)` damals nicht (kein Kabel). **[BIOS09] 2026-10-30:** dort
-  jetzt ebenso — derselbe Treiber auf beiden Boards, dieselbe Schleife
-  (`tos-api/src/bios/chardev.rs:605@aux_read`); waehrend des Wartens laeuft
-  kein anderer Prozess, nur der Haken des wartenden. Pi-Schritt mit
-  `tosdump/probes/awprobe.c` (MEM12-Prueffolge).
-* **Grenzen (dokumentiert, nicht gebaut):** `Cconrs`, konsolen-`Fread` und
-  `v_string` (Anfragemodus) lesen weiter ohne Ausweichen — sie haben vor dem
-  Ende bereits Wirkung (Echo, Puffer); ein Programm, das bei eingehaengtem und
-  verkettendem Haken darin wartet, haengt. Modale AES-Schleifen, die
-  `pump_input` selbst rufen (`form_do`, Menue-/Ziehschleifen), stellen erst bei
-  ihrer Rueckkehr zu (Ring 64). Ein Haken laeuft als normale AAPCS64-Funktion,
-  aber das Upcall sichert die **FP/SIMD-Register** des unterbrochenen Codes
-  nicht (gilt fuer alle Upcalls); ein Haken darf sie nicht benutzen.
+  The trap handler aborts the call like an S2 yield (`elr` back to the `svc`,
+  nothing committed), delivers the hook, and after its
+  `Psigreturn` the `svc` runs again (the `evnt_multi` time limit is kept via
+  `syscall_deadline`). Measured in QEMU: `evnt_multi(MU_KEYBD)` **without**
+  timer and `Bconin(2)` deliver the key chained by the hook; two breaks in the
+  same poll both reach the hook, in order, the second through the
+  `Psigreturn` chain (`measurements/measurement-2026-10-04-keys02/`).
+  **[XBIOS18] 2026-10-29:** likewise the wait of `Bconin(1)` (also `Cauxin`
+  and a one-byte `Fread` on AUX) on qemu-virt, where AUX is a driver
+  (XBIOS15): `AuxSerial::bconin_restartable` returns `None` with waiting ring bytes
+  (`kernel/src/console.rs:231@aux_read_blocking`), the trap restarts after
+  the hook. Before, the hook received its bytes only with the next
+  serial byte; EmuTOS calls it from the IKBD interrupt while `bconin1`
+  waits (`bios/aciavecs.S:407-414`, `bios/serport.c:202-210`). Measured with
+  `tosdump/probes/axprobe.c` against tt and falcontc
+  (`measurements/measurement-2026-10-29-xbios18/RUNINFO.TXT`). On a real Pi 4
+  `Bconin(1)` did not wait at the time (no cable). **[BIOS09] 2026-10-30:** there
+  now likewise — the same driver on both boards, the same loop
+  (`tos-api/src/bios/chardev.rs:605@aux_read`); while waiting
+  no other process runs, only the hook of the waiting one.
+  Pi step with `tosdump/probes/awprobe.c` (MEM12 check sequence).
+* **Limits (documented, not built):** `Cconrs`, console `Fread` and
+  `v_string` (request mode) still read without giving way — they already have
+  an effect before the end (echo, buffer); a program that waits in them with a hook installed
+  and chaining hangs. Modal AES loops that call
+  `pump_input` themselves (`form_do`, menu/drag loops) deliver only on
+  their return (ring 64). A hook runs as an ordinary AAPCS64 function,
+  but the upcall does not save the **FP/SIMD registers** of the interrupted code
+  (applies to all upcalls); a hook must not use them.
 
-## C4. Wiederholung und `ikbdsys` (D4)
+## C4. Repeat and `ikbdsys` (D4)
 
-`KeyRepeat::make` merkt sich den `ikbdsys`-Wert des laufenden Prozesses
-(`kbdvecs::current_ikbdsys`, ohne Prozess `0xA00`), `poll` stoppt bei einem
-50-Hz-Schritt mit laufender Wiederholung und anderem Wert (vor dem
-`conterm`-Test, `ikbd.c:453-472`); bei Neuumsetzung wird der Wert nachgezogen
-(`:507`). `ikbdsys` wird nie gerufen. Wiederholungen rufen `kbdvec` nicht
-(unveraendert, `ikbd.c:524`) — gemessen: der Haken sah 6 Codes, die AES 7+7
-Woerter (Make + Wiederholungen).
+`KeyRepeat::make` remembers the `ikbdsys` value of the running process
+(`kbdvecs::current_ikbdsys`, without a process `RET_STUB_VA`, as built `0xA00`, now `0x7E040`, C1), `poll` stops at a
+50 Hz step with a running repeat and a different value (before the
+`conterm` test, `ikbd.c:453-472`); on re-mapping the value is updated
+(`:507`). `ikbdsys` is never called. Repeats do not call `kbdvec`
+(unchanged, `ikbd.c:524`) — measured: the hook saw 6 codes, the AES 7+7
+words (make + repeats).
 
-## C5. Prozessende (D8)
+## C5. Process end (D8)
 
-Tabelle und Stubs liegen in der TPA und verschwinden mit ihr; `free_slot` leert
-den Ring (`kbdvecs::release_slot`). Gemessen: ein Programm, das seinen Haken
-**nicht** zuruecksetzt, endet, und der Desktop reagiert auf Alt-C normal.
-Abweichung von EmuTOS in `docs/COMPATIBILITY.md` (Sanctioned deviations).
+Table and stubs live in the TPA and disappear with it; `free_slot` empties
+the ring (`kbdvecs::release_slot`). Measured: a program that does **not**
+reset its hook ends, and the desktop reacts normally to Alt-C.
+Deviation from EmuTOS in `docs/COMPATIBILITY.md` (Sanctioned deviations).
 
-## C6. Nicht gerufene Slots (D7-Luecke)
+## C6. Slots not called (D7 gap)
 
 `midivec`, `vkbderr`, `vmiderr`, `statvec`, `mousevec`, `clockvec`, `joyvec`,
-`midisys`, `ikbdsys` und `mousexvec` existieren mit `ret_stub`; ein dort
-eingehaengter Programm-Haken wird **nicht gerufen** (Maus laeuft weiter
-kernelintern ueber `vdi::feed_relative`, `mousexvec` ueber
-`bios::vectors::mousexvec`). Eintrag unter `docs/STATUS.md` "Blocked" (Lead).
-**[BIOS15] ADR-031:** nicht gerufen bleibt (XBIOS-CHARDEV-003 ACCEPTED), aber
-nicht still: das erste Eingabeereignis, das den Slot bei EmuTOS riefe
-(`ikbdsys`/`midisys` jedes IKBD-Byte, `mousevec` Mauspaket, `statvec`,
-`clockvec`, `joyvec` ihr Paket), schreibt eine Warnung je Haken und Prozess
+`midisys`, `ikbdsys` and `mousexvec` exist with `ret_stub`; a program
+hook hung there is **not called** (the mouse continues to run
+kernel-internally through `vdi::feed_relative`, `mousexvec` through
+`bios::vectors::mousexvec`). Entry under `docs/STATUS.md` "Blocked" (lead).
+**[BIOS15] ADR-031:** stays not called (XBIOS-CHARDEV-003 ACCEPTED), but
+not silently: the first input event that EmuTOS would call the slot with
+(`ikbdsys`/`midisys` every IKBD byte, `mousevec` mouse packet, `statvec`,
+`clockvec`, `joyvec` their packet) writes one warning per hook and process
 (`tos-api/src/xbios/kbdvecs.rs:447@check_events`). `midivec`, `vkbderr`,
-`vmiderr`: ihr Ereignis (MIDI-Byte, Ueberlauf) tritt nie ein, keine Warnung.
+`vmiderr`: their event (MIDI byte, overrun) never occurs, no warning.
 
-## C7. Belege
+## C7. Evidence
 
-Hosttests `tos-api/tests/xbios_kbdvecs.rs` (10), `kernel/src/key_repeat.rs`
-(+3 `ikbdsys`), QEMU-raspi4b-Lauf mit `sdk/examples/kbdvec.c`
+Host tests `tos-api/tests/xbios_kbdvecs.rs` (10), `kernel/src/key_repeat.rs`
+(+3 `ikbdsys`), QEMU raspi4b run with `sdk/examples/kbdvec.c`
 (`measurements/measurement-2026-10-04-keys02/RUNINFO.TXT`).
 
 ---
 
-# Korrekturen an der Vorfassung (22-kbdvbase.md Phase 00) und `_state.md §1`
+# Corrections to the earlier version (22-kbdvbase.md Phase 00) and `_state.md §1`
 
-1. **`kbdvec` fehlte komplett** (Slot bei `-4`; `aciavecs.S:129`); ebenso
-   `mousexvec` (`-8`) und die Nachbarbytes `ikbdstate`/`kbdlength`.
-2. `statvec` = Paket `0xF6` (stimmte), `mousevec` bekommt **auch `0xF7`**
-   (Absolutmaus, `aciavecs.S:488-489`), nicht nur `0xF8..0xFB`; `joyvec` bekommt
-   `0xFD..0xFF` (stimmte).
-3. "`ikbdstate`/`kbdlength` ... not part of the contract": **falsch fuer
-   `ikbdstate`**. tos.hyp fuehrt `drvstat` als dokumentiertes Feld hinter
-   `ikbdsys`; Programme sollen vor dem Umhaengen darauf pruefen. Intern frei
-   bleibt `kbdlength`/`kbdbuf` (D5).
-4. Die Vorfassung nannte als NewTOS-Vorgabe "36-Byte-Layout mit nativen
-   Zeigern, nicht befuellt" und "`Initmous` schreibt `mousevec`": der Zustand
-   (alle 0) ist unbrauchbar fuer Verkettung (`br 0`). Neuer Vorschlag B3.
-5. Die Compendium-Querverweise "not present in references/" sind ueberholt
-   (tos.hyp abgerufen, s. u.).
-6. `_state.md §1` (Tabelle `kbdvecs`) hat dieselben Luecken (kein `kbdvec`, Paket
-   `0xF7`, `drvstat`); beim Freigeben mit anheben.
+1. **`kbdvec` was missing entirely** (slot at `-4`; `aciavecs.S:129`); likewise
+   `mousexvec` (`-8`) and the neighbouring bytes `ikbdstate`/`kbdlength`.
+2. `statvec` = packet `0xF6` (was right), `mousevec` gets **also `0xF7`**
+   (absolute mouse, `aciavecs.S:488-489`), not only `0xF8..0xFB`; `joyvec` gets
+   `0xFD..0xFF` (was right).
+3. "`ikbdstate`/`kbdlength` ... not part of the contract": **wrong for
+   `ikbdstate`**. tos.hyp lists `drvstat` as a documented field behind
+   `ikbdsys`; programs are to check it before rehooking. `kbdlength`/`kbdbuf`
+   stay internal (D5).
+4. The earlier version named as the NewTOS default "36-byte layout with native
+   pointers, not filled" and "`Initmous` writes `mousevec`": the state
+   (all 0) is useless for chaining (`br 0`). New proposal B3.
+5. The Compendium cross-references "not present in references/" are outdated
+   (tos.hyp retrieved, see below).
+6. `_state.md §1` (table `kbdvecs`) has the same gaps (no `kbdvec`, packet
+   `0xF7`, `drvstat`); raise it at approval.
 
 ---
 
-# Querverweise
+# Cross-references
 
-* Atari Compendium (tos.hyp, abgerufen 2026-10-04 per WebFetch; Seite wurde vom
-  Abruf-Werkzeug **zusammengefasst**, nicht im Wortlaut geprueft):
-  * https://freemint.github.io/tos.hyp/en/xbios_structures.html (KBDVBASE: Feld-
-    liste mit `drvstat`, "address of the packet in A0 and on the stack", RTS,
+* Atari Compendium (tos.hyp, retrieved 2026-10-04 by WebFetch; the page was
+  **summarised** by the retrieval tool, not checked verbatim):
+  * https://freemint.github.io/tos.hyp/en/xbios_structures.html (KBDVBASE: field
+    list with `drvstat`, "address of the packet in A0 and on the stack", RTS,
     <= 1 ms)
   * https://freemint.github.io/tos.hyp/en/xbios_interface.html (Kbdvbase:
-    Warnung `drvstat`/Interrupts sperren vor Aenderung)
-  * `kbdvec` wird auf beiden Seiten **nicht** erwaehnt.
+    warning `drvstat`/disable interrupts before a change)
+  * `kbdvec` is **not** mentioned on either page.
 * EmuTOS: `bios/aciavecs.S`, `bios/ikbd.c`, `bios/xbios.c`, `bios/mouse.c`,
   `bios/amiga2.S`, `vdi/vdi_mouse.c`, `vdi/vdi_asm.S`, `bdos/proc.c`,
   `include/biosdefs.h`, `include/config.h`.
 * FreeMiNT: `sys/keyboard.c`, `sys/arch/init_intr.c`, `sys/arch/intr.S`,
   `sys/arch/acia.S`, `sys/dev-mouse.c`, `sys/mint/struct_kbdvbase.h`,
   `sys/usb/src.km/udd/hid/{mouse,mouse-boot,tablet}/*.c`.
-* NewTOS-Code (gelesen): siehe B0.
+* NewTOS code (read): see B0.
 
-# Offene Punkte (nicht geklaert, bewusst nicht erraten)
+# Open points (not settled, deliberately not guessed)
 
-* **O1.** Ob der AES-Pfad nach `evnt_multi` eine Upcall-Zustellung am Rueckweg
-  hat (B4) — beim Bau pruefen. **Geklaert 2026-10-04 (C3):** am Rueckweg ja, aber
-  eine *blockierende* Warte kehrte nicht zurueck; jetzt weicht sie aus.
-* **O2.** `IOREC`-Form fuer `x1` (D2a) haengt an der Entscheidung ueber `Iorec`.
-  **Geklaert 2026-10-29 (XBIOS01, E6):** `x1` = `Iorec(1)`, LP64-`_IOREC`.
-* **O3.** TT TOS 3.06 hat `kbdvec`: nur abgeleitet (A7). Eine Messung am
-  Hatari-TT (`hatari-produces-tt-references`) koennte es bestaetigen — hier nicht
-  ausgefuehrt.
-  **Geklaert 2026-10-04 (KEYS02):** gemessen, ja — ROM und Hatari-TT-Debugger,
-  Belege in A7.
-* **O4.** Ob `ikbdstate` ueberhaupt je beobachtbar mitten im Paket ist: der
-  HID-Uebersetzer fuettert pro Report atomar (gefolgert, nicht geprueft) —
-  daher Vorschlag `drvstat == 0` konstant.
+* **O1.** Whether the AES path after `evnt_multi` has an upcall delivery on the return path (B4) —
+  check at build. **Settled 2026-10-04 (C3):** yes on the return path, but
+  a *blocking* wait did not return; now it gives way.
+* **O2.** The `IOREC` form for `x1` (D2a) depends on the decision about `Iorec`.
+  **Settled 2026-10-29 (XBIOS01, E6):** `x1` = `Iorec(1)`, LP64 `_IOREC`.
+* **O3.** TT TOS 3.06 has `kbdvec`: only derived (A7). A measurement on the
+  Hatari TT (`hatari-produces-tt-references`) could confirm it — not carried out here.
+  **Settled 2026-10-04 (KEYS02):** measured, yes — ROM and Hatari TT debugger,
+  evidence in A7.
+* **O4.** Whether `ikbdstate` is ever observable in the middle of a packet at all: the
+  HID translator feeds atomically per report (inferred, not checked) —
+  hence the proposal `drvstat == 0` constant.
 
-# Entscheidungen fuer den Anwender
+# Decisions for the owner
 
-| # | Frage | Empfehlung |
+| # | Question | Recommendation |
 |---|---|---|
-| D1 | Tabelle je Prozess in TPA-Seite 0 (`0x9A0`), `Kbdvbase` liefert EL0-VA; Elternhaken wirkt nicht im Kind; TSR-Haken fuer Fremdprogramme nicht moeglich | ja |
-| D2 | Aufrufkonvention: AAPCS64, `x0` = Scancode/Byte bzw. Paketzeiger, `x1` = ersetzt a0; ILP32 nicht unterstuetzt | ja |
-| D2a | `x1` bei `kbdvec`: 0 bis `Iorec(1)` existiert | ja |
-| D3 | Zustellung ueber Kernel-Ring je Prozess + Upcall-Kette (nicht `post_upcall` pur); Schnellpfad bei unveraendertem Standardhaken | ja |
-| D3a | Ring-Groesse / Ueberlaufregel (Vorschlag 64, neueste verwerfen) | 64 |
-| D4 | `ikbdsys`-Wechsel-Stopp der Wiederholung nachbauen (EmuTOS-treu) bzw. `ikbdsys` nie rufen | nachbauen, `ikbdsys` nie rufen |
-| D5 | `drvstat`-Byte hinter `ikbdsys` als konstantes 0 anbieten | ja |
-| D6 | Neuer interner Syscall fuer `kbdvec_default` (Nummer vergibt der Lead) | ja |
-| D7 | Umfang: Minimum (kbdvec + sichere Vorgaben + Aufraeumen) jetzt; Maus/Joystick/Status/Uhr/MIDI als Folge-Tickets, im Minimum nur `ret_stub`, dokumentierte Luecke | Minimum |
-| D8 | Abweichung "Haken verschwindet mit dem Prozess" in COMPATIBILITY.md "Sanctioned deviations" eintragen | ja |
+| D1 | Table per process (first in TPA page 0 at `0x9A0`; since MEM12 in the private page `0x7F000`, Part D), `Kbdvbase` returns the EL0 VA; a parent's hook does not act in the child; TSR hooks for foreign programs not possible | yes |
+| D2 | Calling convention: AAPCS64, `x0` = scancode/byte or packet pointer, `x1` = replaces a0; ILP32 not supported | yes |
+| D2a | `x1` for `kbdvec`: 0 until `Iorec(1)` exists | yes |
+| D3 | Delivery through kernel ring per process + upcall chain (not `post_upcall` alone); fast path with an unchanged default hook | yes |
+| D3a | Ring size / overflow rule (proposal 64, discard newest) | 64 |
+| D4 | Rebuild the `ikbdsys`-change stop of the repeat (faithful to EmuTOS) or never call `ikbdsys` | rebuild, never call `ikbdsys` |
+| D5 | Offer the `drvstat` byte behind `ikbdsys` as constant 0 | yes |
+| D6 | New internal syscall for `kbdvec_default` (number assigned by the lead) | yes |
+| D7 | Scope: minimum (kbdvec + safe defaults + clean-up) now; mouse/joystick/status/clock/MIDI as follow-up tickets, in the minimum only `ret_stub`, documented gap | minimum |
+| D8 | Enter the deviation "hook disappears with the process" in COMPATIBILITY.md "Sanctioned deviations" | yes |
 
-# Teil D — MEM12: Ort der Tabelle und Empfaenger eines Ereignisses (FREIGEGEBEN 2026-10-27)
+# Part D — MEM12: location of the table and recipient of an event (APPROVED 2026-10-27)
 
-Anlass: TASK/MEM12, Anwenderentscheidung 2026-10-27 ("E2: yes; also specify
-whose Kbdvbase table receives an input event (owner/foreground)"). Teil B/C
-bleiben gueltig, bis auf D1 (Ort) und B4 (Empfaenger), die hier ersetzt werden.
+Occasion: TASK/MEM12, owner decision 2026-10-27 ("E2: yes; also specify
+whose Kbdvbase table receives an input event (owner/foreground)"). Parts B/C
+remain valid, except D1 (location) and B4 (recipient), which are replaced here.
 
-## D1-neu. Ort
+## D1-new. Location
 
-Die Tabelle (`mousexvec` … `kbdlength`, Layout B1 unveraendert) zieht aus
-Seite 0 in eine **zweite private Seite je Prozess**, EL0 lesen + schreiben,
-nicht ausfuehrbar, an fester VA unter 2 MiB, die nie geteilt abgebildet wird
-(Seite 0 ist ab MEM12 fuer EL0 nur im Supervisor-Zustand beschreibbar,
-`docs/api/_super-state.md`). `Kbdvbase()` liefert die EL0-VA des `midivec`-Slots
-dort. Die Vorgabe-Stubs (`just_rts`, `kbdvec_default`) ziehen in die gemeinsame,
-fuer EL0 nur ausfuehrbare Stub-Seite; ihre Adressen bleiben fuer alle Prozesse
-gleich. Beobachtbar aendert sich nur der Zahlenwert des Zeigers.
+The table (`mousexvec` … `kbdlength`, layout B1 unchanged) moves out of
+page 0 into a **second private page per process**, EL0 read + write,
+not executable, at a fixed VA below 2 MiB that is never mapped shared
+(page 0 is, from MEM12, writable for EL0 only in the supervisor state,
+`docs/api/_super-state.md`). `Kbdvbase()` returns the EL0 VA of the `midivec` slot
+there. The default stubs (`just_rts`, `kbdvec_default`) move into the shared,
+EL0 execute-only stub page; their addresses stay the same for all processes.
+Observably only the numeric value of the pointer changes. Values as built:
+page `0x7F000`, `Kbdvbase()` = `0x7F010`, stubs in `0x7E000` (C1).
 
-## D9. Wessen Tabelle bekommt ein Eingabeereignis
+## D9. Whose table receives an input event
 
-EmuTOS hat **eine** Tabelle; `ikbdraw` springt durch den `kbdvec`, der gerade
-eingetragen ist, gleich welches Programm laeuft (`bios/aciavecs.S:405-414`).
-Auf einem Single-TOS ist das der Haken des Programms im Vordergrund — oder
-eines Accessorys, wenn eines ihn gesetzt hat.
+EmuTOS has **one** table; `ikbdraw` jumps through the `kbdvec` that is entered right now,
+whichever program is running (`bios/aciavecs.S:405-414`).
+On a single-TOS this is the hook of the foreground program — or
+of an accessory, if one has set it.
 
-Bis MEM12 (KEYS02 C3) nahm NewTOS die Tabelle des Prozesses, der beim Poll
-gerade die CPU hat (`route_key` mit `current()`, Stand `a90bcfb0`; seit D9
-`tos-api/src/xbios/kbdvecs.rs:352@route_key`). Pollt der
-Pump im Kontext eines Accessorys, sieht DOOMs Haken das Byte nicht.
+Until MEM12 (KEYS02 C3) NewTOS took the table of the process that
+has the CPU at the poll (`route_key` with `current()`, state `a90bcfb0`; since D9
+`tos-api/src/xbios/kbdvecs.rs:352@route_key`). If the
+pump polls in the context of an accessory, DOOM's hook does not see the byte.
 
-**Vorschlag:** Empfaenger ist der **innerste gestartete Prozess** — EmuTOS'
-`run` ohne Accessories, in NewTOS `process::emutos_run()`
-(`tos-api/src/bdos/process.rs:1023@emutos_run`): das Programm im Vordergrund oder
-sein laufendes `Pexec`-Kind. Gleich, welcher Prozess beim Poll die CPU hat:
+**Proposal:** the recipient is the **innermost started process** — EmuTOS'
+`run` without accessories, in NewTOS `process::emutos_run()`
+(`tos-api/src/bdos/process.rs:1023@emutos_run`): the foreground program or
+its running `Pexec` child. Regardless of which process has the CPU at the poll:
 
-* Steht in dessen `kbdvec` die Vorgabe (oder lebt kein gestarteter Prozess),
-  laeuft `kbd_int` direkt (Schnellpfad wie bisher).
-* Sonst kommt das Byte in den Ring **dieses** Prozesses und wird an seiner
-  naechsten Rueckkehr nach EL0 zugestellt (C3). Schlaeft er in einer Warte, die
-  bei wartenden Ring-Bytes ausweicht (C3 "O1"), wird er dafuer geweckt.
-* Die Tabelle eines **Accessorys** wird nie befragt (Accessories werden nicht
-  gestartet, `emutos_run` nennt sie nie). Abweichung von EmuTOS: dort wirkte
-  ein Accessory-Haken global. Kein portiertes Accessory setzt einen.
+* If its `kbdvec` holds the default (or no started process lives),
+  `kbd_int` runs directly (fast path as before).
+* Otherwise the byte goes into the ring of **this** process and is delivered at its
+  next return to EL0 (C3). If it sleeps in a wait that gives way
+  on waiting ring bytes (C3 "O1"), it is woken for that.
+* The table of an **accessory** is never consulted (accessories are not
+  started, `emutos_run` never names them). Deviation from EmuTOS: there
+  an accessory hook acted globally. No ported accessory sets one.
 
-**D9 freigegeben (Anwender 2026-10-27):** Empfaenger = `emutos_run()`.
-Setzt ein Accessory je einen `kbdvec`-Haken (sein Slot haelt nicht mehr die
-Vorgabe), schreibt der Kern einmal je Accessory eine Warnung ins Protokoll —
-die Abweichung soll nie still zuschlagen. [BIOS15] Seit ADR-031 beim
-ersten Tastenbyte, das der Haken bei EmuTOS bekaeme (der gemeinsame
-Mechanismus, `check_events`), nicht mehr bei jedem Syscall-Ruecksprung. Der Haken laeuft im
-Supervisor-Zustand (`docs/api/_super-state.md` S11, O1 = ja).
+**D9 approved (owner 2026-10-27):** recipient = `emutos_run()`.
+If an accessory ever sets a `kbdvec` hook (its slot no longer holds the
+default), the kernel writes one warning per accessory into the log —
+the deviation is never to strike silently. [BIOS15] Since ADR-031 at the
+first key byte that the hook would get on EmuTOS (the common
+mechanism, `check_events`), no longer at every syscall return. The hook runs in the
+supervisor state (`docs/api/_super-state.md` S11, O1 = yes).
+
+---
+
+## Open points
+
+- Corrected (SPEC07): the NewTOS table address `0x9A0` (TPA page 0) to `0x7F000` / `Kbdvbase()` `0x7F010` (header, B1 marker, C1, C3, C4, decision table D1, Part D), and the stub addresses `0xA00`/`0xA08` to `0x7E040`/`0x7E048`; cites in C1. Part B0 and the B1/B3 proposal text are kept as written on 2026-10-04 and marked as superseded.
+- Translated (SPEC07): the whole file was German; this is the English version, content unchanged apart from the corrections above. Line numbers of the German version have shifted by a few lines; the dated analyses citing it by line (`docs/analysis/`) are snapshots and not touched.
+- Not re-verified in this edit: every other statement of Parts A–C (EmuTOS `file:line` cites kept as written; doc-check resolves the paths and lines, not the content). The NewTOS cites inside B0 describe the state of 2026-10-04 and are not re-read.
+- Inferred: that `USER_VA_BASE = 0` makes the stub VAs equal to `STUB_PAGE_VA + 0x40`/`+0x48` (`loader.rs:207@USER_VA_BASE`, `kbdvecs.rs:90@RET_STUB_VA`); not measured.
