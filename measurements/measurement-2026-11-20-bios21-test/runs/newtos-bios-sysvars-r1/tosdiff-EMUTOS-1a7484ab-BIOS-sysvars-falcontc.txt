@@ -1,0 +1,3 @@
+EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN vs NEWTOS.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+0 of 54 cases differ

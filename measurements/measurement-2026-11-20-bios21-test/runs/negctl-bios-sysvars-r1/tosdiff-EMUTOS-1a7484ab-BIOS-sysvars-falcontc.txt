@@ -1,0 +1,48 @@
+EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN vs NEWTOS.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+case 45  peek $442:2  _timer_ms $442 W 20 -- bios/mfp.c:196
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN = 0x0000000000000014 (20)   NEWTOS.BIN                                = 0x0000000000000000 (0)
+
+case 49  peek $44E:4  _v_bas_ad $44E L screen -- bios/screen.c:656
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 51  peek $452:2  _vblsem $452 W 1 -- bios/bios.c:553
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN = 0x0000000000000001 (1)   NEWTOS.BIN                                = 0x0000000000000000 (0)
+
+case 52  peek $454:2  _nvbls $454 W 8 -- bios/bios.c:366
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN = 0x0000000000000008 (8)   NEWTOS.BIN                                = 0x0000000000000000 (0)
+
+case 53  peek $456:4  _vblqueue $456 L $4CE -- bios/bios.c:367
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN = 0x00000000000004CE (1230)   NEWTOS.BIN                                = 0x0000000000000000 (0)
+
+case 56  peek $462:4  _vbclock $462 L counter -- bios/vectors.S:348
+    cell                     MONOTONE NEWTOS.BIN                                = 0x00000000 then 0x00000000, did not advance
+
+case 57  peek $466:4  _frclock $466 L counter -- bios/vectors.S:330
+    cell                     MONOTONE NEWTOS.BIN                                = 0x00000000 then 0x00000000, did not advance
+
+case 59  peek $46A:4  _hdv_init $46A L -- bios/blkdev.c:98
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 61  peek $47A:4  _hdv_boot $47A L -- bios/blkdev.c:95
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 69  peek $492:4  _themd.m_start $492 L -- bios/biosmem.c:145
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 70  peek $496:4  _themd.m_length $496 L -- bios/biosmem.c:146
+    ret                      NONZERO NEWTOS.BIN                                = 0x0000000000000000, is zero
+
+case 78  peek $4C6:4  _dskbufp $4C6 L -- bios/blkdev.c:91
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 87  peek $502:4  _dump_vec $502 L -- bios/chardev.c:84
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 90  peek $50E:4  _aux_stat $50E L -- bios/chardev.c:78
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+case 91  peek $512:4  _aux_vec $512 L -- bios/chardev.c:79
+    ret                      PTR_RAM NEWTOS.BIN                                = 0x0000000000000000, is null
+
+15 of 54 cases differ

@@ -1,0 +1,34 @@
+    Finished `dev` profile [optimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/xtask tosdump bios /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-bios21-test/method/guard/straddle.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/scr/gn-straddle --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/scr/scratch`
+tosdump: command   cargo xtask tosdump bios /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-bios21-test/method/guard/straddle.tsv --out /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/scr/gn-straddle --scratch /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/scr/scratch
+tosdump: cwd       /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt
+tosdump: tree      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt (measured: kernel, dumper)
+tosdump: harness   /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt (instruments: mkcard, mktestdisk, tosdiff, biostrace-check)
+tosdump: commit    b2a549f1b1da9664bf1579605a47d6ccd84b447e
+tosdump: dirty     0 path(s) in git status --porcelain
+tosdump: harness commit b2a549f1b1da9664bf1579605a47d6ccd84b447e
+tosdump: features  (none)
+tosdump: bootargs  serial=on (the default; no --bootargs)
+tosdump: table     /Volumes/Daten/Development/PiRusTOS/measurements/measurement-2026-11-20-bios21-test/method/guard/straddle.tsv sha256 07abe02df958344a47d3f547eee57e3c4a8f8087a5677195ae77a1c447612287
+tosdump: table     names the unit token u:0: no; a program path x:<path>: no
+tosdump: profile   none (no disk round): no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)
+tosdump: target/   own (7 artifact dep-info files checked before the build)
+tosdump: building  kernel (cargo xtask build --board rpi4 --release) in the measured tree …
+tosdump: target/   own (7 artifact dep-info files checked after the build)
+tosdump: kernel8.img /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/aarch64-unknown-none-softfloat/release/kernel8.img
+tosdump: kernel8.img sha256 59ba72ef5e7c851eaabff80362c9639f133a37cfc5205aef5d9ef82bee727a6c
+tosdump: kernel ELF  sha256 d0c9dbe7c0c53c3d0506e2f11fd9ffb424a07690415a98e8f9c6a580460b2e78 (/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/aarch64-unknown-none-softfloat/release/kernel)
+tosdump: building  DUMPBIOS.NAP (tosdump/build-dumpbios-newtos.sh) in the measured tree …
+tosdump: dumper build id b2a5
+tosdump: DUMPBIOS.NAP sha256 bfd981e3192970e21b1c17594f07e953289a1b1d6b7989ae9550bea1ebd03abf
+tosdump: card.img.manifest: image_sha256 5ff0a03674da9276106a75a2b4bace12d936444d99cd02d1f43cb47dc113b4b0
+tosdump: card.img.manifest: optional_missing none
+tosdump: card      /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/scr/scratch/tosdump-32007/card.img sha256 5ff0a03674da9276106a75a2b4bace12d936444d99cd02d1f43cb47dc113b4b0 (booted as an APFS clone)
+tosdump: qemu      raspi4b, -append serial=on, time limit 480 s
+tosdump: run       ended normally after 19 s: desktop up after DUMPBIOS.NAP, rc=1
+tosdump: card after the run sha256 b9203ff13fa014ef116c119977c51165148804b1fbe8e79ff4c618a54cff8ce8
+tosdump: BIOS.BIN MISSING on the card
+tosdump: BIOS.LOG 214 bytes, sha256 0446a6e7a9a1194e34a28f310b953ec238d1854d18bd106b735e181caafee9be
+tosdump: total     31 s
+tosdump: result    FAILED: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+xtask: tosdump: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run

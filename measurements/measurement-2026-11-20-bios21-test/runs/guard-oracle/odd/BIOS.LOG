@@ -1,0 +1,3 @@
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a WORD or LONG peek reads an even address (a 68000 address error otherwise) (the table names a field that may not be issued)

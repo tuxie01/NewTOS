@@ -1,0 +1,200 @@
+test kernel_xhci_ring::tests::stamp_cycle_sets_and_clears_only_bit_0 ... ok
+test kernel_xhci_ring::tests::wrapping_without_link_trb_loses_the_sixteenth_command ... ok
+test prgflags_tests::a_file_without_the_note_is_refused ... ok
+test prgflags_tests::reads_and_rewrites_the_note_value_in_place ... ok
+test prgflags_tests::values_and_names ... ok
+test programs_tests::build_programs_passes_the_board_feature_and_writes_the_board_directory ... ok
+test programs_tests::dependency_scanner_reads_every_table_form ... ok
+test programs_tests::desktop_and_boot_screen_strings_agree ... ok
+test programs_tests::desktop_depends_only_on_newtos_gem_and_tos_types ... ok
+test programs_tests::desktop_takes_the_board_and_selftest_features ... ok
+test programs_tests::every_program_is_built_and_takes_both_board_features ... ok
+test programs_tests::kernel_selftest_desk_reaches_the_newdesk_program ... ok
+test programs_tests::newdesk_is_the_desktop_with_the_program_runtime ... ok
+test programs_tests::string_scanner_reads_multi_line_and_escaped_literals ... ok
+test programs_tests::the_embedded_desktop_is_built_and_named_as_the_shell_names_it ... ok
+test programs_tests::the_kernel_does_not_link_the_desktop ... ok
+test qemu_usb_args_tests::default_is_keyboard_and_mouse ... ok
+test qemu_usb_args_tests::extra_adds_tablet_and_hub_tree_after_the_default_pair ... ok
+test repo_guard::tests::a_nested_repository_is_another_repository ... ok
+test repo_guard::tests::every_dispatched_command_is_marked ... ok
+test repo_guard::tests::main_applies_the_guard_before_the_dispatch ... ok
+test doc_check::tests::emutos_resolves_at_the_pin ... ok
+test repo_guard::tests::outside_any_repository_is_refused_read_only_passes ... ok
+test repo_guard::tests::passes_inside_its_own_repository ... ok
+test repo_guard::tests::the_tool51_case_is_refused ... ok
+test repo_guard::tests::the_writing_commands_are_guarded ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/ilp32/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/ilp32/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 0 ciconblk, 0 cicon, 1 frstr, 1 frimg (520 bytes, RSHDR vrsn 0) [ILP32/24B-OBJECT, NRSC v14]
+test rsc_align_tests::mkrsc_convert_ilp32_keeps_every_raster_word_aligned ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/ilp32-reserve/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/ilp32-reserve/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 0 ciconblk, 0 cicon, 1 frstr, 1 frimg (520 bytes, RSHDR vrsn 0) [ILP32/24B-OBJECT, NRSC v14]
+test rsc_align_tests::mkrsc_convert_ilp32_reserves_the_declared_tedinfo_lengths ... ok
+test repo_guard::tests::refuses_from_another_repository_and_names_both_paths ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/lp64-private/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/lp64-private/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 0 ciconblk, 0 cicon, 1 frstr, 1 frimg (616 bytes, RSHDR vrsn 0) [LP64/32B-OBJECT, NRSC v13]
+test rsc_align_tests::mkrsc_convert_lp64_gives_every_text_buffer_its_own_storage ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/lp64/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/lp64/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 0 ciconblk, 0 cicon, 1 frstr, 1 frimg (616 bytes, RSHDR vrsn 0) [LP64/32B-OBJECT, NRSC v13]
+test rsc_align_tests::mkrsc_convert_lp64_keeps_every_raster_word_aligned ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/lp64-reserve/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/lp64-reserve/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 0 ciconblk, 0 cicon, 1 frstr, 1 frimg (616 bytes, RSHDR vrsn 0) [LP64/32B-OBJECT, NRSC v13]
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/rshdr-private/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/rshdr-private/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 1 frstr, 1 frimg (528 bytes) [native-RSHDR/LP64 for xrsrc_load]
+test rsc_align_tests::mkrsc_convert_rshdr_gives_every_text_buffer_its_own_storage ... ok
+test rsc_align_tests::mkrsc_convert_lp64_reserves_the_declared_tedinfo_lengths ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/rshdr/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/rshdr/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 1 frstr, 1 frimg (528 bytes) [native-RSHDR/LP64 for xrsrc_load]
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/rshdr-reserve/fixture.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-align/rshdr-reserve/out.rsc: 1 trees, 3 objects, 2 tedinfo, 1 bitblk, 2 iconblk, 1 frstr, 1 frimg (528 bytes) [native-RSHDR/LP64 for xrsrc_load]
+test rsc_align_tests::mkrsc_convert_rshdr_reserves_the_declared_tedinfo_lengths ... ok
+test rsc_align_tests::the_committed_gem_fsel_blob_has_word_aligned_rasters ... ok
+test rsc_align_tests::the_committed_gem_fsel_blob_reserves_the_declared_tedinfo_lengths ... ok
+test rsc_align_tests::mkrsc_convert_rshdr_keeps_every_raster_word_aligned ... ok
+test rsc_cicon_tests::mkrsc_convert_ilp32_carries_the_colour_icons_as_c_structs ... ok
+test rsc_cicon_tests::an_old_format_file_declares_no_colour_icons ... ok
+test rsc_cicon_tests::mkrsc_convert_lp64_carries_the_colour_icons_as_c_structs ... ok
+test rsc_cicon_tests::teradesk_cicons_rsc_converts_and_fits_rsc_cap ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/references/emutos/aes/gem.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-obfix/ilp32/gem.nrsc: 3 trees, 66 objects, 13 tedinfo, 3 bitblk, 0 iconblk, 0 ciconblk, 0 cicon, 15 frstr, 3 frimg (4251 bytes, RSHDR vrsn 0) [ILP32/24B-OBJECT, NRSC v14]
+test rsc_obfix_tests::mkrsc_convert_ilp32_keeps_the_char_grid_coordinates ... ok
+test rsc_obfix_tests::the_committed_gem_fsel_blob_carries_char_grid_coordinates ... ok
+converted /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/references/emutos/aes/gem.rsc -> /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/target/xtask-rsc-obfix/lp64/gem.nrsc: 3 trees, 66 objects, 13 tedinfo, 3 bitblk, 0 iconblk, 0 ciconblk, 0 cicon, 15 frstr, 3 frimg (5047 bytes, RSHDR vrsn 0) [LP64/32B-OBJECT, NRSC v13]
+test rsc_obfix_tests::mkrsc_convert_lp64_keeps_the_char_grid_coordinates ... ok
+test rsc_recolour_tests::recolour_palettes_equal_their_sources ... ok
+test run_shows_window_tests::both_flags_are_refused ... ok
+test run_shows_window_tests::qemu_virt_opens_the_window_unless_headless ... ok
+test run_shows_window_tests::rpi4_keeps_its_default_without_display ... ok
+test doc_check::tests::staged_code_breaking_an_untouched_doc_is_caught ... ok
+test rsc_recolour_tests::hypview_rsc_8plane_icons_take_the_nearest_tos_colour ... ok
+test test_inputs::tests::a_present_input_runs_with_and_without_the_switch ... ok
+test test_inputs::tests::absent_under_the_switch_skips_with_one_logged_line ... ok
+test test_inputs::tests::absent_without_the_switch_fails - should panic ... ok
+test test_inputs::tests::child_require_on_an_absent_input ... ignored, child process of the require_* tests below, run by them with a set environment
+test test_inputs::tests::nothing_skipped_prints_nothing ... ok
+test test_inputs::tests::only_the_exact_value_1_is_the_switch ... ok
+test test_inputs::tests::require_on_an_absent_input_fails_without_the_switch ... ok
+test test_inputs::tests::require_on_an_absent_input_skips_under_the_switch ... ok
+test test_tiers::tests::a_declared_test_target_is_refused ... ok
+test test_tiers::tests::counted_directory_triggers_the_warning_past_a_small_limit ... ok
+test test_tiers::tests::deps_warning_only_above_the_limit_and_names_count_cause_remedy ... ok
+test test_tiers::tests::discovery_takes_rs_files_and_main_rs_dirs_only ... ok
+test test_tiers::tests::doctest_packages_are_the_host_packages_with_a_lib ... ok
+test test_tiers::tests::each_target_is_in_exactly_one_tier ... ok
+test test_tiers::tests::every_full_only_entry_is_a_target_and_has_a_reason ... ok
+test test_tiers::tests::host_deps_dir_follows_cargo_target_dir ... ok
+test test_tiers::tests::integration_package_leaves_discovery_to_cargo ... ok
+test test_tiers::tests::the_cited_run_exists ... ok
+test test_tiers::tests::the_test_profile_keeps_packed_debuginfo ... ok
+test deps::tests::staged_reports_only_what_the_commit_introduces ... ok
+test scratch::tests::scratch_clean_by_id_and_by_ticket ... ok
+test scratch::tests::land_squashes_commits_and_cleans_the_named_tickets_agents ... ok
+test tickets::migrate::tests::approval_line_and_batch_syntax ... ok
+test doc_check::tests::staged_docs_count_only_what_the_commit_introduces ... ok
+test tickets::migrate::tests::migrated_text_keeps_the_old_status_below_and_parses ... ok
+rejected by the test hook
+test tickets::migrate::tests::historical_receipts_are_no_orphans_once_listed ... ok
+rejected by the test hook
+test tickets::migrate::tests::a_batch_of_every_target_state_migrates_in_one_commit ... ok
+test tickets::migrate::tests::refuses_once_the_baseline_holds_no_ticket ... ok
+test tickets::migrate::tests::the_a01_fixtures_are_the_pre_migration_blobs ... ok
+test tickets::migrate::tests::the_real_commit_map_translates_the_a01_receipt_hash ... ok
+test tickets::migrate::tests::a_rejecting_hook_reverts_every_write_and_a_rerun_works ... ok
+test doc_check::tests::staged_checks_the_index_not_the_working_tree ... ok
+test tickets::migrate::tests::an_implemented_row_with_a_legacy_done_receipt_migrates ... ok
+test tickets::tests::accept_cleans_the_recorded_agents_scratch ... ok
+test tickets::tests::accept_fail_keeps_line_3_and_appends_the_note ... ok
+test tickets::tests::accept_pass_cleans_the_developer_but_not_the_acceptor ... ok
+test tickets::tests::accept_pass_commits_receipt_and_line_3 ... ok
+test tickets::tests::accept_updates_only_its_own_readme_row ... ok
+test tickets::tests::every_missing_field_is_named ... ok
+test tickets::tests::accept_refuses ... ok
+test tickets::tests::every_state_parses_with_its_fields ... ok
+test tickets::tests::form_errors_name_field_and_expectation ... ok
+test tickets::migrate::tests::the_a01_case_migrates_to_done_through_the_commit_map ... ok
+test tickets::tests::accept_refuses_the_developer_in_either_spelling ... ok
+test tickets::tests::legacy_lines_map_by_point_2 ... ok
+test tickets::tests::names_and_subjects ... ok
+test tickets::tests::readme_column_and_status_md_claims ... ok
+test tickets::tests::report_groups_do_not_reuse_the_inventory_class_names ... ok
+test tickets::tests::every_named_id_is_checked_not_only_the_first ... ok
+test tickets::tests::reporting_gaps_do_not_reject ... ok
+test git_hooks::tests::agent_scratch_pipe_tests_pass ... ok
+test tickets::tests::baseline_lets_legacy_pass_and_only_shrinks ... ok
+test tickets::tests::set_status_enforces_the_fields_and_writes_line_3 ... ok
+test tickets::tests::hooks_with_the_switch_on_run_the_ticket_checks ... ok
+test tickets::tests::self_resolves_to_the_commit_of_line_3_across_a_rename ... ok
+test git_hooks::tests::scratch_guard_pipe_tests_pass ... ok
+test tickets::tests::set_status_prunes_the_migrated_ticket_from_the_baseline ... ok
+test tickets::tool55_tests::numbered_done_receipts_parse_and_name ... ok
+test tickets::tool55_tests::the_marker_is_the_target_state_in_the_migrated_parenthesis ... ok
+test tickets::tests::self_accept_flag_normalises_the_agent_prefix ... ok
+test tickets::tool55_tests::accept_of_a_migrated_ticket_without_a_developer_records_the_legacy_developer ... ok
+test tickets::tool58_tests::hand_written_and_mismatching_lines_are_rejected_real_ones_pass ... ok
+test tickets::tool58_tests::parse_migrated_reads_what_migrate_writes ... ok
+test tickets::tool58_tests::a_staged_batch_file_rechecks_every_ticket_naming_it ... ok
+test tickets::tool58_tests::no_consumer_trusts_an_unverified_line ... ok
+test tickets::tool58_tests::the_real_migrated_lines_all_match_their_batch_rows ... ok
+test tosdump::tests::a_malformed_profile_definition_is_refused ... ok
+test tosdump::tests::a_profile_file_on_the_card_must_be_the_profiles ... ok
+test tosdump::tests::a_table_needing_a_profile_value_is_refused_without_the_disk_round ... ok
+test tosdump::tests::a_wide_table_is_compared_only_with_a_newtos32_baseline ... ok
+test tosdump::tests::a_wide_table_is_the_one_that_declares_32_planes ... ok
+test tosdump::tests::autorun_inf_is_the_per_run_scripts_inf ... ok
+test tosdump::tests::bad_command_lines_are_refused ... ok
+test tosdump::tests::bootargs_are_appended_after_serial_on ... ok
+test tosdump::tests::bootargs_cannot_touch_serial_on ... ok
+test tosdump::tests::dep_info_of_a_copied_target_is_foreign ... ok
+test tosdump::tests::destructive_tables_are_recognised ... ok
+test tosdump::tests::destructive_tables_need_the_disk_round ... ok
+test tosdump::tests::dumper_names ... ok
+test tosdump::tests::kernel8_img_release_is_where_this_xtask_writes_it ... ok
+test tosdump::tests::lexical_normalisation ... ok
+test tosdump::tests::mbr_entries ... ok
+test tosdump::tests::only_the_image_the_build_wrote_is_taken ... ok
+test tosdump::tests::options ... ok
+test tosdump::tests::outer_cargo_variables_are_scrubbed ... ok
+test tosdump::tests::recorded_crash_screen_ends_the_run ... ok
+test tosdump::tests::recorded_normal_run_is_done ... ok
+test tosdump::tests::relative_paths_resolve_against_the_callers_cwd ... ok
+test tosdump::tests::scratch_is_never_the_shared_tmp ... ok
+test tosdump::tests::serial_markers_of_an_abnormal_end ... ok
+test tosdump::tests::serial_states_of_a_normal_run ... ok
+test tosdump::tests::test_partition_comparison ... ok
+test tosdump::tests::the_closing_tables_are_destructive_and_bios_r2_is_not ... ok
+test tosdump::tests::the_profile_definition_names_both_disk_rows ... ok
+test tosdump::tests::the_vdi_depth_is_read_as_the_kernel_reads_it ... ok
+test tosdump::tests::tosdiff_summary_line ... ok
+test tosdump::tests::what_a_table_leaves_to_the_profile ... ok
+test tosdump::tests::without_bootargs_the_qemu_call_is_unchanged ... ok
+test tickets::tool55_tests::the_exception_applies_to_every_non_done_target_with_an_older_receipt_only ... ok
+test tickets::tool55_tests::accept_writes_numbered_receipts_and_never_overwrites_one ... ok
+test worktree_setup::tests::refuses_outside_a_git_checkout ... ok
+test worktree_setup::tests::refuses_in_the_main_tree_and_outside_a_worktree_root ... ok
+test tickets::tests::staged_gap_check_rejects_each_gap_of_point_13 ... ok
+test worktree_setup::tests::wrong_link_and_real_dir_are_reported_not_replaced ... ok
+test tickets::tool58_tests::the_real_migration_dir_equals_the_closing_commit ... ok
+test worktree_setup::tests::links_inputs_keeps_status_clean_and_is_idempotent ... ok
+test tickets::tool58_tests::the_closed_migration_is_frozen ... ok
+test tickets::migrate::tests::refusals_change_nothing ... ok
+test tickets::tests::hooks_with_the_switch_off_behave_as_after_tool40 ... ok
+test git_hooks::tests::no_verify_guard_pipe_tests_pass ... ok
+test git_hooks::tests::pin_guard_pipe_tests_pass has been running for over 60 seconds
+test git_hooks::tests::pin_guard_pipe_tests_pass ... ok
+
+test result: ok. 332 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 67.64s
+
+     Running tests/repo_guard.rs (target/debug/deps/repo_guard-539432139eb54244)
+
+running 3 tests
+test read_only_commands_run_from_anywhere ... ok
+test the_main_tree_binary_run_from_a_clone_commits_nowhere ... ok
+test inside_its_own_repository_the_command_runs ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+   Doc-tests tos_api
+
+running 1 test
+test tos-api/src/bdos/mem/stats.rs - bdos::mem::stats (line 18) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests tos_types
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit 0

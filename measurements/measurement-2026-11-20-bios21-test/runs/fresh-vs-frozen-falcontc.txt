@@ -1,0 +1,7 @@
+EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN vs BIOS.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+0 of 54 cases differ
+tosdiff exit 0
+/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/wt/tosdump/reference/EMUTOS-1a7484ab-BIOS-sysvars-falcontc.BIN /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a7da453676da4beb2/scr/oracle-falcontc-1/BIOS.BIN differ: char 13, line 1
+cmp whole exit 1
+cmp records from 32: exit 0

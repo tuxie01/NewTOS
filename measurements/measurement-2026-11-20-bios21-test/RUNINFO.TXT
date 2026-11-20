@@ -1,0 +1,108 @@
+measurement-2026-11-20-bios21-test -- tester run for BIOS21 (commit b2a549f1b, branch bios21)
+==========================================================================================
+Scope: the tosdump peek case type, the class MONOTONE, tosdump/cases/bios-sysvars-r1.tsv and its frozen oracle references (tt, falcontc), against the pinned oracle (Hatari) and NewTOS raspi4b.
+Machine: Ingo's Mac mini; macOS 27.0.1; Claude Code 2.1.329; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1).
+Tester: agent a7da453676da4beb2 (not the developer). Detached worktree: target-agents/agent-a7da453676da4beb2/wt at b2a549f1b
+  (8.2G total under target-agents/agent-a7da453676da4beb2/: wt 6.5G, wt-neg 1.8G, scr 9.3M; du -sh). wt-neg = detached cdfb6a823^ (kernel before BIOS20).
+One Hatari or QEMU at a time. No real card, nothing flashed, no product code or ticket edited. The method scripts of the developer's run were copied
+to method/ and run unchanged (oracle-runs.sh, oracle-regression.sh, newtos-runs.sh, newtos-negative-control.sh, decode-peek.py);
+new here: doctor-monotone.py, method/guard/*.tsv, method/oneoff/bconvec-slots.tsv.
+
+VERDICT: PASS (see the open item list at the end; none blocks).
+
+COMMANDS (board / outcome)
+ 1  cargo xtask build --board qemu-virt           qemu-virt  exit 0, 159 'warning' lines (baseline 159)         runs/build-qv.txt
+ 2  cargo xtask build --board rpi4                rpi4       exit 0, 159 'warning' lines (baseline 159)         runs/build-rpi4.txt
+    delta 0. git diff 13b18e50f..HEAD touches no .rs and nothing under kernel/ tos-api/ tos-types/ tools/xtask/ programs/ sdk/.
+ 3  cargo clippy -p tos-api --all-targets         118 warnings (baseline 118); cargo clippy -p kernel --features board-rpi4  196 (baseline 196)  runs/clippy-counts.txt
+ 4  cargo xtask test (full)                       exit 0; sum of "test result" lines 2599 passed / 0 failed / 7 ignored (baseline main 2599/0/7)   runs/xtask-test-tail.txt
+ 5  make -C tosdump host-test                     exit 0, 0 FAIL; test_peek, the "peek cases" section of test_tosdiff.sh and the self-check of 52 references (new two included)  runs/host-test.txt
+ 6  cargo xtask doc-check docs/TOS-REFERENCE-DUMPER.md tosdump/cases/COVERAGE-BIOS.md   2 failures, both "sdk/gemlib/... missing" cites at lines 367/427
+    (gitignored sdk/gemlib tree absent in a worktree; lines not touched by the commit: git diff shows 0 changed lines mentioning a_wind). Not a BIOS21 failure.
+ 7  oracle (Hatari 2.6.1, tools/hatari-oracle.sh tt and falcontc), bios-sysvars-r1.tsv, 2 runs each: exit 0 each; the two runs byte-identical on both profiles
+    (runs/cmp-tt.txt, cmp-falcontc.txt); tosdiff --selfcheck passes on both (runs/selfcheck-*.txt); tt vs falcontc 0 of 54 differ.
+    My fresh dump against the frozen references the commit adds: tosdiff 0 of 54 differ on both, records byte-identical from offset 32 (only header bytes
+    12..15, the dumper build id, differ since my DUMPBIOS.PRG has build id b2a5) (runs/fresh-vs-frozen-*.txt).
+ 8  NewTOS raspi4b (cargo xtask tosdump bios, release kernel of the tree, QEMU, serial=on): three tables, each against both references; every run
+    "ended normally ... desktop up after DUMPBIOS.NAP, rc=0"; BOOT-SERIAL 0 lines EXC/PANIC:
+      bios-sysvars-r1  vs tt: 0 of 54 differ;  vs falcontc: 0 of 54 differ
+      bios-r1          vs tt: 35 of 147;        vs falcontc: 31 of 147
+      bios-core-r1     vs tt: 2 of 44;          vs falcontc: 1 of 44
+    The tt reports of bios-r1 and bios-core-r1, paths/sha stripped, are identical to measurement-2026-11-20-xbios11-test/serial/tables/wt-*/tosdiff-EMUTOS-*.txt
+    (runs/regression-vs-prior.txt) and the counts (35/147, 2/44) equal measurement-2026-11-20-bios20-test/RUNINFO.TXT: same differing cases, nothing new.
+ 9  negative control: new table on NewTOS kernel cdfb6a823^ (before BIOS20), this tree's DUMPBIOS.NAP: 15 of 54 differ on both profiles, exactly the BIOS20 cells:
+    $442 $452 $454 $456 (EXACT 0), $44E $46A $47A $492 $4C6 $502 $50E $512 (PTR_RAM "is null"), $496 (NONZERO "is zero"), $462 and $466 (MONOTONE
+    "0x00000000 then 0x00000000, did not advance"). runs/negctl-bios-sysvars-r1/. The table and MONOTONE see an unserved cell and a standing counter.
+10  existing tables on the oracle, this tree's DUMPBIOS.PRG, tt and falcontc: bios-core-r1 0 of 44 differ, records byte-identical to the frozen references from offset 32;
+    bios-r1 0 of 147 differ by tosdiff; records differ in exactly records 52 (case 112 Random(), IGNORE) and 59 (case 125 Gettime(), NONZERO): clock/random bytes only
+    (runs/regress-*.txt, runs/regress-bios-r1-diff-records.txt). The developer's control (HEAD dumper) shows the same two.
+11  frozen files vs main (sha256, 206 files under tosdump/reference and tosdump/cases): byte-unchanged except tosdump/cases/COVERAGE-BIOS.md (a ledger doc, +12 lines, the peek row
+    the commit announces); the new files are added only (bios-sysvars-r1.tsv, EMUTOS-1a7484ab-BIOS-sysvars{,-falcontc}.{BIN,LOG}). runs/frozen-vs-main.txt.
+12  GUARD (tables in method/guard/, one case each). Oracle (Hatari tt) and NewTOS (raspi4b, low, straddle, poke): the dumper refuses the table at load, before any case runs, no BIN written:
+      peek:0x100:4, peek:0x37F:1, peek:0x7FE:4, peek:0x800:1  -> "a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800"
+      peek:0x4BB:2 (odd) -> "a WORD or LONG peek reads an even address"; peek:0x4BA:3 -> "the peek width is 1, 2 or 4 bytes"
+      poke:0x4BA:4 and write:0x4BA:4 -> "a call table writes no memory: ... never written"; peek with an argument -> "a peek takes no arguments, so it writes nothing"
+      control peek:0x4BA:4 IGNORE: ran, 1 record. (runs/guard-oracle.txt; NewTOS runs/guard-newtos.txt: DUMPBIOS.NAP rc=1, "no BIOS.BIN from the run", message identical.)
+      Refusal happens in the parser, so no Supexec/memory access occurred on either side (the log has no "running" line).
+13  MONOTONE (tosdiff, doctored copy of the tt dump, case 75 _hz_200, runs/monotone-doctored.txt): second read = first -> "did not advance" (1 of 54 differ, exit 1);
+    second = first - 5 -> "went back" (1 differ); second = first + 3 -> accepted (0 differ). Real runs: oracle +2 frames/+7 ticks, NewTOS advances (0 differ);
+    kernel before BIOS20 rejected at item 9. Wrap modulo 2^32 is covered by the developer's host test (test_tosdiff.sh, passes in item 5); not re-driven by hand.
+14  COVERAGE: contract table section 4 has 51 rows of class served (counted: 51); every one has a peek case in the table; _themd is four LONG cases (link, start, length, own) -> 54 cases for
+    51 rows; ____md as one 4B LONG. Cell list compared row by row (name and address).
+
+PER-CASE RESULT, tt and falcontc, NewTOS raspi4b: all 54 EQUAL on both (0 of 54 differ). Values: runs/oracle-tt-1/decoded.txt, runs/oracle-falcontc-1/decoded.txt, runs/newtos-bios-sysvars-r1/ (BIOS.BIN).
+ The class does the work for PTR_RAM / NONZERO / MONOTONE cells whose values differ by design (addresses, _themd.m_length, counters); EXACT cells are equal in value (e.g. $442=20, $452=1, $454=8, $456=$4CE, $484=7, $4EE=$FFFF, magics).
+
+ACCEPTANCE LINES
+ BIOS21 line 1 "Every served row of the contract table has a case; the table runs on the oracle and on NewTOS; every difference is either fixed in another ticket or a row of docs/DEVIATIONS.md":
+   PASS. 51 rows, 54 cases; ran on both oracle profiles and NewTOS; 0 differences, so no DEVIATIONS row / ticket is needed.
+ BIOS21 line 2 "existing tables and their frozen references unchanged; cargo xtask test green; doc-check 0 failures":
+   references/tables unchanged: PASS (item 11); cargo xtask test: PASS 2599/0/7 (item 4); doc-check: the 2 failures are sdk/gemlib cites absent in a worktree (item 6), none from the commit.
+   Whether the owner counts these as "0 failures" is for the lead; on main the gitignored tree is present. PASS with that caveat (see note).
+ BIOS19 line "Every variable of tosvars.ld classified in a spec table; served ones have oracle read cases": the read-case half: PASS (the 51 served rows have peek cases, frozen on the oracle).
+   The classification half was met by BIOS19's own landing and was not re-driven here.
+ Retest list: both boards build, delta 0: PASS; guard: PASS; MONOTONE: PASS; negative control: PASS; bios-r1/bios-core-r1 same differing cases as bios20-test: PASS; frozen files byte-unchanged: PASS.
+
+BCON*_VEC SLOT 1 ON THE ORACLE (for TASK/BIOS22): read with one-off table method/oneoff/bconvec-slots.tsv (peek:<addr>:4 IGNORE, all eight slots of the four tables;
+ the table is only a text file in this run directory, no code and no commit change), Hatari tt and falcontc, runs/oneoff-bconvec-*/decoded.txt:
+                         tt          falcontc
+   $522 bconstat slot 1  0x00E10D80  0x00E110D6
+   $542 bconin   slot 1  0x00E10D96  0x00E110EC
+   $562 bcostat  slot 1  0x00E10DF0  0x00E11146
+   $582 bconout  slot 1  0x00E10E12  0x00E11168
+ All are ROM addresses (0x00E1xxxx), non-null; the values differ between the profiles (different ROM-code placement of the same handler) and slot 0 / 2 / 3 values are equal on both profiles.
+ So no new case is needed to read them; the existing peek type suffices. (The tables are IGNORE: values here are measurements, not a frozen reference.)
+ Slot 0: $51E 0x00E03350, $53E 0x00E0FCFA, $55E 0x00E0FCFE, $57E 0x00E0FD0C on both; slots 2..7 in decoded.txt.
+
+DROVE vs COULD NOT VERIFY
+ Drove: items 1-14 above. Could not verify / not driven: wrap-around modulo 2^32 of MONOTONE by hand (host test only); Hatari or QEMU against real hardware.
+REAL-PI4-ONLY ITEMS (none claimed): peek of $380..$7FF and the counters' advance on silicon (_hz_200/_frclock/_vbclock cadence on real timers), cache coherence, QUIRK-001, HDMI/USB-HID.
+  Count 1 (counter cadence on real hardware: QEMU/Hatari timing is not silicon; the rate of the counters is a decided choice of BIOS20 and only "advances" is asserted).
+
+OUT-OF-SCOPE OBSERVATIONS
+ - tosdump/cases/COVERAGE-BIOS.md is edited by the commit (a ledger doc under cases/, not a table or reference); noted, not an issue.
+ - bios-r1 records 52 (Random) and 59 (Gettime) differ byte-wise between runs by nature (IGNORE / NONZERO); tosdiff says 0 of 147.
+
+IMAGES BOOTED (manifests copied next to each run; optional_missing quoted verbatim, all "optional_missing none"; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1))
+  runs/newtos-bios-sysvars-r1/card.img.manifest  image_sha256 ccac6b48d13f2f177228ccfbf1322378474b144e3ee2f77875c09ca5d0546f39  optional_missing none
+  runs/newtos-bios-r1/card.img.manifest          image_sha256 7bdba0deb8ab516e372fdcfe5335bc8c19bae0e4c7407660d0608efa01a0b9f9  optional_missing none
+  runs/newtos-bios-core-r1/card.img.manifest     image_sha256 120ffee9efaae189df84af5ece0ef77679327321505770be8fdd28b538744925  optional_missing none
+  runs/negctl-bios-sysvars-r1/card.img.manifest  image_sha256 3c7bd7a323d82a3b6f4ddc71a0463b8ae632a39c6657a67fbc5adf9090128695  optional_missing none
+  runs/guard-newtos/{low,straddle,poke}/card.img.manifest  image_sha256 99d17d84..., 5ff0a036..., 51227de5...  optional_missing none (each)
+  (Hatari runs boot no image built by mkcard/make-sd-image; the oracle uses a hard-disk directory.)
+
+CITED GITIGNORED OUTPUTS (sha256; full list runs/cited-sha256.txt, runs/oracle-bin.sha256, runs/newtos-bin.sha256)
+  oracle tt run 1 BIOS.BIN        34afeb4e7cee67ba3001ce043e8383008a06291ef1bd7d7cc76ce8d4658c7828
+  oracle falcontc run 1 BIOS.BIN  3ba651df57b8931b8aacd3086d3c08b4069c3d145f4f4a9e68edb7e0c4147ed1
+  NewTOS bios-sysvars-r1 BIOS.BIN aa196277c6ec26f1d79f6463d909645edbb384c2854785ffda0d2cb975eb5272
+  NewTOS DUMPBIOS.NAP             bfd981e3192970e21b1c17594f07e953289a1b1d6b7989ae9550bea1ebd03abf
+  negative control BIOS.BIN       fd74d055f8869279c47949f86cc488eec9c266ff7401bb436d301c29cd608c49
+  one-off bcon tables BIN         tt dbe2d2baa6398d66ecb7c85f12fa25f4467965495911d5988a8b39cd17f927fb; falcontc e0d9f707dc55a4a27173df8349669c39ef0972e69ca9ffc77333cbfdcd4db08a
+  DUMPBIOS.PRG (m68k, build b2a5) f5063b2e461a7cce042993cb9f3d5a0cb7a69b2ea4e064b0bda728f75031238a
+  rpi4/qemu debug kernel8.img     02122f620a470abde30644d2e1adef59fc8a20b43daadb4dcd4c92d1d10ab104
+  frozen references (committed, tracked): EMUTOS-1a7484ab-BIOS-sysvars.BIN 90d150a2...79b9, -falcontc.BIN 25ad4c2e...1f1f; table bios-sysvars-r1.tsv 1f19e8aa...2986 (equal to the developer's RUNINFO).
+  (the dev's references equal my fresh dumps' records; BINs differ only in the build-id header bytes.)
+
+REPRODUCE: method/oracle-runs.sh <wt> <scratch>; method/newtos-runs.sh <wt> <scratch>; method/newtos-negative-control.sh <wt> <neg-tree> <DUMPBIOS.NAP> <scratch>;
+  method/oracle-regression.sh <wt> <scratch>; guard: tools/hatari-oracle.sh tt <wt>/tosdump/build/DUMPBIOS.PRG method/guard/<t>.tsv <out>, and cargo xtask tosdump bios method/guard/<t>.tsv --out <out>;
+  monotone: python3 -I method/doctor-monotone.py <tt BIOS.BIN> <out> 75 stands|back|grow then tosdiff <table> <BIN> <out>.

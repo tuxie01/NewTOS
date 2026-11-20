@@ -1,0 +1,3 @@
+runner hatari-oracle, profile tt (tosdump/profiles.tsv sha256 b90e6687ad5254209e722d6622b3268bffe983fb894c642359ed731703b34e98)
+table names the unit token u:0: no; a program path x:<path>: no
+no row: no DISKUNIT.TXT, no PROGEXT.TXT (the table needs neither)

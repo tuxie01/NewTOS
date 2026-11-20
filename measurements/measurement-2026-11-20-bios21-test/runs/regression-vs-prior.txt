@@ -1,0 +1,2 @@
+bios-r1 identical to xbios11-test
+bios-core-r1 identical to xbios11-test

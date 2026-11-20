@@ -1,0 +1,4 @@
+BIOS.BIN: area BIOS, 54 records of 320 bytes, build b2a5, case CRC AE3147CF
+BIOS.BIN: format 3, pointer 8 bytes, least significant word first
+BIOS.BIN: matches bios-sysvars-r1.tsv (54 cases)
+BIOS.BIN: accepted

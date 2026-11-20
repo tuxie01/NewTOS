@@ -1,0 +1,18 @@
+== low xtask exit 1
+tosdump: BIOS.LOG 214 bytes, sha256 0446a6e7a9a1194e34a28f310b953ec238d1854d18bd106b735e181caafee9be
+tosdump: total     32 s
+tosdump: result    FAILED: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+xtask: tosdump: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+BIOS.LOG BOOT-SERIAL.txt card.img.manifest DUMPBIOS.NAP dumper-build.log kernel-build.log mkcard.log qemu-stderr.txt tosdump-run.txt BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)
+== straddle xtask exit 1
+tosdump: BIOS.LOG 214 bytes, sha256 0446a6e7a9a1194e34a28f310b953ec238d1854d18bd106b735e181caafee9be
+tosdump: total     31 s
+tosdump: result    FAILED: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+xtask: tosdump: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+BIOS.LOG BOOT-SERIAL.txt card.img.manifest DUMPBIOS.NAP dumper-build.log kernel-build.log mkcard.log qemu-stderr.txt tosdump-run.txt BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)
+== poke xtask exit 1
+tosdump: BIOS.LOG 232 bytes, sha256 7c9132a02acca7327f5926945c638930b95b23d8ecaada176cd1c6895e0f8311
+tosdump: total     31 s
+tosdump: result    FAILED: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+xtask: tosdump: DUMPBIOS.NAP exited with rc=1; no BIOS.BIN from the run
+BIOS.LOG BOOT-SERIAL.txt card.img.manifest DUMPBIOS.NAP dumper-build.log kernel-build.log mkcard.log qemu-stderr.txt tosdump-run.txt BIOS.TSV line 1: a call table writes no memory: a system variable is read with peek:<addr>:<width>, never written (the table names an opcode that may not be issued)

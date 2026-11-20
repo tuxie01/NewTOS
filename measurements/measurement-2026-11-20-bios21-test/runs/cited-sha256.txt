@@ -1,0 +1,9 @@
+aa196277c6ec26f1d79f6463d909645edbb384c2854785ffda0d2cb975eb5272  newtos-bios-sysvars-r1/BIOS.BIN
+bfd981e3192970e21b1c17594f07e953289a1b1d6b7989ae9550bea1ebd03abf  newtos-bios-sysvars-r1/DUMPBIOS.NAP
+fd74d055f8869279c47949f86cc488eec9c266ff7401bb436d301c29cd608c49  negctl-bios-sysvars-r1/BIOS.BIN
+f5063b2e461a7cce042993cb9f3d5a0cb7a69b2ea4e064b0bda728f75031238a  ../wt/tosdump/build/DUMPBIOS.PRG
+02122f620a470abde30644d2e1adef59fc8a20b43daadb4dcd4c92d1d10ab104  ../wt/target/aarch64-unknown-none-softfloat/debug/kernel8.img
+34afeb4e7cee67ba3001ce043e8383008a06291ef1bd7d7cc76ce8d4658c7828  oracle-tt-1/BIOS.BIN
+3ba651df57b8931b8aacd3086d3c08b4069c3d145f4f4a9e68edb7e0c4147ed1  oracle-falcontc-1/BIOS.BIN
+dbe2d2baa6398d66ecb7c85f12fa25f4467965495911d5988a8b39cd17f927fb  bv-tt/BIOS.BIN
+e0d9f707dc55a4a27173df8349669c39ef0972e69ca9ffc77333cbfdcd4db08a  bv-falcontc/BIOS.BIN

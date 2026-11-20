@@ -1,0 +1,21 @@
+--- case 75 (_hz_200) second read: stands
+BIOS.BIN vs doc-stands.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+case 75  peek $4BA:4  _hz_200 $4BA L counter -- bios/vectors.S:503
+    cell                     MONOTONE doc-stands.BIN = 0x00000A31 then 0x00000A31, did not advance
+
+1 of 54 cases differ
+exit 1
+--- case 75 (_hz_200) second read: back
+BIOS.BIN vs doc-back.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+case 75  peek $4BA:4  _hz_200 $4BA L counter -- bios/vectors.S:503
+    cell                     MONOTONE doc-back.BIN = 0x00000A31 then 0x00000A2C, went back
+
+1 of 54 cases differ
+exit 1
+--- case 75 (_hz_200) second read: grow
+BIOS.BIN vs doc-grow.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+0 of 54 cases differ
+exit 0

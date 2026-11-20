@@ -1,0 +1,6 @@
+EMUTOS-1a7484ab-BIOS-core.BIN vs BIOS.BIN -- area BIOS, 44 cases from bios-core-r1.tsv
+
+0 of 44 cases differ
+tosdiff exit 0
+cmp whole file: exit 1
+cmp records (from offset 32): exit 0

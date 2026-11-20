@@ -1,0 +1,1 @@
+cmp falcontc: exit 0

@@ -1,0 +1,3 @@
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a peek takes no arguments, so it writes nothing: its args are - (the argument widths are not the binding's)

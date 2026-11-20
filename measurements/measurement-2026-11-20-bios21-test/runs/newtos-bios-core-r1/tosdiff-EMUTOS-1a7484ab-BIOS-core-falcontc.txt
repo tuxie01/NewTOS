@@ -1,0 +1,6 @@
+EMUTOS-1a7484ab-BIOS-core-falcontc.BIN vs NEWTOS.BIN -- area BIOS, 44 cases from bios-core-r1.tsv
+
+case 65  trap 13 function 0x08  Bcostat(8) Bconmap 8 -- bios/bios.c:1152-1156
+    ret                      EXACT   EMUTOS-1a7484ab-BIOS-core-falcontc.BIN = 0xFFFFFFFFFFFFFFFF (-1)   NEWTOS.BIN                             = 0x0000000000000000 (0)
+
+1 of 44 cases differ

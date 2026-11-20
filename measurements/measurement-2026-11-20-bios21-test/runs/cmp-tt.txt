@@ -1,0 +1,1 @@
+cmp tt: exit 0

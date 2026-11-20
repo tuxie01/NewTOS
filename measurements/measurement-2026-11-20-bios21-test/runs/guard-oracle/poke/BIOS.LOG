@@ -1,0 +1,3 @@
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a call table writes no memory: a system variable is read with peek:<addr>:<width>, never written (the table names an opcode that may not be issued)

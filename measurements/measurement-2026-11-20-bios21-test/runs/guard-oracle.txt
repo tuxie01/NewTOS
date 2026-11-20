@@ -1,0 +1,53 @@
+== ok hatari exit 0
+BIOS.BIN BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV: 1 cases, CRC 17B16FB6
+running 1 cases
+all 1 cases ran
+BIOS.BIN: 1 records, 352 bytes
+== low hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)
+== end hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)
+== straddle hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)
+== below hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)
+== odd hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a WORD or LONG peek reads an even address (a 68000 address error otherwise) (the table names a field that may not be issued)
+== w3 hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: the peek width is 1, 2 or 4 bytes (a column is not a number)
+== poke hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a call table writes no memory: a system variable is read with peek:<addr>:<width>, never written (the table names an opcode that may not be issued)
+== write hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a call table writes no memory: a system variable is read with peek:<addr>:<width>, never written (the table names an opcode that may not be issued)
+== arg hatari exit 0
+BIOS.LOG hatari.log hd profile.txt 
+DUMPBIOS build b2a5, record format 3
+pointer 4 bytes, word order 1
+BIOS.TSV line 1: a peek takes no arguments, so it writes nothing: its args are - (the argument widths are not the binding's)

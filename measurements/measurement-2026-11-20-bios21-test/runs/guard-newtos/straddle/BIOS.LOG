@@ -1,0 +1,3 @@
+DUMPBIOS build b2a5, record format 3
+pointer 8 bytes, word order 2
+BIOS.TSV line 1: a peek reads the system-variable area only: 0x380 <= addr, addr + width <= 0x800 (the table names a field that may not be issued)

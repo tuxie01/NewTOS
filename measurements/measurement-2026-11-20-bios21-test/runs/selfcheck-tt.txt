@@ -1,0 +1,4 @@
+self-check BIOS.BIN -- area BIOS, 54 cases from bios-sysvars-r1.tsv
+
+self-check, BIOS.BIN: the oracle passes every relational rule (54 cases)
+exit 0
