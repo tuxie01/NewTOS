@@ -1,6 +1,6 @@
 # BIOS20 — System variables: return stubs for `dump_vec` and `aux_*`, the frame counters, `_timer_ms`
 
-Status: IMPLEMENTED (2026-11-20) | Priority: P2 | Commit: self | Missing: tester runs of tosdump/probes/run-svprobe.sh on the pinned oracle (tt, falcontc) and raspi4b, bios-r1, bios-core-r1, xbios-chardev-r1, xbios-system-r1 on raspi4b, APITEST, desktop boot with the mouse drawn on both boards; the real Pi 4
+Status: DONE (2026-11-20) | Priority: P2 | Commit: cdfb6a823 | Receipt: BIOS20-STATUS-DONE.MD
 
 Type: researcher (spec gate), developer, tester. Owner decision 2026-11-19, from the findings of TASK/BIOS19.md
 (`docs/api/bios/_sysvars-contract.md`, sections 5 and 6, landed as `71d0d925e`).
