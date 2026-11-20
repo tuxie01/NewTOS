@@ -1,0 +1,94 @@
+measurement-2026-11-20-bios21 -- BIOS21: the served system variables as a tosdump table (peek cases), on the pinned oracle and on NewTOS
+==================================================================================================================================
+Developer, TASK/BIOS21, 2026-11-20. Agent developer-a84a2b94baed1aecd. Tree: branch bios21 from main 13b18e50f, the
+BIOS21 change-set (committed with this run; the dumpers carry build id 13b1, the first four hex digits of HEAD at
+build time). No NewTOS product code changed (no file under kernel/, tos-api/, tos-types/, programs/, sdk/). No
+hardware, no real card, nothing flashed. One Hatari or QEMU at a time.
+Host: macOS 27.0.1; host_clang Apple clang version 21.0.0 (clang-2100.4.1.1) (clang --version line 1, and the
+host_clang line of every card manifest below).
+
+WHAT / WHY
+  TASK/BIOS19.md asked for oracle read cases for the served system variables; Setexc(num,-1) reaches only 11 of them
+  (docs/api/bios/_sysvars-contract.md section 8). BIOS21 builds the case type that section proposes:
+    peek:<addr>:<width>   one cell (1, 2 or 4 bytes) of $380..$7FF, read inside a Supexec callback on both machines;
+                          read-only by construction; classes EXACT IGNORE NONZERO, at width 4 PTR_RAM and the new
+                          MONOTONE (two reads with two Vsync calls between, the second later than the first)
+  and the table tosdump/cases/bios-sysvars-r1.tsv: one case per row of class "served" of the contract table
+  (51 rows, 54 cases: _themd as its four LONGs). Spec of the form: docs/TOS-REFERENCE-DUMPER.md section 6,
+  "System variables: the peek case".
+
+INPUTS
+  ROM        tools/oracle/etos512de-1a7484ab.img 323c87bbff65096e54a8dc00b474f6924a950ebf25cc9513bd53d495a2d2750c
+  Hatari     2.6.1 (tools/oracle/oracle.env ORACLE_HATARI), tools/oracle/hatari.cfg unchanged, profiles tt and falcontc
+             of tools/hatari-oracle.sh
+  table      tosdump/cases/bios-sysvars-r1.tsv sha256 1f19e8aa37541b40bed2602077884825a21bdc1dda66f7764f1d96c84de29862,
+             CRC AE3147CF, 54 cases
+  DUMPBIOS.PRG (m68k, build 13b1, make -C tosdump dumpbios-m68k) 81359709d174c2e3bb0daf72ee855fcf5298429fd8e89ee8d2089844ca6654e6
+  DUMPBIOS.NAP (AArch64, build 13b1, built by cargo xtask tosdump) d47a9cc55500514228b29821c4a4548650af7edb39f081ccd4255e3776c1d699
+  kernel     rpi4 release of this tree (no features): kernel8.img c515ab158f6ed938ecd2ffa4549f59352a3925be0d2a7f3ad89772f9d0dd7ea7,
+             ELF 619377b690bb8acd516a4c59fb86c7f05f7e1cdf9bea64fab739c716c9cc2ad9
+  negative-control kernel: rpi4 release of main c2140d9ef (before TASK/BIOS20), detached worktree wt-neg:
+             kernel8.img ca4683db7bc6872789f39e789efc79ea74c8e4586755c4b3862e75585c1bd514,
+             ELF a4203e885910b24027b3e5665645817720cfe78f07bac22cb54a592f6ec42fb1
+  control dumper: DUMPBIOS.PRG built from HEAD 13b18e50f (method/control-head-dumper.sh, build id 13b1)
+             94c004e24f65446deb71496473531395efc174a5ef3b7295c643d26da067818a
+
+SCRATCH (gitignored, all under target-agents/agent-a84a2b94baed1aecd/, 6.7G by du -sh before the commit)
+  wt       the worktree (branch bios21); wt-neg the detached worktree at c2140d9ef; scr the run outputs (Hatari out-dirs,
+  tosdump out-dirs, cards as APFS clones); old earlier draft runs (superseded, not cited); tmp scratch.
+  The BINs cited here are in runs/oracle-bin.sha256 and runs/newtos-bin.sha256 (sha256 of each).
+
+METHOD (method/)
+  oracle-runs.sh          the new table, tt and falcontc, two runs each; decoded.txt per run (decode-peek.py); cmp of
+                          the two runs; tosdiff --selfcheck of run 1; tt against falcontc
+  oracle-regression.sh    bios-r1.tsv and bios-core-r1.tsv with this tree's DUMPBIOS.PRG on tt and falcontc, against
+                          their frozen references: tosdiff, and the records byte for byte from offset 32
+  control-head-dumper.sh  the control of the above: the HEAD dumper on bios-r1 (tt), the same comparison
+  newtos-runs.sh          cargo xtask tosdump bios on QEMU raspi4b (-append serial=on), three tables, both references each
+  newtos-negative-control.sh  the new table on the kernel before BIOS20 (cargo xtask tosdump --tree wt-neg, this
+                          tree's prebuilt DUMPBIOS.NAP)
+  per-case.py             runs/per-case.txt: per case the three values and EQUAL/DIFF against tt and falcontc
+  Reproduce: method/<script> <wt> <scratch> (newtos-negative-control.sh <wt> <neg-tree> <DUMPBIOS.NAP> <scratch>).
+
+ORACLE REFERENCES (tosdump/reference/, copies of run 1)
+  EMUTOS-1a7484ab-BIOS-sysvars            BIN 90d150a247a46a224f7f2f6b7475c387fd31b22f7015069e9418490f8d3779b9
+                                          LOG 4d958026b016b84d74ed0d561a1509c517b4aba05dab1d1cbc6cdead17d48744
+  EMUTOS-1a7484ab-BIOS-sysvars-falcontc   BIN 25ad4c2e057442594583327c9578116825ea02ffdb98307fcc5e2f41e2819f1f
+                                          LOG 4d958026b016b84d74ed0d561a1509c517b4aba05dab1d1cbc6cdead17d48744
+  run 1 vs run 2: BIN byte-identical on both profiles (runs/cmp-tt.txt, cmp-falcontc.txt; the counters included:
+  Hatari is deterministic for this table). The same BINs came out of an earlier draft run with the dumper before a
+  code move (no record change), also byte-identical. tosdiff --selfcheck: both pass every relational rule
+  (runs/selfcheck-*.txt). tt vs falcontc: 0 of 54 cases differ (runs/tt-vs-falcontc.txt; the values that differ by
+  profile, _memtop, _v_bas_ad, _themd.m_length and the counters, are PTR_RAM / NONZERO / MONOTONE).
+
+NEWTOS (runs/newtos-*/, QEMU raspi4b, every run "ended normally ... desktop up after DUMPBIOS.NAP, rc=0")
+  bios-sysvars-r1  vs EMUTOS-1a7484ab-BIOS-sysvars: 0 of 54 cases differ; vs -falcontc: 0 of 54. Values:
+                   runs/newtos-bios-sysvars-r1/decoded.txt, side by side with the oracle in runs/per-case.txt.
+                   BOOT-SERIAL: 0 "[hook]" lines, 0 EXC/PANIC.
+  bios-r1          vs EMUTOS-1a7484ab-BIOS: 35 of 147 differ; vs -falcontc: 31 of 147
+  bios-core-r1     vs EMUTOS-1a7484ab-BIOS-core: 2 of 44 differ; vs -falcontc: 1 of 44
+  The tt reports of bios-r1 and bios-core-r1, paths stripped, are byte-identical to those of
+  measurements/measurement-2026-11-20-bios20-test/RUNINFO.TXT (runs/newtos-regression-vs-bios20-test.txt: diff
+  exit 0 for both): the same differing cases, nothing new.
+  Card manifests (runs/newtos-*/card.img.manifest), optional_missing quoted verbatim from each:
+    newtos-bios-sysvars-r1  image_sha256 e560caca97a606a6280b0c8cf3d570a8182e09fcf171780f290e55cc6e12d0aa  "optional_missing none"
+    newtos-bios-r1          image_sha256 385659835a6dec75c1692aad4e261abf5f026b374a5a462b59861bbf2abd248e  "optional_missing none"
+    newtos-bios-core-r1     image_sha256 e516ce70fec09b68a22502595950698545b966dd29ba76cb4ac472795a565bff  "optional_missing none"
+    negctl-bios-sysvars-r1  image_sha256 5d091461dfb093ae0cd49b4e2e0bf6191fcbc010b834080904719a57ded4f218  "optional_missing none"
+  (the booted APFS clones' sha256 after each run: in each xtask-tosdump.out, "card after the run")
+
+NEGATIVE CONTROL (runs/negctl-bios-sysvars-r1/): the kernel before BIOS20 with this dumper: 15 of 54 cases differ
+  on both profiles -- exactly the cells BIOS20 serves: $442 $452 $454 $456 EXACT 0, $44E $46A $47A $492 $4C6 $502
+  $50E $512 PTR_RAM "is null", $496 NONZERO "is zero", $462 and $466 MONOTONE "0x00000000 then 0x00000000, did not
+  advance". The table sees a cell that is not served; MONOTONE sees a counter that stands.
+
+EXISTING TABLES ON THE ORACLE (runs/regress-*.txt)
+  bios-core-r1 tt and falcontc: 0 of 44 differ, records byte-identical to the frozen references from offset 32.
+  bios-r1 tt and falcontc: 0 of 147 differ by tosdiff; the records differ from the frozen references in two cases,
+  record 52 (case 112, Random, IGNORE) and record 59 (case 125, Gettime, NONZERO), in the ret bytes only. The control
+  (runs/control-head-dumper.txt): the HEAD dumper differs from the frozen reference in the same two records, and from
+  this dumper only in Gettime: the clock of the day, not the change. Header bytes 12..15 are the build id.
+
+HOST TESTS (runs/host-test.txt): make -C tosdump host-test, exit 0, 0 FAIL; it includes test_peek (form, guard,
+  runner against the stub's window), the comparator's "peek cases" section of test_tosdiff.sh, and the self-check
+  of all 52 pinned references (the two new ones included).

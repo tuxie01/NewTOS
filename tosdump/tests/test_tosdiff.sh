@@ -726,6 +726,91 @@ else
 	fails=$((fails + 1))
 fi
 
+# --- peek cases (BIOS21) ------------------------------------------------
+#
+# The stub dump and its table come from test_peek.  A peek's value is
+# ret_hi:ret (ret at 36, ret_hi at 296), zero-extended from its width; a
+# MONOTONE peek holds its second read at capture (40).  Records:
+#   0 $442:2 EXACT (20)         1 $484:1 EXACT (7)     2 $4F2:4 PTR_RAM
+#   3 $4EE:2 EXACT (0xFFFF)     4 $5FC:4 MONOTONE (1000 then 1002)
+#   5 $4BA:4 MONOTONE (stands)  6 $45E:4 NONZERO (zero) 7 Bconstat(2)
+#   8 $5A8:4 EXACT              9 $420:4 IGNORE
+# Records 5 and 6 fail their rule on purpose, so even two identical dumps
+# differ in exactly those two cases.
+PKBIN="$BUILD/stub-peek.bin"
+PKTSV="$BUILD/stub-peek.tsv"
+kpatch() {   # kpatch <out> <record> <offset> <printf-bytes>  (from PKBIN)
+	[ -f "$1" ] || cp "$PKBIN" "$1"
+	printf "$4" | dd of="$1" bs=1 seek=$((32 + $2 * 320 + $3)) \
+	    conv=notrunc status=none
+}
+if [ -f "$PKBIN" ] && [ -f "$PKTSV" ]; then
+	"$TOSDIFF" "$PKTSV" "$PKBIN" "$PKBIN" >"$TMP/ksame.out" 2>&1
+	check "peek: identical dumps differ only in the refused cells" 1 $?
+	grep_out "peek: two cases" "$TMP/ksame.out" "2 of 10 cases differ"
+	grep_out "peek: the case names its cell" "$TMP/ksame.out" \
+	    "^case 7  peek \$4BA:4  a counter that stands"
+	grep_out "peek: MONOTONE, standing" "$TMP/ksame.out" \
+	    "cell *MONOTONE stub-peek.bin = 0x00012345 then 0x00012345, did not advance"
+	grep_out "peek: NONZERO on the cell" "$TMP/ksame.out" \
+	    "ret *NONZERO stub-peek.bin = 0x0000000000000000, is zero"
+	if grep -q "^case \(2\|3\|4\|5\|6\|9\|10\|11\) " "$TMP/ksame.out"; then
+		echo "  FAIL peek: a case that passes its rule was flagged"
+		fails=$((fails + 1))
+	fi
+
+	# EXACT: a WORD cell differs by value
+	rm -f "$TMP/k_ex.bin"
+	kpatch "$TMP/k_ex.bin" 0 36 '\000\000\000\025'
+	"$TOSDIFF" "$PKTSV" "$PKBIN" "$TMP/k_ex.bin" >"$TMP/kex.out" 2>&1
+	check "peek: a different cell differs" 1 $?
+	grep_out "peek: the EXACT case counts" "$TMP/kex.out" "3 of 10 cases differ"
+	grep_out "peek: the EXACT values" "$TMP/kex.out" \
+	    "ret *EXACT *stub-peek.bin *= 0x0000000000000014 (20) *k_ex.bin *= 0x0000000000000015 (21)"
+
+	# MONOTONE: another start and step on the other side is no difference,
+	# and the second read is not compared byte-wise
+	rm -f "$TMP/k_mo.bin"
+	kpatch "$TMP/k_mo.bin" 4 36 '\000\001\000\000'
+	kpatch "$TMP/k_mo.bin" 4 40 '\000\001\000\011'
+	"$TOSDIFF" "$PKTSV" "$PKBIN" "$TMP/k_mo.bin" >"$TMP/kmo.out" 2>&1
+	grep_out "peek: MONOTONE is judged per side" "$TMP/kmo.out" \
+	    "2 of 10 cases differ"
+	if grep -q "^case 6 \|capture\[" "$TMP/kmo.out"; then
+		echo "  FAIL peek: a MONOTONE case was compared by value"
+		fails=$((fails + 1))
+	fi
+
+	# MONOTONE: a counter that went back
+	rm -f "$TMP/k_bk.bin"
+	kpatch "$TMP/k_bk.bin" 4 40 '\000\000\003\347'
+	"$TOSDIFF" "$PKTSV" "$PKBIN" "$TMP/k_bk.bin" >"$TMP/kbk.out" 2>&1
+	check "peek: a counter that went back differs" 1 $?
+	grep_out "peek: went back" "$TMP/kbk.out" \
+	    "cell *MONOTONE k_bk.bin *= 0x000003E8 then 0x000003E7, went back"
+	grep_out "peek: went back counts" "$TMP/kbk.out" "3 of 10 cases differ"
+
+	# MONOTONE: a step across 2^32 is an advance
+	rm -f "$TMP/k_wr.bin"
+	kpatch "$TMP/k_wr.bin" 4 36 '\377\377\377\377'
+	kpatch "$TMP/k_wr.bin" 4 40 '\000\000\000\001'
+	"$TOSDIFF" "$PKTSV" "$PKBIN" "$TMP/k_wr.bin" >"$TMP/kwr.out" 2>&1
+	grep_out "peek: a wrap is an advance" "$TMP/kwr.out" "2 of 10 cases differ"
+
+	# the self-check judges the per-side classes, never EXACT
+	"$TOSDIFF" --selfcheck "$PKTSV" "$TMP/k_ex.bin" >"$TMP/ksc.out" 2>&1
+	check "peek: the self-check flags the refused cells" 1 $?
+	grep_out "peek: self-check counts two" "$TMP/ksc.out" \
+	    "the oracle fails a rule -- 2 case(s)"
+	if grep -q "EXACT" "$TMP/ksc.out"; then
+		echo "  FAIL peek: the self-check compared an EXACT cell"
+		fails=$((fails + 1))
+	fi
+else
+	echo "  FAIL stub peek dump missing: $PKBIN / $PKTSV"
+	fails=$((fails + 1))
+fi
+
 # --- the profile check (TOOL19) ----------------------------------------
 #
 # A table that names u:0 or x: leaves the unit / the program extension to the

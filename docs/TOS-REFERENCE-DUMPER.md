@@ -265,7 +265,7 @@ the comparison needs:
 | 36 | 4 | return value, **low** 32 bits of the return register (`d0` / `x0`) |
 | 40 | 256 | capture (section 6, `capture` column); what no capture wrote stays `0xDEAD` |
 | 296 | 4 | return value, **high** 32 bits of the return register: `x0` bits 63..32 on AArch64; on the m68k, whose `d0` has no high half, the sign extension of the low half — the value C's `(int64_t)(long)` gives on both targets, so the comparator always reads the return as the 64-bit value `ret_hi:ret` |
-| 300 | 2 | trap number: 13 BIOS, 14 XBIOS, 1 GEMDOS (in a BIOS-area table only `Super`, section 6); 256 a jar case, which issues no trap (section 6, "The cookie jar") |
+| 300 | 2 | trap number: 13 BIOS, 14 XBIOS, 1 GEMDOS (in a BIOS-area table only `Super`, section 6); 256 a jar case, which issues no trap (section 6, "The cookie jar"); 257 a peek case, which reads a system variable inside `Supexec` (section 6, "System variables: the peek case") |
 | 302 | 18 | reserved, zero |
 
 Why the high half: NewTOS returns a TOS `LONG` in a 64-bit register
@@ -284,7 +284,7 @@ field of this record in class **value**: `args`, `capture` and `trap` are
 compared by value; `ret`, read together with `ret_hi`, is the one field
 whose comparison the case's `retclass` refines (section 6) — EXACT is the
 value comparison, the other four classes replace it by a property on each
-side.
+side (a jar case adds `ABSENT`, a peek case `MONOTONE`, section 6).
 
 ---
 
@@ -1235,6 +1235,82 @@ The table is `tosdump/cases/jar-r1.tsv`: `jar:*` and every tag EmuTOS names
 (profile `disk`; it touches no disk), `measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`.
 A difference against NewTOS is entered in `docs/COMPATIBILITY.md`.
 
+### System variables: the peek case (added 2026-11-20, BIOS21)
+
+A system variable is no call either: a program reads it at its address
+(`references/emutos/tosvars.ld`). `Setexc(num, -1)` reaches only the cells at
+a multiple of 4 and answers a LONG, so of the served variables most are out of
+its reach (`docs/api/bios/_sysvars-contract.md` section 8: 55 of the 84 cells
+lie 2 mod 4). A call table therefore takes a third kind of case line, the
+**peek case**, in the call column:
+
+| Line | Records | `retclass` |
+|---|---|---|
+| `peek:<addr>:<width>` | the cell of `width` bytes at `addr`, read as its own type (a BYTE, a WORD, a LONG: a WORD read is never widened into the neighbouring cell) | `EXACT`, `IGNORE`, `NONZERO`; at width 4 also `PTR_RAM` and `MONOTONE` |
+
+`<addr>` decimal or `0x` hex, `<width>` 1, 2 or 4. `args` and `capture` are
+`-`; no width suffix on the class (the peek names the width).
+
+**The guard** (`parse_peek_case`, `tosdump/core/cases.c:5071@parse_peek_case`), read-only by
+construction: the address inside the system-variable area, `0x380 <= addr`
+and `addr + width <= 0x800` (`TD_PEEK_LOW`, `TD_PEEK_END` in
+`tosdump/core/tosdump.h:462@TD_CALL_TRAP_PEEK`: the `tosvars.ld` cells from the crash-dump area
+`$380` to the last variable below `$800`); a WORD or LONG at an even address
+(the 68000 address error); no argument, so no value that could be written; no
+capture. A write form is refused by name: `poke:` and `write:` in the
+call column (`is_write_column`, `tosdump/core/cases.c:5057@is_write_column`), as a case or as a
+prelude. Like a jar case it takes no prelude before it, and stands outside a
+`Super` bracket and before `Getmpb`. A table that reads the crash-dump rows
+(`$380`-`$3FF`, `_proc_*`) must not be run after a crash; the served-variable
+table reads none of them.
+
+**The read** (`run_peek_case`, `tosdump/core/runner_call.c:690@run_peek_case`): inside a
+`Supexec` callback on **both** machines (`td_cb_peek`, the same lines on
+each). On EmuTOS a user-mode read below `$800` is a bus error, which is why
+`tosdump/probes/hkprobe.c` and `svprobe.c` read there through `Supexec` too;
+on NewTOS the callback runs in super state at EL0 and the cell is the
+process's own page 0 (`docs/api/_super-state.md` S2, S6), so both sides take
+the same path. The callback only loads; the value comes back in a static, not
+through `Supexec`'s return. Each peek is one `Supexec` (XBIOS `0x26`) and no
+other trap; a `MONOTONE` peek is `Supexec`, `Vsync` (XBIOS `0x25`) twice
+(`TD_PEEK_MONO_VSYNCS`), `Supexec`. No buffer is touched.
+
+**The record** is the call record (section 3), its fields used as
+`tosdump/core/tosdump.h` "A PEEK CASE" states:
+
+| Field | `peek:<addr>:<width>` |
+|---|---|
+| `trap` | 257 (`TD_CALL_TRAP_PEEK`), outside the 0..255 of a trap number and not the jar's 256 |
+| `opcode` | the width, 1, 2 or 4 |
+| `args[0]` | the address as a LONG; the other slots `0xDEADDEAD` |
+| `ret_hi:ret` | the cell's value **zero-extended** from its width (`_dumpflg`, the WORD -1, records as `0x00000000_0000FFFF`) |
+| `capture` | `MONOTONE`: the second read as a big-endian LONG at `capture[0..3]`, the rest the poison; every other peek: the poison |
+
+**How `tosdiff` judges it.** `EXACT`, `IGNORE`, `NONZERO` and `PTR_RAM` are
+the call table's classes (section 6, "The call table"), applied to the
+zero-extended value. The new class:
+
+| Class | The check | A failure prints |
+|---|---|---|
+| `MONOTONE` | on each side alone, never by value between the dumps (two machines count from different starts and at different rates): the second read minus the first, modulo 2^32, is `1 .. 0x7FFFFFFF`; the capture is not compared byte-wise | `cell MONOTONE <dump> = 0x… then 0x…, did not advance` / `went back` |
+
+`MONOTONE` asks for an **advance**, not only for "nondecreasing" (the wording
+of `_sysvars-contract.md` section 8): a counter that stands passes
+"nondecreasing", and the two `Vsync` calls between the reads wait at least one
+whole frame, in which `_frclock` and `_vbclock` count one frame and `_hz_200`
+at least three ticks (`monotone_check`, `tosdump/host/tosdiff.c:1021@monotone_check`). The
+case header names the cell (`case 75  peek $4BA:4  _hz_200 …`). The self-check
+(above) applies `NONZERO`, `PTR_RAM` and `MONOTONE` to the oracle alone, so
+such a class must hold on every profile the table is measured on.
+
+The table is `tosdump/cases/bios-sysvars-r1.tsv`: one case per row of class
+"served" in `docs/api/bios/_sysvars-contract.md` section 4 (51 rows, 54 cases:
+`_themd` is read as its four LONGs), with the class its section 8 maps the row
+to and, for the cells TASK/BIOS20 serves, the class of their decided value
+(`docs/api/bios/_sysvars-counters-contract.md` section 17). References
+`EMUTOS-1a7484ab-BIOS-sysvars` (TT) and `-BIOS-sysvars-falcontc`,
+`measurements/measurement-2026-11-20-bios21/RUNINFO.TXT`.
+
 ### Input check on NewTOS: the BIOS/XBIOS argument tracer (added 2026-10-28, TOOL08)
 
 A result comparison counts only if the arguments that **arrived** match the
@@ -1543,7 +1619,7 @@ One program per area, sharing `tosdump/core/` and one `tosdump/abi/` backend:
 |---|---|---|
 | `DUMPVDI` | VDI | build this first |
 | `DUMPAES` | AES | after VDI is clean |
-| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`. GEMDOS after a media change (section 6, TOOL20): `tosdump/cases/gemdos-mc-fs20.tsv`, `-fs22.tsv`, `-paths.tsv`, references `EMUTOS-1a7484ab-BIOS-mc-<fs20\|fs22\|paths>-disk`, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`. The cookie jar (section 6, TOOL18): `tosdump/cases/jar-r1.tsv`, references `EMUTOS-1a7484ab-BIOS-jar` (TT), `-BIOS-jar-falcontc`, `-BIOS-jar-disk`, `measurements/measurement-2026-10-29-tool18/RUNINFO.TXT` |
+| `DUMPBIOS` | BIOS + XBIOS | `retclass` and `capture` since 2026-10-27; table `tosdump/cases/bios-r1.tsv`, ledger `tosdump/cases/COVERAGE-BIOS.md`, references `EMUTOS-1a7484ab-BIOS` (TT) and `-BIOS-falcontc`, first comparison `measurements/measurement-2026-10-27-dumpbios/RUNINFO.TXT`. Second table `tosdump/cases/super-r1.tsv` (`Super`/`Supexec`, section 6), references `EMUTOS-1a7484ab-SUPER` (TT) and `-SUPER-falcontc`. Disk table `tosdump/cases/bios-r2.tsv` (section 6, "The disk round"), reference `EMUTOS-1a7484ab-BIOS-r2-disk` (profile `disk`), first comparison `measurements/measurement-2026-10-28-tool07/RUNINFO.TXT`; the closing tables `bios-r2-phys.tsv`, `-x004.tsv`, `-x005.tsv`, `-x006.tsv` (section 6, "The closing tables"), references `EMUTOS-1a7484ab-BIOS-r2-<phys\|x004\|x005\|x006>-disk`, `measurements/measurement-2026-10-28-tool07b/RUNINFO.TXT`. Structures behind a pointer (section 6, "Structures behind a pointer"): `tosdump/cases/xbios-ptr-r1.tsv` (`Iorec`, the flush, `Getmpb`), references `EMUTOS-1a7484ab-XBIOS-ptr` (TT) and `-XBIOS-ptr-falcontc`, `measurements/measurement-2026-10-29-tool16/RUNINFO.TXT`. GEMDOS after a media change (section 6, TOOL20): `tosdump/cases/gemdos-mc-fs20.tsv`, `-fs22.tsv`, `-paths.tsv`, references `EMUTOS-1a7484ab-BIOS-mc-<fs20\|fs22\|paths>-disk`, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`. The cookie jar (section 6, TOOL18): `tosdump/cases/jar-r1.tsv`, references `EMUTOS-1a7484ab-BIOS-jar` (TT), `-BIOS-jar-falcontc`, `-BIOS-jar-disk`, `measurements/measurement-2026-10-29-tool18/RUNINFO.TXT`. The system variables (section 6, "System variables: the peek case", BIOS21): `tosdump/cases/bios-sysvars-r1.tsv`, references `EMUTOS-1a7484ab-BIOS-sysvars` (TT) and `-BIOS-sysvars-falcontc`, `measurements/measurement-2026-11-20-bios21/RUNINFO.TXT` |
 | `DUMPGDOS` | GEMDOS | needs `retclass` and `capture`. Until it exists, GEMDOS behaviour that needs a measurement is a **probe**: a C program of `tosdump/probes/` with a text log, built for both sides from one source and run by its own script — `gcprobe.c` (media change, TASK/FS20; `make -C tosdump gcprobe-m68k gcprobe-newtos`, `tosdump/probes/run-gcprobe.sh`) and `pxprobe.c` (`Pexec` and `Fsfirst` after a media change, TASK/FS22; `make -C tosdump pxprobe-m68k pxprobe-newtos`, `tosdump/probes/run-pxprobe.sh`), oracle side through `tools/hatari-oracle.sh` profile `disk`. Since TOOL20 their cases are also `DUMPBIOS` tables (`gemdos-mc-*.tsv`, section 6, "GEMDOS after a media change"); the probes stay for what the tables cannot express (listed there) until their cases move to DUMPGDOS |
 
 Each writes exactly one output file, named `<AREA>.BIN`, into the current

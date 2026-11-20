@@ -14,6 +14,7 @@ static long stub_dta;                  /* TOOL20: the DTA Fsetdta set */
 static long stub_drive = TD_STUB_DRIVE;
 
 struct td_jar td_stub_jar;
+int           td_stub_vsyncs;
 int           td_stub_jar_reads;
 
 /* stub_abi.h, "The cookie jar" */
@@ -49,6 +50,7 @@ void td_stub_reset(void)
 	iorec_laid = 0;
 	stub_dta = 0;
 	stub_drive = TD_STUB_DRIVE;
+	td_stub_vsyncs = 0;
 	lay_jar();
 }
 
@@ -544,6 +546,15 @@ long td_abi_trap(int16_t trap, int16_t opcode, uint16_t nargs,
 			return super_state ? -1L : 0L;
 		super_state = !super_state;
 		return super_state ? TD_STUB_SUPER_SSP : TD_STUB_SUPER_LEAVE_D0;
+	}
+	if (trap == 14 && opcode == 0x25) {          /* Vsync (BIOS21) */
+		uint32_t n;
+
+		memcpy(&n, tos_mem(TD_STUB_VSYNC_CELL), sizeof n);
+		n++;
+		memcpy(tos_mem(TD_STUB_VSYNC_CELL), &n, sizeof n);
+		td_stub_vsyncs++;
+		return 0L;
 	}
 	if (trap == 14 && opcode == 0x26) {
 		long (*fn)(void) = (long (*)(void))value[0];

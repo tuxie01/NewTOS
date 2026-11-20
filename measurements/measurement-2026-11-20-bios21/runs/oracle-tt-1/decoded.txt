@@ -1,0 +1,54 @@
+ 32 trap 257 $400:4 PTR_RAM  0x00E2A190  _etv_timer $400 L -- bios/bios.c:360
+ 33 trap 257 $404:4 PTR_RAM  0x00E2FFE4  _etv_critic $404 L -- bios/bios.c:361
+ 34 trap 257 $408:4 PTR_RAM  0x00E20EA4  _etv_term $408 L -- bios/bios.c:362
+ 35 trap 257 $40C:4 EXACT    0x00000000  _etv_xtra $40C L 0 -- never written
+ 37 trap 257 $420:4 EXACT    0x752019F3  _memvalid $420 L magic -- bios/memory.S:584
+ 38 trap 257 $426:4 EXACT    0x00000000  resvalid $426 L 0 -- cleared bios/panicasm.S:115
+ 39 trap 257 $42A:4 EXACT    0x00000000  resvector $42A L 0 -- cleared bios/panicasm.S:116
+ 40 trap 257 $42E:4 PTR_RAM  0x00400000  _phystop $42E L -- bios/memory.S:573
+ 41 trap 257 $432:4 PTR_RAM  0x00023BA0  _membot $432 L -- bios/biosmem.c:67,122
+ 42 trap 257 $436:4 PTR_RAM  0x003DA700  _memtop $436 L -- bios/biosmem.c:72,115
+ 43 trap 257 $43A:4 EXACT    0x237698AA  _memval2 $43A L magic -- bios/memory.S:585
+ 45 trap 257 $442:2 EXACT    0x00000014  _timer_ms $442 W 20 -- bios/mfp.c:196
+ 46 trap 257 $446:2 NONZERO  0x00000002  _bootdev $446 W, machine's -- bios/bios.c:611
+ 47 trap 257 $448:2 EXACT    0x00000000  _palmode $448 W 0 -- never written
+ 48 trap 257 $44A:1 EXACT    0x00000000  _defshiftmod $44A B 0 -- never written
+ 49 trap 257 $44E:4 PTR_RAM  0x003DA700  _v_bas_ad $44E L screen -- bios/screen.c:656
+ 51 trap 257 $452:2 EXACT    0x00000001  _vblsem $452 W 1 -- bios/bios.c:553
+ 52 trap 257 $454:2 EXACT    0x00000008  _nvbls $454 W 8 -- bios/bios.c:366
+ 53 trap 257 $456:4 EXACT    0x000004CE  _vblqueue $456 L $4CE -- bios/bios.c:367
+ 54 trap 257 $45E:4 EXACT    0x00000000  _screenpt $45E L 0 -- never written
+ 56 trap 257 $462:4 MONOTONE 0x000000C9 then 0x000000CB (+2)  _vbclock $462 L counter -- bios/vectors.S:348
+ 57 trap 257 $466:4 MONOTONE 0x0000030F then 0x00000311 (+2)  _frclock $466 L counter -- bios/vectors.S:330
+ 59 trap 257 $46A:4 PTR_RAM  0x00E09712  _hdv_init $46A L -- bios/blkdev.c:98
+ 60 trap 257 $46E:4 PTR_RAM  0x00E00030  _swv_vec $46E L -- bios/bios.c:363
+ 61 trap 257 $47A:4 PTR_RAM  0x00E03072  _hdv_boot $47A L -- bios/blkdev.c:95
+ 63 trap 257 $482:2 EXACT    0x00000000  _cmdload $482 W 0 -- never written
+ 64 trap 257 $484:1 EXACT    0x00000007  _conterm $484 B 7 -- bios/ikbd.c:1100
+ 65 trap 257 $486:4 EXACT    0x00000000  trp14ret $486 L 0 -- never written
+ 66 trap 257 $48A:4 EXACT    0x00000000  criticret $48A L 0 -- never written
+ 68 trap 257 $48E:4 EXACT    0x00000000  _themd.m_link $48E L 0 -- bios/biosmem.c:144
+ 69 trap 257 $492:4 PTR_RAM  0x00023BA0  _themd.m_start $492 L -- bios/biosmem.c:145
+ 70 trap 257 $496:4 NONZERO  0x003B6B60  _themd.m_length $496 L -- bios/biosmem.c:146
+ 71 trap 257 $49A:4 EXACT    0x00000000  _themd.m_own $49A L 0 -- bios/biosmem.c:147
+ 72 trap 257 $49E:4 EXACT    0x00000000  ____md $49E 4B 0 -- never written
+ 73 trap 257 $4AE:4 EXACT    0x00000000  sav_context $4AE L 0 -- never written
+ 75 trap 257 $4BA:4 MONOTONE 0x00000A31 then 0x00000A38 (+7)  _hz_200 $4BA L counter -- bios/vectors.S:503
+ 76 trap 257 $4BE:4 EXACT    0x00000000  the_env $4BE L 0 -- never written
+ 77 trap 257 $4C2:4 NONZERO  0x00000007  _drvbits $4C2 L, machine's -- bios/blkdev.c:175
+ 78 trap 257 $4C6:4 PTR_RAM  0x00001004  _dskbufp $4C6 L -- bios/blkdev.c:91
+ 79 trap 257 $4CA:4 EXACT    0x00000000  _autopath $4CA L 0 -- never written
+ 81 trap 257 $4EE:2 EXACT    0x0000FFFF  _dumpflg $4EE W -1 -- bios/bios.c:357
+ 82 trap 257 $4F0:2 EXACT    0x00000000  _prtabt $4F0 W 0 -- never written
+ 83 trap 257 $4F2:4 PTR_RAM  0x00E00000  _sysbase $4F2 L -- bios/bios.c:358
+ 84 trap 257 $4F6:4 EXACT    0x00000000  _shell_p $4F6 L 0 -- never written
+ 85 trap 257 $4FA:4 PTR_RAM  0x00023BA0  _end_os $4FA L -- bios/biosmem.c:66
+ 87 trap 257 $502:4 PTR_RAM  0x00E20EA4  _dump_vec $502 L -- bios/chardev.c:84
+ 88 trap 257 $506:4 PTR_RAM  0x00E20EA4  _prt_stat $506 L -- bios/chardev.c:82
+ 89 trap 257 $50A:4 PTR_RAM  0x00E20EA4  _prt_vec $50A L -- bios/chardev.c:83
+ 90 trap 257 $50E:4 PTR_RAM  0x00E20EA4  _aux_stat $50E L -- bios/chardev.c:78
+ 91 trap 257 $512:4 PTR_RAM  0x00E20EA4  _aux_vec $512 L -- bios/chardev.c:79
+ 92 trap 257 $51A:4 EXACT    0x5555AAAA  _memval3 $51A L magic -- bios/memory.S:586
+ 94 trap 257 $5A0:4 PTR_RAM  0x00008760  _p_cookies $5A0 L -- util/cookie.c:31
+ 95 trap 257 $5A4:4 NONZERO  0x02000000  _ramtop $5A4 L, machine's -- memory2.c:109
+ 96 trap 257 $5A8:4 EXACT    0x1357BD13  _ramvalid $5A8 L magic -- bios/memory2.c:124

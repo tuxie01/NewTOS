@@ -478,6 +478,7 @@ static void run_jar_case(const struct td_call_case *c, struct td_call_frame *f)
 	f->ret_hi = (uint32_t)(v >> 32);
 }
 
+static void run_peek_case(const struct td_call_case *c, struct td_call_frame *f);
 int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
                 size_t out_bytes)
 {
@@ -502,10 +503,10 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		int64_t r;
 		long ret;
 
-		/* a jar case: the poisoned frame, the jar, the record */
-		if (c->trap == TD_CALL_TRAP_JAR) {
+		/* a jar or peek case: the poisoned frame, its read, the record */
+		if (c->trap == TD_CALL_TRAP_JAR || c->trap == TD_CALL_TRAP_PEEK) {
 			td_poison_call(&run_frame);
-			run_jar_case(c, &run_frame);
+			(c->trap == TD_CALL_TRAP_JAR ? run_jar_case : run_peek_case)(c, &run_frame);
 			td_call_record_write(rec, c->line, (uint16_t)c->opcode,
 			                     &run_frame);
 			continue;
@@ -619,4 +620,89 @@ int td_run_call(const struct td_call_case_table *ct, uint8_t *out,
 		td_call_record_write(rec, c->line, (uint16_t)c->opcode, &run_frame);
 	}
 	return 0;
+}
+
+/*
+ * A peek case (BIOS21; tosdump.h, "A PEEK CASE"): one cell of the system-
+ * variable area, read inside a Supexec callback -- on EmuTOS a user-mode
+ * read below $800 is a bus error, on NewTOS the same callback runs in super
+ * state at EL0 and the cell is the per-process page 0 (docs/api/
+ * _super-state.md S2, S6).  The callback only loads: the address and the
+ * width are set before the call, the value comes back in peek_value, not
+ * through Supexec's return (which the record does not need).  The
+ * address goes through td_abi_addr (abi.h): the identity on both machines,
+ * the stub's window in the host tests.  A MONOTONE case reads the cell a
+ * second time after TD_PEEK_MONO_VSYNCS Vsync calls (XBIOS 37, from user
+ * state) and records that read in capture[0..3].
+ */
+static long     peek_addr;
+static uint16_t peek_width;
+static volatile uint32_t peek_value;
+
+static long td_cb_peek(void)
+{
+	const volatile void *p = td_abi_addr(peek_addr);
+
+	switch (peek_width) {
+	case 1:
+		peek_value = *(const volatile uint8_t *)p;
+		break;
+	case 2:
+		peek_value = *(const volatile uint16_t *)p;
+		break;
+	default:
+		peek_value = *(const volatile uint32_t *)p;
+		break;
+	}
+	return 0L;
+}
+
+static uint32_t peek_once(void)
+{
+	uint8_t kind[TD_ABI_ARGS_MAX];
+	long value[TD_ABI_ARGS_MAX];
+	int j;
+
+	for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
+		kind[j]  = 0;
+		value[j] = (long)(int32_t)0xDEADDEADuL;
+	}
+	kind[0]  = TD_ABI_ARG_LONG;
+	value[0] = (long)td_cb_peek;
+	peek_value = 0;
+	(void)td_abi_trap(14, 0x26, 1, kind, value);     /* Supexec */
+	return peek_value;
+}
+
+static void vsync(void)
+{
+	uint8_t kind[TD_ABI_ARGS_MAX];
+	long value[TD_ABI_ARGS_MAX];
+	int j;
+
+	for (j = 0; j < TD_ABI_ARGS_MAX; j++) {
+		kind[j]  = 0;
+		value[j] = (long)(int32_t)0xDEADDEADuL;
+	}
+	(void)td_abi_trap(14, 0x25, 0, kind, value);     /* Vsync */
+}
+
+static void run_peek_case(const struct td_call_case *c,
+                          struct td_call_frame *f)
+{
+	uint32_t v;
+	int k;
+
+	peek_addr  = (long)c->arg[0].value;
+	peek_width = (uint16_t)c->opcode;
+	f->trap    = TD_CALL_TRAP_PEEK;
+	f->args[0] = (uint32_t)c->arg[0].value;
+	v = peek_once();
+	if (c->retclass == TD_RET_MONOTONE) {
+		for (k = 0; k < TD_PEEK_MONO_VSYNCS; k++)
+			vsync();
+		td_store_be32(f->capture, peek_once());
+	}
+	f->ret    = (int32_t)v;
+	f->ret_hi = 0;
 }

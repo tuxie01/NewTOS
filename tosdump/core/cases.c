@@ -2754,7 +2754,7 @@ const char *td_retclass_name(uint8_t retclass)
 	case TD_RET_HANDLE:  return "HANDLE";
 	case TD_RET_PTR_RAM: return "PTR_RAM";
 	case TD_RET_ABSENT:  return "ABSENT";
-	default:             return "?";
+	default:             return retclass == TD_RET_MONOTONE ? "MONOTONE" : "?";
 	}
 }
 
@@ -4767,16 +4767,16 @@ int td_call_cases_parse(struct td_call_case_table *t, uint16_t area,
 		olen = col_len[0];
 		trim(&o, &olen);
 
-		/* a jar case (TOOL18): it issues no trap, so it has no entry in
-		 * the whitelist -- only the rules of its own form */
-		if (!prelude && is_jar_column(o, olen)) {
-			rc = parse_jar_case(col, col_len, c, &why);
+		/* a jar case (TOOL18) or a peek case (BIOS21): no trap of its
+		 * own, so no whitelist entry -- only its form's rules */
+		if ((!prelude && is_jar_column(o, olen)) || td_peek_column(o, olen)) {
+			rc = td_noncall_case_parse(col, col_len, c, prelude, &why);
 			if (rc == 0 && pending) {
-				why = "a jar case takes no prelude: it issues no call";
+				why = "a jar or peek case takes no prelude: it issues no call";
 				rc = TD_CASE_ERR_DANGLING;
 			} else if (rc == 0 && (bracket_open || getmpb_line)) {
-				why = "a jar case outside a Super bracket and before "
-				      "Getmpb only: on the m68k the jar is read through "
+				why = "a jar or peek case outside a Super bracket and before "
+				      "Getmpb only: on the m68k it is read through "
 				      "Supexec";
 				rc = TD_CASE_ERR_UNSAFE_STATE;
 			}
@@ -5042,4 +5042,137 @@ const char *td_case_error_text(int rc)
 	                                        "the binding's";
 	default:                         return "unknown error";
 	}
+}
+
+/* Peek cases (cases.h, TASK/BIOS21)                                   */
+/* ------------------------------------------------------------------ */
+
+static int is_peek_column(const char *o, size_t olen)
+{
+	return olen >= 5 && memcmp(o, "peek:", 5) == 0;
+}
+
+/* The write forms a reader might reach for: refused by name, so a typo of
+ * a peek never becomes a store into the system variables. */
+static int is_write_column(const char *o, size_t olen)
+{
+	return (olen >= 5 && memcmp(o, "poke:", 5) == 0) ||
+	       (olen >= 6 && memcmp(o, "write:", 6) == 0);
+}
+
+
+/*
+ * One "peek:<addr>:<width>" line, its four value columns.  Fills the case as
+ * the runner and the comparator read it: trap TD_CALL_TRAP_PEEK, opcode the
+ * width, the address as LONG argument 0.  The guard of cases.h, "Peek
+ * cases": read-only by construction, the address inside [TD_PEEK_LOW,
+ * TD_PEEK_END), a WORD or LONG even.
+ */
+static int parse_peek_case(const char *const *col, const size_t *col_len,
+                           struct td_call_case *c, const char **why)
+{
+	const char *o = col[0], *a = col[1], *r = col[2], *k = col[3];
+	size_t olen = col_len[0], al = col_len[1], rl = col_len[2];
+	size_t kl = col_len[3], colon;
+	uint32_t addr, width;
+
+	trim(&o, &olen);
+	trim(&a, &al);
+	trim(&r, &rl);
+	trim(&k, &kl);
+	o += 5;                            /* "peek:" */
+	olen -= 5;
+	c->trap     = TD_CALL_TRAP_PEEK;
+	c->cap_arg  = -1;
+	c->retwidth = TD_RET_WIDTH_LONG;
+	for (colon = 0; colon < olen && o[colon] != ':'; colon++)
+		;
+	if (colon == 0 || colon + 1 >= olen) {
+		*why = "a peek case is peek:<addr>:<width>";
+		return TD_CASE_ERR_VALUE;
+	}
+	if (parse_small(o, colon, 0xFFFF, &addr) != 0) {
+		*why = "the peek address is not a number below 0x10000";
+		return TD_CASE_ERR_VALUE;
+	}
+	if (parse_small(o + colon + 1, olen - colon - 1, 4, &width) != 0 ||
+	    width == 0 || width == 3) {
+		*why = "the peek width is 1, 2 or 4 bytes";
+		return TD_CASE_ERR_VALUE;
+	}
+	if (addr < TD_PEEK_LOW || addr + width > TD_PEEK_END) {
+		*why = "a peek reads the system-variable area only: "
+		       "0x380 <= addr, addr + width <= 0x800";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	if (width > 1 && (addr & 1)) {
+		*why = "a WORD or LONG peek reads an even address (a 68000 "
+		       "address error otherwise)";
+		return TD_CASE_ERR_UNSAFE_FIELD;
+	}
+	c->opcode       = (int16_t)width;
+	c->nargs        = 1;
+	c->arg[0].kind  = TD_CALL_ARG_LONG;
+	c->arg[0].value = (int32_t)addr;
+	if (!span_is(a, al, "-")) {
+		*why = "a peek takes no arguments, so it writes nothing: its "
+		       "args are -";
+		return TD_CASE_ERR_SIGNATURE;
+	}
+	if (!span_is(k, kl, "-")) {
+		*why = "a peek names no capture: its capture is -";
+		return TD_CASE_ERR_CAPTURE;
+	}
+	if (span_is(r, rl, "EXACT"))
+		c->retclass = TD_RET_EXACT;
+	else if (span_is(r, rl, "IGNORE"))
+		c->retclass = TD_RET_IGNORE;
+	else if (span_is(r, rl, "NONZERO"))
+		c->retclass = TD_RET_NONZERO;
+	else if (width == 4 && span_is(r, rl, "PTR_RAM"))
+		c->retclass = TD_RET_PTR_RAM;
+	else if (width == 4 && span_is(r, rl, "MONOTONE"))
+		c->retclass = TD_RET_MONOTONE;
+	else {
+		*why = "a peek's retclass is EXACT, IGNORE, NONZERO, or at width "
+		       "4 PTR_RAM or MONOTONE; no width suffix (the peek names "
+		       "the width)";
+		return TD_CASE_ERR_RETCLASS;
+	}
+	return 0;
+}
+
+int td_peek_column(const char *o, size_t olen)
+{
+	if (olen > 0 && o[0] == '+') {     /* a prelude form: refused below */
+		o++;
+		olen--;
+	}
+	return is_peek_column(o, olen) || is_write_column(o, olen);
+}
+
+int td_noncall_case_parse(const char *const *col, const size_t *col_len,
+                          struct td_call_case *c, int prelude,
+                          const char **why)
+{
+	const char *o = col[0];
+	size_t olen = col_len[0];
+
+	trim(&o, &olen);
+	if (!td_peek_column(o, olen))
+		return parse_jar_case(col, col_len, c, why);
+	if (prelude) {
+		o++;
+		olen--;
+	}
+	if (is_write_column(o, olen)) {
+		*why = "a call table writes no memory: a system variable is read "
+		       "with peek:<addr>:<width>, never written";
+		return TD_CASE_ERR_UNSAFE_OPCODE;
+	}
+	if (prelude) {
+		*why = "a peek case takes no prelude form: it is a measured read";
+		return TD_CASE_ERR_DIRECTIVE;
+	}
+	return parse_peek_case(col, col_len, c, why);
 }

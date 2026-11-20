@@ -352,7 +352,7 @@
 #define TD_CALL_OFF_CAPTURE   40   /* capture buffer                      */
 #define TD_CALL_OFF_RET_HI   296   /* u32, return register bits 63..32    */
 #define TD_CALL_OFF_TRAP     300   /* u16, 13 BIOS / 14 XBIOS / 1 GEMDOS,
-                                    * 256 a jar case (below)             */
+                                    * 256 jar, 257 peek case (below)     */
 #define TD_CALL_OFF_RESERVED 302   /* 18 bytes, zero                      */
 #define TD_CALL_RESERVED_LEN  18
 
@@ -443,6 +443,30 @@
 #define TD_JAR_FN_ALL           1
 #define TD_JAR_ABSENT         0xFFFFFFFFFFFFFFFFuLL
 #define TD_JAR_TAGS_MAX      (TD_CALL_CAPTURE_LEN / 4)
+
+/*
+ * A PEEK CASE (TASK/BIOS21; docs/TOS-REFERENCE-DUMPER.md section 6, "System
+ * variables: the peek case").  It issues no trap of its own: the runner reads
+ * one cell of the system-variable area inside a Supexec callback and writes
+ * the record itself, in the call record's own fields.
+ *   trap      TD_CALL_TRAP_PEEK, outside 0..255 and not the jar's 256
+ *   opcode    the width read, 1, 2 or 4 bytes
+ *   args[0]   the address as a LONG; the other slots keep the poison
+ *   ret_hi:ret  the cell's value ZERO-extended from its width (a cell is a
+ *             BYTE, WORD or LONG on both machines, so the high half is 0)
+ *   capture   MONOTONE only: the cell read a second time, after
+ *             TD_PEEK_MONO_VSYNCS Vsync calls, as one big-endian LONG at
+ *             capture[0..3]; every other byte, and the whole capture of every
+ *             other peek, keeps the poison.
+ */
+#define TD_CALL_TRAP_PEEK     257
+#define TD_PEEK_LOW         0x380   /* the area a peek may read: */
+#define TD_PEEK_END         0x800   /* [TD_PEEK_LOW, TD_PEEK_END) */
+#define TD_PEEK_MONO_VSYNCS     2
+/* The retclass of a counter cell that advances: peek:<addr>:4 lines only
+ * (the TD_RET_* list above) -- the second read later than the first by
+ * 1 .. 0x7FFFFFFF, modulo 2^32. */
+#define TD_RET_MONOTONE         6
 
 /*
  * A capture WITH A LAYOUT (TASK/TOOL16; docs/TOS-REFERENCE-DUMPER.md

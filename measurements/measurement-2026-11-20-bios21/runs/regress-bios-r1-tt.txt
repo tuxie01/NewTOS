@@ -1,0 +1,7 @@
+EMUTOS-1a7484ab-BIOS.BIN vs BIOS.BIN -- area BIOS, 147 cases from bios-r1.tsv
+
+0 of 147 cases differ
+tosdiff exit 0
+cmp whole file: exit 1
+/Volumes/Daten/Development/PiRusTOS/target-agents/agent-a84a2b94baed1aecd/scr/a.rec /Volumes/Daten/Development/PiRusTOS/target-agents/agent-a84a2b94baed1aecd/scr/b.rec differ: char 16678, line 5
+cmp records (from offset 32): exit 1

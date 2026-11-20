@@ -1,0 +1,2 @@
+bios-r1: runs/newtos-bios-r1/tosdiff-EMUTOS-1a7484ab-BIOS.txt against measurements/measurement-2026-11-20-bios20-test/serial/tables/wt-bios-r1/tosdiff-EMUTOS-1a7484ab-BIOS.txt, paths stripped (sed 's#/[^ ]*/##g'): diff exit 0
+bios-core-r1: runs/newtos-bios-core-r1/tosdiff-EMUTOS-1a7484ab-BIOS-core.txt against measurements/measurement-2026-11-20-bios20-test/serial/tables/wt-bios-core-r1/tosdiff-EMUTOS-1a7484ab-BIOS-core.txt, paths stripped (sed 's#/[^ ]*/##g'): diff exit 0

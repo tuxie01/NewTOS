@@ -290,6 +290,16 @@
 #define TD_STUB_JAR_XHDI      0x00E01234uL
 #define TD_STUB_JAR_N         6
 
+/* System variables (TASK/BIOS21) -- a peek case reads the stub's TOS
+ * memory window (TD_STUB_MEM_ADDR .. + TD_STUB_MEM_BYTES, the $400..$5FF
+ * part of the system-variable area) through td_abi_addr inside its Supexec
+ * callback; a test lays the cells there itself.  Vsync (14:0x25) adds 1 to
+ * the native LONG at TD_STUB_VSYNC_CELL -- the stub's frame counter, laid
+ * where none of the structures above lies -- counts the call in
+ * td_stub_vsyncs and answers 0.  td_stub_reset clears the counter (the
+ * window is the test's). */
+#define TD_STUB_VSYNC_CELL    0x5FCL
+
 struct td_stub_call {
 	int16_t kind;
 	int16_t opcode;
@@ -329,6 +339,7 @@ void td_stub_reset(void);
 
 #include "scrninfo.h"
 extern struct td_jar td_stub_jar;
+extern int           td_stub_vsyncs;
 extern int           td_stub_jar_reads;
 
 #endif /* TOSDUMP_STUB_ABI_H */

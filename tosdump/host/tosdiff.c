@@ -822,6 +822,14 @@ static void print_call_case_header(const struct td_casefile *cf,
 		*printed = 1;
 		return;
 	}
+	if (td_load_be16(rec + TD_CALL_OFF_TRAP) == TD_CALL_TRAP_PEEK) {
+		/* a peek case (BIOS21) names its cell, not a trap */
+		printf("\ncase %u  peek $%03lX:%u%s%s\n", case_id,
+		       (unsigned long)td_load_be32(rec + TD_CALL_OFF_ARGS),
+		       td_load_be16(rec + TD_CALL_OFF_OPCODE), *c ? "  " : "", c);
+		*printed = 1;
+		return;
+	}
 	printf("\ncase %u  trap %u function 0x%02X%s%s\n", case_id,
 	       td_load_be16(rec + TD_CALL_OFF_TRAP),
 	       td_load_be16(rec + TD_CALL_OFF_OPCODE), *c ? "  " : "", c);
@@ -988,6 +996,56 @@ static int jar_check(const struct td_casefile *cf, uint16_t index,
 			printf("%s\n", why);
 		else
 			printf("0x%08lX, %s\n", (unsigned long)v, why);
+		differs = 1;
+	}
+	return differs;
+}
+
+/*
+ * A MONOTONE peek case (BIOS21; docs/TOS-REFERENCE-DUMPER.md section 6,
+ * "System variables: the peek case"; tosdump.h, "A PEEK CASE").  ret holds
+ * the counter's first read, capture[0..3] the second, after
+ * TD_PEEK_MONO_VSYNCS Vsync calls.  Judged on each side alone, never by
+ * value between the dumps (two machines count from different starts): the
+ * second read must be later than the first by 1 .. 0x7FFFFFFF modulo 2^32
+ * -- 0 is a counter that stands, more is one that went back.  The capture
+ * is not compared byte-wise.  Returns 1 when the case differs.
+ */
+static int is_peek_monotone(const struct td_casefile *cf, uint16_t index)
+{
+	return cf->calls && index < cf->calls->count &&
+	       cf->calls->cases[index].trap == TD_CALL_TRAP_PEEK &&
+	       cf->calls->cases[index].retclass == TD_RET_MONOTONE;
+}
+
+static int monotone_check(const struct td_casefile *cf,
+                          const struct td_dump *a, const uint8_t *ra,
+                          const struct td_dump *b, const uint8_t *rb,
+                          int label_w, uint16_t case_id, int *printed,
+                          int nsides)
+{
+	int differs = 0, side;
+
+	for (side = 0; side < nsides; side++) {
+		const struct td_dump *d = side ? b : a;
+		const uint8_t *r = side ? rb : ra;
+		uint32_t v1 = td_load_be32(r + TD_CALL_OFF_RET);
+		uint32_t v2 = td_load_be32(r + TD_CALL_OFF_CAPTURE);
+		uint32_t delta = v2 - v1;
+		const char *why = NULL;
+
+		if (td_load_be32(r + TD_CALL_OFF_RET_HI) != 0)
+			why = "has a high half";
+		else if (delta == 0)
+			why = "did not advance";
+		else if (delta >= 0x80000000uL)
+			why = "went back";
+		if (!why)
+			continue;
+		print_call_case_header(cf, case_id, ra, printed);
+		printf("    %-24s %s %-*s = 0x%08lX then 0x%08lX, %s\n", "cell",
+		       "MONOTONE", label_w, d->label, (unsigned long)v1,
+		       (unsigned long)v2, why);
 		differs = 1;
 	}
 	return differs;
@@ -1259,6 +1317,11 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 			if (jar_check(&cf, rec, &a, ra, &b, rb, label_w, case_id,
 			              &printed_header, single ? 1 : 2))
 				value_differs = 1;
+		} else if (is_call_area(a.h.area) && is_peek_monotone(&cf, rec)) {
+			/* a counter (BIOS21): its two reads, on each side */
+			if (monotone_check(&cf, &a, ra, &b, rb, label_w, case_id,
+			                   &printed_header, single ? 1 : 2))
+				value_differs = 1;
 		} else if (is_call_area(a.h.area) &&
 		           retclass_check(&cf, rec, &a, ra, &b, rb, label_w,
 		                          case_id, &printed_header,
@@ -1285,6 +1348,9 @@ static int cmd_compare(const char *cases_path, const char *a_path,
 			    is_jar(&cf, rec) &&
 			    cf.calls->cases[rec].opcode == TD_JAR_FN_ALL)
 				continue;   /* the tags, in jar_check */
+			if (is_call_area(a.h.area) && f->off == TD_CALL_OFF_CAPTURE &&
+			    is_peek_monotone(&cf, rec))
+				continue;   /* the second read, in monotone_check */
 
 			/* Field class address: never compared by value -- the two
 			 * values cannot be equal by construction, so a difference

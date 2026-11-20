@@ -1,0 +1,8 @@
+HEAD dumper vs this dumper (bios-r1, tt, same day):
+record 59 case 125 bytes [39]  Gettime() -- bios/clock.c:1266
+HEAD dumper vs frozen reference EMUTOS-1a7484ab-BIOS:
+record 52 case 112 bytes [37, 38, 39]  Random() -- bios/xbios.c:421
+record 59 case 125 bytes [37, 38, 39]  Gettime() -- bios/clock.c:1266
+this dumper vs frozen reference EMUTOS-1a7484ab-BIOS:
+record 52 case 112 bytes [37, 38, 39]  Random() -- bios/xbios.c:421
+record 59 case 125 bytes [37, 38, 39]  Gettime() -- bios/clock.c:1266

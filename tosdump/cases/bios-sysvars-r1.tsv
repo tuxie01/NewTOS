@@ -1,0 +1,96 @@
+# bios-sysvars-r1.tsv -- DUMPBIOS, the served system variables (TASK/BIOS21):
+# one peek case per row of class "served" in the contract table
+# docs/api/bios/_sysvars-contract.md section 4, with the return class its
+# section 8 maps the row to; the cells TASK/BIOS20 serves take their class
+# from the decided values of docs/api/bios/_sysvars-counters-contract.md
+# section 17.  Against EmuTOS 1a7484ab (references/emutos,
+# docs/analysis/ORACLE.md).
+#
+# Form: docs/TOS-REFERENCE-DUMPER.md section 6, "System variables: the peek
+# case".  peek:<addr>:<width> reads one cell (width 1, 2 or 4 bytes, the
+# cell's own type) inside a Supexec callback: on EmuTOS a user-mode read
+# below $800 is a bus error.  Read-only by construction (the guard in
+# tosdump/core/cases.c parse_peek_case).  The value is recorded zero-extended
+# from its width.  MONOTONE: the cell read twice with two Vsync calls between,
+# the second read later than the first (per side, never by value).
+#
+# A row's size in the contract table is its width here; _themd (16 bytes) is
+# read as its four LONGs (the m68k MD: m_link, m_start, m_length, m_own), and
+# ____md (4 bytes) as one LONG.  Address cells are PTR_RAM (non-null, even,
+# >= 0x400, < 0x80000000), never compared by value: ROM, stub and buffer
+# addresses differ by design.  The "hardware", "missing", "free" and "n/a"
+# rows have no case (section 8: a documented-difference case for them is the
+# lead's choice).
+#
+# A separate table, so bios-r1.tsv, bios-core-r1.tsv and their references stay
+# as they are.  One table per round: the case id is the physical line number
+# and the dump header carries the CRC of this file, so it is frozen once
+# measured.  References: tosdump/reference/EMUTOS-1a7484ab-BIOS-sysvars (tt)
+# and -BIOS-sysvars-falcontc.
+
+# ---- $400-$40C the etv_* vectors -- bios/bios.c:360-362
+peek:0x400:4	-	PTR_RAM	-	_etv_timer $400 L -- bios/bios.c:360
+peek:0x404:4	-	PTR_RAM	-	_etv_critic $404 L -- bios/bios.c:361
+peek:0x408:4	-	PTR_RAM	-	_etv_term $408 L -- bios/bios.c:362
+peek:0x40C:4	-	EXACT	-	_etv_xtra $40C L 0 -- never written
+# ---- $420-$43A memory magic and bounds -- bios/memory.S:572-586, biosmem.c
+peek:0x420:4	-	EXACT	-	_memvalid $420 L magic -- bios/memory.S:584
+peek:0x426:4	-	EXACT	-	resvalid $426 L 0 -- cleared bios/panicasm.S:115
+peek:0x42A:4	-	EXACT	-	resvector $42A L 0 -- cleared bios/panicasm.S:116
+peek:0x42E:4	-	PTR_RAM	-	_phystop $42E L -- bios/memory.S:573
+peek:0x432:4	-	PTR_RAM	-	_membot $432 L -- bios/biosmem.c:67,122
+peek:0x436:4	-	PTR_RAM	-	_memtop $436 L -- bios/biosmem.c:72,115
+peek:0x43A:4	-	EXACT	-	_memval2 $43A L magic -- bios/memory.S:585
+# ---- $442-$44E timer, boot device, screen -- bios/mfp.c:196, bios/bios.c
+peek:0x442:2	-	EXACT	-	_timer_ms $442 W 20 -- bios/mfp.c:196
+peek:0x446:2	-	NONZERO	-	_bootdev $446 W, machine's -- bios/bios.c:611
+peek:0x448:2	-	EXACT	-	_palmode $448 W 0 -- never written
+peek:0x44A:1	-	EXACT	-	_defshiftmod $44A B 0 -- never written
+peek:0x44E:4	-	PTR_RAM	-	_v_bas_ad $44E L screen -- bios/screen.c:656
+# ---- $452-$45E the VBL cells -- bios/bios.c:366-367,553
+peek:0x452:2	-	EXACT	-	_vblsem $452 W 1 -- bios/bios.c:553
+peek:0x454:2	-	EXACT	-	_nvbls $454 W 8 -- bios/bios.c:366
+peek:0x456:4	-	EXACT	-	_vblqueue $456 L $4CE -- bios/bios.c:367
+peek:0x45E:4	-	EXACT	-	_screenpt $45E L 0 -- never written
+# ---- $462-$466 the frame counters -- bios/vectors.S:330,348
+peek:0x462:4	-	MONOTONE	-	_vbclock $462 L counter -- bios/vectors.S:348
+peek:0x466:4	-	MONOTONE	-	_frclock $466 L counter -- bios/vectors.S:330
+# ---- $46A-$47A hooks -- bios/blkdev.c:95,98; bios/bios.c:363
+peek:0x46A:4	-	PTR_RAM	-	_hdv_init $46A L -- bios/blkdev.c:98
+peek:0x46E:4	-	PTR_RAM	-	_swv_vec $46E L -- bios/bios.c:363
+peek:0x47A:4	-	PTR_RAM	-	_hdv_boot $47A L -- bios/blkdev.c:95
+# ---- $482-$48A -- bios/bios.c:850, bios/ikbd.c:1100
+peek:0x482:2	-	EXACT	-	_cmdload $482 W 0 -- never written
+peek:0x484:1	-	EXACT	-	_conterm $484 B 7 -- bios/ikbd.c:1100
+peek:0x486:4	-	EXACT	-	trp14ret $486 L 0 -- never written
+peek:0x48A:4	-	EXACT	-	criticret $48A L 0 -- never written
+# ---- $48E _themd, the m68k MD as four LONGs -- bios/biosmem.c:144-147
+peek:0x48E:4	-	EXACT	-	_themd.m_link $48E L 0 -- bios/biosmem.c:144
+peek:0x492:4	-	PTR_RAM	-	_themd.m_start $492 L -- bios/biosmem.c:145
+peek:0x496:4	-	NONZERO	-	_themd.m_length $496 L -- bios/biosmem.c:146
+peek:0x49A:4	-	EXACT	-	_themd.m_own $49A L 0 -- bios/biosmem.c:147
+peek:0x49E:4	-	EXACT	-	____md $49E 4B 0 -- never written
+peek:0x4AE:4	-	EXACT	-	sav_context $4AE L 0 -- never written
+# ---- $4BA-$4CA -- bios/vectors.S:503, bios/blkdev.c:91,175
+peek:0x4BA:4	-	MONOTONE	-	_hz_200 $4BA L counter -- bios/vectors.S:503
+peek:0x4BE:4	-	EXACT	-	the_env $4BE L 0 -- never written
+peek:0x4C2:4	-	NONZERO	-	_drvbits $4C2 L, machine's -- bios/blkdev.c:175
+peek:0x4C6:4	-	PTR_RAM	-	_dskbufp $4C6 L -- bios/blkdev.c:91
+peek:0x4CA:4	-	EXACT	-	_autopath $4CA L 0 -- never written
+# ---- $4EE-$4FA -- bios/bios.c:357-358, bios/biosmem.c:66
+peek:0x4EE:2	-	EXACT	-	_dumpflg $4EE W -1 -- bios/bios.c:357
+peek:0x4F0:2	-	EXACT	-	_prtabt $4F0 W 0 -- never written
+peek:0x4F2:4	-	PTR_RAM	-	_sysbase $4F2 L -- bios/bios.c:358
+peek:0x4F6:4	-	EXACT	-	_shell_p $4F6 L 0 -- never written
+peek:0x4FA:4	-	PTR_RAM	-	_end_os $4FA L -- bios/biosmem.c:66
+# ---- $502-$512 the character-device stubs -- bios/chardev.c:78-84
+peek:0x502:4	-	PTR_RAM	-	_dump_vec $502 L -- bios/chardev.c:84
+peek:0x506:4	-	PTR_RAM	-	_prt_stat $506 L -- bios/chardev.c:82
+peek:0x50A:4	-	PTR_RAM	-	_prt_vec $50A L -- bios/chardev.c:83
+peek:0x50E:4	-	PTR_RAM	-	_aux_stat $50E L -- bios/chardev.c:78
+peek:0x512:4	-	PTR_RAM	-	_aux_vec $512 L -- bios/chardev.c:79
+peek:0x51A:4	-	EXACT	-	_memval3 $51A L magic -- bios/memory.S:586
+# ---- $5A0-$5A8 -- util/cookie.c:31, bios/memory2.c:109-129
+peek:0x5A0:4	-	PTR_RAM	-	_p_cookies $5A0 L -- util/cookie.c:31
+peek:0x5A4:4	-	NONZERO	-	_ramtop $5A4 L, machine's -- memory2.c:109
+peek:0x5A8:4	-	EXACT	-	_ramvalid $5A8 L magic -- bios/memory2.c:124

@@ -1,6 +1,6 @@
 # BIOS21 — tosdump: a `peek` case type that reads system variables on the oracle and on NewTOS
 
-Status: OPEN (2026-11-20) | Priority: P3
+Status: IMPLEMENTED (2026-11-20) | Priority: P3 | Commit: self | Missing: tester re-run of bios-sysvars-r1 on the pinned oracle (tt, falcontc) and raspi4b, the existing tables bios-r1 and bios-core-r1 unchanged on both sides, make -C tosdump host-test; the lead decides whether the hardware/missing rows get documented-difference cases
 
 Type: developer, then tester. Owner decision 2026-11-19, from TASK/BIOS19.md; starts after TASK/BIOS20.md.
 

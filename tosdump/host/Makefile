@@ -206,6 +206,14 @@ $(BUILD)/test_jar.o: $(TESTS)/test_jar.c $(TESTS)/tdtest.h \
 $(BUILD)/test_jar: $(BUILD)/test_jar.o $(CORE_OBJ) $(BUILD)/stub_abi.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+# BIOS21: peek cases, the loader's guard and the runner against the stub's
+# TOS memory window.
+$(BUILD)/test_peek.o: $(TESTS)/test_peek.c $(TESTS)/tdtest.h \
+                      $(TESTS)/stub_abi.h $(CORE)/runner_call.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/test_peek: $(BUILD)/test_peek.o $(CORE_OBJ) $(BUILD)/stub_abi.o
+	$(CC) $(CFLAGS) $^ -o $@
+
 # PITEST01: the pure part of the _hz_200 probe (probes/hzprobe-rules.h).
 $(BUILD)/test_hzprobe: $(TESTS)/test_hzprobe.c $(TESTS)/tdtest.h \
                        ../probes/hzprobe-rules.h | $(BUILD)
@@ -234,6 +242,7 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
       $(BUILD)/test_cases_disk $(BUILD)/test_runner_disk \
       $(BUILD)/test_cases_ptr $(BUILD)/test_runner_ptr $(BUILD)/layoutcheck \
       $(BUILD)/test_cases_gdos $(BUILD)/test_runner_gdos $(BUILD)/test_jar \
+      $(BUILD)/test_peek \
       $(BUILD)/test_casefile $(BUILD)/tosdiff $(BUILD)/mkdump \
       $(BUILD)/emit_be $(BUILD)/emit_le $(BUILD)/test_hzprobe
 	@echo "== record format"
@@ -280,6 +289,10 @@ run-tests: $(BUILD)/test_record $(BUILD)/test_cases $(BUILD)/test_log \
 	@echo "== the cookie jar: jar:<TAG>, jar:*, the loader and the runner against the stub's jar"
 	@$(BUILD)/test_jar $(BUILD)/stub-jar.bin $(BUILD)/stub-jar.tsv
 	@$(BUILD)/tosdiff --validate $(BUILD)/stub-jar.bin $(BUILD)/stub-jar.tsv \
+	    | sed 's/^/  /'
+	@echo "== system variables: peek:<addr>:<width>, its guard, MONOTONE, the runner against the stub's window"
+	@$(BUILD)/test_peek $(BUILD)/stub-peek.bin $(BUILD)/stub-peek.tsv
+	@$(BUILD)/tosdiff --validate $(BUILD)/stub-peek.bin $(BUILD)/stub-peek.tsv \
 	    | sed 's/^/  /'
 	@echo "== HZPROBE: Tgettime arithmetic, step bookkeeping, the PASS rule"
 	@$(BUILD)/test_hzprobe

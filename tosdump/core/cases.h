@@ -900,6 +900,28 @@ int td_rast_cases_load(struct td_rast_case_table *t, const char *path,
  * _p_cookies.  The record: tosdump.h, "A JAR CASE".  The case's trap field
  * is TD_CALL_TRAP_JAR, its opcode TD_JAR_FN_TAG / TD_JAR_FN_ALL, the tag in
  * arg[0] (kind TD_CALL_ARG_LONG).
+ *
+ * Peek cases (TASK/BIOS21; docs/TOS-REFERENCE-DUMPER.md section 6, "System
+ * variables: the peek case").  The call column may name one cell of the
+ * system-variable area instead of a trap:
+ *
+ *   peek:<addr>:<width>   read `width` bytes (1, 2 or 4) at `addr` (decimal
+ *               or 0x hex), as the cell's own type: a BYTE, a WORD, a LONG.
+ *               retclass EXACT, IGNORE, NONZERO, PTR_RAM (width 4 only) or
+ *               MONOTONE (width 4 only: the cell read twice with
+ *               TD_PEEK_MONO_VSYNCS Vsync calls between, the second read
+ *               later than the first)
+ *
+ * The guard, read-only by construction: TD_PEEK_LOW <= addr and addr + width
+ * <= TD_PEEK_END ($380..$7FF, the area of tosvars.ld below the free $800);
+ * a WORD or LONG at an even address; args and capture "-" (a peek takes no
+ * value, so it cannot write); no width suffix on the class; the write
+ * forms "poke:" and "write:" refused by name, as a case or a prelude.  Like a jar case: no prelude before it,
+ * not inside a Super bracket and not after Getmpb.  The runner reads the
+ * cell inside a Supexec callback on both machines (on EmuTOS a user-mode
+ * read below $800 is a bus error).  The record: tosdump.h, "A PEEK CASE".
+ * The case's trap field is TD_CALL_TRAP_PEEK, its opcode the width, the
+ * address in arg[0] (kind TD_CALL_ARG_LONG).
  */
 
 /* ------------------------------------------------------------------ */
@@ -1083,6 +1105,18 @@ int td_call_cases_load(struct td_call_case_table *t, uint16_t area,
 
 /* "EXACT", "IGNORE", ... -- for a report. */
 const char *td_retclass_name(uint8_t retclass);
+
+/* The loader's own steps for a line that issues no trap of its own
+ * (td_call_cases_parse; exposed for the host tests).  td_peek_column: 1
+ * when the call column, a '+' prelude mark stepped over, is a peek or one
+ * of the write forms ("poke:", "write:") a peek's guard refuses by name.
+ * td_noncall_case_parse: a jar or peek line's four value columns into `c`
+ * -- 0, or a TD_CASE_ERR_* with *why the reason (a write form
+ * TD_CASE_ERR_UNSAFE_OPCODE, a peek prelude TD_CASE_ERR_DIRECTIVE). */
+int td_peek_column(const char *o, size_t olen);
+int td_noncall_case_parse(const char *const *col, const size_t *col_len,
+                          struct td_call_case *c, int prelude,
+                          const char **why);
 
 /*
  * Shared line iterator.  One rule for what a line is, used by the parser and

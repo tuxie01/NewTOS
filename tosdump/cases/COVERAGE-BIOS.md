@@ -478,3 +478,15 @@ References `tosdump/reference/EMUTOS-1a7484ab-BIOS-mc-<fs20|fs22|paths>-disk`,
 two runs each byte-identical, `measurements/measurement-2026-10-29-tool20/RUNINFO.TXT`;
 `EMUTOS-1a7484ab-BIOS-mc-fs24-disk`, two runs byte-identical,
 `measurements/measurement-2026-10-29-fs24/RUNINFO.TXT`.
+
+## System variables -- `bios-sysvars-r1.tsv` (BIOS21, 2026-11-20)
+
+The served system variables (`docs/api/bios/_sysvars-contract.md` section 4,
+class "served": 51 rows, 54 cases, `_themd` as its four LONGs). Separate from
+`bios-r1.tsv` and `bios-core-r1.tsv`, so those tables, their CRCs and their
+references stay as they are. Form and guard: `docs/TOS-REFERENCE-DUMPER.md`
+section 6, "System variables: the peek case".
+
+| line | call | admitted as | why safe |
+|---|---|---|---|
+| `peek:<addr>:<width>` | no trap of the table's own: `Supexec` (`14:0x26`) with the dumper's `td_cb_peek` (`tosdump/core/runner_call.c`); `MONOTONE` adds `Vsync` (`14:0x25`) twice | `0x380 <= addr`, `addr + width <= 0x800`, width 1/2/4, a WORD or LONG even; no argument, no capture; `poke:`/`write:` refused | the callback only loads one RAM cell of the system-variable area, which has no read side effect; `Vsync` is round 1 (above) |
